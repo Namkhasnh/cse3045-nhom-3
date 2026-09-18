@@ -1,4 +1,4 @@
-# KRead AI — Project Charter Mini
+# Project Charter Mini
 
 ## 1. Tên dự án
 
