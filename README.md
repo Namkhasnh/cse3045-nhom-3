@@ -3,7 +3,7 @@
 ## 1. Tên dự án
 
 **Tên dự án:**  
-**KRead AI — AI-Powered Context-Aware Scientific Document Translation and Bilingual Reading Platform**
+**AI-Powered Context-Aware Scientific Document Translation and Bilingual Reading Platform**
 
 **Tên tiếng Việt:**  
 **Nền tảng dịch và đọc tài liệu khoa học song ngữ theo ngữ cảnh sử dụng trí tuệ nhân tạo**
@@ -12,7 +12,7 @@
 
 ## 2. Mục tiêu dự án
 
-KRead AI hướng tới xây dựng một nền tảng web hỗ trợ sinh viên, người làm nghiên cứu và người đọc tài liệu kỹ thuật có thể tải lên tài liệu PDF ngoại ngữ và đọc bản dịch song ngữ mà không cần tự chia nhỏ nội dung rồi copy-paste từng đoạn vào Google Translate hoặc ChatGPT.
+Dự án hướng tới xây dựng một nền tảng web hỗ trợ sinh viên, người làm nghiên cứu và người đọc tài liệu kỹ thuật có thể tải lên tài liệu PDF ngoại ngữ và đọc bản dịch song ngữ mà không cần tự chia nhỏ nội dung rồi copy-paste từng đoạn vào Google Translate hoặc ChatGPT.
 
 Mục tiêu chính của phiên bản đầu tiên là:
 
