@@ -13,9 +13,17 @@
 | Future scope | Other universities in the Hoa Lac area |
 | Type | Live, operational website (not a prototype) |
 | Roles | Student, Restaurant Owner, Administrator |
-| Tech stack (decided) | Next.js + React + TypeScript (frontend and server-side APIs), MySQL (InnoDB) |
+| Frontend (decided) | Vite + React + TypeScript |
+| Backend (decided) | NestJS + TypeScript |
+| Database (decided) | MySQL (InnoDB) |
+| ORM (decided) | Prisma |
+| API (decided) | REST API |
+| Auth (decided) | JWT |
+| Styling (decided) | Tailwind CSS |
 | Architecture (decided) | Modular monolith, logical 3-tier separation (presentation / business logic / data) |
 | External services | AI/LLM service and map/location service — providers **TBD** |
+
+The Vite + React frontend communicates with the NestJS backend through REST APIs. The backend uses Prisma to access MySQL and validates JWTs for authenticated requests. Role and ownership checks are enforced in the backend. Tailwind CSS is used for frontend styling.
 
 ### 1.1 Operating Model (summary)
 
