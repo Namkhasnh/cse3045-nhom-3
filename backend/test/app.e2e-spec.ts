@@ -3,6 +3,7 @@ import { after, before, describe, it } from 'node:test';
 import type { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { AppModule } from '../src/app.module.js';
+import { PrismaService } from '../src/prisma/prisma.service.js';
 
 describe('HTTP server', () => {
   let app: INestApplication | undefined;
@@ -11,7 +12,7 @@ describe('HTTP server', () => {
   before(async () => {
     const module = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    }).overrideProvider(PrismaService).useValue({}).compile();
 
     app = module.createNestApplication();
     // Let the OS choose a free port; tests do not occupy port 3000.
