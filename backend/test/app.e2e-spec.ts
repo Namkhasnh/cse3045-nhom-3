@@ -3,6 +3,7 @@ import { after, before, describe, it } from 'node:test';
 import type { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { AppModule } from '../src/app.module.js';
+import { createValidationPipe } from '../src/validation.pipe.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
 
 describe('HTTP server', () => {
@@ -15,6 +16,7 @@ describe('HTTP server', () => {
     }).overrideProvider(PrismaService).useValue({}).compile();
 
     app = module.createNestApplication();
+    app.useGlobalPipes(createValidationPipe());
     // Let the OS choose a free port; tests do not occupy port 3000.
     await app.listen(0, '127.0.0.1');
     baseUrl = await app.getUrl();
@@ -24,7 +26,7 @@ describe('HTTP server', () => {
     await app?.close();
   });
 
-  it('GET / returns 404 because no controller is registered', async () => {
+  it('GET / returns 404 because no root route is registered', async () => {
     const response = await fetch(`${baseUrl}/`, {
       signal: AbortSignal.timeout(5000),
     });
@@ -48,5 +50,12 @@ describe('HTTP server', () => {
       error: 'Not Found',
       statusCode: 404,
     });
+  });
+
+  it('the removed demo route returns 404', async () => {
+    const response = await fetch(`${baseUrl}/todos`, {
+      signal: AbortSignal.timeout(5000),
+    });
+    assert.equal(response.status, 404);
   });
 });
