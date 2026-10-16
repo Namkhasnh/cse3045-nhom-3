@@ -313,9 +313,11 @@ stateDiagram-v2
 
 | Downstream document | Derives from |
 | --- | --- |
-| `ARCHITECTURE/architecture.md` | Sections 1, 5 |
-| `DATA/database.md` | Sections 6, 7, 9 |
-| `API/api-contract.md` | Sections 3, 4, 6 |
-| `UI/ui-flows.md` | Sections 3, 4.1, 8 |
-| `AI/ai-integration.md` | BR28–BR31, US08, US09 |
-| `TESTING/testing.md` | Sections 5, 8 |
+| [docs/architecture.md](architecture.md) and [docs/code_structure.md](code_structure.md) | Sections 1, 5 |
+| [docs/data/database.md](data/database.md) | Sections 6, 7, 9 |
+| [docs/data/api_contract.md](data/api_contract.md) | Sections 3, 4, 6 |
+| [docs/ui/ui_convertion.md](ui/ui_convertion.md) | Sections 3, 4.1, 8 |
+| [docs/ai_integration.md](ai_integration.md) | BR28–BR31, US08, US09 |
+| [docs/testing.md](testing.md) | Sections 5, 8 |
+| [docs/development_guide.md](development_guide.md) | Sections 1, 5–8 |
+| [docs/deployment.md](deployment.md) | Sections 1–2, 5–7 |

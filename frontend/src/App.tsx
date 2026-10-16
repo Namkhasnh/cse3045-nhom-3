@@ -1,11 +1,8 @@
+import { StudentLayout } from './app/layouts/StudentLayout'
+import { RestaurantListPage } from './features/restaurants'
+
 function App() {
-  return (
-    <main>
-      <h1>Hoa Lac Food Ordering Platform</h1>
-      <p>Nền tảng khám phá món ăn và đặt món dành cho sinh viên Hòa Lạc.</p>
-      <p>Dự án đang được phát triển.</p>
-    </main>
-  )
+  return <StudentLayout><RestaurantListPage /></StudentLayout>
 }
 
 export default App

@@ -7,15 +7,18 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
+    "test:smoke": "node scripts/browser-smoke.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fontsource/be-vietnam-pro": "5.3.0",
     "react": "19.3.0",
     "react-dom": "19.3.0"
   },
   "devDependencies": {
     "@babel/core": "8.0.7",
     "@rolldown/plugin-babel": "0.2.4",
+    "@tailwindcss/vite": "4.3.3",
     "@types/babel__core": "7.20.5",
     "@types/node": "26.6.5",
     "@types/react": "19.3.0",
@@ -23,6 +26,7 @@
     "@vitejs/plugin-react": "6.1.2",
     "babel-plugin-react-compiler": "1.0.0",
     "oxlint": "1.87.0",
+    "tailwindcss": "4.3.3",
     "typescript": "7.0.2",
     "vite": "8.3.4"
   }

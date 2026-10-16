@@ -3,16 +3,18 @@
 Nền tảng khám phá món ăn và đặt món dành cho sinh viên Hòa Lạc, triển khai đầu tiên tại VJU.
 Yêu cầu sản phẩm: [docs/requirements.md](docs/requirements.md).
 
-Repo hiện là bộ khung kỹ thuật, chưa triển khai nghiệp vụ. CRUD todo thử nghiệm đã được gỡ.
+Documentation map: [docs/README.md](docs/README.md). AI contributor instructions: [AGENTS.md](AGENTS.md).
+
+The repository contains the backend scaffold and a Student restaurant-list UI preview using explicitly labeled fixtures. Connected business workflows are not implemented. The experimental todo CRUD has been removed.
 
 ## Công nghệ hiện có
 
-- Frontend: Vite, React, TypeScript.
+- Frontend: Vite, React, TypeScript, Tailwind CSS 4, self-hosted Be Vietnam Pro.
 - Backend: NestJS, TypeScript, REST; global validation và cấu hình môi trường.
 - Database: MySQL qua Prisma và MariaDB adapter; quản lý kết nối theo vòng đời NestJS.
 - CI: lint, build frontend; lint, unit test, E2E và build backend.
 
-Tailwind CSS, JWT và các module nghiệp vụ sẽ được bổ sung theo yêu cầu sản phẩm.
+JWT and connected business modules will be added according to the product requirements.
 
 ## Chuẩn bị
 
@@ -55,7 +57,7 @@ npm run dev
 ```
 
 Mở địa chỉ Vite in trong terminal (mặc định `http://localhost:5173`).
-Frontend hiện là trang giới thiệu tối giản, chưa gọi API; cấu hình API URL, proxy hoặc CORS sẽ được bổ sung cùng tính năng đầu tiên cần kết nối FE–BE.
+The frontend shows a restaurant-list preview with labeled fixtures, name/category/price filters and loading/empty/error previews. It runs without the backend and makes no API calls. See [frontend/README.md](frontend/README.md) for the fixture boundary and preview URLs. API URL, proxy or CORS configuration will be added with the first connected feature.
 
 ## Kiểm tra
 
