@@ -2,7 +2,7 @@
 
 ## 1. Authority, scope and implementation boundary
 
-- Business authority: uploaded `requirements.md`, especially §§6–7 and §9; architecture authority: uploaded `architecture.md`, especially §§3–7, §9 and §12.
+- Business authority: [requirements.md](../requirements.md), especially §§6–7 and §9; architecture authority: [architecture.md](../architecture.md), especially §§3–7, §9 and §12.
 - Target: **MySQL/InnoDB + Prisma + NestJS**, one database in a modular monolith. This is a proposed implementation schema, not a claim that migrations or business models already exist.
 - Requirements determine behavior; this document chooses storage layouts, keys and numeric precision to implement that behavior. It does not add payment gateways, driver accounts, automatic collection or cross-restaurant orders.
 - **DB** means an actual PK, FK, UNIQUE, CHECK or atomic transaction guarantee. **BE** means a NestJS domain/workflow/repository rule; a TypeScript type or Prisma annotation alone is not a database constraint.

@@ -1,16 +1,16 @@
 # Development Guide — Hoa Lac Food Ordering Platform
 > **Purpose:** define how developers and AI coding assistants work safely and consistently in the repository.
-> **Status:** derived from `requirements.md`, `architecture.md`, `database.md`, `api-contract.md`, `ui_convertion.md`, and `ai-integration.md`.
-> **Important:** exact Node.js/npm versions, deployed MySQL release, current npm scripts, and exact environment-variable names are not verified by the supplied documents. Keep them **TBD / verify in repo** instead of inventing values.
+> **Status:** derived from [requirements.md](requirements.md), [architecture.md](architecture.md), [database.md](data/database.md), [api_contract.md](data/api_contract.md), [ui_convertion.md](ui/ui_convertion.md), and [ai_integration.md](ai_integration.md).
+> **Repository check:** October 16, 2026. CI uses Node.js `24.x`; current scripts, `DATABASE_URL` and `PORT` are verified below. Exact runtime patch/npm/MySQL versions and future auth/provider configuration remain **TBD**. Recheck manifests/config before use.
 ## 1. Authority and conflict resolution
-Use this order when sources disagree:
-1. `docs/requirements.md` — scope, roles, US/FR/BR/AC.
-2. `docs/architecture.md` — module ownership, dependencies, transactions.
-3. `docs/database.md` — schema semantics, constraints, snapshots, exact arithmetic.
-4. `docs/api-contract.md` — `/api/v1`, DTOs, errors, retry/idempotency.
-5. `docs/ui_convertion.md` — frontend structure, UI behavior, visual consistency.
-6. `docs/ai-integration.md` — AI boundaries, privacy, validation.
-7. Current source + lockfiles — exact versions, scripts, implemented details.
+Requirements govern behavior; the following documents own their respective domains:
+1. [docs/requirements.md](requirements.md) — scope, roles, US/FR/BR/AC.
+2. [docs/architecture.md](architecture.md) — module ownership, dependencies, transactions.
+3. [docs/data/database.md](data/database.md) — schema semantics, constraints, snapshots, exact arithmetic.
+4. [docs/data/api_contract.md](data/api_contract.md) — `/api/v1`, DTOs, errors, retry/idempotency.
+5. [docs/ui/ui_convertion.md](ui/ui_convertion.md) — frontend structure, UI behavior, visual consistency.
+6. [docs/ai_integration.md](ai_integration.md) — AI boundaries, privacy, validation.
+7. Current source, manifests, lockfiles and CI — exact versions, scripts and implemented behavior; these do not override product requirements. See [documentation map](README.md) and [AGENTS.md](../AGENTS.md) for task routing.
 Rules:
 - Never change a business rule only to simplify implementation.
 - Do not silently resolve a **TBD**.
@@ -20,14 +20,14 @@ Rules:
 | Area | Decision / status |
 | --- | --- |
 | Frontend | Vite + React + TypeScript |
-| Styling | Tailwind CSS |
+| Styling | Tailwind CSS required; not yet installed in the scaffold |
 | Backend | NestJS + TypeScript |
-| API | REST + JSON, prefix `/api/v1` |
+| API | REST + JSON; target `/api/v1` prefix is not registered yet |
 | Auth | JWT; lifecycle/transport details partly TBD |
 | ORM | Prisma |
 | Database | MySQL / InnoDB |
 | Architecture | Modular monolith, logical 3-tier separation |
-| Node.js | **TBD — verify and pin** |
+| Node.js | CI: `24.x`; exact local/production patch remains to be pinned |
 | npm | **TBD — verify and pin** |
 | Exact MySQL release | **TBD — verify and pin** |
 | AI/LLM provider/model | **TBD** |
@@ -46,7 +46,7 @@ node --version
 npm --version
 mysql --version
 ```
-Once approved, record/pin the verified versions in the repository toolchain/deployment configuration.
+Use Node.js 24 to match CI; record/pin exact deployment versions when selected. The source/lockfiles remain authoritative for package versions.
 Do not upgrade Node, npm, Prisma, NestJS, React, Vite, or database packages only because newer versions exist. Follow manifests and lockfiles.
 ### 3.2 Install dependencies
 The repository has separate frontend/backend lockfiles.
@@ -69,12 +69,12 @@ Rules:
 - Backend secrets must never be exposed through `VITE_*`.
 - Exact env names must match current code/config. If no approved name exists, mark it **TBD**.
 ### 4.2 Backend configuration inventory
-The table defines required **logical settings**. Exact variable names remain TBD until verified.
+Current settings come from `backend/.env.example`, `backend/src/main.ts` and `backend/src/prisma/database.config.ts`; future settings remain logical/TBD. Copy the example only if no configured `.env` already exists.
 | Logical setting | Required when | Safe example / note |
 | --- | --- | --- |
-| Database connection | Backend uses MySQL | `mysql://app_user:CHANGE_ME@127.0.0.1:3306/hoa_lac_food_dev` |
+| `DATABASE_URL` | Backend uses MySQL | Required `mysql://user:password@host:port/database`; URL-encode credentials; current parser rejects query/fragment; database must already exist |
 | Runtime environment | All environments | `development` |
-| Listen port | If configurable | Example `3000`; exact default/name TBD |
+| `PORT` | Backend listen port | Optional; defaults to `3000` |
 | JWT signing material | Auth enabled | `CHANGE_ME_LOCAL_ONLY`; backend only |
 | JWT issuer | Auth enabled | Exact value/name TBD |
 | JWT audience | Auth enabled | Exact value/name TBD |
@@ -104,14 +104,15 @@ Setup flow:
 6. Seed only when a guarded local/test seed exists.
 7. Start backend and frontend.
 ### 5.1 Prisma commands
-Use repository scripts if defined. If no wrapper exists, verify the checked-in Prisma version/config first, then use:
+Use the existing generation/validation scripts. Generate a migration only when schema work is in scope, using the installed Prisma CLI and explicit config:
 ```bash
 cd backend
-npx prisma generate
-npx prisma migrate dev   # only when migration work is intended
-npx prisma db seed       # only when seed is configured
+npm run prisma:generate
+npm run prisma:validate
+# Only for intended disposable local migration work:
+npx --no-install prisma migrate dev --create-only --config prisma7.config.ts
 ```
-These are fallback Prisma CLI commands, not proof that equivalent npm scripts exist.
+Inspect generated SQL before applying a migration. Build/dev/start/test compilation generate Prisma Client automatically. There are no business migrations, seed configuration or migration/seed npm wrappers yet. Commands needing the datasource/migration config must explicitly select `prisma7.config.ts`; do not assume this custom filename is auto-discovered.
 ### 5.2 Migration safety
 - Maintain `backend/prisma/schema.prisma` and reviewed `backend/prisma/migrations/`.
 - Inspect generated SQL, especially CHECKs, composite FKs, indexes, and FK actions.
@@ -120,7 +121,7 @@ These are fallback Prisma CLI commands, not proof that equivalent npm scripts ex
 - Never reset/force-reset/destructively push schema against retained data.
 - Never invent missing historical snapshots from current menu/restaurant data.
 - For populated DBs prefer: `expand → backfill → validate → constrain → contract`.
-- Production backup/rollback belongs in `deployment.md`.
+- Production backup/rollback belongs in [deployment.md](deployment.md).
 ### 5.3 Seed safety
 Seed only explicit local/test targets.
 - Refuse known production/shared DBs.
@@ -129,27 +130,17 @@ Seed only explicit local/test targets.
 - Clearly label test distances/fees/rates.
 - Preserve valid snapshot/history/ledger relationships in history fixtures.
 ## 6. Running locally
-Exact npm script names are **TBD / read from current `package.json`**.
-Expected process:
-```text
-Terminal A: start local MySQL
-Terminal B:
-  cd backend
-  npm ci
-  generate Prisma Client
-  apply migrations if needed
-  seed if configured
-  run the verified backend dev script
-Terminal C:
-  cd frontend
-  npm ci
-  run the verified frontend dev script
+Use Node.js 24 and npm. Preserve any existing local `.env`; otherwise copy `backend/.env.example` to `backend/.env` and configure MySQL. Never print credentials.
+```bash
+# Repository root, after installing dependencies and configuring local MySQL:
+npm --prefix backend run prisma:validate
+npm --prefix backend run db:check
+npm --prefix backend run dev
+# Separate terminal:
+npm --prefix frontend run dev
 ```
-After startup:
-- Frontend communicates through REST only.
-- Documented endpoints use `/api/v1`.
-- Frontend never imports Prisma or queries MySQL.
-- Browser code never calls the AI provider directly.
+Backend defaults to port 3000; Vite defaults to 5173 (use its printed URL). Backend startup requires MySQL. The frontend currently makes no API calls; proxy/CORS/API-origin integration will be added with a connected feature. No application endpoints are registered; `/` and `/todos` return 404.
+Documented `/api/v1` endpoints and the authenticated surveyed cash-order flow are targets to implement, not startup smoke checks that currently pass. Frontend code must not import Prisma, query MySQL or call the AI provider.
 ## 7. Target repository structure
 | Area | Target location |
 | --- | --- |
@@ -186,7 +177,7 @@ Rules:
 - Cart draft is frontend-owned; created orders are backend-owned.
 - React must not decide authoritative prices, fees, commission, or authorization.
 - BIGINT IDs and money strings must not be coerced to JavaScript `Number`.
-- For UI work, read `docs/ui_convertion.md` and the relevant reference design board first.
+- For UI work, read [docs/ui/ui_convertion.md](ui/ui_convertion.md) and the relevant reference design board first.
 ## 9. Backend code conventions
 Main direction:
 ```text
@@ -306,27 +297,25 @@ For each feature/fix:
 9. **Prepare PR**
    - State scope, traceability, verification, risks, docs, and remaining TBDs.
 ## 12. Verification commands
-The supplied docs do not provide verified npm script names.
-Before running checks:
-- inspect `frontend/package.json`;
-- inspect `backend/package.json`;
-- run only scripts that exist;
-- do not claim a missing tool passed.
-| Check | Status from supplied docs |
+These scripts were checked against package manifests and CI on October 16, 2026. Run from the repository root and recheck scripts when tooling changes.
+
+| Check | Existing command / status |
 | --- | --- |
-| Frontend dev/build/lint/test | **TBD / verify repo scripts** |
-| Backend dev/build/lint/unit | **TBD / verify repo scripts** |
-| Backend integration/E2E | Required coverage; runner **TBD** |
-| Prisma generate | CLI supported by project dependency; wrapper script TBD |
-| Prisma migrate | Reviewed migrations required; wrapper script TBD |
-| Prisma seed | Only if configured |
-| Import-boundary check | Required review/CI goal; tooling TBD |
-| MySQL constraint/race tests | Required; exact runner TBD |
-If absent, report:
-```text
-NOT CONFIGURED: <check/tool>
-```
-Do not silently replace it with another tool.
+| Frontend development | `npm --prefix frontend run dev` |
+| Frontend lint | `npm --prefix frontend run lint` (Oxlint) |
+| Frontend TypeScript + production build | `npm --prefix frontend run build` |
+| Frontend unit/component/browser tests | **NOT CONFIGURED** |
+| Backend development | `npm --prefix backend run dev` |
+| Backend lint | `npm --prefix backend run lint` (ESLint) |
+| Backend unit tests | `npm --prefix backend test` (TypeScript compile, then Node test runner) |
+| Backend HTTP E2E | `npm --prefix backend run test:e2e` (Prisma mocked) |
+| Backend build | `npm --prefix backend run build` |
+| Prisma schema validation / generation | `npm --prefix backend run prisma:validate` / `npm --prefix backend run prisma:generate` |
+| Local MySQL connectivity | `npm --prefix backend run db:check` (build then `SELECT 1`; configured DB required) |
+| Real-MySQL constraints/races, OpenAPI and import-boundary automation | **NOT CONFIGURED** |
+
+CI runs frontend lint/build and backend lint/unit/HTTP E2E/build. Backend tests mock DB access; they do not establish actual MySQL transaction, constraint or race correctness. No root npm workspace or standalone type-check script is configured. Build/test compilation covers current TypeScript checks.
+For documentation-only changes, verify links, canonical paths, referenced sections, line limits and source/script consistency. Run application checks when executable code/config changes. Report configured-but-unrun checks as `NOT RUN`, missing tooling as `NOT CONFIGURED`, and policy-dependent work as `BLOCKED: <decision/source>`.
 ## 13. Minimum test expectations
 Add only tests relevant to the changed area, while preserving these invariants:
 - server-side price/fee recalculation and one restaurant per order;
@@ -342,7 +331,7 @@ Add only tests relevant to the changed area, while preserving these invariants:
 - AI invalid output/privacy/outage/manual fallback.
 Use real MySQL for constraints, locks, and concurrency; ORM mocks are insufficient evidence.
 ## 14. Git and PR
-The supplied docs do not define Git naming syntax. The following is a **proposed team convention**; align it with actual branch protection before enforcing it.
+The repository does not establish enforced Git naming syntax. The following is a **proposed team convention**; align it with actual branch protection before enforcing it.
 ### 14.1 Branches
 ```text
 feat/<topic>
@@ -425,7 +414,7 @@ Never:
 - run demo seeds on shared/production data;
 - use production/private user content as AI training/evaluation input.
 ## 16. Giving tasks to AI coding assistants
-Every AI task must provide:
+AI contributors should infer these fields from the request and repository where possible; ask only for decisions that cannot be inferred. Use this template for complex handoffs:
 | Field | Required content |
 | --- | --- |
 | Goal | One concrete feature/fix |
@@ -451,10 +440,10 @@ Traceability:
 Read first:
 - docs/requirements.md
 - docs/architecture.md
-- docs/api-contract.md
-- docs/database.md
-- docs/ui_convertion.md   # when frontend changes
-- docs/ai-integration.md  # when AI changes
+- docs/data/api_contract.md
+- docs/data/database.md
+- docs/ui/ui_convertion.md   # when frontend changes
+- docs/ai_integration.md  # when AI changes
 Allowed changes:
 - <specific folders/files>
 Do not change:
@@ -481,11 +470,11 @@ AI must inspect current files first, preserve architecture boundaries, prefer th
 AI must not invent endpoints/enums/fields/roles/providers/infrastructure; resolve auth/CSRF/TBD policy silently; add driver dispatch or automatic payment splitting/collection; let AI set authoritative price/fee or create orders; bypass backend validation; expose secrets; reset retained data; or fix unrelated code outside scope.
 For frontend tasks, include:
 ```text
-Read and follow docs/ui_convertion.md and the relevant reference design board before changing UI. Preserve requirements and backend contracts.
+Read and follow docs/ui/ui_convertion.md and the relevant reference design board before changing UI. Preserve requirements and backend contracts.
 ```
 ## 17. Quick checklist
 Before coding: read US/FR/BR/AC, confirm scope, identify owning module, check API/DB contracts, verify scripts/tool versions, and list unresolved TBDs.
 Before PR: update tests, run existing repo checks, use real MySQL where DB behavior matters, ensure no secret/destructive operation, update changed contract docs, include traceability/verification, and keep remaining TBDs explicit.
 ## 18. Setup decisions still TBD
-Resolve and record: exact Node.js/npm/MySQL versions; canonical dev/build/lint/test/type-check scripts; exact backend/frontend env names; JWT transport/lifetime/refresh/logout/revocation; CSRF protocol; AI provider/model/config/limits; post-MVP map config; optional storage config; exact test runners/CI; and protected integration-branch/review policy.
+Resolve and record: exact deployment Node.js patch/npm/MySQL versions (CI currently uses Node.js 24.x); future test/tooling scripts and auth/provider/frontend env names; JWT transport/lifetime/refresh/logout/revocation; CSRF protocol; AI provider/model/config/limits; post-MVP map config; optional storage config; real-MySQL/browser runners and additional CI gates; and protected integration-branch/review policy.
 Do not replace these gaps with guessed values. Update this guide and the relevant config/examples together after each approved decision.

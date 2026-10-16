@@ -2,30 +2,26 @@
 
 > **Purpose:** describe the overall technical design, where each responsibility belongs, and which dependencies are allowed. Implementers, including AI coding assistants, must preserve these boundaries when adding or changing code.
 >
-> **Status:** target architecture for the MVP and future expansion; this is not a description of a fully implemented system. Source documents checked on October 15, 2026.
+> **Status:** target architecture for the MVP and future expansion; this is not a description of a fully implemented system. Repository scaffold checked on October 16, 2026; recheck source before implementation.
 
 ## 1. Sources and Document Scope
 
-This document is based on:
-
-- `requirements.md`, provided at `cse3045-nhom-3/docs/requirements.md`: the source of requirements, scope, and business rules.
-- `Archive.zip`: used to inspect the actual frontend/backend scaffold. Its `docs/requirements.md` is identical to the separately provided file.
-- The “Recommended Documentation Writing Order” image: guidance on the relationships between requirements, architecture, data, API, UI, and subsequent documents.
+This document derives from [requirements](requirements.md) and the checked-in frontend/backend scaffold. The [documentation map](README.md) maintains navigation; manifests and lockfiles determine installed tools and versions.
 
 The technology choices established in the requirements are **Vite + React + TypeScript, Tailwind CSS, NestJS + TypeScript, REST, JWT, Prisma, and MySQL/InnoDB**. The architecture is a **modular monolith** with three logical tiers: presentation, business logic, and data.
 
 Additional decisions in this document—such as polling, service organization, transaction locking, JWT cookie storage, and an image storage adapter—are **proposed implementation designs**, not capabilities already present in the source code. AI, map, image storage, and infrastructure providers remain undecided.
 
-This document does not fully define tables/columns, endpoints, DTOs, screens, or AI prompts. Those details belong in `database.md`, `api-contract.md`, `ui-flows.md`, and `ai-integration.md`. If a design requires changing a business rule, agree on the corresponding change to `requirements.md` first; do not silently change the rule through code.
+This document does not fully define tables/columns, endpoints, DTOs, screens, or AI prompts. Those details belong in [database.md](data/database.md), [api_contract.md](data/api_contract.md), [docs/ui/ui_convertion.md](ui/ui_convertion.md), and [ai_integration.md](ai_integration.md). If a design requires changing a business rule, agree on the corresponding change to [requirements.md](requirements.md) first; do not silently change the rule through code.
 
 ### 1.1. Verified Current State
 
-| Component | Current state in Archive.zip | Implementation direction |
+| Component | Current checked-in scaffold | Implementation direction |
 | --- | --- | --- |
 | Frontend | Vite, React, TypeScript; `App.tsx` is an introductory page; plain CSS | Organize by feature; add Tailwind as required |
 | Backend | NestJS; `ConfigModule`, `PrismaModule`; global validation | Add HTTP controllers, workflows, business modules, and authentication |
 | Database | Prisma datasource `mysql`; Prisma service uses the MariaDB adapter; no business models in the schema yet | MySQL/InnoDB; define models and migrations in the data document |
-| Accounts and orders | Scaffold directories such as `users/` and `todos/` exist, without corresponding business implementations | Do not treat scaffold directories as completed modules |
+| Accounts and orders | No account/order implementation or demo todo endpoint is registered | Do not treat scaffold directories as completed modules |
 | External integrations | No business adapters for AI, maps, or image storage in the inspected source | Define ports first; add adapters when providers are selected |
 
 The `@prisma/adapter-mariadb` package name in the source does not change the decision to use MySQL. Package versions are controlled by manifests and lockfiles; this document does not require version upgrades.
@@ -181,7 +177,7 @@ Resubmitting the current status is a no-op after authorization: return the curre
 
 Within **one transaction**, the workflow applies `delivering → completed`, records history, calls `CommissionService.createBaseForCompletedOrder`, and writes the audit entry. The commissions module receives completed-order context constructed by the workflow from locked data, not client-declared amounts.
 
-Commission uses the **dish subtotal and commission rate snapshotted on the order**, excluding delivery fees. Represent the rate as an exact decimal or a scaled integer using the scale agreed in `database.md`; round half-up to the nearest VND. Do not use the restaurant's current rate to recalculate an old order.
+Commission uses the **dish subtotal and commission rate snapshotted on the order**, excluding delivery fees. Represent the rate as an exact decimal or a scaled integer using the scale agreed in [database.md](data/database.md); round half-up to the nearest VND. Do not use the restaurant's current rate to recalculate an old order.
 
 Each order has at most one base entry, enforced by a unique constraint. If commission creation fails, roll back completion as well. Do not move commission creation into an after-commit callback or an event stored only in memory.
 
@@ -226,7 +222,7 @@ The infrastructure-level `TransactionManager` uses Prisma transactions on MySQL/
 
 Deleting a restaurant revokes only its management relationship; it does not delete an owner account that manages other restaurants. Audit must retain the deleted target's identity without cascading away its history. Newly uploaded images without references require orphan cleanup; image deletion after commit must check for remaining references and support safe retries.
 
-The minimum database constraints to specify in `database.md` are:
+The minimum database constraints to specify in [database.md](data/database.md) are:
 
 - Foreign keys protect references; do not cascade-delete order history, payments, or the commission ledger.
 - Uniqueness for `(actor_id, operation, idempotency_key)` on order creation and for base commission per order. Adjustments must not share a blanket “one entry per order” constraint because an order may have multiple adjustments.
@@ -244,7 +240,7 @@ The proposed MVP uses InnoDB row locks for critical mutations, together with con
 
 To simplify coordination at MVP scale, writes affecting the same restaurant lock the **restaurant row as the coordination point** before locking child data. Order creation, dish price/availability changes, fee/rate changes, ownership reassignment, and restaurant deletion/deactivation must follow the same convention. This closes the gap between checking order eligibility and persisting an order while relevant data is concurrently changed or deleted.
 
-Use a consistent lock order: idempotency lock for order creation → restaurant → orders/dishes in ascending ID order → delivery policy/rate data → payment → settlement/commission entries under a fixed ID convention. Lock only the required groups. Settlement commands lock the restaurant first, then the settlement and entries by ID; never reverse this order. The data document must make this sequence concrete when defining tables.
+Use a consistent lock order: idempotency lock for order creation → restaurant → orders/dishes in ascending ID order → delivery policy/rate data → payment → settlement/commission entries under a fixed ID convention. Lock only the required groups. Settlement commands lock the restaurant first, then the settlement and entries by ID; never reverse this order. Database §10 makes this sequence concrete, including an account-row prefix for current role/status checks. Follow that full sequence for every affected write; never acquire account locks after restaurant locks.
 
 This choice is straightforward to verify but limits concurrent writes within one restaurant. If measurements show significant contention, narrow the locks using versions/conditional writes; preserve all invariants and test races before replacing the strategy. A mutex inside one Node.js process must not be the sole protection mechanism.
 
@@ -269,7 +265,7 @@ This choice is straightforward to verify but limits concurrent writes within one
 - Rollback leaves neither a partial order nor a successful idempotency record. If commit succeeds but the response is lost, retry finds and returns the created order.
 - Proposed MVP retention: keep successful keys for the order's retention lifetime; do not use a short TTL that could let an old retry create a new order.
 
-Deadlocks/lock timeouts are transient errors: retry the entire transaction a bounded number of times, for example up to 3 retries with backoff. Do not retry authorization errors, invalid data, or invalid transitions. Do not place external side effects inside retried transaction code.
+Deadlocks/lock timeouts are transient errors: retry the entire transaction a bounded number of times, for example up to 3 attempts with backoff. Do not retry authorization errors, invalid data, or invalid transitions. Do not place external side effects inside retried transaction code.
 
 ## 8. Updating Status in the UI
 
@@ -317,144 +313,9 @@ Because browsers send cookies automatically, mutating APIs require CSRF protecti
 
 ## 10. Proposed Project Structure
 
-The tree below is the **target structure**, not an inventory of existing directories. Keep the archive's two roots, `frontend/` and `backend/`. Place this document at `docs/architecture.md` beside `docs/requirements.md`; documentation may be grouped into subdirectories later without changing the software architecture.
+The detailed proposed source tree is maintained in [Target Code Structure](code_structure.md). Documentation navigation and current implementation status are in [docs/README.md](README.md).
 
-```text
-cse3045-nhom-3/
-├── docs/
-│   ├── requirements.md                   # Source of requirements
-│   ├── architecture.md                   # This document
-│   ├── database.md                       # Planned: schema, constraints, migrations
-│   ├── api-contract.md                   # Planned: endpoints, DTOs, errors
-│   ├── ui-flows.md                       # Planned: UI flows
-│   ├── ai-integration.md                 # Planned: provider, output schema, data filtering
-│   ├── development-guide.md              # Planned: development conventions
-│   ├── testing.md                        # Planned: tests and acceptance criteria
-│   └── deployment.md                     # Planned: operations, backup/restore
-├── frontend/
-│   ├── public/
-│   ├── src/
-│   │   ├── main.tsx
-│   │   ├── App.tsx                       # Mount providers and router; no large screens
-│   │   ├── app/
-│   │   │   ├── router.tsx                # Routes and role-aware navigation
-│   │   │   ├── providers.tsx             # Session, cart, server state if needed
-│   │   │   ├── layouts/
-│   │   │   │   ├── StudentLayout.tsx
-│   │   │   │   ├── OwnerLayout.tsx
-│   │   │   │   └── AdminLayout.tsx
-│   │   │   ├── pages/                    # Compose multiple features into a page
-│   │   │   │   ├── RestaurantDetailPage.tsx
-│   │   │   │   └── CheckoutPage.tsx
-│   │   │   └── hooks/
-│   │   │       └── useCheckout.ts        # Coordinate cart, delivery, orders via public APIs
-│   │   ├── features/
-│   │   │   ├── auth/
-│   │   │   ├── restaurants/
-│   │   │   ├── dishes/
-│   │   │   │   ├── pages/                # Owner dish-management pages
-│   │   │   │   ├── components/           # DishCard, DishList, DishForm, DishFilters
-│   │   │   │   ├── hooks/                # useDishes, useDishEditor
-│   │   │   │   ├── api/                  # dishes.api.ts
-│   │   │   │   ├── types.ts              # Feature UI types
-│   │   │   │   └── index.ts              # Public exports
-│   │   │   ├── delivery/                 # Pickup point selection, quote display
-│   │   │   ├── cart/                     # Purchase-intent draft
-│   │   │   ├── orders/
-│   │   │   │   ├── pages/
-│   │   │   │   │   ├── OrderTrackingPage.tsx
-│   │   │   │   │   └── OwnerOrdersPage.tsx
-│   │   │   │   ├── components/
-│   │   │   │   │   ├── OrderCard.tsx
-│   │   │   │   │   ├── OrderItemList.tsx
-│   │   │   │   │   ├── OrderSummary.tsx
-│   │   │   │   │   ├── OrderStatusBadge.tsx
-│   │   │   │   │   ├── OrderTimeline.tsx
-│   │   │   │   │   └── OrderActions.tsx
-│   │   │   │   ├── hooks/
-│   │   │   │   │   ├── useOrder.ts
-│   │   │   │   │   ├── useOrderPolling.ts
-│   │   │   │   │   ├── useCreateOrder.ts
-│   │   │   │   │   └── useOrderActions.ts
-│   │   │   │   ├── api/
-│   │   │   │   │   └── orders.api.ts
-│   │   │   │   ├── types.ts
-│   │   │   │   └── index.ts
-│   │   │   ├── payments/                 # Display payment state and submit confirmations
-│   │   │   ├── commissions/              # Basic manual reconciliation
-│   │   │   ├── recommendations/
-│   │   │   └── support/                  # After MVP; reviews/favorites if selected
-│   │   ├── shared/
-│   │   │   ├── api/                      # HTTP client, API errors, contract DTOs
-│   │   │   ├── ui/
-│   │   │   │   ├── Button.tsx
-│   │   │   │   ├── Input.tsx
-│   │   │   │   ├── Select.tsx
-│   │   │   │   ├── Modal.tsx
-│   │   │   │   ├── ConfirmDialog.tsx
-│   │   │   │   ├── LoadingState.tsx
-│   │   │   │   ├── EmptyState.tsx
-│   │   │   │   └── ErrorState.tsx
-│   │   │   ├── hooks/                    # Generic hooks without feature dependencies
-│   │   │   └── lib/                      # Display utilities, no monetary business rules
-│   │   ├── assets/
-│   │   └── index.css                     # Planned Tailwind integration point
-│   ├── package.json
-│   ├── package-lock.json
-│   └── vite.config.ts
-├── backend/
-│   ├── src/
-│   │   ├── main.ts
-│   │   ├── app.module.ts
-│   │   ├── validation.pipe.ts
-│   │   ├── http/                         # Transport; calls workflows only
-│   │   │   ├── http.module.ts
-│   │   │   ├── controllers/              # Grouped by accounts, orders, payments, etc.
-│   │   │   └── dto/
-│   │   ├── workflows/                    # Coordination, permissions, transactions
-│   │   │   ├── workflows.module.ts
-│   │   │   ├── order.workflow.ts
-│   │   │   ├── payment.workflow.ts
-│   │   │   ├── recommendation.workflow.ts
-│   │   │   ├── restaurant-admin.workflow.ts
-│   │   │   └── settlement.workflow.ts
-│   │   ├── modules/
-│   │   │   ├── accounts/
-│   │   │   ├── restaurants/
-│   │   │   ├── dishes/
-│   │   │   ├── delivery/
-│   │   │   ├── orders/
-│   │   │   ├── payments/
-│   │   │   ├── commissions/
-│   │   │   ├── recommendations/
-│   │   │   ├── audit/
-│   │   │   ├── media/                    # If image uploads are enabled
-│   │   │   └── support/                  # After MVP; reviews/favorites if selected
-│   │   ├── integrations/
-│   │   │   ├── ai/                       # Adapter implementing AiGateway
-│   │   │   ├── maps/                     # After MVP: RouteDistancePort
-│   │   │   └── storage/                  # If needed: ImageStoragePort
-│   │   ├── prisma/                       # Existing DB infrastructure; add transactions
-│   │   │   ├── prisma.module.ts
-│   │   │   ├── prisma.service.ts
-│   │   │   ├── database.config.ts
-│   │   │   ├── db-check.ts
-│   │   │   └── transaction-manager.ts
-│   │   ├── common/                       # Shared infrastructure only
-│   │   │   ├── security/                 # Guards, CSRF, rate limiting
-│   │   │   ├── errors/
-│   │   │   └── observability/
-│   │   └── generated/prisma/             # Generated; do not edit manually
-│   ├── prisma/
-│   │   ├── schema.prisma
-│   │   └── migrations/
-│   ├── test/                             # Integration/e2e and race tests on MySQL
-│   ├── prisma7.config.ts                 # Keep the configuration filename in the source
-│   ├── .env.example                      # No real secrets
-│   ├── package.json
-│   └── package-lock.json
-└── .gitignore
-```
+Keep the existing `frontend/` and `backend/` roots. The target tree does not require empty scaffolding; use the responsibility and dependency rules below when placing code.
 
 ### 10.1. Splitting the Frontend into Small Components
 
@@ -526,7 +387,7 @@ modules/orders/
 
 Smaller modules may use fewer files; do not create empty classes merely to match the tree. Post-MVP directories need not be created immediately. `HttpModule` imports `WorkflowsModule`; `WorkflowsModule` imports business modules and adapter wiring; business modules must not import either of those modules back. `AppModule` is the composition root.
 
-`dist/`, `.test-dist/`, and generated Prisma code are build outputs, not places to implement features. Do not copy real environment files from the archive into the documentation tree or delivered source code.
+`dist/`, `.test-dist/`, and generated Prisma code are build outputs, not places to implement features. Do not copy real environment files into the documentation tree or delivered source code.
 
 ## 11. Technical Decisions and Reconsideration Criteria
 
@@ -558,7 +419,7 @@ The following are implementation-stage requirements, not test results already ob
 - Check import boundaries during review/CI: controllers do not access Prisma, modules do not deep-import other modules, and AI has no order-write path.
 - Measure NFR targets: 95% of list loads within 2 seconds at 50 concurrent users, and AI against the 5/10-second thresholds; do not treat them as already achieved guarantees.
 - Monitor API/provider latency, transaction errors, lock timeouts, conflicts, and retries; include correlation IDs without recipient data or secrets.
-- Back up the database daily and verify restoration before going live. If images are stored, define corresponding object retention/recovery. Environment, migration, and rollback details belong in `deployment.md`.
+- Back up the database daily and verify restoration before going live. If images are stored, define corresponding object retention/recovery. Environment, migration, and rollback details belong in [deployment.md](deployment.md).
 
 ### 12.1. Requirements Traceability
 

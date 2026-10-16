@@ -2,22 +2,22 @@
 
 > Status: source-derived deployment runbook; no deployment, backup, restore or test execution is certified by this document.
 > Hosting, providers, infrastructure configuration and unverified commands remain **TBD**. Operational procedures below are proposed controls to implement and rehearse, not existing capabilities.
-> Intended application-repository location: `docs/deployment.md`. This document must be completed with deployment-specific decisions and evidence before live operation.
+> Repository location: [docs/deployment.md](deployment.md). Current scripts/configuration were checked on October 16, 2026; production decisions and execution evidence remain incomplete.
 
 ## 1. Sources, authority and release scope
 
-Based strictly on the eight uploaded documents, using their canonical names; upload suffixes and filename aliases do not establish different contracts.
+Based on the repository specifications below; docs/README.md maintains navigation and distinguishes the existing scaffold from target capabilities.
 
 | Source | Deployment authority |
 | --- | --- |
-| `requirements.md` | Product scope, roles, BR/AC, NFR03 security and NFR08 daily backups/verified restore |
-| `architecture.md` | Modular monolith, placement direction, transactions, security, polling and integrations |
-| `database.md` | MySQL constraints, exact arithmetic, snapshots, migrations and retention boundaries |
-| `api-contract.md` | REST `/api/v1`, JWT/CSRF decisions, DTOs, errors, retries and provisioning gaps |
-| `ui_convertion.md` | Real UI behavior, Vietnamese presentation, responsive checks and scope controls |
-| `ai-integration.md` | AI readiness, privacy, deadlines, quotas, cost controls and fallback |
-| `testing.md` | Release checks, NFR measurement, OPS-01 restore evidence and result reporting |
-| `development_guide.md` | Toolchain verification, configuration, scripts, safe migrations and seeds |
+| [requirements.md](requirements.md) | Product scope, roles, BR/AC, NFR03 security and NFR08 daily backups/verified restore |
+| [architecture.md](architecture.md) | Modular monolith, placement direction, transactions, security, polling and integrations |
+| [database.md](data/database.md) | MySQL constraints, exact arithmetic, snapshots, migrations and retention boundaries |
+| [api_contract.md](data/api_contract.md) | REST `/api/v1`, JWT/CSRF decisions, DTOs, errors, retries and provisioning gaps |
+| [ui_convertion.md](ui/ui_convertion.md) | Real UI behavior, Vietnamese presentation, responsive checks and scope controls |
+| [ai_integration.md](ai_integration.md) | AI readiness, privacy, deadlines, quotas, cost controls and fallback |
+| [testing.md](testing.md) | Release checks, NFR measurement, OPS-01 restore evidence and result reporting |
+| [development_guide.md](development_guide.md) | Toolchain verification, configuration, scripts, safe migrations and seeds |
 
 Follow the development guide's precedence: requirements → architecture → database → API → UI → AI; inspect application source/manifests/lockfiles for implemented behavior and commands. Testing defines evidence. This runbook does not resolve upstream TBDs or claim scaffold folders are working features.
 
@@ -41,7 +41,7 @@ Follow the development guide's precedence: requirements → architecture → dat
 
 The three logical tiers are presentation, business logic and data. Separate frontend/backend placement does not turn modules into microservices. The MVP does not require Redis, a broker, queues or a driver dispatch service.
 
-Pin verified Node.js, npm, Prisma and MySQL versions before deploying; exact versions are **TBD**. MySQL **8.0.16+ is a CHECK-enforcement compatibility floor**, not a selected release. A MariaDB-named Prisma adapter does not change the MySQL target. Preserve the repository's actual Prisma configuration, including `prisma7.config.ts` where present.
+CI uses Node.js `24.x`; installed package versions are recorded in manifests/lockfiles. Pin the exact production Node.js patch, npm and MySQL release before deploying; those deployment versions remain **TBD**. MySQL **8.0.16+ is a CHECK-enforcement compatibility floor**, not a selected release. A MariaDB-named Prisma adapter does not change the MySQL target. Preserve the repository's actual Prisma configuration, including `prisma7.config.ts` where present.
 
 ## 3. Environment configuration
 
@@ -50,7 +50,7 @@ Pin verified Node.js, npm, Prisma and MySQL versions before deploying; exact ver
 | Purpose | Development and disposable tests | Release/migration/security/recovery rehearsal | Live VJU operation for the approved milestone |
 | Frontend/backend | Verified dev scripts on developer machine | Built release artifacts on **TBD** infrastructure | Verified artifacts on **TBD** infrastructure |
 | MySQL | Disposable local InnoDB database | Separate database with representative synthetic fixtures | Retained live data; no demo seeds/reset |
-| Public origins | Loopback origins; ports **TBD / verify repo** | Separate HTTPS domain/origin **TBD** | HTTPS domain/origin **TBD**; same-origin direction preferred |
+| Public origins | Loopback; backend defaults to 3000, Vite to 5173 (verify printed URL) | Separate HTTPS domain/origin **TBD** | HTTPS domain/origin **TBD**; same-origin direction preferred |
 | Credentials | Development-only values | Separate staging identities/keys | Separate production identities/keys with controlled access |
 | External services | Adapter mocks for deterministic tests | Mocks plus bounded synthetic live AI evaluation | Only configured, validated integrations for enabled scope |
 | Data bootstrap | Guarded local/test seed if configured | Controlled synthetic setup; seed only an explicit local/test target | Approved first-admin/partner bootstrap in §6 |
@@ -64,8 +64,8 @@ These are logical settings, **not invented environment-variable names**. Map eac
 
 | Logical setting | Required value / status |
 | --- | --- |
-| Runtime environment, backend listen address/port | Per environment; exact names/defaults **TBD** |
-| Database connection and runtime identity | Backend only; actual host/database/credentials **TBD** |
+| Runtime environment, backend listen address/port | Current `PORT` defaults to `3000`; runtime-mode/bind/deployment configuration remains TBD |
+| Database connection and runtime identity | Current `DATABASE_URL`; MySQL URL without query/fragment, credentials URL-encoded; per-environment values backend-only and TBD |
 | Migration and backup/recovery identities | Separate privileges from runtime; provisioning/access procedure **TBD** |
 | SQL settings | InnoDB, strict SQL mode, UTC sessions, `utf8mb4`; exact collation/isolation **TBD**, documented and tested |
 | Business time | `Asia/Ho_Chi_Minh` for opening hours, display and monthly boundaries; persist UTC instants |
@@ -85,11 +85,11 @@ Never commit real `.env` files or put DB/JWT/AI/storage secrets into `VITE_*`, b
 
 1. Inspect `frontend/package.json`, `backend/package.json`, their lockfiles and Prisma config; record verified versions/scripts.
 2. Start disposable MySQL/InnoDB, create a local database and least-privilege development identity, and set the actual backend configuration.
-3. Install from each package's reviewed lockfile, generate Prisma Client using the verified configuration, then apply reviewed migrations.
+3. Install from each package's reviewed lockfile and generate Prisma Client. No business migration exists yet; apply reviewed migrations only once authored, using `prisma7.config.ts`.
 4. Run a seed only if configured and explicitly guarded for the local/test database. Use fictional data and label fees/distances as test values.
-5. Start the verified backend/frontend dev scripts; verify authenticated REST access through `/api/v1` and a surveyed cash-order test flow.
+5. Start the backend/frontend dev scripts. Current scaffold checks are startup/DB connectivity and the introductory page; `/api/v1`, authentication and surveyed cash ordering are target flows to verify after implementation.
 
-Commands already described by the development/testing guides, to run only in the application repository after confirming its layout:
+Inspect tooling from the repository root; development_guide.md §12 lists verified package commands:
 
 ```bash
 node --version
@@ -101,7 +101,9 @@ npm --prefix frontend ci
 npm --prefix backend ci
 ```
 
-Dev/build/start/check/Prisma wrapper scripts are **TBD / verify repo**. `npm --prefix <package> run <verified-script>` is a template, not a runnable command. Use the pinned Prisma CLI/config if no wrapper exists; verify exact invocation before recording it. `migrate dev` belongs only to intended local migration work; shared/retained environments use reviewed deploy migrations. Do not silently download a different CLI version.
+Current local commands: `npm --prefix backend run dev`, `npm --prefix frontend run dev`, `npm --prefix backend run prisma:validate` and `npm --prefix backend run db:check`. Current build commands are `npm --prefix frontend run build` and `npm --prefix backend run build`; backend production start is `npm --prefix backend run start:prod`. These scripts do not select hosting, deployment automation, health endpoints or process supervision.
+
+For new migration work use the pinned Prisma CLI with explicit `--config prisma7.config.ts` from `backend/`; this custom filename is not assumed to be auto-discovered. `migrate dev` is for intended disposable local work; retained/shared environments need reviewed deploy migrations. There is no migration/seed wrapper or configured seed yet. Do not download a different CLI version silently.
 
 ## 4. Domain, HTTPS, CORS and secrets
 
@@ -125,7 +127,7 @@ Record and test certificate renewal, secret replacement and resulting session/qu
 3. Package the built Vite assets and NestJS application with required runtime dependencies, Prisma artifacts and reviewed migrations. Packaging format, artifact location and retention are **TBD**. Exclude real environment files/secrets; record checksums and configuration references without values.
 4. Inspect migration SQL, including CHECKs, composite FKs, uniqueness, indexes and explicit `ON DELETE RESTRICT` / `ON UPDATE RESTRICT` actions. Keep custom SQL constraints represented so future migrations do not remove them accidentally.
 5. Rehearse migration on empty and representative upgrade databases using real MySQL/InnoDB. Verify actual constraints, runtime grants and the selected isolation/locking behavior; SQLite/ORM mocks are insufficient.
-6. Deploy the candidate to staging, run §7 and the enabled-scope suites in `testing.md`, measure NFRs, and rehearse backup/restore and the relevant rollback path. Retain sanitized results.
+6. Deploy the candidate to staging, run §7 and the enabled-scope suites in [testing.md](testing.md), measure NFRs, and rehearse backup/restore and the relevant rollback path. Retain sanitized results.
 7. Freeze a release record with artifact identifiers, schema/migration state, compatibility assessment, approved configuration and backout plan. Record the previous known-good application and compatible schema state.
 
 ### 5.2 Production release
@@ -160,7 +162,7 @@ Bootstrap must not create fictional financial history in production. Errors are 
 
 ## 7. Release checks and acceptance evidence
 
-Use `testing.md` case IDs and source traceability. Full mutation/race/failure-injection checks run in isolated staging/test data. Production checks should use safe reads and actual authorized workflows; do not generate fake payments, receipts or irreversible test history in live data.
+Use [testing.md](testing.md) case IDs and source traceability. Full mutation/race/failure-injection checks run in isolated staging/test data. Production checks should use safe reads and actual authorized workflows; do not generate fake payments, receipts or irreversible test history in live data.
 
 | Check | Required observation |
 | --- | --- |

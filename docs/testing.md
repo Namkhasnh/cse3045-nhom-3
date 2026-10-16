@@ -1,11 +1,11 @@
 # Testing — Hoa Lac Food Ordering Platform
 
 > Purpose: define observable evidence that the system meets its requirements, preserves financial/history invariants, and is ready for its selected delivery milestone.
-> Status: implementation-oriented test specification, not executed results. Test runners, npm scripts, CI configuration and exact runtime versions remain **TBD / verify in repo**.
+> Status: implementation-oriented test specification, not executed results. Current scaffold checks are documented in §12; real-MySQL/browser suites and production runtime details remain **TBD**.
 
 ## 1. Authority, terminology and scope
 
-Derived from the seven uploaded documents, using canonical repository names: `requirements.md`, `architecture.md`, `database.md`, `api-contract.md`, `ai-integration.md`, `ui_convertion.md`, and `development_guide.md`. Upload suffixes and underscore/hyphen aliases do not define different business contracts.
+Derived from the repository specifications: [requirements.md](requirements.md), [architecture.md](architecture.md), [database.md](data/database.md), [api_contract.md](data/api_contract.md), [ai_integration.md](ai_integration.md), [ui_convertion.md](ui/ui_convertion.md), and [development_guide.md](development_guide.md). Canonical paths are listed in docs/README.md.
 Follow the development guide's precedence: requirements → architecture → database → API → UI → AI; use source/manifests for actual implementation and commands. Requirements govern US/FR/BR/AC and scope; mockups do not add capabilities. An unresolved decision stays TBD until reviewed in its owning document.
 
 | Milestone | Test scope |
@@ -107,7 +107,7 @@ US19–20 are Could: add detailed cases only when selected and specified. US21�
 - Verify `/api/v1`, `snake_case`, success/list/error envelopes, documented HTTP status and replay headers. Reject unknown fields, server-controlled totals/rates/status/actor fields, duplicate dish IDs and unsupported filters/sorts.
 - Preserve canonical string IDs/money, eight-decimal fraction rates, UTC instants and integer counts/metres/versions. Test negative/exponent/decimal/leading-zero IDs, bounds, rate excess precision and aggregate overflow. Signed adjustments/balances are valid; receipt amounts must be positive.
 - Verify stable keyset ordering/tie-breakers, limit 20/default and 100/max, scope/filter-bound cursors and 422 for invalid/mismatched cursors. Search collation expectations remain pending until deployment collation is recorded.
-- Validate shared examples against the eventual `openapi.yaml`; it is not supplied/claimed to exist. Generate/check client/server schemas only after authoring the enabled contract. Auth tests require finalized identifier/password, JWT transport/lifecycle and CSRF rules; do not assume Bearer, refresh/logout endpoints or cookie/header names.
+- Validate shared examples against the eventual `docs/data/openapi.yaml`; it is not supplied/claimed to exist. Generate/check client/server schemas only after authoring the enabled contract. Auth tests require finalized identifier/password, JWT transport/lifecycle and CSRF rules; do not assume Bearer, refresh/logout endpoints or cookie/header names.
 
 ## 6. Pricing, quotes and historical records
 
@@ -220,10 +220,10 @@ Backup retention, RPO/RTO, hosting and optional image-object recovery policy rem
 
 ## 12. Commands, CI gates and reporting
 
-This documentation workspace does not supply application manifests, a runnable test suite or CI configuration. The development guide's target is separate `frontend/` and `backend/` packages. Verify scripts before running; do not claim guessed commands passed.
+Repository check on October 16, 2026: both application packages and CI exist. The current checks below verify the scaffold; the acceptance suites in §§4–11 are still to implement. Recheck package manifests and CI before running.
 
 ```bash
-# In the application repository, after confirming these directories exist:
+# Inspect current package scripts from the repository root:
 npm --prefix frontend run
 npm --prefix backend run
 # Install from the corresponding reviewed lockfiles:
@@ -231,17 +231,18 @@ npm --prefix frontend ci
 npm --prefix backend ci
 ```
 
-Use the following command map when wiring CI. Angle-bracket values are placeholders, **not runnable commands**. Replace them with verified script names in the implementation PR; do not use `--if-present` to make a required missing check green.
+Existing CI uses Node.js `24.x` and runs frontend lint/build and backend lint/unit/HTTP E2E/build. The table also lists local Prisma/connectivity checks; commands are shown with repository-root package prefixes.
 
-| Required check | Command template / configuration status |
+| Existing check | Command / evidence boundary |
 | --- | --- |
-| Frontend lint, type check, unit/component tests, build | `npm --prefix frontend run <verified-script>` for each check; TBD. |
-| Backend lint, type check, unit tests, build | `npm --prefix backend run <verified-script>` for each check; TBD. |
-| Migration + deterministic test seed | Repository wrapper if configured; test DB guard mandatory. Prisma generate/seed/deploy commands must match installed version/config; no reset or `migrate dev` against retained/shared data. |
-| MySQL integration + races | `npm --prefix backend run <verified-integration-or-race-script>`; runner/DB lifecycle TBD. |
-| Browser E2E + accessibility | Run verified script in owning package; runner/location TBD. |
-| OpenAPI/examples and import boundaries | Verified repository tooling when authored; currently TBD. |
-| Load/live AI/backup restore | Versioned harness/runbook commands once selected; currently TBD. |
+| Frontend lint/build | `npm --prefix frontend run lint`; `npm --prefix frontend run build` (includes TypeScript) |
+| Backend lint/unit/build | `npm --prefix backend run lint`; `npm --prefix backend test`; `npm --prefix backend run build` |
+| Backend HTTP E2E | `npm --prefix backend run test:e2e`; mocks Prisma, checks scaffold HTTP behavior |
+| Prisma validation/generation | `npm --prefix backend run prisma:validate`; `npm --prefix backend run prisma:generate` |
+| Actual DB connectivity | `npm --prefix backend run db:check`; builds then `SELECT 1`, requires configured local MySQL; not a constraint/race test |
+
+Not yet configured: real-MySQL integration/races, browser E2E/accessibility, OpenAPI/examples, import-boundary automation, load/live-AI and restore harnesses. No business migrations/seed exist yet. Add tooling when implementing affected features; do not use `--if-present` to make a required missing check green. Migration commands must explicitly use the checked-in `prisma7.config.ts`; never reset retained/shared data.
+For documentation-only changes, verify links, section references, canonical paths, line limits and command/source consistency. Application checks apply when executable behavior/config changes.
 
 If absent, report `NOT CONFIGURED: <check/tool>`; a configured but unrun check is `NOT RUN`, not passed. Policy-dependent cases are `BLOCKED: <decision and source>`. Future-scope cases are `NOT APPLICABLE: <milestone>`.
 
@@ -253,10 +254,10 @@ If absent, report `NOT CONFIGURED: <check/tool>`; a configured but unrun check i
 | AI prompt/model/adapter PR | Versioned fixed validation/privacy/injection/fallback suite; approved live synthetic evaluation comparison before deploying provider/model behavior changes. |
 | Before milestone release | Full enabled-scope U/I/R/E suite, agreed browser checks, NFR01–08 evidence including load/live AI where enabled and isolated restore; finalized contracts/security/config and migration rehearsal. Future scope stays disabled. |
 
-CI is a required implementation plan, not claimed configured branch protection. Missing required tooling/evidence blocks claiming the affected release gate passed. Do not hide failed race/financial/security tests with blanket retries; record first failure and fix its cause. Changes unrelated to an established green suite do not require repeated broad runs without new risk.
+The existing CI checks do not establish configured branch protection or completion of these planned gates. Missing required tooling/evidence blocks claiming the affected release gate passed. Do not hide failed race/financial/security tests with blanket retries; record first failure and fix its cause. Changes unrelated to an established green suite do not require repeated broad runs without new risk.
 
 ## 13. Release decisions and completion evidence
 
-Resolve in owning documents before enabling affected capabilities: auth identifier/password/JWT lifecycle/transport/CSRF; quote artifact protection and route TTL/normalization; owner/point provisioning; money/quantity business limits; AI budget/preferences/privacy/limits/provider/evaluation; QR evidence/refunds; financial period/exception/correction policies; post-MVP DTOs; exact test runners/scripts/toolchain/CI and backup operations. Required MVP decisions remain MVP blockers, not scope deferrals disguised as green tests.
+Resolve in owning documents before enabling affected capabilities: auth identifier/password/JWT lifecycle/transport/CSRF; quote artifact protection and route TTL/normalization; owner/point provisioning; money/quantity business limits; AI budget/preferences/privacy/limits/provider/evaluation; QR evidence/refunds; financial period/exception/correction policies; post-MVP DTOs; real-MySQL/browser tooling, additional CI gates, exact production toolchain and backup operations. Required MVP decisions remain MVP blockers, not scope deferrals disguised as green tests.
 For each run retain commit, milestone/feature flags, exact commands, runtime/DB/browser/provider versions, fixture seed, timestamps, case/source IDs, pass/fail/blocked counts and sanitized artifacts. Distinguish automated results, manual observation and source inspection. Record defects with reproduction and invariant impact; do not claim browser, production-load or backup verification from document review.
 Done for a milestone means its enabled cases pass, necessary NFR measurements and restore evidence exist, required policies are resolved, failures/missing checks are visible, and excluded/future features remain disabled. This file defines that evidence; it does not certify an implementation that has not been tested.

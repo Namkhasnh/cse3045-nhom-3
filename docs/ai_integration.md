@@ -1,21 +1,21 @@
 # AI Integration — Hoa Lac Food Ordering Platform
 
-> Status: implementation design derived from the five uploaded documents; not a claim of implemented behavior. Provider/model and unresolved product policies remain **TBD**.
-> Authority: `requirements.md` is the source of truth. Internal payloads and controls labeled **proposed** below require review before implementation.
+> Status: implementation design derived from the repository specifications; not a claim of implemented behavior. Provider/model and unresolved product policies remain **TBD**.
+> Authority: [requirements.md](requirements.md) is the source of truth. Internal payloads and controls labeled **proposed** below require review before implementation.
 
 ## 1. Sources, terminology and scope
 
-| Uploaded source | Governs this document |
+| Source | Governs this document |
 | --- | --- |
-| `requirements.md` | US08–09, FR06, BR01–03, BR05, BR07–10, BR28–31, NFR02–04, AC7 |
-| `architecture.md` | §§3–4, §5.5, §9: module ownership, recommendation workflow, adapter, security and deadline |
-| `database.md` | §§2, 4.1–4.2, 6: real catalog, opening hours, surveyed delivery, exact money; no conversation tables |
-| `api_contract.md` | §§3–4, 7.6, 8, 11–12: scalar formats, AI API, errors, checkout and unresolved gates |
-| `ui_convertion.md` | §§3, 9.2, 9.4, 11: MVP boundaries, selection/checkout, loading and fallback |
+| [requirements.md](requirements.md) | US08–09, FR06, BR01–03, BR05, BR07–10, BR28–31, NFR02–04, AC7 |
+| [architecture.md](architecture.md) | §§3–4, §5.5, §9: module ownership, recommendation workflow, adapter, security and deadline |
+| [database.md](data/database.md) | §§2, 4.1–4.2, 6: real catalog, opening hours, surveyed delivery, exact money; no conversation tables |
+| [api_contract.md](data/api_contract.md) | §§3–4, 7.6, 8, 11–12: scalar formats, AI API, errors, checkout and unresolved gates |
+| [ui_convertion.md](ui/ui_convertion.md) | §§3, 9.2, 9.4, 11: MVP boundaries, selection/checkout, loading and fallback |
 
 Use **Student**, **Restaurant Owner**, **Admin**, **Restaurant**, **Dish**, **Pickup point** and **Delivery quote** as defined in requirements §9. “Food/item/quán” in supporting material maps to Dish or Restaurant as appropriate. A pickup point is a fixed MVP delivery destination; it does not imply a driver role or a new fulfillment mode.
 
-Supporting documents reference older upload names or canonical repository names. Those references do not override `requirements.md`. Architecture paths/service names are proposed locations, not verified code. UI examples are not business policies.
+Canonical document paths are maintained in docs/README.md. Requirements govern business behavior. Architecture paths/service names are proposed locations, not verified code. UI examples are not business policies.
 
 - **MVP at VJU:** AI recommendations; fixed pickup points; surveyed distance and fee for each restaurant–point pair; cash paid directly to the restaurant.
 - **Should / post-MVP:** random dish selection (US09). Its appearance in the UI does not enable it in MVP.

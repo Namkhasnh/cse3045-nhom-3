@@ -1,5 +1,5 @@
 # UI Conversion & Design Consistency — Hòa Lạc Food
-> **File name:** `ui_convertion.md` — keep the exact requested name.
+> **File name:** [ui_convertion.md](ui_convertion.md) — keep the exact requested name.
 > **Purpose:** guide AI assistants and developers in converting the reference HTML UI into a production-usable React application while preserving the same design language when adding pages, states, or features.
 > **Document scope:** UI conversion and extension standards; this document does not claim that the frontend, backend, or listed features have already been implemented.
 ## 1. Mandatory Instructions for AI
@@ -7,23 +7,23 @@ Before every UI change, read this document, the relevant business requirements, 
 1. Preserve the colors, typography, text hierarchy, shapes, role-based layouts, and tone of the original interface.
 2. Reuse existing layouts, tokens, and components. If they do not exist yet, establish the shared foundation before scaling to more screens.
 3. Build new pages by composing the closest existing patterns; do not create a different visual style for each feature.
-4. The HTML defines the visual reference; `requirements.md` defines business behavior. Do not copy mock content that violates business rules.
-5. Preserve Vite + React + TypeScript + Tailwind CSS and the frontend boundaries defined in `architecture.md`.
+4. The HTML defines the visual reference; [requirements.md](../requirements.md) defines business behavior. Do not copy mock content that violates business rules.
+5. Preserve Vite + React + TypeScript + Tailwind CSS and the frontend boundaries defined in [architecture.md](../architecture.md).
 6. Demo data, prices, fees, accounts, QR codes, metrics, and timestamps in the HTML are not production data.
 7. Do not assume that a button shown in the design means the feature is approved for production. Determine whether it belongs to MVP, post-MVP, or Could scope.
 8. Every screen must support appropriate loading, empty, error, and interaction states; do not implement only the ideal state.
 9. Do not change business flows, states, APIs, or schemas for UI convenience.
 10. When finished, clearly report which screens/components changed, how to verify them, which parts still use fixtures, and any intentional differences from the HTML.
-This document is useful only when it is included in the AI context. When integrating it into the repository, add an instruction to `AGENTS.md` or the active AI rules, such as: **“All frontend changes must read and follow `docs/ui_convertion.md`; open the relevant design board in `docs/ui/Hoa Lac Food Ordering Platform.html` before implementation.”** Do not assume that creating the Markdown file automatically forces every AI tool to read it.
+The root AGENTS.md routes all frontend changes to this guide and the relevant design board in `docs/ui/Hoa Lac Food Ordering Platform.html`. Keep that routing instruction synchronized when moving or renaming a UI document. A standalone Markdown file does not automatically enter every AI tool’s context.
 ## 2. Reference Sources and Conflict Resolution
 The paths below are relative to the repository root `cse3045-nhom-3`:
 | Source | What it decides |
 | --- | --- |
-| `docs/requirements.md` | Roles, scope, user stories, business rules, and acceptance criteria |
-| `docs/architecture.md` | Stack, feature structure, frontend/backend responsibilities, polling, and state coordination |
-| `docs/database.md` | Enums, data relationships, snapshots, money, history, and delete/deactivate rules |
+| [docs/requirements.md](../requirements.md) | Roles, scope, user stories, business rules, and acceptance criteria |
+| [docs/architecture.md](../architecture.md) | Stack, feature structure, frontend/backend responsibilities, polling, and state coordination |
+| [docs/data/database.md](../data/database.md) | Enums, data relationships, snapshots, money, history, and delete/deactivate rules |
 | `docs/ui/Hoa Lac Food Ordering Platform.html` | Design system, layouts, components, and state appearance |
-| `docs/ui_convertion.md` | Conversion rules, normalization of design differences, and consistent extension |
+| [docs/ui/ui_convertion.md](ui_convertion.md) | Conversion rules, normalization of design differences, and consistent extension |
 | Current API contract and source code, if available | Endpoints, DTOs, backend capabilities, and components that actually exist |
 **Resolution order:** use requirements for business behavior, architecture for technical boundaries, and database documentation for data semantics. Use the HTML for design after applying the corrections in §10. If business sources still conflict, document the conflict and request a decision for the affected part while continuing independent work. Do not silently resolve a conflict by inventing a new field or enum.
 The dimensions, colors, and typography marked as “original” below are extracted from the HTML content/CSS. Breakpoints, page routes, and application rules that are not defined by the HTML are marked as **conversion conventions/proposals**, not as current code behavior.
@@ -361,7 +361,7 @@ Then implement according to the architecture. Move a component to `shared/ui` on
 **Task template for AI:**
 ```text
 Implement [page/feature] for role [role], in [MVP/post-MVP] scope.
-Read docs/ui_convertion.md and the relevant requirements/architecture/database sections.
+Read docs/ui/ui_convertion.md and the relevant requirements/architecture/database sections.
 Compare against board [board name] in docs/ui/Hoa Lac Food Ordering Platform.html.
 Preserve the design system and role-based layout; prioritize existing components.
 Apply all corrections listed in section 10.

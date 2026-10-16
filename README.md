@@ -3,6 +3,8 @@
 Nền tảng khám phá món ăn và đặt món dành cho sinh viên Hòa Lạc, triển khai đầu tiên tại VJU.
 Yêu cầu sản phẩm: [docs/requirements.md](docs/requirements.md).
 
+Documentation map: [docs/README.md](docs/README.md). AI contributor instructions: [AGENTS.md](AGENTS.md).
+
 Repo hiện là bộ khung kỹ thuật, chưa triển khai nghiệp vụ. CRUD todo thử nghiệm đã được gỡ.
 
 ## Công nghệ hiện có

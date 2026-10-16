@@ -3,8 +3,8 @@
 ## 1. Authority, status and scope
 
 This is the English business/API contract for implementation, not evidence of an existing API.
-Sources: `requirements.md` (business authority), `architecture.md` (technical boundaries), `database.md` (data semantics), and `ui_convertion.md` (UI behavior). The HTML reference informs interaction states only, after the corrections in UI §10.
-Requirements override conflicting mockups. Architecture proposals remain proposals where not settled; database references to older filenames do not supersede the supplied requirements. Paths, DTO names, envelopes, error codes and pagination defaults below are transport decisions proposed by this contract, not endpoints claimed to exist in the sources.
+Sources: [requirements.md](../requirements.md) (business authority), [architecture.md](../architecture.md) (technical boundaries), [database.md](database.md) (data semantics), and [ui_convertion.md](../ui/ui_convertion.md) (UI behavior). The HTML reference informs interaction states only, after the corrections in UI §10.
+Requirements override conflicting mockups. Architecture proposals remain proposals where not settled; the documentation index records canonical paths. Paths, DTO names, envelopes, error codes and pagination defaults below are transport decisions proposed by this contract, not endpoints claimed to exist in the sources.
 All example IDs, names, prices, coordinates and rates are fictional fixtures, not production configuration. Unresolved product/security decisions are explicitly **TBD** and must be settled before the affected capability ships.
 
 | Milestone | Contract coverage |
@@ -333,7 +333,7 @@ Reorder (US10) builds a new client intent from history, refreshes current catalo
 
 ## 12. OpenAPI handoff and implementation gates
 
-The companion **`openapi.yaml` (to be authored; not included or claimed to exist)** is the detailed machine-readable contract: every enabled path, request/response schema, conditional field, enum, format, error code, security scheme, header, pagination rule and example must match this Markdown. Generate client/server DTO checks from it. Markdown remains the business explanation; OpenAPI must not override requirements or silently resolve a TBD.
+The companion **`docs/data/openapi.yaml` (to be authored; not included or claimed to exist)** is the detailed machine-readable contract: every enabled path, request/response schema, conditional field, enum, format, error code, security scheme, header, pagination rule and example must match this Markdown. Generate client/server DTO checks from it. Markdown remains the business explanation; OpenAPI must not override requirements or silently resolve a TBD.
 Before enabling each group, resolve its TBDs and update both documents in one reviewed change: auth identifier/password/JWT transport/expiry/CSRF/refresh/logout; quote artifact protection and any TTL; owner/point provisioning; business validation limits; AI budget/preference meaning; selected AI/map/media providers; post-MVP QR evidence/representation and financial exception/period policies. Do not choose providers or auth/session mechanisms from mockup data.
 Required implementation verification: shared JSON schema/examples; exact integer/rate/half-up arithmetic; changed-price/fee reconfirmation; concurrent same-key same/different content; response-loss recovery; accept/cancel race; cross-account/nested-resource access; repeated completed/payment with no duplicate effects; rollback on failed audit/base commission; competing settlement assignment; financial retry deduplication; history-preserving deletion; AI/map failure with manual surveyed ordering intact.
 These are acceptance requirements, not claims that backend tests have run. Next handoff: settle the relevant TBDs, author/validate OpenAPI, then implement frontend and backend against the same enabled schemas and examples.
