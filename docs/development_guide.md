@@ -20,7 +20,7 @@ Rules:
 | Area | Decision / status |
 | --- | --- |
 | Frontend | Vite + React + TypeScript |
-| Styling | Tailwind CSS required; not yet installed in the scaffold |
+| Styling | Tailwind CSS 4 via `@tailwindcss/vite`; semantic CSS theme and self-hosted Be Vietnam Pro |
 | Backend | NestJS + TypeScript |
 | API | REST + JSON; target `/api/v1` prefix is not registered yet |
 | Auth | JWT; lifecycle/transport details partly TBD |
@@ -139,7 +139,7 @@ npm --prefix backend run dev
 # Separate terminal:
 npm --prefix frontend run dev
 ```
-Backend defaults to port 3000; Vite defaults to 5173 (use its printed URL). Backend startup requires MySQL. The frontend currently makes no API calls; proxy/CORS/API-origin integration will be added with a connected feature. No application endpoints are registered; `/` and `/todos` return 404.
+Backend defaults to port 3000; Vite defaults to 5173 (use its printed URL). Backend startup requires MySQL. The frontend restaurant-list preview runs independently with labeled fixtures and no API calls; see [frontend guide](../frontend/README.md) for filters and development-only state previews. Proxy/CORS/API-origin integration will be added with a connected feature. No backend application endpoints are registered; `/` and `/todos` return 404.
 Documented `/api/v1` endpoints and the authenticated surveyed cash-order flow are targets to implement, not startup smoke checks that currently pass. Frontend code must not import Prisma, query MySQL or call the AI provider.
 ## 7. Target repository structure
 | Area | Target location |

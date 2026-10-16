@@ -89,7 +89,7 @@ cse3045-nhom-3/
 │   │   │   ├── hooks/                    # Generic hooks without feature dependencies
 │   │   │   └── lib/                      # Display utilities, no monetary business rules
 │   │   ├── assets/
-│   │   └── index.css                     # Planned Tailwind integration point
+│   │   └── index.css                     # Tailwind theme, font imports and current UI styles
 │   ├── package.json
 │   ├── package-lock.json
 │   └── vite.config.ts

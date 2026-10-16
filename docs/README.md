@@ -53,11 +53,11 @@ For feature-specific reading, use the detailed routing table in [AGENTS.md](../A
 
 ## Implementation status
 
-Repository inspection on **October 16, 2026** found a technical scaffold. Recheck source before relying on this snapshot.
+Repository inspection on **October 16, 2026** found a technical scaffold plus a fixture-only Student restaurant-list preview. Recheck source before relying on this snapshot.
 
 | Area | Exists now | Target / not yet implemented |
 | --- | --- | --- |
-| Frontend | Vite, React, TypeScript, introductory page, plain CSS | Tailwind, router, API integration, auth and business screens |
+| Frontend | Vite, React, TypeScript, Tailwind CSS 4, self-hosted Be Vietnam Pro, Student layout and labeled restaurant fixtures with local filters/state previews; see [frontend guide](../frontend/README.md) | Router, API integration, auth and connected business screens; Owner/Admin layouts |
 | Backend | NestJS, configuration, global validation, shared Prisma connection lifecycle | Business controllers/workflows/modules, JWT/CSRF and `/api/v1` prefix |
 | Database | MySQL datasource, MariaDB-named Prisma adapter, empty business schema, migration lock | Business models, first SQL migration and guarded seed |
 | Verification | Frontend lint/build; backend lint/unit/HTTP E2E/build; CI on Node.js `24.x` | Real-MySQL constraint/race suites, browser E2E, OpenAPI and boundary automation |

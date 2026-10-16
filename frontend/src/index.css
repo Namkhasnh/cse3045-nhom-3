@@ -1,31 +1,208 @@
-:root {
-  font-family: system-ui, sans-serif;
-  line-height: 1.6;
-  color: #1f2937;
-  background: #f8fafc;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@import '@fontsource/be-vietnam-pro/400.css';
+@import '@fontsource/be-vietnam-pro/500.css';
+@import '@fontsource/be-vietnam-pro/600.css';
+@import '@fontsource/be-vietnam-pro/700.css';
+@import '@fontsource/be-vietnam-pro/800.css';
+@import 'tailwindcss';
+
+/* One token source for both Tailwind utilities and component styles. */
+@theme {
+  --font-sans: 'Be Vietnam Pro', system-ui, sans-serif;
+  --color-brand: #D2411D;
+  --color-brand-dark: #A93214;
+  --color-brand-tint: #FDE9E1;
+  --color-fresh: #2F7D4F;
+  --color-fresh-tint: #E3F2E8;
+  --color-fresh-ink: #1E5B38;
+  --color-sun: #F5B63D;
+  --color-warn: #7A5200;
+  --color-warn-tint: #FFF1CC;
+  --color-danger: #B3261E;
+  --color-danger-tint: #FCE4E2;
+  --color-info: #2457A6;
+  --color-info-tint: #E4EDFA;
+  --color-info-ink: #1B4585;
+  --color-surface: #FFFFFF;
+  --color-surface-page: #FFF8F0;
+  --color-surface-sunk: #F1E7DC;
+  --color-surface-line: #EADFD3;
+  --color-surface-table-head: #FBF4EA;
+  --color-ink: #2A1F1A;
+  --color-ink-muted: #6F625A;
+  --color-disabled-ink: #85786F;
+  --color-focus-ring: #F6B7A3;
+  --color-owner-sidebar: #2A1F1A;
+  --color-owner-sidebar-ink: #F6EBDD;
+  --color-admin-sidebar: #1F2A44;
+  --color-admin-sidebar-ink: #E8ECF5;
+  --radius-control: 10px;
+  --radius-card: 16px;
+  --radius-panel: 24px;
+  --shadow-card: 0 4px 16px rgb(74 40 20 / 0.06);
 }
 
-* {
-  box-sizing: border-box;
+@layer base {
+  :root { font-family: var(--font-sans); color: var(--color-ink); background: var(--color-surface-page); font-synthesis: none; text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-width: 320px; font-size: 15px; line-height: 1.5; }
+  button, input { font: inherit; }
+  button, a, input { -webkit-tap-highlight-color: transparent; }
+  button:not(:disabled), a { touch-action: manipulation; }
+  button:not(:disabled) { cursor: pointer; }
+  a { color: inherit; text-decoration: none; }
+  h1, h2, h3, p { margin: 0; }
+  h1, h2, h3 { overflow-wrap: anywhere; }
+  :focus-visible { outline: 3px solid var(--color-brand-dark); outline-offset: 4px; box-shadow: 0 0 0 6px var(--color-focus-ring); }
+  :focus { scroll-margin-block: 24px 180px; }
+  ::selection { color: var(--color-ink); background: var(--color-brand-tint); }
 }
 
-body {
-  margin: 0;
-  min-width: 320px;
+@layer components {
+  .page-container { width: min(100% - 40px, 1200px); margin-inline: auto; }
+  .icon { width: 20px; height: 20px; flex: none; }
+  .skip-link { position: fixed; z-index: 30; left: 16px; top: 12px; transform: translateY(-160%); padding: 12px 20px; border-radius: var(--radius-control); background: var(--color-surface); color: var(--color-brand-dark); font-weight: 700; }
+  .skip-link:focus { transform: translateY(0); }
+  .site-header { background: var(--color-surface); border-bottom: 1px solid var(--color-surface-line); }
+  .brand-row { display: flex; align-items: center; justify-content: space-between; min-height: 80px; gap: 20px; }
+  .brand { display: inline-flex; align-items: center; gap: 10px; min-height: 48px; font-size: 21px; font-weight: 800; letter-spacing: -0.8px; }
+  .brand-mark { display: grid; place-items: center; width: 40px; height: 40px; color: var(--color-surface); background: var(--color-brand); border-radius: 14px; }
+  .brand-mark .icon { width: 25px; height: 25px; }
+  .student-label { font-size: 12px; font-weight: 500; color: var(--color-ink-muted); }
+  .main-content { padding-top: 24px; padding-bottom: calc(170px + env(safe-area-inset-bottom, 0px)); }
+  .main-content:focus { outline: none; box-shadow: none; }
+  .fixture-banner { display: flex; gap: 10px; align-items: center; width: fit-content; padding: 10px 14px; border: 1px solid var(--color-surface-line); border-radius: var(--radius-control); color: var(--color-ink-muted); background: var(--color-surface-table-head); font-size: 12px; }
+  .fixture-banner .icon { width: 16px; height: 16px; color: var(--color-brand-dark); }
+  .discovery-header { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding-block: 30px 28px; }
+  .greeting { color: var(--color-ink-muted); font-size: 14px; margin-bottom: 6px; }
+  .discovery-header h1 { font-size: 32px; font-weight: 800; line-height: 1.2; letter-spacing: -1px; }
+  .page-intro { color: var(--color-ink-muted); margin-top: 12px; font-size: 14px; }
+  .pickup-point { display: flex; align-items: center; gap: 12px; padding: 16px 20px; border: 1px solid var(--color-brand); border-radius: var(--radius-card); background: var(--color-brand-tint); flex-shrink: 0; }
+  .pickup-icon { display: grid; place-items: center; color: var(--color-brand-dark); }
+  .pickup-icon .icon { width: 26px; height: 26px; }
+  .pickup-point p { font-size: 10px; font-weight: 700; letter-spacing: 1px; color: var(--color-brand-dark); margin-bottom: 4px; }
+  .pickup-point strong { font-size: 15px; font-weight: 700; }
+  .pickup-point strong span { font-size: 12px; color: var(--color-brand-dark); }
+  .pickup-point small { display: block; color: var(--color-ink-muted); font-size: 11px; margin-top: 4px; }
+  .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 10px 20px; border: 1px solid transparent; border-radius: 999px; font-size: 14px; font-weight: 700; line-height: 1.4; transition: background-color 120ms ease; }
+  .button--primary { background: var(--color-brand); color: var(--color-surface); }
+  .button--primary:hover:not(:disabled) { background: var(--color-brand-dark); }
+  .button--neutral { background: var(--color-surface); color: var(--color-ink-muted); border-color: var(--color-surface-line); }
+  .button--neutral:hover:not(:disabled) { background: var(--color-surface-page); color: var(--color-brand-dark); border-color: var(--color-brand); }
+  .button:disabled { color: var(--color-disabled-ink); background: var(--color-surface-sunk); cursor: not-allowed; }
+  .restaurant-filters { background: var(--color-surface); border: 1px solid var(--color-surface-line); border-radius: var(--radius-card); padding: 22px 24px; }
+  .search-row { display: flex; align-items: end; gap: 16px; }
+  .search-field { position: relative; width: 100%; }
+  .search-field > .icon { position: absolute; left: 16px; bottom: 14px; color: var(--color-ink-muted); pointer-events: none; }
+  .input-field label { display: block; margin-bottom: 8px; font-size: 13px; font-weight: 600; }
+  .input { width: 100%; min-height: 48px; border: 1px solid var(--color-surface-line); border-radius: var(--radius-control); background: var(--color-surface); padding: 10px 14px; color: var(--color-ink); }
+  .search-field .input { border-radius: 999px; background: var(--color-surface-page); padding-left: 46px; }
+  .input::placeholder { color: var(--color-ink-muted); }
+  .search-row .button { flex-shrink: 0; }
+  .filter-help { margin-top: 7px; font-size: 11px; color: var(--color-ink-muted); }
+  .filter-group { display: flex; gap: 14px; padding: 0; margin: 20px 0 0; border: 0; min-width: 0; }
+  .filter-group legend { float: left; min-width: 106px; padding: 13px 0; font-size: 12px; font-weight: 600; color: var(--color-ink-muted); }
+  .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .filter-chip { min-height: 44px; border: 1px solid var(--color-surface-line); border-radius: 999px; padding: 8px 16px; background: var(--color-surface); color: var(--color-ink-muted); font-size: 13px; font-weight: 600; transition: background-color 120ms ease, border-color 120ms ease; }
+  .filter-chip:hover { color: var(--color-brand-dark); border-color: var(--color-brand); }
+  .filter-chip[aria-pressed='true'] { color: var(--color-brand-dark); border-color: var(--color-brand); background: var(--color-brand-tint); }
+  .demo-state-note { display: flex; align-items: start; gap: 8px; padding: 12px; margin-top: 16px; color: var(--color-info-ink); background: var(--color-info-tint); border-radius: var(--radius-control); font-size: 12px; }
+  .restaurant-section { margin-top: 36px; }
+  .list-heading { display: flex; justify-content: space-between; align-items: end; gap: 16px; margin-bottom: 20px; }
+  .eyebrow { color: var(--color-brand-dark); font-size: 10px; font-weight: 700; letter-spacing: 1.5px; margin-bottom: 6px; }
+  .list-heading h2 { font-size: 22px; font-weight: 800; line-height: 1.3; letter-spacing: -0.5px; }
+  .result-count { color: var(--color-ink-muted); font-size: 12px; text-align: right; }
+  .restaurant-grid { display: grid; grid-template-columns: 1fr; gap: 24px; }
+  .restaurant-card { min-width: 0; display: flex; flex-direction: column; background: var(--color-surface); border: 1px solid var(--color-surface-line); border-radius: var(--radius-card); overflow: clip; box-shadow: var(--shadow-card); }
+  .restaurant-cover { position: relative; }
+  .restaurant-image { position: relative; aspect-ratio: 16 / 9; overflow: hidden; background: var(--color-brand-tint); }
+  .restaurant-image--noodles, .restaurant-image--tea { background: var(--color-fresh-tint); }
+  .restaurant-image--bread { background: var(--color-warn-tint); }
+  .restaurant-image img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .image-caption { position: absolute; bottom: 10px; right: 12px; padding: 3px 8px; border-radius: 999px; font-size: 10px; font-weight: 500; color: var(--color-ink-muted); background: var(--color-surface); }
+  .image-fallback { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 10px; color: var(--color-ink-muted); font-size: 12px; }
+  .image-fallback > span { display: grid; place-items: center; width: 72px; height: 72px; border-radius: 50%; background: var(--color-surface); }
+  .image-fallback .icon { width: 34px; height: 34px; color: var(--color-brand-dark); }
+  .restaurant-status { position: absolute; top: 12px; left: 12px; max-width: calc(100% - 24px); }
+  .badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; line-height: 1.4; }
+  .badge-dot { width: 6px; height: 6px; border-radius: 50%; flex: none; background: currentColor; }
+  .badge--success { color: var(--color-fresh-ink); background: var(--color-fresh-tint); }
+  .badge--neutral { color: var(--color-ink-muted); background: var(--color-surface-sunk); }
+  .badge--warning { color: var(--color-warn); background: var(--color-warn-tint); }
+  .restaurant-card-content { padding: 18px; display: flex; flex-direction: column; flex: 1; }
+  .restaurant-cuisine { font-size: 11px; font-weight: 600; color: var(--color-brand-dark); margin-bottom: 5px; }
+  .restaurant-card h3 { font-size: 17px; font-weight: 700; line-height: 1.45; letter-spacing: -0.35px; }
+  .restaurant-description { color: var(--color-ink-muted); font-size: 12px; line-height: 1.65; margin-block: 6px 16px; }
+  .restaurant-hours { display: flex; align-items: start; gap: 6px; font-size: 11px; color: var(--color-ink-muted); margin-top: auto; }
+  .restaurant-hours .icon { width: 15px; height: 15px; margin-top: 1px; }
+  .restaurant-delivery { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; padding-top: 14px; margin-top: 14px; border-top: 1px solid var(--color-surface-line); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .restaurant-delivery > span { display: flex; align-items: center; gap: 6px; }
+  .restaurant-delivery .icon { width: 16px; height: 16px; }
+  .known-fee { color: var(--color-fresh-ink); }
+  .unknown-fee { color: var(--color-warn); }
+  .restaurant-distance { color: var(--color-ink-muted); }
+  .fixture-card-note { color: var(--color-ink-muted); font-size: 10px; margin-top: 10px; }
+  .page-footer { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 42px; color: var(--color-ink-muted); font-size: 12px; line-height: 1.8; text-align: center; }
+  .page-footer > .icon { color: var(--color-brand-dark); width: 26px; height: 26px; }
+  .page-footer span { font-size: 10px; }
+  .student-nav { position: fixed; z-index: 10; inset: auto 0 0; padding-bottom: env(safe-area-inset-bottom, 0px); background: var(--color-surface); border-top: 1px solid var(--color-surface-line); }
+  .nav-items { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); max-width: 640px; }
+  .nav-items > a, .nav-items > button { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 64px; gap: 3px; padding: 8px 2px 4px; color: var(--color-ink-muted); border: 0; background: transparent; font-size: 11px; font-weight: 600; }
+  .nav-items > a[aria-current='page'] { color: var(--color-brand-dark); }
+  .nav-items > a[aria-current='page']::before { content: ''; position: absolute; inset: 0 30% auto; height: 3px; background: var(--color-brand); border-radius: 0 0 4px 4px; }
+  .nav-soon { font-size: 9px; font-weight: 400; }
+  .nav-explanation { color: var(--color-ink-muted); font-size: 10px; text-align: center; padding: 3px 16px 7px; }
+  .list-state { padding: 48px 20px; display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center; border: 1px dashed var(--color-surface-line); border-radius: var(--radius-card); background: var(--color-surface); }
+  .list-state-icon { display: grid; place-items: center; width: 72px; height: 72px; border-radius: 50%; background: var(--color-brand-tint); color: var(--color-brand-dark); }
+  .list-state-icon .icon { width: 32px; height: 32px; }
+  .list-state h3 { font-size: 19px; font-weight: 700; }
+  .list-state p { max-width: 420px; color: var(--color-ink-muted); font-size: 14px; line-height: 1.7; }
+  .list-state .button { margin-top: 4px; }
+  .list-state--error .list-state-icon { color: var(--color-danger); background: var(--color-danger-tint); }
+  .loading-label { color: var(--color-ink-muted); font-size: 13px; margin-bottom: 16px; }
+  .skeleton { background: var(--color-surface-sunk); animation: skeleton-pulse 1.4s ease-in-out infinite alternate; border-radius: 6px; }
+  .skeleton-cover { aspect-ratio: 16 / 9; border-radius: 0; }
+  .skeleton-content { padding: 20px; display: grid; gap: 16px; }
+  .skeleton-title { height: 22px; width: 70%; }
+  .skeleton-line { height: 14px; width: 90%; }
 }
 
-main {
-  width: min(100%, 48rem);
-  margin: 0 auto;
-  padding: 4rem 1.5rem;
-}
+@keyframes skeleton-pulse { to { opacity: 0.5; } }
 
-h1 {
-  font-size: clamp(1.75rem, 5vw, 2.5rem);
-  line-height: 1.2;
-  overflow-wrap: anywhere;
+@media (min-width: 640px) { .restaurant-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .restaurant-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 767px) {
+  .discovery-header { align-items: stretch; flex-direction: column; gap: 22px; }
+  .pickup-point { width: 100%; }
+  .filter-group { display: block; }
+  .filter-group legend { float: none; padding: 0 0 8px; }
 }
+@media (max-width: 639px) {
+  .page-container { width: calc(100% - 32px); }
+  .brand-row { min-height: 68px; }
+  .brand { font-size: 18px; }
+  .brand-mark { width: 34px; height: 34px; border-radius: 11px; }
+  .brand-mark .icon { width: 22px; height: 22px; }
+  .student-label { display: none; }
+  .main-content { padding-top: 16px; }
+  .fixture-banner { align-items: start; padding: 10px 12px; line-height: 1.6; }
+  .fixture-banner .icon { margin-top: 2px; }
+  .discovery-header { padding-block: 24px; }
+  .discovery-header h1 { font-size: 25px; letter-spacing: -0.75px; }
+  .page-intro { font-size: 13px; max-width: 310px; }
+  .pickup-point { padding: 13px 14px; }
+  .restaurant-filters { padding: 16px; }
+  .search-row { flex-wrap: wrap; gap: 10px; }
+  .search-row .button { min-height: 44px; padding: 8px 14px; font-size: 12px; }
+  .filter-help { margin-top: 8px; }
+  .filter-group { margin-top: 16px; }
+  .filter-chip { font-size: 12px; padding-inline: 13px; }
+  .restaurant-section { margin-top: 28px; }
+  .list-heading { align-items: start; flex-direction: column; gap: 8px; }
+  .list-heading h2 { font-size: 22px; }
+  .result-count { text-align: left; }
+  .restaurant-grid { gap: 20px; }
+  .restaurant-card-content { padding: 16px; }
+  .page-footer { align-items: start; font-size: 11px; gap: 8px; }
+  .nav-items { width: calc(100% - 16px); }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }

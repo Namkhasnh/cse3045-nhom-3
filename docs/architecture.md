@@ -18,7 +18,7 @@ This document does not fully define tables/columns, endpoints, DTOs, screens, or
 
 | Component | Current checked-in scaffold | Implementation direction |
 | --- | --- | --- |
-| Frontend | Vite, React, TypeScript; `App.tsx` is an introductory page; plain CSS | Organize by feature; add Tailwind as required |
+| Frontend | Vite, React, TypeScript, Tailwind CSS 4; app composes Student layout and restaurant feature with labeled fixtures | Connect approved APIs; add remaining features/layouts when scoped |
 | Backend | NestJS; `ConfigModule`, `PrismaModule`; global validation | Add HTTP controllers, workflows, business modules, and authentication |
 | Database | Prisma datasource `mysql`; Prisma service uses the MariaDB adapter; no business models in the schema yet | MySQL/InnoDB; define models and migrations in the data document |
 | Accounts and orders | No account/order implementation or demo todo endpoint is registered | Do not treat scaffold directories as completed modules |

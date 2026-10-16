@@ -247,6 +247,16 @@ New pages such as account/profile editing should inherit existing form and layou
 7. Connect real APIs, add price/fee revalidation, retry/idempotency behavior, and connectivity states.
 8. Compare screenshots at sizes matching each screen inside the artboard; do not compare an entire multi-screen board against a single route.
 9. Verify responsive behavior, keyboard support, and error flows; update reusable conventions when new decisions are made.
+### 8.4. Implemented Student Discovery Preview
+As of October 16, 2026, `/` renders a presentation-only Student restaurant list (US02/US03, FR02, NFR06); see the [frontend guide](../../frontend/README.md) for fixture data, internal props, preview URLs and tooling. This is not connected discovery or proof of full MVP acceptance.
+- Tailwind CSS 4 uses `@tailwindcss/vite`. `src/index.css` owns semantic `@theme` tokens, font imports and component styles. Be Vietnam Pro is bundled through Fontsource, including Vietnamese glyphs and weights 400/500/600/700/800. Existing token values are preserved; no new business-state palette is introduced.
+- Implemented shared controls: Button (`primary`/`neutral`, native disabled), Input (required visible label/id, native attributes), FilterChip (`aria-pressed`), Badge (`neutral`/`success`/`warning`, text plus dot), decorative Icon, and ListState (message, optional action, alert for errors). Other variants in §7 remain target contracts.
+- StudentLayout contains the brand header, skip link, persistent fixture notice and safe-area-aware fixed navigation. Home is current; other navigation items are disabled with a visible explanation. Only the Student layout is implemented.
+- The search Input uses a scoped pill treatment; the generic Input retains the standard 10 px radius. Focus combines a dark-orange outline with the original light focus ring for contrast.
+- Reference adaptations: no phone frame/gallery; a 1200 px maximum container, one/two/three restaurant columns at `<640`/`640–1023`/`≥1024` px; wrapping touch-size filter chips; a read-only example pickup point; local labeled SVG illustrations/fallbacks; no fictional user identity, ratings, AI/random tiles, featured-dish additions or dead menu links.
+- Every restaurant, delivery value and availability flag is synthetic and labeled. No map or pricing calculation is performed. Missing fee and known zero fee stay distinct; fixture view models are not API DTOs.
+- Development-only `demo_state=loading|empty|error` selects labeled states; retry leaves filters intact. Production ignores these parameters but remains a fixture-only preview.
+- Browser observations and missing coverage are recorded in the [verification report](student-discovery-verification.md). Owner/Admin layouts and automated browser suites remain unimplemented.
 ## 9. Data and Behavior That Must Not Be Implemented Incorrectly
 ### 9.1. Order and Payment Are Separate Lifecycles
 | Order enum | UI label | Color family |

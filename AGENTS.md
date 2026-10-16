@@ -63,7 +63,7 @@ For a bug, read the governing contract before reproducing/fixing it; a current i
 
 Repository baseline checked on October 16, 2026 (recheck before use):
 
-- `frontend/`: Vite/React/TypeScript introductory page; no API calls. Tailwind, router, auth and business features are not installed/implemented.
+- `frontend/`: Vite/React/TypeScript, Tailwind CSS 4, self-hosted Be Vietnam Pro and a Student restaurant-list preview with labeled fixtures, local filters and development-only state previews. No API calls, router, auth or connected business features. See `frontend/README.md` for the fixture boundary and verification procedure.
 - `backend/`: NestJS with environment configuration, global validation and shared Prisma lifecycle. ESM imports use `.js` specifiers. Preserve `prisma7.config.ts` and the generated-client configuration.
 - Prisma targets MySQL with the MariaDB-named adapter. The schema has no business models; no business migration, seed or application endpoint exists. `/` and `/todos` return 404. `/api/v1` is the target prefix, not configured behavior yet.
 - CI uses Node.js `24.x`, npm and separate package lockfiles. Backend unit/E2E tests use Node's built-in test runner and mock Prisma; they do not prove real MySQL constraints or races. Browser and real-MySQL integration suites remain unconfigured.
