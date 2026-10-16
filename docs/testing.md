@@ -1,0 +1,262 @@
+# Testing — Hoa Lac Food Ordering Platform
+
+> Purpose: define observable evidence that the system meets its requirements, preserves financial/history invariants, and is ready for its selected delivery milestone.
+> Status: implementation-oriented test specification, not executed results. Test runners, npm scripts, CI configuration and exact runtime versions remain **TBD / verify in repo**.
+
+## 1. Authority, terminology and scope
+
+Derived from the seven uploaded documents, using canonical repository names: `requirements.md`, `architecture.md`, `database.md`, `api-contract.md`, `ai-integration.md`, `ui_convertion.md`, and `development_guide.md`. Upload suffixes and underscore/hyphen aliases do not define different business contracts.
+Follow the development guide's precedence: requirements → architecture → database → API → UI → AI; use source/manifests for actual implementation and commands. Requirements govern US/FR/BR/AC and scope; mockups do not add capabilities. An unresolved decision stays TBD until reviewed in its owning document.
+
+| Milestone | Test scope |
+| --- | --- |
+| MVP at VJU | Authentication/profile, discovery, one-restaurant cart, fixed Pickup points and surveyed fees, cash orders/tracking, Restaurant Owner fulfillment/payment confirmation, dish CRUD, Admin restaurant CRUD, AI recommendations, base Commission entries, minimal manual Settlement/receipt/adjustment operations, audit writing. |
+| Post-MVP Must | Free address/map pin, route-based Delivery quotes/fee tiers, QR transfer/refund recording, expanded financial reports. |
+| Post-MVP Should | Random dish selection, history UI/reorder, order-linked support. Durable MVP order recovery is already required. |
+| Could | Reviews and favorites, only after their contracts and data design are approved. |
+| Excluded | Driver accounts/dispatch, multi-restaurant orders, platform payment processing/splitting/automatic collection, AI conversation or training-data storage. |
+
+Roles are Student, Restaurant Owner and Admin (`student`, `restaurant_owner`, `admin`). Restaurants deliver orders and receive cash/QR payments directly. A Settlement receipt records manual commission collection by Admin; it is not an Order payment.
+Order states: `pending`, `accepted`, `delivering`, `completed`, `rejected`, `cancelled`. Payment states: `unpaid`, `paid`, `refund_pending`, `refunded`. Do not introduce `preparing`, `shipping`, or a Settlement status enum.
+
+## 2. Strategy and test ownership
+
+| Layer | What to execute | Evidence / proposed placement |
+| --- | --- | --- |
+| Unit (U) | Pure money/rate policies, state transitions, eligibility/hours, canonical fingerprints, DTO parsing, UI state/retry logic; fake clock and injected random source. | Deterministic assertions alongside owning feature/domain; no database or provider dependency. |
+| Integration (I) | NestJS HTTP/guards/workflows through Prisma to real MySQL/InnoDB; migrations, constraints, transactions, ownership, adapter boundaries. | `backend/test/`; assert HTTP contracts and committed rows/history, not only mocked service calls. |
+| Concurrency (R) | Independent requests/connections against the same MySQL database, with controlled barriers and injected faults. | `backend/test/`; assert permitted serial outcomes and exact durable counts. R is a specialized integration suite. |
+| Browser E2E (E) | React → REST → NestJS → MySQL for critical Student, Restaurant Owner and Admin journeys; external services stubbed. | Test location/runner TBD; real browser, role-specific sessions, persisted result assertions. |
+| Non-functional (N) | Load, real-provider evaluation, security configuration, responsive/accessibility checks and backup restore. | Versioned run report and artifacts in the team's selected test-report location, TBD. |
+
+Backend tests own authoritative rules; frontend tests verify displayed data, consent, recovery and valid actions. Keep E2E focused on meaningful journeys; do not duplicate every arithmetic permutation in a browser.
+Review/automate architecture boundaries: controller → workflow → public service → owning repository; participating writes share one transaction context. No controller Prisma access, cross-module repository imports, browser DB/provider calls, or AI order/payment write tools. Frontend `shared` must not import features/app; features must not deep-import one another.
+Each executable test records its case ID, source IDs, milestone, fixture, action, assertions and evidence. Implementation coverage percentages are diagnostic; no percentage target is established by the supplied documents.
+
+## 3. Isolated environment and deterministic data
+
+- Use disposable, explicitly allowlisted local/CI MySQL databases and synthetic accounts. Seeds/reset/cleanup must refuse production/shared targets. Never copy real orders, contacts, bank/QR details or credentials into fixtures.
+- Pin verified Node.js/npm/Prisma/MySQL versions from manifests and deployment configuration. MySQL must enforce CHECKs (8.0.16+ compatibility floor, not a selected release); use InnoDB, real FKs, strict SQL mode, UTC sessions and documented collation/isolation settings.
+- Financial, migration and race suites cannot substitute SQLite or ORM mocks for MySQL. Apply reviewed migrations to an empty database and an upgrade fixture; inspect actual CHECK/FK/UNIQUE definitions and restrictive FK actions.
+- Give each parallel worker an isolated database or explicitly isolated fixture scope. Race participants deliberately share one test database and aggregate. Cleanup uses a dedicated test identity; runtime permission tests use the application identity.
+- Freeze ordinary tests at `2026-10-16T03:00:00.000Z` (10:00 in `Asia/Ho_Chi_Minh`); inject clocks for closing time, expiry and deadline cases. Real load/latency runs use real clocks.
+- Stub AI/map adapters at the boundary. Deny unexpected external requests in deterministic suites. Fault modes include delay, timeout, malformed output, outage, stale data and response loss. Never hold DB locks while waiting for a provider.
+- Version fixtures; use exact IDs/money strings and rates. Construct historical aggregates through workflows where possible, preserving snapshots, payment/history/base relationships. Direct SQL is reserved for deliberate integrity probes and controlled setup.
+- Capture safe request IDs, case IDs, versions, durations and outcomes. Keep secrets, recipient details, prompts/preferences/candidates/raw AI responses out of logs, traces and CI artifacts.
+
+| Fixture | Required variants |
+| --- | --- |
+| Accounts/ownership | Students S1/S2; Owner O1 manages R1/R2; Owner O2 manages R3; Admin A1; inactive actor; ownership reassignment. |
+| Catalog | R1 active/open/accepting with visible available D1/D2; individually hidden/sold-out dishes and inactive/closed/not-accepting restaurants; never-ordered dish/restaurant. |
+| Delivery | Active P1 with enabled R1/P1 surveyed distance 450 m and fee `"5000"`; genuine zero-fee pair; missing/disabled pair; inactive point. Values are fictional, not actual surveys. |
+| Money | D1 price `"45000"`, quantity 2, rate `"0.10000000"`; small rounding fixtures; IDs above JS safe-integer range; signed adjustment and overflow cases. |
+| Orders/finance | Every milestone-appropriate state; completed but unpaid order; assigned/unassigned entries, multiple receipts, negative adjustment and valid snapshot/history records. QR/refund fixtures are post-MVP only. |
+
+## 4. Requirements-to-test traceability matrix
+
+U/I/R/E/N refer to §2. Each row defines expected behavior, not a pass result. Cases are MVP unless labeled **Post**; pending policy-dependent cases remain visible as blocked, not silently skipped.
+
+| Source: US / BR / AC (plus FR/NFR where needed) | Case | Layer | Expected result |
+| --- | --- | --- | --- |
+| US01; FR01; NFR03; AC8 | AUTH-01 Session and identity | I/E | Valid approved login/profile flow works; invalid/expired/inactive sessions fail; public registration cannot choose a privileged role. |
+| US01/07/11–17; FR01; AC1/8 | AUTH-02 Ownership and nested IDs | I/R/E | S1 cannot read/change S2 orders; O1 cannot read/change R3 orders, dishes, policies or finance; scope checked on lists and writes. |
+| US02/03; FR02; BR05 | CAT-01 Discovery | I/E | Name/category/inclusive price filters work; hidden/inactive excluded; visible sold-out shown as unavailable; documented pagination/scalars preserved. |
+| US05; BR01; AC4 | CART-01 Restaurant boundary | U/I/E | Cross-restaurant API items rejected; UI switch requires consent and cancel preserves existing cart. |
+| US04/05; BR02/03; NFR04; AC4 | PRICE-01 Totals and consent | U/I/E | Exact server totals; each changed unit price/fee conflicts; explicit reconfirmation before a new intent/key. |
+| US03/05/12; BR05; AC4 | ELIG-01 Revalidation | U/I/R | Hidden/sold-out/inactive/closed/not-accepting, disabled point/pair or missing rate prevents new order; no partial aggregate. |
+| US04/12; BR08/10; AC4/7 | DEL-01 Surveyed quote | I/E | Exact restaurant–point data only; absent fee blocks confirmation; known zero fee remains valid. |
+| US04/12; BR07–09; AC4/7 | DEL-02 Route tiers (**Post**) | U/I/E | Route distance, non-overlapping `[min,max)` tiers and inclusive final max; unknown/out-of-range/expired quote cannot confirm. |
+| US05/07; BR06; NFR05; AC9 | IDEM-01 Same intent and response loss | U/I/R/E | One order/result; replay returns original ID/snapshots after reload or later price edits. |
+| US05; BR06; AC9 | IDEM-02 Changed intent | U/I/R | Same scoped key with different validated content returns 409; no second resource. |
+| US07/13; BR15–17; AC12 | STATE-01 Legal actions | U/I/E | Only documented transitions; rejection needs reason; Student cancels own pending order only. |
+| US07/13; BR18/19; AC10/12 | RACE-01 Accept/cancel and no-op | I/R/E | Exactly one winning transition; loser conflicts; authorized current-target repeat adds no history/audit. |
+| US06/14; BR11–13 | PAY-01 Cash and independent states | I/E | Only current owner confirms receipt; paid does not complete, completion may remain unpaid. |
+| US06/14; BR11–14; AC5 | PAY-02 QR and refund (**Post**) | I/R/E | Scan/report is not paid; verified terminal-order transfer creates refund obligation; owner records direct refund, never reopens order. |
+| US11/12/17; BR04/24; AC2/3/6 | HIST-01 Immutable snapshots | I/E | Name/price/contact/point/fee/rate edits leave stored and displayed historical snapshots unchanged. |
+| US11; requirements §7.1; AC1/2 | CRUD-01 Delete or hide dish | I/R/E | Never-ordered dish deleted; ordered dish hidden; returned outcome and UI agree; history retained. |
+| US16; requirements §7.2–7.3; AC3/8 | CRUD-02 Delete or deactivate restaurant | I/R/E | History forces deactivation; active orders/finance remain; unused deletion preserves owner account and other restaurants. |
+| US15/17; BR20–22; AC6 | FIN-01 Base calculation | U/I | Completed-order dish subtotal × snapshotted rate, half-up once per order; delivery excluded; cancelled/rejected has no base. |
+| US13/17; BR18/23; AC10 | FIN-02 Completion atomicity | I/R | Completion/history/audit and one base commit together; repeat has no new effects; injected failure rolls back all. |
+| US17; BR23/27 | FIN-03 Adjustments and receipts | I/R/E | Admin-only append with required reason/positive receipt; durable financial keys deduplicate retries; no external money movement. |
+| US15/17; BR25; AC11 | FIN-04 Settlement assignment | I/R | Every entry belongs to at most one same-restaurant Settlement; competing/mixed assignment cannot partially commit. |
+| US15/17; BR26 | FIN-05 Reconciliation totals | U/I/E | Base + adjustments − receipts computed without join multiplication or negative-balance clamping; no invented status. |
+| US08; BR28/29; AC7 | AI-01 Candidate/output validation | U/I | Real eligible allowlisted IDs only; backend supplies money; invalid output cannot invent a dish or mutate orders. |
+| US08; BR30; NFR03 | AI-02 Privacy and injection | U/I | No personal/secret payload or transcript storage; hostile text cannot expand IDs, invoke tools or execute UI content. |
+| US08; BR08/31; NFR02; AC7 | AI-03 Outage/manual fallback | I/E/N | Safe error/retry state by 10 s; late output ignored; manual surveyed ordering works with valid delivery data. |
+| US08; FR06; AI §2 | AI-04 Budget semantics | U/I/N | Scope/quantity/boundaries remain pending; once approved, exact backend comparisons and live evaluation enforce them. |
+| US09; BR28/29 | RANDOM-01 Eligible random (**Post Should**) | U/I/E | Deterministic injected random source, no AI call; current eligibility and normal checkout; final empty-result contract required. |
+| US10; BR32 | REORDER-01 Current conditions (**Post Should**) | I/E | History creates new draft; current availability/price/quote and new consent/key required; old order unchanged. |
+| US18; BR16; AC12 | SUPPORT-01 Order-linked support (**Post Should**) | I/E | Authorized order link under approved workflow; submitting support does not directly cancel an accepted order. |
+| FR01/04/05/09; NFR03–05/07 | DATA-01 DB and API integrity | I/R | CHECK/FK/UNIQUE protections, scalar bounds and full rollback hold; forbidden writes leave no partial facts. |
+| US11–17; NFR07 | AUDIT-01 Transactional audit | I | Actor, time, target and redacted change content recorded with mutation; failure rolls back business change. |
+| US07/13; NFR05 | UI-01 Recovery and polling | U/E | Stable intent through unknown result; one poll owner; stale responses cannot overwrite newer independent order/payment versions. |
+| NFR01 | PERF-01 List load | N | At least 95% of restaurant/dish list loads finish within 2 s at 50 concurrent users in documented environment. |
+| NFR02 | PERF-02 AI latency | N | At least 95% within 5 s; retry/manual state at 10 s, with failures/timeouts included in reporting. |
+| NFR03 | SEC-01 Deployment security | I/E/N | HTTPS, password hashing, server-only secrets and approved JWT/CSRF/CORS behavior verified. |
+| NFR06; UI §§11/13 | UI-02 Mobile/accessibility | E/N | Browse → select point → order → track at 360 px without page horizontal scroll; keyboard/focus/contrast checks pass. |
+| NFR08 | OPS-01 Backup restore | I/N | Daily backups evidenced; isolated restore successfully recovers relational/financial/history invariants before go-live. |
+
+US19–20 are Could: add detailed cases only when selected and specified. US21–22 remain excluded; ensure neither is exposed as an enabled feature.
+
+## 5. Authorization and HTTP contract checks
+
+- Exercise owning/non-owning Student, current/former Restaurant Owner, Admin, unauthenticated and inactive actor on every protected resource. Test guessed IDs, swapped nested IDs, filter/cursor scope, crafted bodies and idempotent replays; hidden UI controls are not evidence of enforcement.
+- Own reads/writes succeed as permitted. Private cross-Student/Owner resources are concealed as 404; forbidden role operations return 403; invalid/expired credentials return applicable 401. Assert safe envelopes with no foreign data in details, lists or errors.
+- O1 may manage R1 and R2; switching restaurant cannot leak R3. Reassign R1 to O2 and verify subsequent O1 access denied, O2 allowed, including concurrent writes. Deactivation preserves current-owner access to existing orders/finance.
+- Admin cannot fulfill orders, confirm payment or acquire dish-owner powers implicitly. Restaurant Owners cannot assign owners, change commission rates or record receipts/adjustments. Public registration rejects role/actor overrides.
+- Verify `/api/v1`, `snake_case`, success/list/error envelopes, documented HTTP status and replay headers. Reject unknown fields, server-controlled totals/rates/status/actor fields, duplicate dish IDs and unsupported filters/sorts.
+- Preserve canonical string IDs/money, eight-decimal fraction rates, UTC instants and integer counts/metres/versions. Test negative/exponent/decimal/leading-zero IDs, bounds, rate excess precision and aggregate overflow. Signed adjustments/balances are valid; receipt amounts must be positive.
+- Verify stable keyset ordering/tie-breakers, limit 20/default and 100/max, scope/filter-bound cursors and 422 for invalid/mismatched cursors. Search collation expectations remain pending until deployment collation is recorded.
+- Validate shared examples against the eventual `openapi.yaml`; it is not supplied/claimed to exist. Generate/check client/server schemas only after authoring the enabled contract. Auth tests require finalized identifier/password, JWT transport/lifecycle and CSRF rules; do not assume Bearer, refresh/logout endpoints or cookie/header names.
+
+## 6. Pricing, quotes and historical records
+
+Use arbitrary-precision integer/decimal reference calculations independent of the implementation under test. Money is integer VND; REST representations are strings. No binary floating-point rounding.
+
+| Fixture/action | Expected oracle |
+| --- | --- |
+| 2 × `45000`, fee `5000`, rate `0.10000000` | Subtotal `90000`, total `95000`; on completion base commission `9000`, not `9500`. |
+| Subtotal 104 / 105 / 106, rate 10% | Commission 10 / 11 / 11 VND (below/at/above half). |
+| Two lines of 5 VND each, rate 10% | Order-level commission 1 VND; not 2 from per-line rounding. Zero subtotal/rate produces exact zero. |
+| Price 45000→48000 and fee 5000→8000, quantity 2 | 409 `PRICE_OR_FEE_CHANGED`; accepted total `95000`, current `104000`; all lines and fresh quote returned for explicit consent. |
+| Two unit-price changes cancel out in subtotal | Still conflict: compare each accepted price, not aggregate total only. |
+| Base 9000, adjustment −1000; receipts 3000 and 2000 | Receivable 8000, collected 5000, outstanding 3000; multiple entries/receipts cannot multiply aggregates. |
+| Read-model fixture with receivable 8000, collected 9000 | Outstanding −1000, not zero. This tests arithmetic only, not approval of a TBD overcollection write policy. |
+
+Base formula: `(subtotal_vnd × scaled_rate + 50000000) div 100000000`, where `scaled_rate = rate × 100000000`. Test technical bounds; do not impose an invented 100% business maximum.
+Order creation validates authenticated actor, active/open/accepting restaurant, visible/available dishes, active point/enabled pair, quote and configured commission policy in its transaction. Test each condition independently, opening/closing boundaries and overnight hours in `Asia/Ho_Chi_Minh`.
+Tampered quote/artifact or mismatched bound fields yields 422; a valid superseded quote yields 409 `QUOTE_STALE`, or `PRICE_OR_FEE_CHANGED` when amounts changed and a fresh valid quote is available. Unknown current fee yields applicable 422/503 and no confirmable replacement. Artifact protection and route TTL must be approved before their implementation tests become runnable.
+After successful creation, change dish name/price, account contact, point label/coordinates, delivery policy and commission rate; hide dish/deactivate restaurant. Read/replay the old order and compare every immutable snapshot, item, total and rate to the original. Current state may progress. Do not require a restaurant-name/address snapshot not defined in the schema.
+Test DELETE outcomes `deleted`, `hidden`, `deactivated` and corresponding reason fields; UI confirms beforehand and describes actual result. In-progress orders remain fulfillable after deactivation. Deleting an unused restaurant explicitly removes unused configuration/menu and only its management relationship, preserving audit and owner account/other restaurants.
+
+## 7. Durable retries, races and rollback
+
+Run R cases with independent connections and at least two backend processes sharing MySQL where cross-instance protection matters. Synchronize at known read/write boundaries; avoid relying on arbitrary sleeps. Force each winner ordering, repeat with a recorded seed/iteration count, and bound waits. Record actual isolation/lock settings.
+For each case assert HTTP results **and** rows, versions, history, audit and request-result links after commit. Inspect a consistent final DB view. A UI disabled button or in-process mutex is insufficient.
+
+| Case/action | Required durable result |
+| --- | --- |
+| Concurrent same actor/operation/key/content | One order and one successful request record, all children once; first 201, replay 200 with original ID and `Idempotency-Replayed: true`; bounded unresolved wait may return 503 `IDEMPOTENCY_IN_PROGRESS` plus `Retry-After`. |
+| Same key/content with reordered JSON/items | Canonical hash remains identical; item ordering uses numeric dish ID, not lexicographic order; duplicate dish IDs rejected. |
+| Same scoped key, changed recipient/quantity/price/quote/target | 409 `IDEMPOTENCY_KEY_REUSED`; successful hash/result never overwritten. Same total alone does not mean same intent. |
+| Same key across different actors/operations | Independent authorized scope; no disclosure or replay of another actor's result. Key comparison is case-sensitive. |
+| Commit then drop response; restart/reload; retry original payload/key | Return original order even after price/quote changes; no new order, snapshot or successful key. Changed/reconfirmed intent alone gets a new key. |
+| Accept versus Student cancel | One transition from pending; losing incompatible action gets 409 `ORDER_STATE_CONFLICT`; no contradictory history/base. UI refetches current state. |
+| Two accepts / two completions / two payment confirmations | One effective transition; authorized current-target request is no-op; one base on completion, no extra history/audit/payment side effect. |
+| Backward/invalid transition; rejection without reason | Rejected without mutation. `completed`, `cancelled`, `rejected` remain terminal; authorization and input validation precede no-op. |
+| Create versus price/fee/rate/hide/deactivate/delete/point update | Valid serial result at the locking point or rejection; never mixed snapshots, stale consent acceptance or broken history references. |
+| Owner reassignment or account deactivation versus write | Current authority is rechecked under shared locking; no write authorized solely from an earlier read/token claim. |
+| Two config edits using same expected version | One succeeds; stale edit returns 409 `VERSION_CONFLICT`, no lost update. |
+| Two Settlements claim same/overlapping entries | One-time assignment; loser `ENTRY_ALREADY_ASSIGNED`; entire losing selection rolls back, including previously unassigned entries and new Settlement/audit. |
+| Retry receipt/adjustment with same or changed content | Same key/content returns one original fact; changed amount/reason/target conflicts; result/audit/key atomic. |
+| Inject transient deadlock/lock timeout | Bounded whole-transaction retry using same intent; eventual single effect or safe failure. Exact attempt/backoff policy TBD; architecture's three-attempt example is not a confirmed setting. |
+
+Inject failures after order insertion, after items/payment/history, at audit insertion, during base insertion on completion and midway through Settlement assignment. Assert rollback leaves no partial order, success key without result, completed-without-base state, reassigned entry or orphan financial fact. A later valid retry can succeed once.
+Probe DB constraints directly: mixed-restaurant item/order/dish FKs, mismatched entry/order/Settlement restaurants, invalid quantity/row total, duplicate base/history/request result, base with null/mismatched `base_order_id`, blank adjustment/rejection reason and nonpositive receipt. Verify explicit null guards, restrictive deletes and runtime denial of append-only history edits. Service tests separately prove cross-row sums and lifecycle permissions that SQL cannot enforce alone.
+Verify all writes follow database §10's concrete lock order (including account prefix), and that public services share the workflow transaction. Do not call AI/maps/storage/money services inside retried transactions. Operational log-collector failure is distinct from required transactional audit failure.
+Settlement creation has no promised durable key: after a lost response inspect existing assignments/results before attempting another create. Do not generalize receipt/adjustment idempotency to every POST.
+
+## 8. Payment and manual reconciliation
+
+- Cash: owner confirmation changes `unpaid→paid` with actor/time/history/audit. Student/Admin attempts fail. Payment confirmation neither completes the Order nor creates a Settlement receipt; completed-but-unpaid still accrues its base.
+- Adjustments require a completed Order with an existing base and a nonblank reason; append a signed integer fact, preserve original base. Cancelled/rejected Orders cannot acquire base commission or qualifying adjustments.
+- Settlement creation selects nonempty unique unassigned entries from one restaurant and validates period boundaries. Receipts append only, Admin only, positive amount; totals derive from entries and receipts separately. Never edit/delete financial history to correct a test.
+- **Post-MVP QR:** scanning/showing QR or clicking “I transferred” leaves payment unconfirmed. Only verified owner confirmation changes payment. Paid QR cancellation/rejection records `refund_pending` atomically; late verified transfer on a terminal order records confirmation plus refund obligation without reopening it.
+- Race owner QR confirmation against cancellation/rejection in both orders; terminal result has the required refund obligation once. Owner records external `refund_pending→refunded`; repeating it produces no duplicate event. Inject audit failure to verify complete rollback.
+- QR evidence/representation and exceptional refund rules are pending. Settlement overlap/closure, late-adjustment membership, overcollection and receipt correction/reversal remain explicit release gates; tests must not invent policies.
+- For enabled reports, use `completed_at` for completed-order revenue, `created_at` for order lists/entries and `received_at` for receipts. Assert inclusive `from`, exclusive `to`; local October 2026 boundaries are `2026-09-30T17:00:00.000Z` to `2026-10-31T17:00:00.000Z`. Settlement membership is not inferred from these filters.
+
+## 9. AI, delivery failure and later recommendations
+
+Mock `AiGateway` and delivery services with a fixed candidate set. Observe outbound allowlisted payloads, public response, provider call counts and absence of order/payment/financial/transcript writes.
+
+| Input/fault | Assertion |
+| --- | --- |
+| Normal candidate response | Only supplied real eligible IDs; backend computes restaurant mapping/price/fee/estimate; selecting a result uses normal cart, fresh quote and consent. |
+| No candidates / valid empty provider output | Empty candidate set makes no provider call; valid empty result is 200 with `suggestions: []`, no invented replacement. |
+| Malformed/truncated JSON, wrong types, duplicate/unknown/real-but-unsent IDs, extra price/URL/action fields | Strictly reject unsafe output. Proposed AI mapping is 503 `AI_UNAVAILABLE`, pending its approval; no raw provider diagnostics or fabricated fallback. |
+| Hidden/sold-out/closed/non-accepting/inactive, point disabled or pair missing before/after AI | Excluded independently; re-read after provider return, remove invalid candidates, return only valid survivors or empty. Closing during delay is covered. |
+| Price/fee changes during AI | Recompute current estimates and approved budget rules; suggestions never constitute accepted checkout prices. |
+| Preferences/catalog content contains fake system instructions, PII or secrets | No arbitrary tool/action/URL execution; no forbidden data reaches adapter. Fail closed if approved minimization cannot make input safe. |
+| Script/HTML, payment/price or unsupported dietary guarantees in reason | Safe plain text with unsafe/unsupported claims rejected/suppressed under approved validator; no invented allergen inventory. |
+| Timeout/outage/quota/late reply | 504 `AI_TIMEOUT` or applicable 503; platform throttling 429 respects `Retry-After`; bounded calls share deadline/cost allowance; late reply cannot replace current intent. |
+| AI unavailable; map unavailable | Manual ordering at a valid surveyed pair still works. Unknown delivery fee blocks confirmation; do not substitute straight-line distance or zero fee. |
+
+Budget discriminator: dish `45000` + fee `5000`, budget `47000`. The expected eligible result remains **pending** until dish-only versus delivery-inclusive scope, quantity and boundaries are approved. Then test below/equal/above limits with exact arithmetic. AI readiness gates cannot be waived by a mock passing.
+**Post-MVP route tests:** route-versus-straight-line discriminator, each tier minimum/maximum, final inclusive maximum, overlap/gap/out-of-range, provider failure, expired/tampered/mismatched quote and configuration changes. TTL, provider and distance normalization must be finalized first.
+**Post-MVP random/reorder/support:** random uses injected ordinary randomness and no AI call; final sampling/retry/empty-result contract is pending. Reorder revalidates current dishes/quote into a new intent. Support is linked to an authorized Order and does not mutate accepted Order status by itself.
+
+## 10. Browser journeys and UI acceptance
+
+| Journey | Required checkpoints |
+| --- | --- |
+| E-01 Student cash order | Approved login → browse/filter → select point → single-restaurant cart → valid quote → confirm → reload/recover same Order → track; no optimistic success before commit. |
+| E-02 Conflict and disconnection | Change price/fee after review; show old→new values and total, preserve input, require explicit reconfirmation/new key. Drop response after commit; retry original key and recover one Order. |
+| E-03 Fulfillment | Separate owner session accepts/rejects with reason or delivers/completes; Student gets current state; losing cancellation refetches; order/payment badges stay independent. |
+| E-04 Catalog/history | Owner edits/hides; Admin deactivates; outcomes match response, old snapshots persist; unused restaurant deletion preserves owner's other access. |
+| E-05 Reconciliation | Admin groups eligible entries, appends adjustment/receipt with retry protection; owner reads own authoritative totals, denied on another restaurant. |
+| E-06 AI unavailable | Retry/manual fallback by 10 s, cart preserved; valid surveyed cash order remains possible. No random suggestion substituted without approved policy. |
+
+Test loading, background refresh, empty/no-match, network/offline, session expiry, forbidden access, validation, pending mutation, conflict and broken-image states. Clear prior protected account data on session change. Do not expose stack traces/raw enums/codes as Student copy or present demo fixtures as production data.
+Use fake timers for polling: about 5 s while visible, no overlapping calls, one page-level owner per order, backoff on error, pause hidden/offline, refresh on return. Stop Order polling at terminal status; Payment may continue independently. Delayed older versions cannot overwrite newer state; show real last-updated/connectivity information.
+Compare Student screenshots at 390 px and dashboards at 1440 px to the corresponding UI board; additionally test 360/768/1024 px. Preserve shared tokens, Be Vietnam Pro, role layouts and Vietnamese copy. No export wrapper/phone frame; wide tables scroll internally and sticky bars do not cover content.
+Verify keyboard-only flow, semantic controls/labels, inline error associations, first-invalid-field focus, named dialogs/focus trap/return, accessible icon controls, text status labels, live regions, 200% zoom, long Vietnamese names, reduced motion and normal-text contrast at least 4.5:1. Automated accessibility checks supplement manual keyboard/screen-reader review.
+
+## 11. NFR measurement and recovery evidence
+
+The requirement thresholds are proposed acceptance targets to measure, not achieved guarantees. Report failures openly; do not replace targets with measurements or loosen them silently.
+
+| Requirement | Measurement protocol and pass evidence |
+| --- | --- |
+| NFR01 | In a documented staging-like environment run restaurant/dish list loads with 50 concurrent user sessions. Record dataset size, filter mix, browser/network/server/DB resources, polling background load, warm-up, measured duration, cache state, sample count and failures. Measure from user load action to usable rendered list; API/DB timings diagnose. At least 95% of measured loads finish successfully within 2 s; include errors/timeouts in denominator. Duration/dataset are agreed run parameters, not invented product thresholds. |
+| NFR02 | Measure recommendation request-to-result at client plus backend/provider stages. Report all requests, completion/error/timeout rates and latency distribution; target ≥95% within 5 s, visible retry/manual state at 10 s. Mock clocks verify control flow; selected live provider with synthetic fixtures establishes real latency/quality/cost. Record prompt/schema/model/config versions, workload and billed retries; rubric/cost limits remain TBD. |
+| NFR03 | Verify HTTPS deployment and redirects, approved password hash configuration (no plaintext), JWT signature/expiry/issuer/audience, active-account/ownership checks and no backend secrets in bundle. If approved cookie transport is used, verify HttpOnly/Secure/SameSite plus finalized Origin/CSRF and CORS allowlist behavior; missing security decisions block auth release. |
+| NFR04/05 | PRICE, HIST, IDEM, STATE and FIN suites supply exact arithmetic, durable recovery and repeat/race evidence; retain invariant assertions and safe response references. |
+| NFR06 | Record viewport/browser and screenshots for complete browse → point → order → track at 360 px with no full-page horizontal scroll. |
+| NFR07 | Inspect redacted audit facts for actor/time/target/change content and injected audit rollback. Operational telemetry does not replace business audit. |
+| NFR08 | Verify daily backup schedule and successful run evidence. Restore a backup of synthetic representative data into a separate isolated target before go-live; apply documented recovery procedure, start compatible app and compare snapshot/history/ledger/request counts and financial totals. Check relational integrity, login/reads, same-key recovery and one safe new test order. Record backup timestamp/checksum, versions, restore duration, failures and validation results. Never restore over production to test recovery. |
+
+Backup retention, RPO/RTO, hosting and optional image-object recovery policy remain TBD; measure observed recovery without claiming unapproved targets. A backup file existing is not proof that restoration works.
+
+## 12. Commands, CI gates and reporting
+
+This documentation workspace does not supply application manifests, a runnable test suite or CI configuration. The development guide's target is separate `frontend/` and `backend/` packages. Verify scripts before running; do not claim guessed commands passed.
+
+```bash
+# In the application repository, after confirming these directories exist:
+npm --prefix frontend run
+npm --prefix backend run
+# Install from the corresponding reviewed lockfiles:
+npm --prefix frontend ci
+npm --prefix backend ci
+```
+
+Use the following command map when wiring CI. Angle-bracket values are placeholders, **not runnable commands**. Replace them with verified script names in the implementation PR; do not use `--if-present` to make a required missing check green.
+
+| Required check | Command template / configuration status |
+| --- | --- |
+| Frontend lint, type check, unit/component tests, build | `npm --prefix frontend run <verified-script>` for each check; TBD. |
+| Backend lint, type check, unit tests, build | `npm --prefix backend run <verified-script>` for each check; TBD. |
+| Migration + deterministic test seed | Repository wrapper if configured; test DB guard mandatory. Prisma generate/seed/deploy commands must match installed version/config; no reset or `migrate dev` against retained/shared data. |
+| MySQL integration + races | `npm --prefix backend run <verified-integration-or-race-script>`; runner/DB lifecycle TBD. |
+| Browser E2E + accessibility | Run verified script in owning package; runner/location TBD. |
+| OpenAPI/examples and import boundaries | Verified repository tooling when authored; currently TBD. |
+| Load/live AI/backup restore | Versioned harness/runbook commands once selected; currently TBD. |
+
+If absent, report `NOT CONFIGURED: <check/tool>`; a configured but unrun check is `NOT RUN`, not passed. Policy-dependent cases are `BLOCKED: <decision and source>`. Future-scope cases are `NOT APPLICABLE: <milestone>`.
+
+| Gate | Required checks |
+| --- | --- |
+| Every implementation PR | Relevant lint/type/build and unit tests; affected API/example/boundary checks; MySQL integration for changed data/workflows/auth; deterministic critical race suite for affected invariants; critical checkout/recovery/fulfillment browser smoke; safe-secret/artifact checks. No live AI dependency. |
+| UI or shared-component PR | Applicable browser conflict/fallback/authorization paths, responsive/accessibility and visual comparisons across affected roles. |
+| Schema/finance/security PR | Empty + upgrade migration fixtures, actual SQL constraints/runtime grants, full affected finance/auth/race/rollback tests, explicit migration and security review. |
+| AI prompt/model/adapter PR | Versioned fixed validation/privacy/injection/fallback suite; approved live synthetic evaluation comparison before deploying provider/model behavior changes. |
+| Before milestone release | Full enabled-scope U/I/R/E suite, agreed browser checks, NFR01–08 evidence including load/live AI where enabled and isolated restore; finalized contracts/security/config and migration rehearsal. Future scope stays disabled. |
+
+CI is a required implementation plan, not claimed configured branch protection. Missing required tooling/evidence blocks claiming the affected release gate passed. Do not hide failed race/financial/security tests with blanket retries; record first failure and fix its cause. Changes unrelated to an established green suite do not require repeated broad runs without new risk.
+
+## 13. Release decisions and completion evidence
+
+Resolve in owning documents before enabling affected capabilities: auth identifier/password/JWT lifecycle/transport/CSRF; quote artifact protection and route TTL/normalization; owner/point provisioning; money/quantity business limits; AI budget/preferences/privacy/limits/provider/evaluation; QR evidence/refunds; financial period/exception/correction policies; post-MVP DTOs; exact test runners/scripts/toolchain/CI and backup operations. Required MVP decisions remain MVP blockers, not scope deferrals disguised as green tests.
+For each run retain commit, milestone/feature flags, exact commands, runtime/DB/browser/provider versions, fixture seed, timestamps, case/source IDs, pass/fail/blocked counts and sanitized artifacts. Distinguish automated results, manual observation and source inspection. Record defects with reproduction and invariant impact; do not claim browser, production-load or backup verification from document review.
+Done for a milestone means its enabled cases pass, necessary NFR measurements and restore evidence exist, required policies are resolved, failures/missing checks are visible, and excluded/future features remain disabled. This file defines that evidence; it does not certify an implementation that has not been tested.
