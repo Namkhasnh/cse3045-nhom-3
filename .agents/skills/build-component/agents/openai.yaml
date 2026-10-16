@@ -1,0 +1,3 @@
+interface:
+  display_name: "Build Component"
+  short_description: "Build React UI using project design contracts"

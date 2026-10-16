@@ -82,6 +82,30 @@ Read the owning specification for the complete list. These groups are especially
 
 Keep affected functionality disabled until its necessary decisions are explicit. Continue independent work that does not depend on them. A disabled required MVP feature still prevents claiming the whole MVP is complete.
 
+## Repository skills
+
+Reusable contributor workflows live in [`.agents/skills/`](../.agents/skills/). These skills use the owning specifications above; they do not replace AGENTS.md or authorize unrelated actions. Instructions and metadata are in English; explanations and task reports default to Vietnamese.
+
+| Skill | Use it for |
+| --- | --- |
+| [fix-tests](../.agents/skills/fix-tests/SKILL.md) | Diagnosing test failures and verifying targeted repairs without weakening required behavior |
+| [build-component](../.agents/skills/build-component/SKILL.md) | React components, pages, styling, interaction states, and responsive UI |
+| [explain-code](../.agents/skills/explain-code/SKILL.md) | Read-only, beginner-friendly explanations grounded in actual source and call paths |
+| [implement-feature](../.agents/skills/implement-feature/SKILL.md) | A scoped product capability across the layers it actually needs |
+| [review-change](../.agents/skills/review-change/SKILL.md) | Read-only review of changes for actionable bugs, regressions, and contract violations |
+
+Invoke a skill by name in Codex, for example:
+
+```text
+$fix-tests Diagnose and fix the failing backend tests; explain the root cause.
+$build-component Build a DishCard following the UI guide, using clearly labeled fixtures.
+$explain-code Explain PrismaService and its startup/shutdown flow in Vietnamese.
+$implement-feature Implement the restaurant discovery capability for US02 within MVP scope.
+$review-change Review my current changes for bugs and missing acceptance evidence.
+```
+
+Automatic selection remains enabled when a request matches a skill's description. Each skill includes `agents/openai.yaml` for its picker label. No extra runtime dependency is required by these instruction-only skills. Validate changes to metadata/links and try representative tasks when revising their behavior; structural validation alone does not prove task quality.
+
 ## Maintaining documentation
 
 - Keep one owning specification for each rule; link to it rather than creating a parallel contract. AGENTS.md is a routing guide and concise reminder, not a replacement for detailed specifications.

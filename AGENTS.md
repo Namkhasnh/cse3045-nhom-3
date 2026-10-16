@@ -12,6 +12,8 @@ This file applies to the entire repository. Use it as the entry point for coding
 
 Do not require the user to supply a fully specified task template. Infer traceability and routine implementation choices from the repository. If an unresolved product/security decision is necessary, ask a focused question and continue independent work; do not turn a `TBD` into behavior silently.
 
+Reusable workflows for test repair, UI authoring, code explanation, feature implementation, and change review are cataloged in [Repository skills](docs/README.md#repository-skills). Use a matching skill when appropriate; this guide and the owning contracts apply whether or not a skill is selected.
+
 <!-- CODEGRAPH_START -->
 ## CodeGraph
 
