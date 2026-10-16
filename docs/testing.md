@@ -231,7 +231,7 @@ npm --prefix frontend ci
 npm --prefix backend ci
 ```
 
-CI uses Node.js `24.x` and runs frontend lint/build, backend lint/unit/HTTP E2E/build, and an isolated MySQL 8.4.11 audit integration job. The table also lists local Prisma/connectivity checks; commands are shown with repository-root package prefixes.
+CI runs for PRs targeting `hw1` or `main` and pushes to either branch. It uses Node.js `24.x` and runs frontend lint/build, backend lint/unit/HTTP E2E/build, and an isolated MySQL 8.4.11 audit integration job. The table also lists local Prisma/connectivity checks; commands are shown with repository-root package prefixes.
 
 | Existing check | Command / evidence boundary |
 | --- | --- |
