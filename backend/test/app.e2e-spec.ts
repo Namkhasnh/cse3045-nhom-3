@@ -1,61 +1,78 @@
 import assert from 'node:assert/strict';
 import { after, before, describe, it } from 'node:test';
-import type { INestApplication } from '@nestjs/common';
+import { Controller, Get, UnprocessableEntityException, type INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { AppModule } from '../src/app.module.js';
-import { createValidationPipe } from '../src/validation.pipe.js';
+import { configureApiHttp } from '../src/common/http/api-http.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
 
-describe('HTTP server', () => {
+@Controller('probe')
+class ProbeController {
+  @Get()
+  read() { return { value_vnd: '9007199254740993' }; }
+
+  @Get('list')
+  list() { return { data: [{ id: '1' }], page: { next_cursor: null, has_more: false } }; }
+
+  @Get('invalid')
+  invalid(): never {
+    throw new UnprocessableEntityException({
+      code: 'VALIDATION_ERROR', message: 'Check the highlighted fields.',
+      field_errors: [{ path: 'quantity', code: 'MIN_VALUE', message: 'Quantity must be at least 1.' }],
+      details: {},
+    });
+  }
+}
+
+describe('HTTP foundation', () => {
   let app: INestApplication | undefined;
   let baseUrl: string;
 
   before(async () => {
     const module = await Test.createTestingModule({
-      imports: [AppModule],
+      imports: [AppModule], controllers: [ProbeController],
     }).overrideProvider(PrismaService).useValue({}).compile();
-
     app = module.createNestApplication();
-    app.useGlobalPipes(createValidationPipe());
-    // Let the OS choose a free port; tests do not occupy port 3000.
+    configureApiHttp(app);
     await app.listen(0, '127.0.0.1');
     baseUrl = await app.getUrl();
   });
 
-  after(async () => {
-    await app?.close();
-  });
+  after(async () => { await app?.close(); });
 
-  it('GET / returns 404 because no root route is registered', async () => {
-    const response = await fetch(`${baseUrl}/`, {
-      signal: AbortSignal.timeout(5000),
-    });
-
-    assert.equal(response.status, 404);
-    assert.deepEqual(await response.json(), {
-      message: 'Cannot GET /',
-      error: 'Not Found',
-      statusCode: 404,
+  it('serves only the versioned path and envelopes exact strings', async () => {
+    const response = await fetch(`${baseUrl}/api/v1/probe`, { signal: AbortSignal.timeout(5000) });
+    assert.equal(response.status, 200);
+    assert.deepEqual(await response.json(), { data: { value_vnd: '9007199254740993' } });
+    assert.equal((await fetch(`${baseUrl}/probe`)).status, 404);
+    const list = await fetch(`${baseUrl}/api/v1/probe/list`, { signal: AbortSignal.timeout(5000) });
+    assert.deepEqual(await list.json(), {
+      data: [{ id: '1' }], page: { next_cursor: null, has_more: false },
     });
   });
 
-  it('an unknown route returns 404', async () => {
-    const response = await fetch(`${baseUrl}/missing-route`, {
-      signal: AbortSignal.timeout(5000),
-    });
-
-    assert.equal(response.status, 404);
-    assert.deepEqual(await response.json(), {
-      message: 'Cannot GET /missing-route',
-      error: 'Not Found',
-      statusCode: 404,
-    });
+  it('returns the stable error envelope with request reference', async () => {
+    const response = await fetch(`${baseUrl}/api/v1/probe/invalid`, { signal: AbortSignal.timeout(5000) });
+    assert.equal(response.status, 422);
+    const body = await response.json() as { error: Record<string, unknown> };
+    assert.equal(body.error.code, 'VALIDATION_ERROR');
+    assert.deepEqual(body.error.field_errors, [
+      { path: 'quantity', code: 'MIN_VALUE', message: 'Quantity must be at least 1.' },
+    ]);
+    assert.deepEqual(body.error.details, {});
+    assert.equal(body.error.retryable, false);
+    assert.equal(body.error.request_id, response.headers.get('x-request-id'));
   });
 
-  it('the removed demo route returns 404', async () => {
-    const response = await fetch(`${baseUrl}/todos`, {
-      signal: AbortSignal.timeout(5000),
-    });
+  it('keeps removed routes at 404 and envelopes unknown API routes', async () => {
+    for (const path of ['/', '/todos']) {
+      const response = await fetch(`${baseUrl}${path}`, { signal: AbortSignal.timeout(5000) });
+      assert.equal(response.status, 404);
+    }
+    const response = await fetch(`${baseUrl}/api/v1/missing-route`, { signal: AbortSignal.timeout(5000) });
     assert.equal(response.status, 404);
+    const body = await response.json() as { error: { code: string; field_errors: unknown[] } };
+    assert.equal(body.error.code, 'NOT_FOUND');
+    assert.deepEqual(body.error.field_errors, []);
   });
 });

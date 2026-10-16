@@ -5,7 +5,7 @@ description: "Create or update React components, pages, styles, and responsive U
 
 # Build Component
 
-Build UI that fits the existing product design and has a clear data and interaction contract.
+Build UI that follows the approved product direction and has a clear data and interaction contract. Use [design skill coordination](../../../docs/ui/design-skills.md): consult `frontend-design` for substantial aesthetic direction/critique and `ui-ux-pro-max` for focused UX, accessibility or stack research. Ordinary components reuse the current system; no need to load all skills.
 
 ## Ground the component
 
@@ -18,7 +18,7 @@ Build UI that fits the existing product design and has a clear data and interact
 
 - Follow [architecture §10.1](../../../docs/architecture.md#101-splitting-the-frontend-into-small-components) and [target structure](../../../docs/code_structure.md). Keep domain widgets in their feature and generic reusable controls in `shared/ui`; compose features through public exports at app level.
 - Keep requests and server-state coordination in hooks/API layers. Presentational components receive data and callbacks; local interaction state may stay close to the UI. Do not duplicate backend money, permissions, or lifecycle decisions.
-- Preserve Be Vietnam Pro, semantic tokens, Vietnamese product copy, and the relevant Student/Owner/Admin layout. Apply UI §10 corrections before copying reference behavior.
+- Follow the approved identity (currently Be Vietnam Pro and cream/orange), semantic tokens, Vietnamese product copy, and the relevant Student/Owner/Admin layout. Font, palette and shape changes may be proposed with concrete values, rationale and a preview/wireframe; obtain the user’s decision before applying a new identity and record approved decisions in the UI guide. Routine implementation within that identity requires no extra approval. Apply UI §10 corrections before copying reference behavior.
 - Implement states appropriate to the component: unavailable or disabled actions, pending submission, missing images, and loading/empty/error/conflict states where data is involved. Preserve input during failures; require server confirmation before displaying mutation success.
 - Build keyboard, label, focus, dialog, and responsive behavior alongside the UI. Follow UI §§11 and 13 for long text, zoom, contrast, and viewport checks.
 - For an explicitly requested prototype or presentation-only component, keep synthetic fixtures at a clearly labeled data boundary. An absent backend must not become a fake successful order, payment, or other real mutation. For requested connected behavior, report the missing contract/implementation and continue independent UI work; implement backend changes only within the user's authorized scope.

@@ -1,7 +1,7 @@
 # Development Guide — Hoa Lac Food Ordering Platform
 > **Purpose:** define how developers and AI coding assistants work safely and consistently in the repository.
 > **Status:** derived from [requirements.md](requirements.md), [architecture.md](architecture.md), [database.md](data/database.md), [api_contract.md](data/api_contract.md), [ui_convertion.md](ui/ui_convertion.md), and [ai_integration.md](ai_integration.md).
-> **Repository check:** October 16, 2026. CI uses Node.js `24.x`; current scripts, `DATABASE_URL` and `PORT` are verified below. Exact runtime patch/npm/MySQL versions and future auth/provider configuration remain **TBD**. Recheck manifests/config before use.
+> **Repository check:** October 16, 2026. CI uses Node.js `24.x`; current scripts, `DATABASE_URL` and `PORT` are verified below. Exact runtime Node/npm patches and future provider configuration remain **TBD**; MySQL 8.4.11 and auth policy are selected in the owning contracts. Recheck manifests/config before use.
 ## 1. Authority and conflict resolution
 Requirements govern behavior; the following documents own their respective domains:
 1. [docs/requirements.md](requirements.md) — scope, roles, US/FR/BR/AC.
@@ -22,21 +22,21 @@ Rules:
 | Frontend | Vite + React + TypeScript |
 | Styling | Tailwind CSS 4 via `@tailwindcss/vite`; semantic CSS theme and self-hosted Be Vietnam Pro |
 | Backend | NestJS + TypeScript |
-| API | REST + JSON; target `/api/v1` prefix is not registered yet |
-| Auth | JWT; lifecycle/transport details partly TBD |
+| API | REST + JSON; `/api/v1` prefix and shared envelopes are configured, with no business routes yet |
+| Auth | 15-minute JWT cookie, no refresh, signed CSRF and versioned logout; API §2 |
 | ORM | Prisma |
 | Database | MySQL / InnoDB |
 | Architecture | Modular monolith, logical 3-tier separation |
 | Node.js | CI: `24.x`; exact local/production patch remains to be pinned |
 | npm | **TBD — verify and pin** |
-| Exact MySQL release | **TBD — verify and pin** |
+| Exact MySQL release | Oracle MySQL Community Server **8.4.11**, per database §1 |
 | AI/LLM provider/model | **TBD** |
 | Map provider | **TBD** |
 | Image storage provider | **TBD if uploads are enabled** |
 ### 2.1 MySQL requirement
 - The schema relies on enforced `CHECK` constraints.
-- Select a MySQL release compatible with enforced checks; the data design requires behavior available in **MySQL 8.0.16+**.
-- `8.0.16+` is a compatibility floor, not a verified project version.
+- Use Oracle MySQL Community Server **8.4.11** with InnoDB in local, test, staging and production; verify `SELECT VERSION()` and actual CHECK enforcement.
+- `8.0.16+` explains the historical CHECK floor; it is not the selected release.
 - Financial/concurrency integration tests must run against real MySQL/InnoDB, not SQLite.
 ## 3. Environment setup
 ### 3.1 Verify local tools
@@ -79,7 +79,7 @@ Current settings come from `backend/.env.example`, `backend/src/main.ts` and `ba
 | JWT issuer | Auth enabled | Exact value/name TBD |
 | JWT audience | Auth enabled | Exact value/name TBD |
 | Allowed frontend origin | Separate origins | Example `http://localhost:5173`; never wildcard with credentials |
-| CSRF config | Cookie-auth writes | Protocol/header name **TBD** |
+| CSRF config | Cookie-auth writes | Backend HMAC key; `X-CSRF-Token` and bound cookie per API §2 |
 | AI endpoint/model/credential | AI enabled | Provider/model **TBD**; backend only |
 | AI timeout/quota/cost limits | AI enabled | **TBD**; absent limits must not mean unlimited |
 | Map settings | Post-MVP map delivery | **TBD** |
@@ -316,6 +316,8 @@ These scripts were checked against package manifests and CI on October 16, 2026.
 
 CI runs frontend lint/build and backend lint/unit/HTTP E2E/build. Backend tests mock DB access; they do not establish actual MySQL transaction, constraint or race correctness. No root npm workspace or standalone type-check script is configured. Build/test compilation covers current TypeScript checks.
 For documentation-only changes, verify links, canonical paths, referenced sections, line limits and source/script consistency. Run application checks when executable code/config changes. Report configured-but-unrun checks as `NOT RUN`, missing tooling as `NOT CONFIGURED`, and policy-dependent work as `BLOCKED: <decision/source>`.
+Real-MySQL audit integration is opt-in: set `TEST_DATABASE_URL` to a disposable loopback MySQL database named `test_*` or `*_test`, then run `npm --prefix backend run test:integration`. The runner applies the checked-in migration without reset and checks transactional audit rollback. Browser fixture smoke uses local Chrome or `BROWSER_BIN` via `npm --prefix frontend run test:smoke`; it is not a connected checkout test.
+
 ## 13. Minimum test expectations
 Add only tests relevant to the changed area, while preserving these invariants:
 - server-side price/fee recalculation and one restaurant per order;
@@ -476,5 +478,5 @@ Read and follow docs/ui/ui_convertion.md and the relevant reference design board
 Before coding: read US/FR/BR/AC, confirm scope, identify owning module, check API/DB contracts, verify scripts/tool versions, and list unresolved TBDs.
 Before PR: update tests, run existing repo checks, use real MySQL where DB behavior matters, ensure no secret/destructive operation, update changed contract docs, include traceability/verification, and keep remaining TBDs explicit.
 ## 18. Setup decisions still TBD
-Resolve and record: exact deployment Node.js patch/npm/MySQL versions (CI currently uses Node.js 24.x); future test/tooling scripts and auth/provider/frontend env names; JWT transport/lifetime/refresh/logout/revocation; CSRF protocol; AI provider/model/config/limits; post-MVP map config; optional storage config; real-MySQL/browser runners and additional CI gates; and protected integration-branch/review policy.
+Resolve and record: exact deployment Node.js patch/npm versions (CI currently uses Node.js 24.x); future test/tooling scripts and auth/provider/frontend env names; AI provider/model/config/limits; post-MVP map config; optional storage config; real-MySQL/browser runners and additional CI gates; and protected integration-branch/review policy.
 Do not replace these gaps with guessed values. Update this guide and the relevant config/examples together after each approved decision.

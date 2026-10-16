@@ -36,7 +36,7 @@ Each executable test records its case ID, source IDs, milestone, fixture, action
 ## 3. Isolated environment and deterministic data
 
 - Use disposable, explicitly allowlisted local/CI MySQL databases and synthetic accounts. Seeds/reset/cleanup must refuse production/shared targets. Never copy real orders, contacts, bank/QR details or credentials into fixtures.
-- Pin verified Node.js/npm/Prisma/MySQL versions from manifests and deployment configuration. MySQL must enforce CHECKs (8.0.16+ compatibility floor, not a selected release); use InnoDB, real FKs, strict SQL mode, UTC sessions and documented collation/isolation settings.
+- Pin verified Node.js/npm/Prisma/MySQL versions from manifests and deployment configuration. Use Oracle MySQL Community Server 8.4.11 and verify CHECK enforcement; use InnoDB, real FKs, strict SQL mode, UTC sessions and documented collation/isolation settings.
 - Financial, migration and race suites cannot substitute SQLite or ORM mocks for MySQL. Apply reviewed migrations to an empty database and an upgrade fixture; inspect actual CHECK/FK/UNIQUE definitions and restrictive FK actions.
 - Give each parallel worker an isolated database or explicitly isolated fixture scope. Race participants deliberately share one test database and aggregate. Cleanup uses a dedicated test identity; runtime permission tests use the application identity.
 - Freeze ordinary tests at `2026-10-16T03:00:00.000Z` (10:00 in `Asia/Ho_Chi_Minh`); inject clocks for closing time, expiry and deadline cases. Real load/latency runs use real clocks.
@@ -107,7 +107,7 @@ US19–20 are Could: add detailed cases only when selected and specified. US21�
 - Verify `/api/v1`, `snake_case`, success/list/error envelopes, documented HTTP status and replay headers. Reject unknown fields, server-controlled totals/rates/status/actor fields, duplicate dish IDs and unsupported filters/sorts.
 - Preserve canonical string IDs/money, eight-decimal fraction rates, UTC instants and integer counts/metres/versions. Test negative/exponent/decimal/leading-zero IDs, bounds, rate excess precision and aggregate overflow. Signed adjustments/balances are valid; receipt amounts must be positive.
 - Verify stable keyset ordering/tie-breakers, limit 20/default and 100/max, scope/filter-bound cursors and 422 for invalid/mismatched cursors. Search collation expectations remain pending until deployment collation is recorded.
-- Validate shared examples against the eventual `docs/data/openapi.yaml`; it is not supplied/claimed to exist. Generate/check client/server schemas only after authoring the enabled contract. Auth tests require finalized identifier/password, JWT transport/lifecycle and CSRF rules; do not assume Bearer, refresh/logout endpoints or cookie/header names.
+- Validate shared examples against the eventual `docs/data/openapi.yaml`; it is not supplied/claimed to exist. Generate/check client/server schemas only after authoring the enabled contract. Auth tests follow API §2 username/Argon2id, 15-minute cookie JWT, versioned logout and bound CSRF protocol. Cover wrong Origin, missing/mismatched CSRF, expired/revoked JWT, key rotation and no refresh endpoint.
 
 ## 6. Pricing, quotes and historical records
 
@@ -210,7 +210,7 @@ The requirement thresholds are proposed acceptance targets to measure, not achie
 | --- | --- |
 | NFR01 | In a documented staging-like environment run restaurant/dish list loads with 50 concurrent user sessions. Record dataset size, filter mix, browser/network/server/DB resources, polling background load, warm-up, measured duration, cache state, sample count and failures. Measure from user load action to usable rendered list; API/DB timings diagnose. At least 95% of measured loads finish successfully within 2 s; include errors/timeouts in denominator. Duration/dataset are agreed run parameters, not invented product thresholds. |
 | NFR02 | Measure recommendation request-to-result at client plus backend/provider stages. Report all requests, completion/error/timeout rates and latency distribution; target ≥95% within 5 s, visible retry/manual state at 10 s. Mock clocks verify control flow; selected live provider with synthetic fixtures establishes real latency/quality/cost. Record prompt/schema/model/config versions, workload and billed retries; rubric/cost limits remain TBD. |
-| NFR03 | Verify HTTPS deployment and redirects, approved password hash configuration (no plaintext), JWT signature/expiry/issuer/audience, active-account/ownership checks and no backend secrets in bundle. If approved cookie transport is used, verify HttpOnly/Secure/SameSite plus finalized Origin/CSRF and CORS allowlist behavior; missing security decisions block auth release. |
+| NFR03 | Verify HTTPS deployment and redirects, approved password hash configuration (no plaintext), JWT signature/expiry/issuer/audience, active-account/ownership checks and no backend secrets in bundle. Verify `__Host-` cookie flags, exact Origin and session-bound CSRF rejection, versioned logout, and no refresh endpoint; no permissive credentialed CORS. |
 | NFR04/05 | PRICE, HIST, IDEM, STATE and FIN suites supply exact arithmetic, durable recovery and repeat/race evidence; retain invariant assertions and safe response references. |
 | NFR06 | Record viewport/browser and screenshots for complete browse → point → order → track at 360 px with no full-page horizontal scroll. |
 | NFR07 | Inspect redacted audit facts for actor/time/target/change content and injected audit rollback. Operational telemetry does not replace business audit. |
@@ -220,7 +220,7 @@ Backup retention, RPO/RTO, hosting and optional image-object recovery policy rem
 
 ## 12. Commands, CI gates and reporting
 
-Repository check on October 16, 2026: both application packages and CI exist. The current checks below verify the scaffold; the acceptance suites in §§4–11 are still to implement. Recheck package manifests and CI before running.
+Repository check on October 16, 2026: both application packages and CI exist. The current checks below verify the scaffold and the shared HTTP/audit foundation; most acceptance suites in §§4–11 remain to implement. Recheck package manifests and CI before running.
 
 ```bash
 # Inspect current package scripts from the repository root:
@@ -231,17 +231,19 @@ npm --prefix frontend ci
 npm --prefix backend ci
 ```
 
-Existing CI uses Node.js `24.x` and runs frontend lint/build and backend lint/unit/HTTP E2E/build. The table also lists local Prisma/connectivity checks; commands are shown with repository-root package prefixes.
+CI uses Node.js `24.x` and runs frontend lint/build, backend lint/unit/HTTP E2E/build, and an isolated MySQL 8.4.11 audit integration job. The table also lists local Prisma/connectivity checks; commands are shown with repository-root package prefixes.
 
 | Existing check | Command / evidence boundary |
 | --- | --- |
 | Frontend lint/build | `npm --prefix frontend run lint`; `npm --prefix frontend run build` (includes TypeScript) |
 | Backend lint/unit/build | `npm --prefix backend run lint`; `npm --prefix backend test`; `npm --prefix backend run build` |
-| Backend HTTP E2E | `npm --prefix backend run test:e2e`; mocks Prisma, checks scaffold HTTP behavior |
+| Backend HTTP E2E | `npm --prefix backend run test:e2e`; mocks Prisma, checks `/api/v1` and envelope behavior |
+| Real-MySQL audit integration | `TEST_DATABASE_URL=... npm --prefix backend run test:integration`; requires loopback MySQL and a `test_*` or `*_test` database; applies reviewed migrations without reset, then checks audit commit/rollback |
+| Browser fixture smoke | `npm --prefix frontend run test:smoke`; requires local Chrome or `BROWSER_BIN`, checks rendered fixture content at 360 px; no connected business flow |
 | Prisma validation/generation | `npm --prefix backend run prisma:validate`; `npm --prefix backend run prisma:generate` |
 | Actual DB connectivity | `npm --prefix backend run db:check`; builds then `SELECT 1`, requires configured local MySQL; not a constraint/race test |
 
-Not yet configured: real-MySQL integration/races, browser E2E/accessibility, OpenAPI/examples, import-boundary automation, load/live-AI and restore harnesses. No business migrations/seed exist yet. Add tooling when implementing affected features; do not use `--if-present` to make a required missing check green. Migration commands must explicitly use the checked-in `prisma7.config.ts`; never reset retained/shared data.
+Not yet configured: business MySQL constraint/race suites, connected browser E2E/accessibility, OpenAPI/examples, import-boundary automation, load/live-AI and restore harnesses. Only the account/audit foundation migration exists; no business seed exists. The Chrome fixture smoke script is local tooling, not a CI browser gate. Add tooling when implementing affected features; do not use `--if-present` to make a required missing check green. Migration commands must explicitly use the checked-in `prisma7.config.ts`; never reset retained/shared data.
 For documentation-only changes, verify links, section references, canonical paths, line limits and command/source consistency. Application checks apply when executable behavior/config changes.
 
 If absent, report `NOT CONFIGURED: <check/tool>`; a configured but unrun check is `NOT RUN`, not passed. Policy-dependent cases are `BLOCKED: <decision and source>`. Future-scope cases are `NOT APPLICABLE: <milestone>`.
@@ -258,6 +260,6 @@ The existing CI checks do not establish configured branch protection or completi
 
 ## 13. Release decisions and completion evidence
 
-Resolve in owning documents before enabling affected capabilities: auth identifier/password/JWT lifecycle/transport/CSRF; quote artifact protection and route TTL/normalization; owner/point provisioning; money/quantity business limits; AI budget/preferences/privacy/limits/provider/evaluation; QR evidence/refunds; financial period/exception/correction policies; post-MVP DTOs; real-MySQL/browser tooling, additional CI gates, exact production toolchain and backup operations. Required MVP decisions remain MVP blockers, not scope deferrals disguised as green tests.
+Resolve in owning documents before enabling affected capabilities: quote artifact protection and route TTL/normalization; point provisioning; AI budget/preferences/privacy/limits/provider/evaluation; QR evidence/refunds; financial period/exception/correction policies; post-MVP DTOs; real-MySQL/browser tooling, additional CI gates, exact production Node/npm toolchain and backup operations. Required MVP decisions remain MVP blockers, not scope deferrals disguised as green tests.
 For each run retain commit, milestone/feature flags, exact commands, runtime/DB/browser/provider versions, fixture seed, timestamps, case/source IDs, pass/fail/blocked counts and sanitized artifacts. Distinguish automated results, manual observation and source inspection. Record defects with reproduction and invariant impact; do not claim browser, production-load or backup verification from document review.
 Done for a milestone means its enabled cases pass, necessary NFR measurements and restore evidence exist, required policies are resolved, failures/missing checks are visible, and excluded/future features remain disabled. This file defines that evidence; it does not certify an implementation that has not been tested.

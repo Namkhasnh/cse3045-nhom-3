@@ -12,7 +12,7 @@ This file applies to the entire repository. Use it as the entry point for coding
 
 Do not require the user to supply a fully specified task template. Infer traceability and routine implementation choices from the repository. If an unresolved product/security decision is necessary, ask a focused question and continue independent work; do not turn a `TBD` into behavior silently.
 
-Reusable workflows for test repair, UI authoring, code explanation, feature implementation, and change review are cataloged in [Repository skills](docs/README.md#repository-skills). Use a matching skill when appropriate; this guide and the owning contracts apply whether or not a skill is selected.
+Reusable workflows for test repair, UI authoring, code explanation, feature implementation, and change review are cataloged in [Repository skills](docs/README.md#repository-skills). Use a matching skill when appropriate; this guide and the owning contracts apply whether or not a skill is selected. `build-component` coordinates React work; consult `frontend-design` for substantial aesthetic direction and `ui-ux-pro-max` for focused research under [design skill coordination](docs/ui/design-skills.md). Do not load all three for every edit or trigger redesign during explanations/test repair.
 
 <!-- CODEGRAPH_START -->
 ## CodeGraph
@@ -65,8 +65,8 @@ Repository baseline checked on October 16, 2026 (recheck before use):
 
 - `frontend/`: Vite/React/TypeScript, Tailwind CSS 4, self-hosted Be Vietnam Pro and a Student restaurant-list preview with labeled fixtures, local filters and development-only state previews. No API calls, router, auth or connected business features. See `frontend/README.md` for the fixture boundary and verification procedure.
 - `backend/`: NestJS with environment configuration, global validation and shared Prisma lifecycle. ESM imports use `.js` specifiers. Preserve `prisma7.config.ts` and the generated-client configuration.
-- Prisma targets MySQL with the MariaDB-named adapter. The schema has no business models; no business migration, seed or application endpoint exists. `/` and `/todos` return 404. `/api/v1` is the target prefix, not configured behavior yet.
-- CI uses Node.js `24.x`, npm and separate package lockfiles. Backend unit/E2E tests use Node's built-in test runner and mock Prisma; they do not prove real MySQL constraints or races. Browser and real-MySQL integration suites remain unconfigured.
+- Prisma targets MySQL with the MariaDB-named adapter. The schema has account/audit foundation models and a first SQL migration; no order/financial models, seed or business endpoint exists. `/` and `/todos` return 404. `/api/v1` is configured, with shared HTTP envelopes and scalar helpers.
+- CI uses Node.js `24.x`, npm and separate package lockfiles. Backend unit/E2E tests use Node's built-in test runner and mock Prisma; they do not prove real MySQL constraints or races. A Chrome fixture smoke script and a real-MySQL audit integration job are configured; connected browser and business DB race suites remain unconfigured.
 
 ## Rules that every implementation must preserve
 
@@ -89,7 +89,7 @@ Repository baseline checked on October 16, 2026 (recheck before use):
 - Frontend: `app/` composes features through `features/<feature>/index.ts`; features depend on their own internals and `shared/`; `shared/` never imports upward. Cross-feature coordination belongs in app composition. Hooks/API layers own requests; presentational components receive data/callbacks. Keep domain widgets in their feature and generic controls in `shared/ui`.
 - Use the [target structure](docs/code_structure.md) as placement guidance. Do not create empty scaffolding or edit generated Prisma, `dist/` or `.test-dist/` outputs.
 - Connected code follows `/api/v1`, `snake_case`, exact scalar formats, documented envelopes/errors and retry behavior in the API contract. Do not invent missing endpoints or treat a mock response as real success.
-- UI preserves Be Vietnam Pro, semantic tokens, three role layouts, Vietnamese copy, loading/empty/error/conflict states, accessibility and the 360 px flow. Follow UI §10 corrections before copying board behavior. Label intentional fixtures at the data boundary.
+- UI follows the approved direction in the UI guide (currently Be Vietnam Pro and cream/orange), semantic tokens, distinct role layouts, Vietnamese copy, loading/empty/error/conflict states, accessibility and the 360 px flow. Font, color and shape alternatives may be proposed; apply identity changes only after the user approves the concrete proposal and record that decision in the UI guide. Skill recommendations and the initial HTML reference do not override approved direction. Follow UI §10 corrections before copying board behavior. Label intentional fixtures at the data boundary.
 
 ## Verification and completion
 

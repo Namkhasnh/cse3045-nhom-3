@@ -3,6 +3,7 @@ import { formatDistance, formatVnd } from '../../../shared/lib/format'
 import { Badge } from '../../../shared/ui/Badge'
 import { Icon } from '../../../shared/ui/Icon'
 import type { RestaurantSummary } from '../types'
+import { formatDishPriceRange } from '../format-dish-price-range'
 
 function RestaurantImage({ restaurant }: { restaurant: RestaurantSummary }) {
   const [failed, setFailed] = useState(false)
@@ -24,13 +25,11 @@ export function RestaurantCard({ restaurant }: { restaurant: RestaurantSummary }
   return <article className="restaurant-card" aria-labelledby={`restaurant-${restaurant.id}`}>
     <div className="restaurant-cover">
       <RestaurantImage key={restaurant.imageSrc} restaurant={restaurant} />
-      <div className="restaurant-status"><Badge tone={status.tone}>{status.label}</Badge></div>
     </div>
     <div className="restaurant-card-content">
-      <p className="restaurant-cuisine">{restaurant.cuisine}</p>
-      <h3 id={`restaurant-${restaurant.id}`}>{restaurant.name}</h3>
-      <p className="restaurant-description">{restaurant.description}</p>
-      <p className="restaurant-hours"><Icon name="clock" /><span>Giờ mở cửa: {restaurant.hours}</span></p>
+      <h2 id={`restaurant-${restaurant.id}`}>{restaurant.name}</h2>
+      <p className="restaurant-price">{formatDishPriceRange(restaurant.dishes)}</p>
+      <div className="restaurant-status"><Badge tone={status.tone}>{status.label}</Badge></div>
       <div className="restaurant-delivery">
         <span className={restaurant.deliveryFeeVnd === null ? 'unknown-fee' : 'known-fee'}>
           <Icon name="delivery" />
@@ -40,7 +39,8 @@ export function RestaurantCard({ restaurant }: { restaurant: RestaurantSummary }
           <span className="restaurant-distance"><Icon name="pin" />{formatDistance(restaurant.distanceMetres)}</span>
         )}
       </div>
-      <p className="fixture-card-note">Thông tin quán & giao hàng là dữ liệu mẫu</p>
+      <p className="restaurant-hours">Mở {restaurant.hours}</p>
+      <p className="fixture-card-note">Quán & giao hàng mẫu</p>
     </div>
   </article>
 }

@@ -2,6 +2,8 @@
 
 Start here to locate the specification for a task. AI contributors must also follow the repository's [AGENTS.md](../AGENTS.md), which maps coding tasks to required document sections.
 
+Implementation order and progress checklist: [MVP backlog](../BACKLOG.md).
+
 ## Reading order and authority
 
 1. [Requirements](requirements.md): what the product must do, scope, permissions, business rules and acceptance criteria.
@@ -24,7 +26,8 @@ docs/
 │   ├── database.md            # Schema, precision, constraints, locks, migrations
 │   └── api_contract.md        # REST DTOs, endpoints, errors, retry semantics
 ├── ui/
-│   ├── ui_convertion.md       # Design/conversion rules; retained filename
+│   ├── ui_convertion.md       # Approved UI direction; retained filename
+│   ├── design-skills.md       # Skill coordination, sources and updates
 │   └── Hoa Lac Food Ordering Platform.html  # Original packaged reference
 ├── ai_integration.md          # Recommendation boundaries, prompts, validation
 ├── development_guide.md       # Local setup and coding workflow
@@ -58,12 +61,12 @@ Repository inspection on **October 16, 2026** found a technical scaffold plus a 
 | Area | Exists now | Target / not yet implemented |
 | --- | --- | --- |
 | Frontend | Vite, React, TypeScript, Tailwind CSS 4, self-hosted Be Vietnam Pro, Student layout and labeled restaurant fixtures with local filters/state previews; see [frontend guide](../frontend/README.md) | Router, API integration, auth and connected business screens; Owner/Admin layouts |
-| Backend | NestJS, configuration, global validation, shared Prisma connection lifecycle | Business controllers/workflows/modules, JWT/CSRF and `/api/v1` prefix |
-| Database | MySQL datasource, MariaDB-named Prisma adapter, empty business schema, migration lock | Business models, first SQL migration and guarded seed |
-| Verification | Frontend lint/build; backend lint/unit/HTTP E2E/build; CI on Node.js `24.x` | Real-MySQL constraint/race suites, browser E2E, OpenAPI and boundary automation |
+| Backend | NestJS, configuration, global validation, `/api/v1` prefix, shared envelopes/scalars, transaction runner and audit writer; account/audit schema slice | Business controllers/workflows/modules and JWT/CSRF |
+| Database | MySQL datasource, MariaDB-named Prisma adapter, account/audit models and first checked-in SQL migration | Remaining business models/migrations and guarded seed |
+| Verification | Frontend lint/build and Chrome fixture smoke; backend lint/unit/HTTP E2E/build plus real-MySQL audit integration in CI; CI on Node.js `24.x` | Connected browser E2E, business MySQL constraint/race suites, OpenAPI and boundary automation |
 | Integrations/operations | Design documents | Selected AI/map/storage/hosting providers, deployment/backup/restore evidence |
 
-The [package manifests](../backend/package.json), [frontend manifest](../frontend/package.json), [Prisma configuration](../backend/prisma7.config.ts) and [CI](../.github/workflows/ci.yml) determine current tooling. Backend tests mock Prisma; `db:check` tests connectivity with `SELECT 1`. Neither establishes the financial/concurrency guarantees described in the design.
+The [package manifests](../backend/package.json), [frontend manifest](../frontend/package.json), [Prisma configuration](../backend/prisma7.config.ts) and [CI](../.github/workflows/ci.yml) determine current tooling. Backend HTTP E2E tests mock Prisma; `db:check` tests connectivity with `SELECT 1`. A MySQL audit integration job is configured in CI against a disposable 8.4.11 service and can run locally with a disposable loopback `TEST_DATABASE_URL`. None establishes order/financial concurrency guarantees.
 
 The machine-readable companion `docs/data/openapi.yaml` is **planned and absent**. Author it with the enabled API schemas; do not claim DTO generation or OpenAPI validation already exists. NFR thresholds and release checklists are targets, not measured results.
 
@@ -73,12 +76,12 @@ Read the owning specification for the complete list. These groups are especially
 
 | Decision group | Owning sections |
 | --- | --- |
-| Login identifier/password policy; JWT transport/lifecycle; CSRF; privileged account provisioning | [API §§2, 7.1, 12](data/api_contract.md), [deployment §§4, 6](deployment.md) |
+| Login identifier/password policy; JWT transport/lifecycle; CSRF; privileged account provisioning (decided) | [API §§2, 7.1](data/api_contract.md), [deployment §§4, 6](deployment.md) |
 | Quote artifact protection; route provider, expiry and distance normalization | [API §§8.1, 11–12](data/api_contract.md), [database §4.2](data/database.md) |
-| Pickup-point/category provisioning; business validation limits | [API §§3, 7.2–7.3, 12](data/api_contract.md) |
+| Pickup-point/category provisioning; feature-specific limits still open | [API §§3, 7.2–7.3, 12](data/api_contract.md) |
 | AI budget/quantity/preferences, provider/model, privacy validation, limits/evaluation | [AI §§2, 8, 12, 14](ai_integration.md), [API §7.6](data/api_contract.md) |
 | Settlement periods/late adjustments/overcollection/receipt correction; QR evidence/refunds | [Database §§4.4–4.5, 6](data/database.md), [API §§7.5, 11](data/api_contract.md) |
-| Exact runtime patch/npm/MySQL versions; browser/DB test tooling; hosting and recovery ownership | [Development §18](development_guide.md), [testing §§12–13](testing.md), [deployment §§9–13](deployment.md) |
+| Exact runtime Node/npm patches; browser/DB test tooling; hosting and recovery ownership | [Development §18](development_guide.md), [testing §§12–13](testing.md), [deployment §§9–13](deployment.md) |
 
 Keep affected functionality disabled until its necessary decisions are explicit. Continue independent work that does not depend on them. A disabled required MVP feature still prevents claiming the whole MVP is complete.
 
@@ -89,7 +92,9 @@ Reusable contributor workflows live in [`.agents/skills/`](../.agents/skills/). 
 | Skill | Use it for |
 | --- | --- |
 | [fix-tests](../.agents/skills/fix-tests/SKILL.md) | Diagnosing test failures and verifying targeted repairs without weakening required behavior |
-| [build-component](../.agents/skills/build-component/SKILL.md) | React components, pages, styling, interaction states, and responsive UI |
+| [build-component](../.agents/skills/build-component/SKILL.md) | Coordinates React components, pages, styling, interaction states, and responsive UI |
+| [frontend-design](../.agents/skills/frontend-design/SKILL.md) | Official Anthropic skill: substantial aesthetic direction, typography, composition and critique |
+| [ui-ux-pro-max](../.agents/skills/ui-ux-pro-max/SKILL.md) | Next Level Builder community skill: focused local UX/accessibility and React/Tailwind research |
 | [explain-code](../.agents/skills/explain-code/SKILL.md) | Read-only, beginner-friendly explanations grounded in actual source and call paths |
 | [implement-feature](../.agents/skills/implement-feature/SKILL.md) | A scoped product capability across the layers it actually needs |
 | [review-change](../.agents/skills/review-change/SKILL.md) | Read-only review of changes for actionable bugs, regressions, and contract violations |
@@ -104,7 +109,7 @@ $implement-feature Implement the restaurant discovery capability for US02 within
 $review-change Review my current changes for bugs and missing acceptance evidence.
 ```
 
-Automatic selection remains enabled when a request matches a skill's description. Each skill includes `agents/openai.yaml` for its picker label. No extra runtime dependency is required by these instruction-only skills. Validate changes to metadata/links and try representative tasks when revising their behavior; structural validation alone does not prove task quality.
+Automatic selection remains enabled when a request matches a skill's description. Picker metadata in `agents/openai.yaml` is optional. Design research uses existing Python 3 and bundled data, with no frontend/backend dependencies. See [design skill coordination](ui/design-skills.md) for pinned upstream sources, licenses, local adaptations, examples and the update procedure. Validate changes to metadata/links and try representative tasks when revising their behavior; structural validation alone does not prove task quality.
 
 ## Maintaining documentation
 

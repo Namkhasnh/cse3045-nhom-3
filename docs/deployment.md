@@ -41,7 +41,7 @@ Follow the development guide's precedence: requirements → architecture → dat
 
 The three logical tiers are presentation, business logic and data. Separate frontend/backend placement does not turn modules into microservices. The MVP does not require Redis, a broker, queues or a driver dispatch service.
 
-CI uses Node.js `24.x`; installed package versions are recorded in manifests/lockfiles. Pin the exact production Node.js patch, npm and MySQL release before deploying; those deployment versions remain **TBD**. MySQL **8.0.16+ is a CHECK-enforcement compatibility floor**, not a selected release. A MariaDB-named Prisma adapter does not change the MySQL target. Preserve the repository's actual Prisma configuration, including `prisma7.config.ts` where present.
+CI uses Node.js `24.x`; installed package versions are recorded in manifests/lockfiles. Pin the exact production Node.js patch and npm before deploying; MySQL is selected as **Oracle MySQL Community Server 8.4.11** in database §1. MySQL 8.0.16 is only the historical CHECK floor. A MariaDB-named Prisma adapter does not change the MySQL target. Preserve the repository's actual Prisma configuration, including `prisma7.config.ts` where present.
 
 ## 3. Environment configuration
 
@@ -70,8 +70,8 @@ These are logical settings, **not invented environment-variable names**. Map eac
 | SQL settings | InnoDB, strict SQL mode, UTC sessions, `utf8mb4`; exact collation/isolation **TBD**, documented and tested |
 | Business time | `Asia/Ho_Chi_Minh` for opening hours, display and monthly boundaries; persist UTC instants |
 | Frontend API base/origin | Public value; route through `/api/v1`; exact config name **TBD** |
-| JWT signing material, issuer, audience | Backend only; values and rotation/lifecycle policy **TBD** |
-| Origin/CORS/CSRF/cookie configuration | Final auth contract and exact names **TBD**, see §4 |
+| JWT signing material, issuer, audience | Backend only; per-environment values TBD, lifecycle and rotation policy in API §2 |
+| Origin/CORS/CSRF/cookie configuration | Configure one exact HTTPS origin and backend CSRF HMAC key; names/protocol in API §2 |
 | Delivery quote authentication | Encoding/protection and required material **TBD**; not assumed to be JWT; route TTL/normalization remain post-MVP gates |
 | AI endpoint/model/credentials and limits | Backend only; readiness and limits in §12; exact settings **TBD** |
 | Map routing credentials / public rendering key | Conditional post-MVP; privileged keys backend only; public key restricted by domain/quota |
@@ -85,9 +85,9 @@ Never commit real `.env` files or put DB/JWT/AI/storage secrets into `VITE_*`, b
 
 1. Inspect `frontend/package.json`, `backend/package.json`, their lockfiles and Prisma config; record verified versions/scripts.
 2. Start disposable MySQL/InnoDB, create a local database and least-privilege development identity, and set the actual backend configuration.
-3. Install from each package's reviewed lockfile and generate Prisma Client. No business migration exists yet; apply reviewed migrations only once authored, using `prisma7.config.ts`.
+3. Install from each package's reviewed lockfile and generate Prisma Client. Only the account/audit foundation migration exists; apply it after review with `prisma7.config.ts` on the intended target.
 4. Run a seed only if configured and explicitly guarded for the local/test database. Use fictional data and label fees/distances as test values.
-5. Start the backend/frontend dev scripts. Current scaffold checks are startup/DB connectivity and the introductory page; `/api/v1`, authentication and surveyed cash ordering are target flows to verify after implementation.
+5. Start the backend/frontend dev scripts. Current checks cover startup/DB connectivity, the fixture page and `/api/v1` envelope behavior; authentication and surveyed cash ordering remain target flows.
 
 Inspect tooling from the repository root; development_guide.md §12 lists verified package commands:
 
@@ -110,10 +110,10 @@ For new migration work use the pinned Prisma CLI with explicit `--config prisma7
 1. Record production/staging domain ownership, DNS records, frontend/API routing and certificate issuance/renewal responsibility: **TBD**.
 2. Implement and test HTTPS public access and redirects. For the proposed same-origin setup, route `/api/v1` to NestJS; SPA navigation must load on refresh without swallowing API errors into an HTML fallback. Exact proxy configuration is **TBD**.
 3. Keep MySQL off the public application interface. Verify runtime minimum grants and separately controlled migration/maintenance privileges, including protections for append-only audit, history and receipts.
-4. If origins differ, explicitly allow only approved frontend origins, methods and headers; configure credentials for the finalized transport. Never use wildcard origins with credentialed cookies. Include required idempotency/replay and CSRF headers in the verified cross-origin behavior.
-5. JWT is established, but final transport/lifetime/refresh/logout/revocation and signing rotation remain **TBD**. The architecture proposes short-lived JWTs in `HttpOnly; Secure; SameSite=Lax` cookies under the same origin; cookie name/path/domain and CSRF issuance/header/protocol are unresolved. Do not assume Bearer headers, token JSON responses or refresh endpoints.
-6. Cookie-authenticated writes require Origin validation and CSRF protection. Resolve and test these before auth release. Without an approved renewal flow, expiration requires re-login. Do not store long-lived tokens in localStorage.
-7. Select the secret delivery/access mechanism (**TBD**), keep secrets backend-side, and document authorized custodians and recovery/rotation steps. Verify password hashing with the selected algorithm/parameters; those settings are **TBD**.
+4. Serve the SPA and `/api/v1` from the same public HTTPS origin. A separate-origin deployment requires a reviewed API transport change with explicit CORS origins, credentials and CSRF behavior; never use wildcard origins with cookies.
+5. Deploy the API §2 same-origin 15-minute JWT cookie, no refresh, versioned logout and bounded key rotation. Configure distinct backend signing and CSRF keys and exact issuer/audience/origin per environment; never expose tokens in JSON or browser storage.
+6. Enforce exact Origin checks and the session-bound `X-CSRF-Token` protocol on authenticated writes; protect login/register with Origin checks. Test rejection paths before release.
+7. Select the secret delivery/access mechanism (**TBD**), keep secrets backend-side, and document authorized custodians and recovery/rotation steps. Verify Argon2id parameters against API §2.
 8. If uploads are enabled, validate ownership, actual MIME type, format and size on the backend; use generated storage keys. Final limits are **TBD**; the UI's 5 MB example is not policy. Public Dish images must not make recipient/supporting documents public.
 
 Record and test certificate renewal, secret replacement and resulting session/quote behavior once mechanisms are selected. Do not claim a rotation/revocation capability before implementation.
@@ -145,13 +145,13 @@ Never edit an already-applied migration, run reset/force-reset/destructive schem
 
 ## 6. First Admin and initial partner bootstrap
 
-Bootstrap is a controlled, reviewed operational procedure, separate from the guarded fictional local/test seed. **The exact first-admin command, owner-account provisioning, Pickup-point permissions/workflow and category management remain TBD.** No public privileged-registration or invented bootstrap endpoint is authorized here.
+Bootstrap is a controlled, reviewed operational procedure, separate from the guarded fictional local/test seed. **Privileged account provisioning is specified below.** Pickup-point permissions/workflow and category management remain TBD. No public privileged-registration endpoint is authorized.
 
-1. Finalize login identifier/normalization, password policy/hash configuration, privileged provisioning and audit evidence in the owning contracts. Record the authorized bootstrap operator and approved data manifest, without credentials.
-2. Implement/review a controlled provisioning mechanism before use: explicit environment/database checks, least necessary temporary access, duplicate detection and a defined rerun outcome. Invocation and access removal are **TBD**, to be rehearsed in staging.
+1. Use the API §2 username/password/hash policy. Record two authorized operators (requester and reviewer), environment, target account, role and reason in a protected change record without credentials.
+2. Implement one operator-only CLI command `npm --prefix backend run account:provision -- --role <admin|restaurant_owner> --username <username>` before provisioning. Require an explicit environment/database identity check and reviewer-approved manifest; read the password from a protected interactive prompt (never arguments, env, files or logs). Use application password service and one transaction to create account plus audit event. Fail closed on an existing username, mismatched role/environment or missing reviewer record; rerun after success reports already provisioned without changing the hash. Rehearse in staging with temporary least-privilege operator access, then remove access.
 3. Provision the first active `admin` through that mechanism. Supply its credential via the selected protected channel, hash it using the application password service, and exclude it from command arguments/history, output, logs and this document. No shared/default real password is supplied.
 4. Verify Admin login and server-side role enforcement. Remove temporary provisioning access/material according to the approved procedure; ongoing credential lifecycle remains governed by the finalized auth contract.
-5. Provision active `restaurant_owner` accounts through the approved workflow (**TBD**). Public registration assigns only `student`; never accept client-selected privileged roles.
+5. Provision active `restaurant_owner` accounts through the same reviewed CLI workflow; deactivation, role changes and credential resets require the same two-person record, audited transaction and `auth_version` increment. Public registration assigns only `student`; never accept client-selected privileged roles.
 6. Admin creates each Restaurant with name, address/location, contact and one responsible active owner through the implemented contract. One owner may manage several Restaurants. New Restaurants begin with `is_accepting_orders=false` and empty hours; do not create ownerless partners.
 7. Populate verified VJU Pickup points with names/coordinates through the approved provisioning workflow (**TBD**). Collect actual per-Restaurant surveyed distance and fee; sample coordinates, fees and names from documentation are not operational survey data.
 8. The responsible owner configures opening hours and surveyed delivery policy; Admin configures the agreed commission rate explicitly. Populate categories through the approved mechanism and Dishes through owner-scoped management. No default commission percentage is inferred from examples.
@@ -250,7 +250,7 @@ No restore evidence was supplied. Initial status: **NOT RUN — production recov
 | --- | --- |
 | Run ID / date / operator / reviewer | TBD |
 | Synthetic fixture / application commit / migration state | TBD |
-| MySQL/backup/restore tool versions and target settings | TBD |
+| MySQL/backup/restore tool versions and target settings | MySQL 8.4.11 selected; backup/restore tools and target settings TBD |
 | Backup ID / recovery timestamp / size / checksum | TBD |
 | Protected backup and sanitized report references | TBD |
 | Isolated target / image recovery scope | TBD |

@@ -30,13 +30,13 @@ export function RestaurantListPage() {
 
   return <>
     <section className="discovery-header" aria-labelledby="page-title">
-      <div><p className="greeting">Xin chào bạn,</p><h1 id="page-title">Hôm nay ăn gì nhỉ?</h1><p className="page-intro">Khám phá những quán quen, tìm thêm một vị mới.</p></div>
-      <div className="pickup-point" aria-label="Điểm nhận hàng mẫu, chỉ đọc"><span className="pickup-icon"><Icon name="pin" /></span><div><p>ĐIỂM NHẬN HÀNG MẪU</p><strong>{fixturePickupPoint} <span>· mẫu</span></strong><small>Phí giao hiển thị theo điểm nhận này</small></div></div>
+      <h1 id="page-title">Quán quanh VJU</h1>
+      <p className="pickup-point" aria-label="Điểm nhận hàng mẫu, chỉ đọc"><Icon name="pin" /><span>Nhận tại: <strong>{fixturePickupPoint}</strong> · mẫu</span></p>
     </section>
     <RestaurantFilters values={filters} categories={fixtureCategories} onChange={setFilters} onReset={() => setFilters(defaultFilters)} hasFilters={hasFilters} />
     {demoState && <p className="demo-state-note"><Icon name="info" />Đang mô phỏng trạng thái {demoState === 'loading' ? 'đang tải' : demoState === 'empty' ? 'danh sách trống' : 'lỗi'} trong môi trường phát triển.</p>}
-    <section className="restaurant-section" aria-labelledby="restaurant-list-title">
-      <div className="list-heading"><div><p className="eyebrow">QUANH KHUÔN VIÊN VJU</p><h2 id="restaurant-list-title">Quán ngon quanh bạn</h2></div><p className="result-count" role="status" aria-live="polite" aria-atomic="true">{status === 'ready' ? `${restaurants.length} quán${hasFilters ? ' phù hợp' : ' trong bản mẫu'}` : status === 'loading' ? 'Đang tải…' : 'Lỗi mô phỏng'}</p></div>
+    <section className="restaurant-section" aria-label="Danh sách quán">
+      <p className="result-count" role="status" aria-live="polite" aria-atomic="true">{status === 'ready' ? `${restaurants.length} quán${hasFilters ? ' phù hợp' : ' trong bản mẫu'}` : status === 'loading' ? 'Đang tải…' : 'Lỗi mô phỏng'}</p>
       <RestaurantList status={status} restaurants={restaurants} hasFilters={hasFilters} onReset={() => setFilters(defaultFilters)} onRetry={retryFixtures} />
     </section>
   </>

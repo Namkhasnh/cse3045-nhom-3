@@ -15,6 +15,12 @@ npm --prefix frontend run build
 
 Open the URL printed by Vite (normally `http://localhost:5173/`). The backend and MySQL are unnecessary for this preview. No API calls or secret environment variables are used.
 
+## Approved compact Student list
+
+Direction 1 was approved on October 16, 2026; see [UI §5.6](../docs/ui/ui_convertion.md#56-approved-student-discovery-revision--october-16-2026). White Student surface, one page title/pickup line, unframed filters and border-separated horizontal rows replace the previous large image cards. Thumbnails are 80 px below 1024 px and 96 px from 1024 px; the list has one column below that breakpoint and two above it. Owner/Admin identity is unchanged.
+
+Search/category semantics are unchanged. Price uses a labeled native select. Each row displays the min/max price across all visible catalog dishes, including sold-out dishes and excluding hidden dishes, independent of active filters. Single-price catalogs show one amount; empty visible catalogs show “Chưa có giá món”. The feature formatter compares with BigInt and reuses shared VND formatting; it never computes order prices or delivery fees.
+
 ## Fixture boundary and interactions
 
 - `src/features/restaurants/fixtures/restaurants.fixture.ts` contains only fictional restaurants, dishes, hours, static availability and fixed-point delivery examples. Nothing is a real survey, live status, authoritative quote or production default.
@@ -28,7 +34,7 @@ Development-only state URLs:
 
 | URL suffix | Result |
 | --- | --- |
-| `/?demo_state=loading` | Persistent card skeletons with an accessible loading label |
+| `/?demo_state=loading` | Persistent horizontal-row skeletons with an accessible loading label |
 | `/?demo_state=empty` | Empty dataset; applying filters shows the distinct no-match state |
 | `/?demo_state=error` | Explicit simulated error; retry restores fixtures and preserves filters |
 
@@ -44,6 +50,6 @@ Every simulated state is labeled. Parameters are ignored in the production build
 
 ## Verification
 
-Frontend unit/component/browser automation is **NOT CONFIGURED**; lint/build do not prove browser behavior. See the [discovery verification report](../docs/ui/student-discovery-verification.md) for actual checks and limitations.
+A narrow headless Chrome fixture smoke check is configured: `npm --prefix frontend run test:smoke` (or set `BROWSER_BIN`). It verifies rendering at 360 px; unit/component, connected browser journey and accessibility automation remain **NOT CONFIGURED**. Lint/build do not prove browser behavior. See the [discovery verification report](../docs/ui/student-discovery-verification.md) for actual checks and limitations.
 
-Check widths 360, 390, 768 and 1024 px; search/filter combinations and reset; price boundaries; unknown versus zero fees; missing/broken images; simulated states and retry; long names; keyboard/focus; 200% zoom; reduced motion; no page horizontal scrolling or fixed navigation covering the final content. Other role layouts do not exist yet and cannot be browser-verified.
+Check widths 360, 390, 768, 1024 and 1440 px; search/filter combinations and reset; price boundaries; unknown versus zero fees; missing/broken images; simulated states and retry; long names; keyboard/focus; 200% zoom; reduced motion; no page horizontal scrolling or fixed navigation covering the final content. Other role layouts do not exist yet and cannot be browser-verified.

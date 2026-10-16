@@ -284,7 +284,7 @@ Polling fits a small number of MVP restaurants with minimal infrastructure. Reco
 
 ### 9.1. Authentication and Ownership
 
-- Hash passwords with a purpose-built algorithm such as Argon2id/bcrypt; never store or log plaintext passwords.
+- Hash passwords with the Argon2id parameters in API §2; never store or log plaintext passwords.
 - The backend validates JWT signatures, expiry, and configured issuer/audience. Derive the actor from the verified token; sensitive writes also check current account status and permissions.
 - Role guards are only the first step. Students read/cancel their own orders; owners operate on orders, dishes, and payments for their restaurants; administrators receive only permissions specified in the requirements.
 - Enforce ownership server-side for reads, writes, lists, and nested resources. Writes check permissions against locked data to prevent ownership changes during an operation.
@@ -292,9 +292,9 @@ Polling fits a small number of MVP restaurants with minimal infrastructure. Reco
 
 ### 9.2. Tokens, Secrets, and Network Boundaries
 
-Proposed MVP web design: short-lived access JWTs in `HttpOnly`, `Secure`, `SameSite=Lax` cookies, served under the same origin. Do not store long-lived tokens in localStorage. Refresh/logout behavior, expiry, and revocation must be defined in the authentication contract; without refresh, expiration requires login again rather than an uncontrolled token lifecycle.
+MVP web design uses 15-minute access JWTs in the same-origin `__Host-hlf_access` cookie. API §2 owns signing, CSRF and lifecycle details. There is no refresh flow; expiration requires login. Logout increments `accounts.auth_version` and clears cookies, invalidating all account sessions. Never store tokens in browser storage.
 
-Because browsers send cookies automatically, mutating APIs require CSRF protection, Origin validation, and appropriate CSRF tokens. CORS does not replace authentication or CSRF protection.
+Because browsers send cookies automatically, mutating APIs require the API §2 signed, session-bound CSRF header and exact Origin validation. CORS does not replace authentication or CSRF protection.
 
 - JWT, database, AI, map, and storage secrets remain on the backend through environment variables or a secret manager; never embed them in `VITE_*` variables, bundles, documents, or logs.
 - `.env.example` contains only variable names and sample values. Do not include real `.env` files in the repository or deliverables.

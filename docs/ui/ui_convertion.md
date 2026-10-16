@@ -1,13 +1,13 @@
 # UI Conversion & Design Consistency — Hòa Lạc Food
 > **File name:** [ui_convertion.md](ui_convertion.md) — keep the exact requested name.
-> **Purpose:** guide AI assistants and developers in converting the reference HTML UI into a production-usable React application while preserving the same design language when adding pages, states, or features.
+> **Purpose:** guide AI assistants and developers in converting the reference HTML UI into a production-usable React application following the approved design direction when adding pages, states, or features.
 > **Document scope:** UI conversion and extension standards; this document does not claim that the frontend, backend, or listed features have already been implemented.
 ## 1. Mandatory Instructions for AI
-Before every UI change, read this document, the relevant business requirements, and the corresponding design board in the HTML. Treat the task as a **conversion of an existing design**, not as a request to redesign the product.
-1. Preserve the colors, typography, text hierarchy, shapes, role-based layouts, and tone of the original interface.
+Before every UI change, read this document, the relevant business requirements, and the corresponding design board in the HTML. Reuse the approved direction for routine work. Substantial aesthetic work may propose a new direction under [design skill coordination](design-skills.md); obtain the user’s decision on a concrete identity proposal before applying it.
+1. Follow approved colors, typography, hierarchy, shapes and tone. The current baseline is cream/orange/brown, Be Vietnam Pro and soft corners. Font, palette and shape alternatives are allowed as proposals; until approved and recorded here, retain that baseline. Preserve role clarity and usability across identity changes.
 2. Reuse existing layouts, tokens, and components. If they do not exist yet, establish the shared foundation before scaling to more screens.
 3. Build new pages by composing the closest existing patterns; do not create a different visual style for each feature.
-4. The HTML defines the visual reference; [requirements.md](../requirements.md) defines business behavior. Do not copy mock content that violates business rules.
+4. The HTML is the initial visual reference; this guide records approved visual decisions; [requirements.md](../requirements.md) defines business behavior. Do not copy mock content that violates business rules.
 5. Preserve Vite + React + TypeScript + Tailwind CSS and the frontend boundaries defined in [architecture.md](../architecture.md).
 6. Demo data, prices, fees, accounts, QR codes, metrics, and timestamps in the HTML are not production data.
 7. Do not assume that a button shown in the design means the feature is approved for production. Determine whether it belongs to MVP, post-MVP, or Could scope.
@@ -22,10 +22,11 @@ The paths below are relative to the repository root `cse3045-nhom-3`:
 | [docs/requirements.md](../requirements.md) | Roles, scope, user stories, business rules, and acceptance criteria |
 | [docs/architecture.md](../architecture.md) | Stack, feature structure, frontend/backend responsibilities, polling, and state coordination |
 | [docs/data/database.md](../data/database.md) | Enums, data relationships, snapshots, money, history, and delete/deactivate rules |
-| `docs/ui/Hoa Lac Food Ordering Platform.html` | Design system, layouts, components, and state appearance |
-| [docs/ui/ui_convertion.md](ui_convertion.md) | Conversion rules, normalization of design differences, and consistent extension |
+| `docs/ui/Hoa Lac Food Ordering Platform.html` | Initial visual reference; preserve the original asset unchanged |
+| [docs/ui/ui_convertion.md](ui_convertion.md) | Approved visual direction, conversion corrections, and consistent extension |
+| Installed design skills and search results | Advisory aesthetic/UX input; no independent product or design authority |
 | Current API contract and source code, if available | Endpoints, DTOs, backend capabilities, and components that actually exist |
-**Resolution order:** use requirements for business behavior, architecture for technical boundaries, and database documentation for data semantics. Use the HTML for design after applying the corrections in §10. If business sources still conflict, document the conflict and request a decision for the affected part while continuing independent work. Do not silently resolve a conflict by inventing a new field or enum.
+**Resolution order:** use requirements for business behavior, architecture for technical boundaries, and database documentation for data semantics. Use the approved direction recorded here for visuals, with the HTML as the initial reference after §10 corrections. Skill output does not become a requirement automatically. Keep approved decisions here, not in a competing `MASTER.md`. If business sources still conflict, document the conflict and request a decision for the affected part while continuing independent work. Do not silently resolve a conflict by inventing a new field or enum.
 The dimensions, colors, and typography marked as “original” below are extracted from the HTML content/CSS. Breakpoints, page routes, and application rules that are not defined by the HTML are marked as **conversion conventions/proposals**, not as current code behavior.
 ## 3. Product Context AI Must Preserve
 Hòa Lạc Food helps students discover restaurants, browse dishes, receive AI recommendations, place orders, and track food delivery in the Hòa Lạc area. The MVP is initially deployed at Vietnam Japan University (VJU).
@@ -62,7 +63,7 @@ The source file is a **packaged collection of design boards**, not a normal appl
 | 12 | Admin · Commission and Settlement | Aggregates, rates, receipts, adjustments, history |
 | 13 | Admin · Audit Log | Filters, read-only table, before/after, pagination |
 ### 4.2. What to Keep and What to Remove
-**Keep:** screen content, information order, colors, relative spacing, interaction patterns, typography, image ratios, and role-specific visual identity.
+**Default baseline:** content, hierarchy, colors, spacing, interaction patterns, typography, image ratios and role identity. Adapt composition to real tasks and responsive content; approved identity changes may revise visual defaults in §§5–7 while preserving business rules.
 **Do not include in the application:** the “Unpacking…” loader, export thumbnails, manifest, design-board iframes, unresolved resource UUIDs, screen numbering labels, presentation-canvas backgrounds, multiple mock screens shown side by side, or random demo JavaScript.
 - The student `.scr` frame is **390 px** wide, at least **844 px** high, with **28 px** radius. It is a phone presentation frame. Do not lock the application to 390 × 844 px or render a fake phone border in production.
 - Desktop boards are **1440 px** wide as reference targets, not as a global `min-width`.
@@ -70,10 +71,10 @@ The source file is a **packaged collection of design boards**, not a normal appl
 - Forms/modals shown simultaneously on one board are examples of multiple states. In the application, each state appears only after the relevant interaction.
 - Dish image and QR placeholders must be replaced with real data/assets or clearly labeled fallbacks.
 If extraction is required: read template JSON at each layer, decode the manifest by MIME type, map UUIDs to the correct resources, and inspect each embedded template. Do not read only the outer CSS and assume it represents the product UI. Do not execute packaged scripts merely to collect tokens.
-## 5. Design System to Preserve
+## 5. Current Approved Design System
 ### 5.1. Visual Personality
 Warm, approachable, compact, and easy for students to use. Food imagery and dish prices are visually important. Use cream backgrounds, white surfaces, dark brown text, coral-orange primary actions, and green success/acceptance states. Cards are soft and buttons use pill shapes. Dashboards may have higher information density but still share the same component system.
-Do not independently add dark mode, glassmorphism, large decorative gradients, purple/neon primary palettes, multiple font families, or a square-corner design system. The original skeleton gradient is a loading effect, not a general page-background style.
+These are current defaults, not permanent restrictions on proposing another font, palette or shape. Explain identity changes and obtain the user’s decision before applying them. Avoid decoration without a task-related purpose; the original skeleton gradient is a loading effect. Prioritize finding restaurants and choosing dishes, useful price/availability information and clear hierarchy. Remove decorative labels, promotional filler and identical card treatments when they do not help users compare or act.
 ### 5.2. Original Colors and Standardized Token Names
 The token names below are conversion conventions; values come from the HTML. Define them in one place and map them into Tailwind instead of scattering hex values across pages.
 | Token | Value | Purpose |
@@ -101,7 +102,7 @@ The token names below are conversion conventions; values come from the HTML. Def
 | `admin-sidebar` / `admin-sidebar-ink` | `#1F2A44` / `#E8ECF5` | Admin sidebar |
 Add secondary tokens only when they have a clear semantic role. Do not add a new color solely to solve one page. For colors present in the HTML but not listed above, inspect their context before standardizing them; do not turn decorative placeholder colors into business-state colors.
 ### 5.3. Typography
-Primary font: **Be Vietnam Pro**, fallback `system-ui, sans-serif`. Load the required weights with Vietnamese glyph support; do not use only a Latin subset. Packaged font URLs use UUIDs and must be mapped to proper assets; self-host permitted assets if appropriate, but do not leave temporary blob/UUID URLs in source code.
+Current approved primary font: **Be Vietnam Pro**, fallback `system-ui, sans-serif`. Load the required weights with Vietnamese glyph support; do not use only a Latin subset. Packaged font URLs use UUIDs and must be mapped to proper assets; self-host permitted assets if appropriate, but do not leave temporary blob/UUID URLs in source code.
 | Role | Font size / line height | Weight |
 | --- | --- | --- |
 | Display / prominent greeting | 32 / 38 px | 800 |
@@ -133,10 +134,19 @@ Keep motion subtle and functional. The original skeleton animation runs for 1.4 
 - Use semantic token names such as `brand`, `surface`, `ink`, and `danger`, not page-specific names such as `checkoutOrange`.
 - Maintain one source of truth for token values; Tailwind aliases should reference that source.
 - The HTML shows a `theme.extend` configuration example. It is a mapping example, not proof that the project uses a specific Tailwind version.
-- Inspect the manifest/lockfile before choosing a compatible configuration. At review time, the provided frontend manifest did not list Tailwind, a router, or a server-state library; do not assume those packages already exist and do not independently upgrade the whole stack.
+- Inspect the manifest/lockfile before choosing a compatible configuration. The current fixture preview uses Tailwind CSS 4 (§8.4); router and server-state libraries remain unimplemented. Recheck installed packages and do not independently upgrade the whole stack.
 - Do not import the entire CSS bundle from every design board because selectors such as `.btn`, `.side`, and `.main` are repeated with different variants.
 - Convert variants into clearly named props/components; do not scatter role-based conditions across JSX.
+### 5.6. Approved Student Discovery Revision — October 16, 2026
+The user selected direction 1, a compact restaurant list for students. This overrides the earlier card composition for Student discovery only; Owner/Admin identity and the generic cream-page token remain unchanged.
+- White Student surface (`surface`), Be Vietnam Pro, 22 px/700 page title, 16 px/700 restaurant names and 14 px price text; left alignment throughout. Existing brown text, orange selection and green status tokens remain.
+- One title, “Quán quanh VJU”, followed by the read-only sample pickup point. Remove greetings, promotional descriptions, uppercase eyebrows, duplicate list titles and footer slogans.
+- Border-separated horizontal rows with no enclosing card outline/shadow; 80 px square thumbnails below 1024 px, 96 px from 1024 px, 8 px image radius. One column below 1024 px, two above; loading skeletons follow the same layout.
+- Search uses the standard 10 px input radius; category chips retain touch targets/pressed semantics. A labeled native select replaces price chips; reset and filter behavior remain unchanged. Filters have no enclosing panel.
+- Rows show visible-catalog dish price ranges (including sold-out dishes, excluding hidden dishes), independent of current filters. Use exact BigInt comparisons and the shared VND formatter; equal endpoints show one price, no visible dishes shows “Chưa có giá món”. This display summary is not an order quote.
+- Keep text-bearing availability, hours, delivery fee/distance, persistent and per-row fixture notices, illustration labels and missing/broken-image fallback. Unknown fee stays distinct from known zero. No menu/order action is enabled.
 ## 6. Layout and Responsive Behavior
+The visual treatments below describe the current baseline; approved identity revisions must retain role clarity, responsive behavior and accessible navigation.
 ### 6.1. Student — `StudentLayout`
 Preserve the mobile-first approach: compact header; visible pickup point; search/filter; restaurant/dish content; CTAs placed within easy reach. Bottom navigation contains **Home, Cart, Orders, Account**; the active item uses `brand-dark` with icon and label. The original navigation item height is at least 60 px.
 The menu page has a “View cart” CTA with item count/total. Checkout has a summary area and a prominent order button. When using sticky/fixed bars, add matching content padding and safe-area support so they do not cover the final item, form errors, or other controls. Login and focused multi-step pages do not have to show bottom navigation.
@@ -162,6 +172,7 @@ The HTML provides artboards, not a complete responsive product specification. Th
 | 1024 px and above | 240 px dashboard sidebar; list–detail split if space allows; student pages expand grids instead of scaling up a phone frame |
 The browse → select pickup point → order → track flow must work at **360 px with no full-page horizontal scrolling** (NFR06). Wide admin tables may scroll inside a labeled table region or transform into cards; do not use `overflow-x: hidden` to hide clipped data.
 ## 7. Reusable Component Contracts
+Appearance follows the approved identity; accessibility, data and interaction contracts remain mandatory when visuals change.
 ### 7.1. Foundation Components
 | Component | Appearance and behavior |
 | --- | --- |
@@ -252,9 +263,9 @@ As of October 16, 2026, `/` renders a presentation-only Student restaurant list 
 - Tailwind CSS 4 uses `@tailwindcss/vite`. `src/index.css` owns semantic `@theme` tokens, font imports and component styles. Be Vietnam Pro is bundled through Fontsource, including Vietnamese glyphs and weights 400/500/600/700/800. Existing token values are preserved; no new business-state palette is introduced.
 - Implemented shared controls: Button (`primary`/`neutral`, native disabled), Input (required visible label/id, native attributes), FilterChip (`aria-pressed`), Badge (`neutral`/`success`/`warning`, text plus dot), decorative Icon, and ListState (message, optional action, alert for errors). Other variants in §7 remain target contracts.
 - StudentLayout contains the brand header, skip link, persistent fixture notice and safe-area-aware fixed navigation. Home is current; other navigation items are disabled with a visible explanation. Only the Student layout is implemented.
-- The search Input uses a scoped pill treatment; the generic Input retains the standard 10 px radius. Focus combines a dark-orange outline with the original light focus ring for contrast.
-- Reference adaptations: no phone frame/gallery; a 1200 px maximum container, one/two/three restaurant columns at `<640`/`640–1023`/`≥1024` px; wrapping touch-size filter chips; a read-only example pickup point; local labeled SVG illustrations/fallbacks; no fictional user identity, ratings, AI/random tiles, featured-dish additions or dead menu links.
-- Every restaurant, delivery value and availability flag is synthetic and labeled. No map or pricing calculation is performed. Missing fee and known zero fee stay distinct; fixture view models are not API DTOs.
+- The search Input and native price select use the standard 10 px radius. Focus combines a dark-orange outline with the original light focus ring for contrast.
+- Reference adaptations: no phone frame/gallery; a 1200 px maximum container, one restaurant column below 1024 px and two from 1024 px, using the approved horizontal rows (§5.6); wrapping touch-size filter chips; a read-only example pickup point; local labeled SVG illustrations/fallbacks; no fictional user identity, ratings, AI/random tiles, featured-dish additions or dead menu links.
+- Every restaurant, delivery value and availability flag is synthetic and labeled. No map, delivery-fee or order-pricing calculation is performed; dish-price ranges summarize the visible fixture catalog only. Missing fee and known zero fee stay distinct; fixture view models are not API DTOs.
 - Development-only `demo_state=loading|empty|error` selects labeled states; retry leaves filters intact. Production ignores these parameters but remains a fixture-only preview.
 - Browser observations and missing coverage are recorded in the [verification report](student-discovery-verification.md). Owner/Admin layouts and automated browser suites remain unimplemented.
 ## 9. Data and Behavior That Must Not Be Implemented Incorrectly
@@ -373,7 +384,8 @@ Then implement according to the architecture. Move a component to `shared/ui` on
 Implement [page/feature] for role [role], in [MVP/post-MVP] scope.
 Read docs/ui/ui_convertion.md and the relevant requirements/architecture/database sections.
 Compare against board [board name] in docs/ui/Hoa Lac Food Ordering Platform.html.
-Preserve the design system and role-based layout; prioritize existing components.
+Follow the approved direction in the UI guide and role-based layout; prioritize existing components.
+For requested identity changes, propose concrete options and obtain the user’s decision before applying them.
 Apply all corrections listed in section 10.
 Implement loading/empty/error/disabled/success states and responsive behavior from 360 px.
 Use the current API/DTO contract; if the contract is missing, state what is missing and isolate fixtures from real flows.
@@ -381,8 +393,8 @@ Report changes, verification steps, and all intentional differences from the HTM
 ```
 ## 13. Conversion Acceptance Checklist
 ### Design and Responsive
-- [ ] Be Vietnam Pro renders correct Vietnamese glyphs/weights; backgrounds, text, and CTA colors match the tokens.
-- [ ] Cards, inputs, badges, pill buttons, image ratios, and spacing match the reference.
+- [ ] The approved font renders Vietnamese glyphs/weights (currently Be Vietnam Pro); backgrounds, text and CTA colors match semantic tokens.
+- [ ] Components, image ratios and spacing follow approved direction; hierarchy supports finding restaurants and choosing dishes without decorative labels or promotional filler.
 - [ ] Owner/admin sidebars preserve their intended difference; active navigation matches the current route.
 - [ ] No iframe/artboard/export loader/fake phone frame remains in the application.
 - [ ] Compare screenshots at 390 px for student screens and 1440 px for dashboards; additionally verify 360, 768, and 1024 px.
@@ -406,4 +418,4 @@ Report changes, verification steps, and all intentional differences from the HTM
 - [ ] Build, TypeScript checks, and lint run according to current scripts; remaining failures are reported accurately.
 - [ ] Tests cover risky flows such as price conflict, duplicate submit, accept/cancel race, missing quote, authorization, and snapshots—not only CSS classes.
 - [ ] Clearly state whether verification used a browser/screenshots or source inspection only; do not claim pixel-perfect or production-ready status without verification.
-**Completion condition:** the interface preserves the identity of the original HTML, behaves according to business rules within the assigned scope, and is structured so future pages can reuse the same design system. A visually similar copy with non-functional buttons, incorrect states, or fake data presented as real is not considered complete.
+**Completion condition:** the interface follows the approved direction recorded in this guide, behaves according to business rules within the assigned scope, and is structured so future pages can reuse the same design system. A visually similar copy with non-functional buttons, incorrect states, or fake data presented as real is not considered complete.

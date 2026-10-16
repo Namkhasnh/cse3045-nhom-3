@@ -8,18 +8,17 @@ const unavailableNavigation: { label: string; icon: IconName }[] = [
 ]
 
 export function StudentLayout({ children }: { children: ReactNode }) {
-  return <>
+  return <div className="student-layout">
     <a className="skip-link" href="#main-content">Đến nội dung chính</a>
     <header className="site-header">
       <div className="page-container brand-row">
         <a href="/" className="brand" aria-label="Hòa Lạc Food — Trang chủ"><span className="brand-mark"><Icon name="bowl" /></span><span>Hòa Lạc <span className="text-brand">Food</span></span></a>
-        <span className="student-label">Bữa ngon quanh VJU</span>
       </div>
     </header>
     <main id="main-content" className="page-container main-content" tabIndex={-1}>
       <aside className="fixture-banner" aria-label="Thông báo dữ liệu mẫu"><Icon name="info" /><p>Dữ liệu mẫu — chưa kết nối hệ thống đặt món.</p></aside>
       {children}
-      <footer className="page-footer"><Icon name="bowl" /><p>Một bữa ngon, thêm năng lượng cho ngày học.<br /><span>Bản xem trước giao diện · Thực đơn chưa khả dụng.</span></p></footer>
+      <footer className="page-footer"><p>Bản xem trước giao diện · Thực đơn chưa khả dụng.</p></footer>
     </main>
     <nav className="student-nav" aria-label="Điều hướng chính">
       <div className="page-container nav-items">
@@ -28,5 +27,5 @@ export function StudentLayout({ children }: { children: ReactNode }) {
       </div>
       <p id="nav-unavailable" className="nav-explanation">Giỏ hàng, đơn hàng và tài khoản chưa khả dụng trong bản mẫu.</p>
     </nav>
-  </>
+  </div>
 }

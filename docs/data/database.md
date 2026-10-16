@@ -3,11 +3,11 @@
 ## 1. Authority, scope and implementation boundary
 
 - Business authority: [requirements.md](../requirements.md), especially §§6–7 and §9; architecture authority: [architecture.md](../architecture.md), especially §§3–7, §9 and §12.
-- Target: **MySQL/InnoDB + Prisma + NestJS**, one database in a modular monolith. This is a proposed implementation schema, not a claim that migrations or business models already exist.
+- Target: **MySQL/InnoDB + Prisma + NestJS**, one database in a modular monolith. The account/audit slice and its first SQL migration now exist; remaining business tables are proposed and absent.
 - Requirements determine behavior; this document chooses storage layouts, keys and numeric precision to implement that behavior. It does not add payment gateways, driver accounts, automatic collection or cross-restaurant orders.
 - **DB** means an actual PK, FK, UNIQUE, CHECK or atomic transaction guarantee. **BE** means a NestJS domain/workflow/repository rule; a TypeScript type or Prisma annotation alone is not a database constraint.
 - Tables use `snake_case`; Prisma models may use PascalCase with mapping attributes. Use real foreign keys, not application-only relation emulation. Keep the package versions/configuration from the project lockfile, including `prisma7.config.ts`; the MariaDB-named adapter does not change the MySQL target.
-- Exact MySQL release is **TBD**. Deployment must support enforced CHECK constraints (MySQL 8.0.16 or newer); verify the actual server. A migration must fail validation rather than silently rely on ignored checks.
+- Target **Oracle MySQL Community Server 8.4 LTS, release 8.4.11**, with InnoDB. Production/staging/local DB tests must use this release; changing patch or series requires reviewed compatibility and migration/race tests. MySQL 8.0.16 is only the historical CHECK-enforcement floor. Verify `SELECT VERSION()` and actual CHECK rejection before applying business migrations; fail on MariaDB or a different release. [MySQL 8.4 CHECK documentation](https://dev.mysql.com/doc/refman/8.4/en/create-table-check-constraints.html) describes enforcement.
 
 ## 2. Data groups and ownership
 
@@ -22,7 +22,7 @@
 | Commission / `commissions` | `commission_policies`, `commission_entries`, `settlements`, `settlement_receipts`, `financial_requests` | MVP manual reconciliation; later dashboards reuse these records |
 | Audit / `audit` | `audit_logs` | MVP; transactional business audit |
 
-The frontend owns the cart draft; no server cart table is required. Reorder builds a new intent and revalidates current conditions. AI conversations/training data are not stored. Support is Should; its order link is required but fields/workflow remain **TBD**. Reviews/favorites are Could and remain **TBD**, not implicit MVP tables. Image upload/media metadata is conditional; store only image references until that design is selected. No refresh-token/session tables are assumed while auth renewal/revocation remains undecided.
+The frontend owns the cart draft; no server cart table is required. Reorder builds a new intent and revalidates current conditions. AI conversations/training data are not stored. Support is Should; its order link is required but fields/workflow remain **TBD**. Reviews/favorites are Could and remain **TBD**, not implicit MVP tables. Image upload/media metadata is conditional; store only image references until that design is selected. MVP has no refresh-token/session table. `accounts.auth_version` invalidates issued JWTs on logout or operator credential/status changes; current account state is checked on every authenticated request.
 
 ## 3. ERD and cardinalities
 
@@ -77,7 +77,7 @@ Every proposed column is listed below or supplied by an explicitly named common 
 | `LAT`, `LNG` | DECIMAL(9,6), DECIMAL(10,6) / Decimal | As listed | As listed | Coordinates; CHECK latitude −90..90, longitude −180..180 |
 | `HASH`, `KEY` | CHAR(64), VARCHAR(128) / String | As listed | As listed | SHA-256 hex fingerprint; opaque idempotency key; ASCII binary collation |
 
-Use `utf8mb4` for user text, a documented deployment collation, strict SQL mode, UTC database sessions and explicit FK actions. Use binary equality for keys/hashes and login identifiers after BE normalization. Scheduling and monthly reporting use `Asia/Ho_Chi_Minh`, converting boundaries to UTC. All IDs referenced below are indexed by a PK/UQ/index or an FK-supporting index. No secrets or raw payment credentials belong in JSON.
+Use `utf8mb4` for user text, `utf8mb4_0900_ai_ci` for catalog text, `utf8mb4_bin` for canonical usernames and keys, strict SQL mode, UTC database sessions and explicit FK actions. Use binary equality for keys/hashes and login identifiers after BE normalization. Scheduling and monthly reporting use `Asia/Ho_Chi_Minh`, converting boundaries to UTC. All IDs referenced below are indexed by a PK/UQ/index or an FK-supporting index. No secrets or raw payment credentials belong in JSON.
 
 ### 4.1. Accounts, restaurants and menu
 
@@ -85,12 +85,13 @@ Use `utf8mb4` for user text, a documented deployment collation, strict SQL mode,
 
 | Column | Type | Null | Default | Meaning / keys |
 | --- | --- | --- | --- | --- |
-| `login_identifier` | VARCHAR(191) | N | — | Normalized unique login, UQ; email/phone/username choice and normalization contract **TBD** |
-| `password_hash` | VARCHAR(255) | N | — | Password hash only; hashing algorithm/parameters selected in auth implementation |
+| `login_identifier` | VARCHAR(191) | N | — | Canonical lowercase ASCII username, UQ under binary collation; API §2 regex and length |
+| `password_hash` | VARCHAR(255) | N | — | Argon2id PHC hash; API §2 parameters, never plaintext |
 | `role` | ENUM(student, restaurant_owner, admin) | N | — | Canonical role mapping; public registration assigns student in BE |
 | `display_name` | VARCHAR(200) | N | — | Account/contact name |
 | `phone` | VARCHAR(32) | Y | NULL | Current contact phone; recipient phone required at checkout; not implicitly unique |
 | `is_active` | BOOLEAN | N | TRUE | Account availability; not a new business lifecycle enum |
+| `auth_version` | INT UNSIGNED | N | 1 | JWT version; increment on logout, credential reset, role/status change; reject overflow |
 
 `restaurants` — common: `id`, `created_at`, `updated_at`, `version`.
 
@@ -401,6 +402,6 @@ Retry only transient deadlocks/lock timeouts, bounded (architecture proposes up 
 - Seed only explicit local/test targets with a database-name/environment allowlist and a refusal for real deployments. Use deterministic fictional students, one owner with multiple restaurants, a second owner, admin, categories/dishes, fixed VJU pickup points and clearly labeled test survey fees/rates. Hash test passwords; no real contacts, QR accounts, provider keys or production credentials. Do not treat demo distances/fees as real surveys.
 - Include fixtures for hidden/sold-out dishes, inactive/closed restaurants, all order/payment states appropriate to the test scope, zero/fractional-rate rounding, adjustments, unassigned/assigned entries and partial receipts. Construct consistent snapshots/history/ledger, preferably through the same services. Post-MVP QR fixtures belong to an explicitly enabled test scope.
 - Required implementation tests: direct SQL constraint violations; accept/cancel race; concurrent same-key order creation and changed-hash conflict; price/fee/owner/deactivation races; repeated completed with one base; completion/audit rollback; payment/cancel and late-confirmation races; overlapping settlement assignment; financial retry deduplication; historical snapshots after edits; restricted deletion. Assert both results and durable row counts/history.
-- Daily backups and a successfully verified restore are required before go-live (NFR08). Retention, hosting, AI/map/storage providers, quote TTL, auth identifier/renewal details, support/review/favorite design and unresolved financial correction/period policies remain **TBD**; finalize only the relevant decisions before enabling those capabilities.
+- Daily backups and a successfully verified restore are required before go-live (NFR08). Retention, hosting, AI/map/storage providers, quote TTL, support/review/favorite design and unresolved financial correction/period policies remain **TBD**; finalize only the relevant decisions before enabling those capabilities.
 
 This document specifies guarantees to implement and verify; it does not claim that a schema migration, database integration test or production backup has already run.

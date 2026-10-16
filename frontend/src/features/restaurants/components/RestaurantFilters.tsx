@@ -49,15 +49,13 @@ export function RestaurantFilters({ values, categories, onChange, onReset, hasFi
         ))}
       </div>
     </fieldset>
-    <fieldset className="filter-group">
-      <legend>Giá một món</legend>
-      <div className="chip-row">
+    <div className="price-filter">
+      <label htmlFor="restaurant-price">Giá một món</label>
+      <select id="restaurant-price" className="input" value={values.priceRange} onChange={event => onChange({ ...values, priceRange: event.target.value as PriceRange })}>
         {prices.map(price => (
-          <FilterChip key={price.value} selected={values.priceRange === price.value} onClick={() => onChange({ ...values, priceRange: price.value })}>
-            {price.label}
-          </FilterChip>
+          <option key={price.value} value={price.value}>{price.label}</option>
         ))}
-      </div>
-    </fieldset>
+      </select>
+    </div>
   </section>
 }
