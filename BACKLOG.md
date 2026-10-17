@@ -7,13 +7,13 @@ and the owning contracts in [docs/README.md](docs/README.md).
 
 ## Current progress
 
-Source inspected on October 16, 2026:
+Source inspected on October 17, 2026:
 
-- Backend scaffold, Prisma connection lifecycle, validation, shared HTTP/scalar/transaction infrastructure and account/audit foundation migration exist.
-- Student discovery has a fixture-only UI with local filters and state previews.
-- Steps 00 and 01 have been implemented; the real-MySQL audit job is configured but has not been observed running in CI. Step 07 has presentation work only.
-- Order/financial models, connected business APIs, authentication and ordering are not implemented.
-- Next: observe the MySQL CI job, then implement step 02.
+- Backend scaffold, account/audit migrations, email-verified Student auth/profile, pending Owner/Admin review and signed-manifest initial privileged provisioning are present.
+- Frontend auth/profile routes and role navigation are present; Student discovery still uses labeled fixtures.
+- Steps 00 and 01 have been implemented; step 02 now has Student/auth source, a Pwned Passwords range check, a MySQL-backed five-failures/15-minutes login backoff, and passing audit/AUTH-01 integration on a disposable MySQL 8.4.11 container. Restaurant ownership checks depend on step 03's restaurant model. The real-MySQL CI job is configured but has not been observed running in CI. Step 07 has presentation work only.
+- Order/financial models, connected business APIs and ordering are not implemented.
+- Next: add restaurant ownership in step 03 and automate the already observed connected browser auth journey.
 
 ## Implementation checklist
 
@@ -27,7 +27,7 @@ to step 18. Resolve necessary TBDs before implementing dependent behavior.
 - [x] **01 — Technical foundation (partial).** Add `/api/v1`, response/error
   envelopes, exact scalar handling, transaction context and transactional audit.
   Configure real-MySQL integration and browser smoke tooling incrementally.
-- [ ] **02 — Accounts and authentication.** Student registration, login, identity
+- [ ] **02 — Accounts and authentication (partial).** Student registration, login, identity
   recovery, profile, approved Admin/Owner provisioning, router and role navigation.
   Enforce current account/ownership checks server-side. (US01, FR01)
 - [ ] **03 — Restaurants and ownership.** Admin creates/edits partners and assigns

@@ -96,5 +96,5 @@ jobs:
           cache-dependency-path: backend/package-lock.json
       - name: Install dependencies
         run: npm ci
-      - name: Real MySQL audit integration
+      - name: Real MySQL audit and auth integration
         run: npm run test:integration

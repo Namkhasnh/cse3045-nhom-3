@@ -5,6 +5,12 @@ import { Test } from '@nestjs/testing';
 import { AppModule } from './app.module.js';
 import { PrismaService } from './prisma/prisma.service.js';
 
+process.env.JWT_SIGNING_KEY = '11'.repeat(32);
+process.env.CSRF_HMAC_KEY = '22'.repeat(32);
+process.env.JWT_ISSUER = 'test-issuer';
+process.env.JWT_AUDIENCE = 'test-audience';
+process.env.JWT_KEY_ID = 'test-key';
+
 @Injectable()
 class FeatureService {
   constructor(readonly prisma: PrismaService) {}

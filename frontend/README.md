@@ -13,7 +13,7 @@ npm --prefix frontend run lint
 npm --prefix frontend run build
 ```
 
-Open the URL printed by Vite (normally `http://localhost:5173/`). The backend and MySQL are unnecessary for this preview. No API calls or secret environment variables are used.
+Open `/login` at the Vite URL (normally `http://localhost:5173/login`). Vite proxies `/api` to `127.0.0.1:3000`; the backend must be running with auth keys and `PUBLIC_ORIGIN` matching the browser origin. Production requires same-origin HTTPS. `/preview` is development-only and displays restaurant fixtures without backend access. No backend secrets belong in `VITE_*`.
 
 ## Approved compact Student list
 
@@ -28,21 +28,23 @@ Search/category semantics are unchanged. Price uses a labeled native select. Eac
 - Search uses trimmed, NFC-normalized, case-insensitive Vietnamese name prefixes, preserving diacritics. It does not establish the future server collation.
 - Category and price must match the same visible dish. Sold-out visible dishes remain discoverable; hidden dishes and inactive restaurants are excluded. Price ranges are `< 30000`, inclusive `30000–50000`, and `> 50000` VND. Filters default to all values.
 - IDs/money stay strings. Price comparisons and the shared VND formatter use BigInt. A null fee is unknown; `"0"` is a known sample zero fee.
-- Cards and the fixed sample pickup point are read-only. The Student navigation identifies Home as current and disables Cart/Orders/Account with a visible explanation. There are no menus, authentication, cart, ordering, AI, reviews or fake mutation successes.
+- Cards and the fixed sample pickup point are read-only. The Student navigation enables Account and keeps Cart/Orders disabled. Auth/profile actions use the backend; there are no connected menus, cart, ordering, AI, reviews or fake mutation successes.
 
 Development-only state URLs:
 
 | URL suffix | Result |
 | --- | --- |
-| `/?demo_state=loading` | Persistent horizontal-row skeletons with an accessible loading label |
-| `/?demo_state=empty` | Empty dataset; applying filters shows the distinct no-match state |
-| `/?demo_state=error` | Explicit simulated error; retry restores fixtures and preserves filters |
+| `/preview?demo_state=loading` | Persistent horizontal-row skeletons with an accessible loading label |
+| `/preview?demo_state=empty` | Empty dataset; applying filters shows the distinct no-match state |
+| `/preview?demo_state=error` | Explicit simulated error; retry restores fixtures and preserves filters |
 
-Every simulated state is labeled. Parameters are ignored in the production build. Normal fixture data and its labels remain in production; this build is still a preview.
+Every simulated state is labeled. `/preview` and these parameters are absent from production routing. The authenticated Student home still labels its restaurant fixture data until discovery is connected.
 
 ## Component boundaries
 
-- `App` composes `app/layouts/StudentLayout` and the restaurant feature through its `index.ts` public export. No router or server-state library is installed.
+- `App` routes `/login`, `/register`, `/verify-email`, `/`, `/account`, `/owner`, `/admin`, `/admin/role-requests` and development-only `/preview`. It calls `/auth/me` on load for real routes, keeps session state only in memory and redirects by current role; the backend remains authoritative for permissions. `/preview` skips the session request and can run with the backend stopped. Student, Owner and Admin layouts have distinct navigation. No routing dependency or browser token storage is used.
+- `features/auth` owns same-origin requests, cookie CSRF forwarding, forms and profile updates. Successful registration goes to login; protected routes wait for `/auth/me`. Owner/Admin landing pages explain that their business features are not connected yet.
+- Registration requires an email, requested role and repeated password. The browser checks matching passwords before sending one password to the API. The backend sends a six-digit verification code; `/verify-email` confirms it before login. Owner/Admin applicants remain Student until an Admin reviews `/admin/role-requests`. Use the Vite origin that exactly matches the backend's `PUBLIC_ORIGIN`.
 - `RestaurantListPage` owns local filters and development state selection; presentational components do not fetch.
 - `RestaurantFilters` takes values, categories, `onChange`, `onReset` and `hasFilters`; `RestaurantCard` takes one read-only `RestaurantSummary`; `RestaurantList` takes status, results, `hasFilters`, `onReset` and `onRetry`.
 - Types are internal fixture view models, not invented API DTOs. Backend integration will replace the fixture source through an approved feature hook/API layer.
@@ -52,4 +54,4 @@ Every simulated state is labeled. Parameters are ignored in the production build
 
 A narrow headless Chrome fixture smoke check is configured: `npm --prefix frontend run test:smoke` (or set `BROWSER_BIN`). It verifies rendering at 360 px; unit/component, connected browser journey and accessibility automation remain **NOT CONFIGURED**. Lint/build do not prove browser behavior. See the [discovery verification report](../docs/ui/student-discovery-verification.md) for actual checks and limitations.
 
-Check widths 360, 390, 768, 1024 and 1440 px; search/filter combinations and reset; price boundaries; unknown versus zero fees; missing/broken images; simulated states and retry; long names; keyboard/focus; 200% zoom; reduced motion; no page horizontal scrolling or fixed navigation covering the final content. Other role layouts do not exist yet and cannot be browser-verified.
+Check widths 360, 390, 768, 1024 and 1440 px; auth/profile forms, role navigation, keyboard/focus, 200% zoom and no horizontal scrolling. The existing fixture smoke checks `/preview` at 360 px; connected auth browser E2E remains **NOT CONFIGURED**.

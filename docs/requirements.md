@@ -85,7 +85,7 @@ MoSCoW applies to the whole project. MVP is only the first rollout.
 
 | ID | Actor | Story (short) | Priority |
 | --- | --- | --- | --- |
-| US01 | Student | Register, log in, manage contact info to place and track own orders. | Must |
+| US01 | Student | Register with a verified email, log in, manage contact info to place and track own orders. | Must |
 | US02 | Student | Search restaurants and dishes by name, category, price range. | Must |
 | US03 | Student | View menu, price, opening hours, dish availability. | Must |
 | US04 | Student | Enter address or pin a location; see distance, deliverability, delivery fee. | Must |
@@ -112,7 +112,7 @@ MoSCoW applies to the whole project. MVP is only the first rollout.
 
 | ID | Area | Requirement |
 | --- | --- | --- |
-| FR01 | Accounts and authorization | Students manage own account; owners manage own restaurant data; admin manages partners and operations. Roles: student, restaurant owner, admin. |
+| FR01 | Accounts and authorization | Public applicants register with verified email and choose a requested role. Student access follows verification; Owner/Admin access requires current Admin approval. Students manage own account; owners manage own restaurant data; admin manages partners and operations. Roles: student, restaurant owner, admin. |
 | FR02 | Search and menu | View, search, filter restaurants and dishes; show price, hours, availability. |
 | FR03 | Location and delivery fee | Resolve pickup point/address, route distance, delivery range and fee per restaurant policy (produces a *delivery quote*). |
 | FR04 | Cart and orders | Manage cart, compute totals, place, accept, track and cancel orders per status rules. |
