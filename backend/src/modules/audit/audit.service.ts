@@ -13,8 +13,9 @@ export type AuditEvent = {
 };
 
 const allowedChanges: Record<string, readonly string[]> = {
-  'account.created': ['role'],
-  'account.updated': ['display_name_changed', 'role_changed', 'is_active_changed'],
+  'account.created': ['role', 'requested_role'],
+  'account.updated': ['display_name_changed', 'phone_changed', 'role_changed', 'is_active_changed',
+    'email_verified', 'role_request'],
 };
 
 @Injectable()

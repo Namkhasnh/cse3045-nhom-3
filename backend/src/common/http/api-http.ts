@@ -36,8 +36,13 @@ export class ApiExceptionFilter implements ExceptionFilter {
     const status = exception instanceof HttpException ? exception.getStatus() : 500;
     const payload = exception instanceof HttpException ? exception.getResponse() : null;
     const object = typeof payload === 'object' && payload !== null ? payload as Record<string, unknown> : {};
+    if (status === 429 && Number.isInteger(object.retry_after) &&
+        (object.retry_after as number) > 0 && (object.retry_after as number) <= 900) {
+      response.setHeader('Retry-After', String(object.retry_after));
+    }
     const fieldErrors = Array.isArray(object.field_errors) ? object.field_errors as FieldError[] : [];
-    const code = status < 500 && typeof object.code === 'string'
+    const code = (status < 500 || (status === 503 && ['PASSWORD_CHECK_UNAVAILABLE', 'EMAIL_UNAVAILABLE', 'EMAIL_NOT_CONFIGURED'].includes(object.code as string))) &&
+      typeof object.code === 'string'
       ? object.code : codes[status] ?? 'INTERNAL_ERROR';
     const message = status === 400 ? 'Malformed request.'
       : typeof object.message === 'string' && status < 500
@@ -68,5 +73,22 @@ export function configureApiHttp(app: INestApplication): void {
   app.useGlobalPipes(createValidationPipe());
   app.useGlobalInterceptors(new ApiEnvelopeInterceptor());
   app.useGlobalFilters(new ApiExceptionFilter());
+  app.use((request: { method: string; originalUrl: string; headers: Record<string, string | undefined> }, response: { status(code: number): { json(body: unknown): void }; setHeader(name: string, value: string): void }, next: () => void) => {
+    if (/^\/api\/v1\/(auth(?:\/|$)|profile(?:\/|$))/.test(request.originalUrl)) response.setHeader('Cache-Control', 'no-store');
+    if (['GET', 'HEAD', 'OPTIONS'].includes(request.method)) return next();
+    const origin = process.env.PUBLIC_ORIGIN;
+    if (!origin || request.headers.origin !== origin) {
+      response.status(403).json({ error: { code: 'CSRF_FAILED', message: 'Origin check failed.',
+        field_errors: [], details: {}, request_id: randomUUID(), retryable: false } });
+      return;
+    }
+    const contentType = request.headers['content-type'];
+    if (!contentType || !/^application\/json(?:\s*;|$)/i.test(contentType)) {
+      response.status(400).json({ error: { code: 'MALFORMED_REQUEST', message: 'JSON content type required.',
+        field_errors: [], details: {}, request_id: randomUUID(), retryable: false } });
+      return;
+    }
+    next();
+  });
 }
 

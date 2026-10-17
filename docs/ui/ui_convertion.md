@@ -245,6 +245,7 @@ The paths below are **proposed UI routes**, not existing backend endpoints. If t
 | Account | `/account` | Student; extended from form patterns in 01 |
 | Restaurant orders, dishes, settings, statistics | `/owner/restaurants/:restaurantId/{orders,dishes,settings,statistics}` | Owner / 07–10 |
 | Restaurant management | `/admin/restaurants` | Admin / 11 |
+| Role request review | `/admin/role-requests` | Admin / account approval |
 | Settlement | `/admin/settlements` | Admin / 12 |
 | Audit logs | `/admin/audit-logs` | Admin / 13 |
 New pages such as account/profile editing should inherit existing form and layout patterns; do not assume the HTML already contains a detailed design for them. Validate session and role before rendering protected areas, and handle 401/403 according to the contract. Hiding menu items in the frontend does not replace backend authorization.
@@ -259,15 +260,16 @@ New pages such as account/profile editing should inherit existing form and layou
 8. Compare screenshots at sizes matching each screen inside the artboard; do not compare an entire multi-screen board against a single route.
 9. Verify responsive behavior, keyboard support, and error flows; update reusable conventions when new decisions are made.
 ### 8.4. Implemented Student Discovery Preview
-As of October 16, 2026, `/` renders a presentation-only Student restaurant list (US02/US03, FR02, NFR06); see the [frontend guide](../../frontend/README.md) for fixture data, internal props, preview URLs and tooling. This is not connected discovery or proof of full MVP acceptance.
+As of October 17, 2026, authenticated Student `/` renders a presentation-only restaurant list (US02/US03, FR02, NFR06), and `/preview` is a development-only public fixture view; see the [frontend guide](../../frontend/README.md) for fixture data, routes and tooling. This is not connected discovery or proof of full MVP acceptance.
 - Tailwind CSS 4 uses `@tailwindcss/vite`. `src/index.css` owns semantic `@theme` tokens, font imports and component styles. Be Vietnam Pro is bundled through Fontsource, including Vietnamese glyphs and weights 400/500/600/700/800. Existing token values are preserved; no new business-state palette is introduced.
 - Implemented shared controls: Button (`primary`/`neutral`, native disabled), Input (required visible label/id, native attributes), FilterChip (`aria-pressed`), Badge (`neutral`/`success`/`warning`, text plus dot), decorative Icon, and ListState (message, optional action, alert for errors). Other variants in §7 remain target contracts.
-- StudentLayout contains the brand header, skip link, persistent fixture notice and safe-area-aware fixed navigation. Home is current; other navigation items are disabled with a visible explanation. Only the Student layout is implemented.
+- StudentLayout contains the brand header, skip link, persistent fixture notice and safe-area-aware fixed navigation. Account navigation is enabled; Cart and Orders remain visibly disabled. Minimal Owner/Admin layouts provide role-specific Account navigation while business pages remain unconnected.
 - The search Input and native price select use the standard 10 px radius. Focus combines a dark-orange outline with the original light focus ring for contrast.
 - Reference adaptations: no phone frame/gallery; a 1200 px maximum container, one restaurant column below 1024 px and two from 1024 px, using the approved horizontal rows (§5.6); wrapping touch-size filter chips; a read-only example pickup point; local labeled SVG illustrations/fallbacks; no fictional user identity, ratings, AI/random tiles, featured-dish additions or dead menu links.
 - Every restaurant, delivery value and availability flag is synthetic and labeled. No map, delivery-fee or order-pricing calculation is performed; dish-price ranges summarize the visible fixture catalog only. Missing fee and known zero fee stay distinct; fixture view models are not API DTOs.
-- Development-only `demo_state=loading|empty|error` selects labeled states; retry leaves filters intact. Production ignores these parameters but remains a fixture-only preview.
-- Browser observations and missing coverage are recorded in the [verification report](student-discovery-verification.md). Owner/Admin layouts and automated browser suites remain unimplemented.
+- Development-only `/preview?demo_state=loading|empty|error` selects labeled states; retry leaves filters intact. Production hides `/preview` and ignores these parameters; authenticated Student home still labels fixture data.
+- Registration asks for email, requested role and password twice, reporting a mismatch before submitting. The API receives one password field. New accounts verify a six-digit emailed code before login; Owner/Admin selections stay Student until an Admin approves through `/admin/role-requests`. Browser observations for the original discovery view are recorded in the [verification report](student-discovery-verification.md). Connected email and role-review browser E2E remains unconfigured.
+- The connected login route uses a direct username form. Its desktop presentation pairs the form with a decorative plate motif; narrow screens show the form alone. The approved cream/orange tokens and Be Vietnam Pro remain unchanged. Registration and email verification retain their compact layout.
 ## 9. Data and Behavior That Must Not Be Implemented Incorrectly
 ### 9.1. Order and Payment Are Separate Lifecycles
 | Order enum | UI label | Color family |

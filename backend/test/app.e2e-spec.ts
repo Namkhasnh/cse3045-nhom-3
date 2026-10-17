@@ -6,6 +6,13 @@ import { AppModule } from '../src/app.module.js';
 import { configureApiHttp } from '../src/common/http/api-http.js';
 import { PrismaService } from '../src/prisma/prisma.service.js';
 
+process.env.JWT_SIGNING_KEY = '11'.repeat(32);
+process.env.CSRF_HMAC_KEY = '22'.repeat(32);
+process.env.JWT_ISSUER = 'test-issuer';
+process.env.JWT_AUDIENCE = 'test-audience';
+process.env.JWT_KEY_ID = 'test-key';
+process.env.PUBLIC_ORIGIN = 'https://test.example';
+
 @Controller('probe')
 class ProbeController {
   @Get()
@@ -74,5 +81,25 @@ describe('HTTP foundation', () => {
     const body = await response.json() as { error: { code: string; field_errors: unknown[] } };
     assert.equal(body.error.code, 'NOT_FOUND');
     assert.deepEqual(body.error.field_errors, []);
+  });
+
+  it('enforces session, Origin, JSON and public role boundaries', async () => {
+    const me = await fetch(`${baseUrl}/api/v1/auth/me`);
+    assert.equal(me.status, 401);
+    assert.equal((await me.json() as { error: { code: string } }).error.code, 'TOKEN_INVALID');
+
+    const registration = { login_identifier: 'student-one', password: 'correct horse battery staple',
+      display_name: 'Student One', role: 'admin' };
+    const wrongOrigin = await fetch(`${baseUrl}/api/v1/auth/register`, { method: 'POST',
+      headers: { origin: 'https://evil.example', 'content-type': 'application/json' },
+      body: JSON.stringify(registration) });
+    assert.equal(wrongOrigin.status, 403);
+    const wrongType = await fetch(`${baseUrl}/api/v1/auth/register`, { method: 'POST',
+      headers: { origin: 'https://test.example', 'content-type': 'text/plain' }, body: '{}' });
+    assert.equal(wrongType.status, 400);
+    const roleOverride = await fetch(`${baseUrl}/api/v1/auth/register`, { method: 'POST',
+      headers: { origin: 'https://test.example', 'content-type': 'application/json' },
+      body: JSON.stringify(registration) });
+    assert.equal(roleOverride.status, 422);
   });
 });

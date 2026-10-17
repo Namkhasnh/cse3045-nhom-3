@@ -1,7 +1,7 @@
 # Development Guide — Hoa Lac Food Ordering Platform
 > **Purpose:** define how developers and AI coding assistants work safely and consistently in the repository.
 > **Status:** derived from [requirements.md](requirements.md), [architecture.md](architecture.md), [database.md](data/database.md), [api_contract.md](data/api_contract.md), [ui_convertion.md](ui/ui_convertion.md), and [ai_integration.md](ai_integration.md).
-> **Repository check:** October 16, 2026. CI uses Node.js `24.x`; current scripts, `DATABASE_URL` and `PORT` are verified below. Exact runtime Node/npm patches and future provider configuration remain **TBD**; MySQL 8.4.11 and auth policy are selected in the owning contracts. Recheck manifests/config before use.
+> **Repository check:** October 17, 2026. CI uses Node.js `24.x`; current scripts and auth configuration names are verified below. Exact runtime Node/npm patches and future provider configuration remain **TBD**; MySQL 8.4.11 and auth policy are selected in the owning contracts. Recheck manifests/config before use.
 ## 1. Authority and conflict resolution
 Requirements govern behavior; the following documents own their respective domains:
 1. [docs/requirements.md](requirements.md) — scope, roles, US/FR/BR/AC.
@@ -22,7 +22,7 @@ Rules:
 | Frontend | Vite + React + TypeScript |
 | Styling | Tailwind CSS 4 via `@tailwindcss/vite`; semantic CSS theme and self-hosted Be Vietnam Pro |
 | Backend | NestJS + TypeScript |
-| API | REST + JSON; `/api/v1` prefix and shared envelopes are configured, with no business routes yet |
+| API | REST + JSON; `/api/v1` prefix, shared envelopes and auth endpoints are configured; no other business routes yet |
 | Auth | 15-minute JWT cookie, no refresh, signed CSRF and versioned logout; API §2 |
 | ORM | Prisma |
 | Database | MySQL / InnoDB |
@@ -38,6 +38,7 @@ Rules:
 - Use Oracle MySQL Community Server **8.4.11** with InnoDB in local, test, staging and production; verify `SELECT VERSION()` and actual CHECK enforcement.
 - `8.0.16+` explains the historical CHECK floor; it is not the selected release.
 - Financial/concurrency integration tests must run against real MySQL/InnoDB, not SQLite.
+- A local `SELECT 1` on MySQL 9.2.0 verifies connectivity only; it does not change the selected 8.4.11 release or satisfy version-specific integration evidence.
 ## 3. Environment setup
 ### 3.1 Verify local tools
 Before coding:
@@ -75,11 +76,13 @@ Current settings come from `backend/.env.example`, `backend/src/main.ts` and `ba
 | `DATABASE_URL` | Backend uses MySQL | Required `mysql://user:password@host:port/database`; URL-encode credentials; current parser rejects query/fragment; database must already exist |
 | Runtime environment | All environments | `development` |
 | `PORT` | Backend listen port | Optional; defaults to `3000` |
-| JWT signing material | Auth enabled | `CHANGE_ME_LOCAL_ONLY`; backend only |
-| JWT issuer | Auth enabled | Exact value/name TBD |
-| JWT audience | Auth enabled | Exact value/name TBD |
+| `JWT_SIGNING_KEY`, `CSRF_HMAC_KEY` | Auth enabled | Distinct backend-only 32-byte random hex values |
+| `JWT_ISSUER`, `JWT_AUDIENCE`, `JWT_KEY_ID` | Auth enabled | Required exact per-environment strings; key ID identifies the active signing key |
+| `JWT_PREVIOUS_KEYS` | Key rotation | Optional JSON array of old `{id,key,retired_at}` entries; `retired_at` is Unix seconds, accepted for at most 15 minutes |
 | Allowed frontend origin | Separate origins | Example `http://localhost:5173`; never wildcard with credentials |
-| CSRF config | Cookie-auth writes | Backend HMAC key; `X-CSRF-Token` and bound cookie per API §2 |
+| `PUBLIC_ORIGIN` | Auth enabled | Required exact HTTPS public origin; unsafe requests with absent/mismatched Origin fail |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` | Email registration enabled | Backend-only SMTP relay; port 465 uses implicit TLS, port 587 requires STARTTLS. Use a dedicated app password and a verified sender; never put credentials in `VITE_*`. |
+| `ACCOUNT_PROVISION_MANIFEST`, `ACCOUNT_PROVISION_REVIEWER_PUBLIC_KEY`, `NODE_ENV` | Privileged provisioning | Operator-only signed approval paths and exact environment; see deployment §6 |
 | AI endpoint/model/credential | AI enabled | Provider/model **TBD**; backend only |
 | AI timeout/quota/cost limits | AI enabled | **TBD**; absent limits must not mean unlimited |
 | Map settings | Post-MVP map delivery | **TBD** |
@@ -94,7 +97,7 @@ Frontend config contains public/non-secret values only.
 | Secrets | **Forbidden** |
 Do not create variables equivalent to `VITE_DATABASE_URL`, `VITE_JWT_SECRET`, or `VITE_AI_API_KEY`.
 ## 5. Local database and Prisma
-Use a disposable local MySQL database.
+Use a disposable local MySQL database for tests. A configured development database may be used for non-destructive connectivity checks; do not run synthetic auth/integration cases against retained data.
 Setup flow:
 1. Start MySQL/InnoDB.
 2. Create a local database and least-privilege dev account.
@@ -139,7 +142,7 @@ npm --prefix backend run dev
 # Separate terminal:
 npm --prefix frontend run dev
 ```
-Backend defaults to port 3000; Vite defaults to 5173 (use its printed URL). Backend startup requires MySQL. The frontend restaurant-list preview runs independently with labeled fixtures and no API calls; see [frontend guide](../frontend/README.md) for filters and development-only state previews. Proxy/CORS/API-origin integration will be added with a connected feature. No backend application endpoints are registered; `/` and `/todos` return 404.
+Backend defaults to port 3000; Vite defaults to 5173 (use its printed URL). Backend startup requires MySQL and the auth variables in §4.2. New registration requires the SMTP variables there; absent configuration returns `EMAIL_NOT_CONFIGURED` before account creation. A delivery failure after account creation returns `EMAIL_UNAVAILABLE`, leaving an unverified account that may resend after 60 seconds. Vite proxies `/api` to local backend port 3000; configure `PUBLIC_ORIGIN` to match the browser origin in development. The frontend `/preview` route keeps labeled restaurant fixtures available without backend access; see [frontend guide](../frontend/README.md). The backend exposes registration, email verification/resend, login/me/logout, profile and Admin role-request review under `/api/v1`; a production SPA must use the exact same HTTPS origin configured by `PUBLIC_ORIGIN`. `/` and `/todos` return 404.
 Documented `/api/v1` endpoints and the authenticated surveyed cash-order flow are targets to implement, not startup smoke checks that currently pass. Frontend code must not import Prisma, query MySQL or call the AI provider.
 ## 7. Target repository structure
 | Area | Target location |
@@ -297,7 +300,7 @@ For each feature/fix:
 9. **Prepare PR**
    - State scope, traceability, verification, risks, docs, and remaining TBDs.
 ## 12. Verification commands
-These scripts were checked against package manifests and CI on October 16, 2026. Run from the repository root and recheck scripts when tooling changes.
+These scripts were checked against package manifests and CI on October 17, 2026. Run from the repository root and recheck scripts when tooling changes.
 
 | Check | Existing command / status |
 | --- | --- |
@@ -312,9 +315,9 @@ These scripts were checked against package manifests and CI on October 16, 2026.
 | Backend build | `npm --prefix backend run build` |
 | Prisma schema validation / generation | `npm --prefix backend run prisma:validate` / `npm --prefix backend run prisma:generate` |
 | Local MySQL connectivity | `npm --prefix backend run db:check` (build then `SELECT 1`; configured DB required) |
-| Real-MySQL constraints/races, OpenAPI and import-boundary automation | **NOT CONFIGURED** |
+| Real-MySQL auth flow, business constraints/races, OpenAPI and import-boundary automation | **NOT CONFIGURED** |
 
-CI runs frontend lint/build and backend lint/unit/HTTP E2E/build. Backend tests mock DB access; they do not establish actual MySQL transaction, constraint or race correctness. No root npm workspace or standalone type-check script is configured. Build/test compilation covers current TypeScript checks.
+CI runs frontend lint/build and backend lint/unit/HTTP E2E/build plus isolated MySQL 8.4.11 integration. Backend HTTP E2E tests mock DB access. On October 17, 2026, local `db:check` reached `cse3045`, and all four account/audit/login-limit/email-role migrations were applied. Source-level checks include 22 unit/5 mocked HTTP E2E tests. A disposable Docker MySQL 8.4.11 container passed the audit and AUTH-01 integration suite (2/2), including email verification and pending Owner approval. Chrome smoke rendered the new email verification route at 360 px. A prior one-time connected headless Chrome journey covered the former auth flow; the new email/approval journey and real SMTP delivery have not been observed. Containers were removed. A CI run and repeatable connected browser suite remain unobserved/unconfigured. No root npm workspace or standalone type-check script is configured. Build/test compilation covers current TypeScript checks.
 For documentation-only changes, verify links, canonical paths, referenced sections, line limits and source/script consistency. Run application checks when executable code/config changes. Report configured-but-unrun checks as `NOT RUN`, missing tooling as `NOT CONFIGURED`, and policy-dependent work as `BLOCKED: <decision/source>`.
 Real-MySQL audit integration is opt-in: set `TEST_DATABASE_URL` to a disposable loopback MySQL database named `test_*` or `*_test`, then run `npm --prefix backend run test:integration`. The runner applies the checked-in migration without reset and checks transactional audit rollback. Browser fixture smoke uses local Chrome or `BROWSER_BIN` via `npm --prefix frontend run test:smoke`; it is not a connected checkout test.
 

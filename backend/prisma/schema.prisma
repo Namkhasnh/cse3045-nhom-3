@@ -22,13 +22,43 @@ model Account {
   role            AccountRole
   displayName     String      @map("display_name") @db.VarChar(200)
   phone           String?     @db.VarChar(32)
+  email           String?     @unique @db.VarChar(254)
+  emailVerifiedAt DateTime?   @map("email_verified_at") @db.DateTime(3)
+  emailCodeHash   String?     @map("email_code_hash") @db.Char(64)
+  emailCodeExpiresAt DateTime? @map("email_code_expires_at") @db.DateTime(3)
+  emailCodeSentAt DateTime? @map("email_code_sent_at") @db.DateTime(3)
+  emailCodeAttempts Int @default(0) @map("email_code_attempts") @db.UnsignedInt
   isActive        Boolean     @default(true) @map("is_active")
+  version         Int         @default(1) @db.UnsignedInt
   authVersion     Int         @default(1) @map("auth_version") @db.UnsignedInt
   createdAt       DateTime    @default(now()) @map("created_at") @db.DateTime(3)
   updatedAt       DateTime    @updatedAt @map("updated_at") @db.DateTime(3)
   auditLogs       AuditLog[]
+  roleRequest     AccountRoleRequest? @relation("Applicant")
+  reviewedRequests AccountRoleRequest[] @relation("Reviewer")
 
   @@map("accounts")
+}
+
+enum RoleRequestStatus {
+  pending
+  approved
+  rejected
+}
+
+model AccountRoleRequest {
+  id BigInt @id @default(autoincrement())
+  accountId BigInt @unique @map("account_id")
+  requestedRole AccountRole @map("requested_role")
+  status RoleRequestStatus @default(pending)
+  requestedAt DateTime @default(now()) @map("requested_at") @db.DateTime(3)
+  reviewedAt DateTime? @map("reviewed_at") @db.DateTime(3)
+  reviewedBy BigInt? @map("reviewed_by")
+  applicant Account @relation("Applicant", fields: [accountId], references: [id], onDelete: Restrict)
+  reviewer Account? @relation("Reviewer", fields: [reviewedBy], references: [id], onDelete: Restrict)
+
+  @@index([status, requestedAt, id])
+  @@map("account_role_requests")
 }
 
 model AuditLog {
@@ -45,4 +75,14 @@ model AuditLog {
   @@index([targetType, targetId, createdAt, id])
   @@index([actorId, createdAt, id])
   @@map("audit_logs")
+}
+
+model AuthLoginLimit {
+  scope        String   @db.VarChar(16)
+  subjectHash  String   @map("subject_hash") @db.Char(64)
+  windowStart  DateTime @map("window_start") @db.DateTime(3)
+  failureCount Int      @default(0) @map("failure_count") @db.UnsignedInt
+
+  @@id([scope, subjectHash])
+  @@map("auth_login_limits")
 }

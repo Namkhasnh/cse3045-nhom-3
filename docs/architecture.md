@@ -21,7 +21,7 @@ This document does not fully define tables/columns, endpoints, DTOs, screens, or
 | Frontend | Vite, React, TypeScript, Tailwind CSS 4; app composes Student layout and restaurant feature with labeled fixtures | Connect approved APIs; add remaining features/layouts when scoped |
 | Backend | NestJS; `ConfigModule`, `PrismaModule`; global validation | Add HTTP controllers, workflows, business modules, and authentication |
 | Database | Prisma datasource `mysql`; Prisma service uses the MariaDB adapter; no business models in the schema yet | MySQL/InnoDB; define models and migrations in the data document |
-| Accounts and orders | No account/order implementation or demo todo endpoint is registered | Do not treat scaffold directories as completed modules |
+| Accounts and orders | Account auth/profile/email/role-request endpoints exist; order endpoints remain absent | Do not treat scaffold directories as completed order modules |
 | External integrations | No business adapters for AI, maps, or image storage in the inspected source | Define ports first; add adapters when providers are selected |
 
 The `@prisma/adapter-mariadb` package name in the source does not change the decision to use MySQL. Package versions are controlled by manifests and lockfiles; this document does not require version upgrades.
@@ -285,6 +285,7 @@ Polling fits a small number of MVP restaurants with minimal infrastructure. Reco
 ### 9.1. Authentication and Ownership
 
 - Hash passwords with the Argon2id parameters in API §2; never store or log plaintext passwords.
+- New public accounts keep the Student role and cannot authenticate until email verification. Requested Owner/Admin roles remain pending until a current Admin reviews them; approval changes the role and invalidates existing JWTs atomically with audit.
 - The backend validates JWT signatures, expiry, and configured issuer/audience. Derive the actor from the verified token; sensitive writes also check current account status and permissions.
 - Role guards are only the first step. Students read/cancel their own orders; owners operate on orders, dishes, and payments for their restaurants; administrators receive only permissions specified in the requirements.
 - Enforce ownership server-side for reads, writes, lists, and nested resources. Writes check permissions against locked data to prevent ownership changes during an operation.

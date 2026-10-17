@@ -3,7 +3,7 @@
 ## 1. Authority, scope and implementation boundary
 
 - Business authority: [requirements.md](../requirements.md), especially §§6–7 and §9; architecture authority: [architecture.md](../architecture.md), especially §§3–7, §9 and §12.
-- Target: **MySQL/InnoDB + Prisma + NestJS**, one database in a modular monolith. The account/audit slice and its first SQL migration now exist; remaining business tables are proposed and absent.
+- Target: **MySQL/InnoDB + Prisma + NestJS**, one database in a modular monolith. The account/audit slice, login counters, email verification and role requests have forward migrations; remaining business tables are proposed and absent.
 - Requirements determine behavior; this document chooses storage layouts, keys and numeric precision to implement that behavior. It does not add payment gateways, driver accounts, automatic collection or cross-restaurant orders.
 - **DB** means an actual PK, FK, UNIQUE, CHECK or atomic transaction guarantee. **BE** means a NestJS domain/workflow/repository rule; a TypeScript type or Prisma annotation alone is not a database constraint.
 - Tables use `snake_case`; Prisma models may use PascalCase with mapping attributes. Use real foreign keys, not application-only relation emulation. Keep the package versions/configuration from the project lockfile, including `prisma7.config.ts`; the MariaDB-named adapter does not change the MySQL target.
@@ -13,7 +13,7 @@
 
 | Group / owning module | Tables | Delivery scope |
 | --- | --- | --- |
-| Accounts / `accounts` | `accounts` | MVP: contact data, password hash, role, account availability |
+| Accounts / `accounts` | `accounts`, `account_role_requests`, `auth_login_limits` | MVP: contact data, email verification, password hash, role requests, account availability and login limits |
 | Restaurants / `restaurants` | `restaurants`, `restaurant_hours` | MVP: one responsible owner per restaurant, multiple restaurants per owner |
 | Menu / `dishes` | `dish_categories`, `dishes` | MVP: current catalog; visibility and availability are independent |
 | Delivery / `delivery` | `pickup_points`, `delivery_policies`, `restaurant_pickup_rates`, `delivery_fee_tiers` | MVP surveyed points; fee tiers/free locations after MVP |
@@ -90,8 +90,17 @@ Use `utf8mb4` for user text, `utf8mb4_0900_ai_ci` for catalog text, `utf8mb4_bin
 | `role` | ENUM(student, restaurant_owner, admin) | N | — | Canonical role mapping; public registration assigns student in BE |
 | `display_name` | VARCHAR(200) | N | — | Account/contact name |
 | `phone` | VARCHAR(32) | Y | NULL | Current contact phone; recipient phone required at checkout; not implicitly unique |
+| `email` | VARCHAR(254) binary-collated | Y | NULL | Canonical lowercase unique email; null only for pre-migration/provisioned accounts |
+| `email_verified_at` | DATETIME(3) | Y | NULL | New public accounts cannot log in until set |
+| `email_code_hash` | CHAR(64) binary-collated | Y | NULL | HMAC-SHA-256 code digest; cleared after verification |
+| `email_code_expires_at`, `email_code_sent_at` | DATETIME(3) | Y | NULL | Ten-minute validity and 60-second resend interval |
+| `email_code_attempts` | INT UNSIGNED | N | 0 | Five incorrect attempts maximum per issued code |
 | `is_active` | BOOLEAN | N | TRUE | Account availability; not a new business lifecycle enum |
 | `auth_version` | INT UNSIGNED | N | 1 | JWT version; increment on logout, credential reset, role/status change; reject overflow |
+
+`auth_login_limits` stores shared login backoff counters with composite PK (`scope`, `subject_hash`). `scope` is `ip` or `username`; `subject_hash` is a binary-collated 64-character HMAC-SHA-256 hex digest keyed by the backend CSRF key over the client IP selected under API §2's trusted-proxy rule or canonical username. `window_start` is `DATETIME(3)` UTC and `failure_count` is `INT UNSIGNED` with a CHECK ceiling of five. Each attempt locks both scope rows in fixed order before checking credentials; failures update both counters atomically. The table contains no password or plaintext IP/username. Cleanup/retention policy for expired counters remains an operations decision before production.
+
+`account_role_requests` keeps one request per applicant account: `account_id` is unique and references `accounts`; `requested_role` is Owner/Admin (DB CHECK); `status` is pending/approved/rejected; `requested_at`, `reviewed_at`, and `reviewed_by` retain review history. Approval updates the account role, auth version, request and audit in one transaction. Existing accounts have no request row unless one is explicitly created.
 
 `restaurants` — common: `id`, `created_at`, `updated_at`, `version`.
 

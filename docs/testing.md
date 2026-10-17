@@ -58,7 +58,8 @@ U/I/R/E/N refer to §2. Each row defines expected behavior, not a pass result. C
 
 | Source: US / BR / AC (plus FR/NFR where needed) | Case | Layer | Expected result |
 | --- | --- | --- | --- |
-| US01; FR01; NFR03; AC8 | AUTH-01 Session and identity | I/E | Valid approved login/profile flow works; invalid/expired/inactive sessions fail; public registration cannot choose a privileged role. |
+| US01; FR01; NFR03; AC8 | AUTH-01 Session and identity | I/E | New registration requires email verification before login; invalid/expired/inactive sessions fail; public requested role cannot grant privileged access. |
+| US01/16; FR01; AC8 | AUTH-03 Email and role approval | I/E | Code expires after 10 minutes and locks after five failures; resend is limited; verified Owner/Admin request remains Student until current Admin approves with CSRF; rejection retains Student. |
 | US01/07/11–17; FR01; AC1/8 | AUTH-02 Ownership and nested IDs | I/R/E | S1 cannot read/change S2 orders; O1 cannot read/change R3 orders, dishes, policies or finance; scope checked on lists and writes. |
 | US02/03; FR02; BR05 | CAT-01 Discovery | I/E | Name/category/inclusive price filters work; hidden/inactive excluded; visible sold-out shown as unavailable; documented pagination/scalars preserved. |
 | US05; BR01; AC4 | CART-01 Restaurant boundary | U/I/E | Cross-restaurant API items rejected; UI switch requires consent and cancel preserves existing cart. |
@@ -231,7 +232,7 @@ npm --prefix frontend ci
 npm --prefix backend ci
 ```
 
-CI runs for PRs targeting `hw1` or `main` and pushes to either branch. It uses Node.js `24.x` and runs frontend lint/build, backend lint/unit/HTTP E2E/build, and an isolated MySQL 8.4.11 audit integration job. The table also lists local Prisma/connectivity checks; commands are shown with repository-root package prefixes.
+CI runs for PRs targeting `hw1` or `main` and pushes to either branch. It uses Node.js `24.x` and runs frontend lint/build, backend lint/unit/HTTP E2E/build, and isolated MySQL 8.4.11 audit and AUTH-01 integration tests. The table also lists local Prisma/connectivity checks; commands are shown with repository-root package prefixes.
 
 | Existing check | Command / evidence boundary |
 | --- | --- |
