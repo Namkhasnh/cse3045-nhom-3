@@ -33,3 +33,15 @@ export function databaseConfig(value = process.env.DATABASE_URL) {
     );
   }
 }
+
+// CLI-only: no fallback to the HTTP runtime credential.
+export function provisionDatabaseUrl() {
+  const value = process.env.PROVISION_DATABASE_URL;
+  if (!value) throw new Error('PROVISION_DATABASE_URL is required for operator provisioning.');
+  const provision = databaseConfig(value);
+  const runtime = databaseConfig();
+  if (provision.host !== runtime.host || provision.port !== runtime.port || provision.database !== runtime.database || provision.user === runtime.user) {
+    throw new Error('Provision and runtime must use distinct users on the same database.');
+  }
+  return value;
+}

@@ -11,15 +11,15 @@
 | [architecture.md](architecture.md) | §§3–4, §5.5, §9: module ownership, recommendation workflow, adapter, security and deadline |
 | [database.md](data/database.md) | §§2, 4.1–4.2, 6: real catalog, opening hours, surveyed delivery, exact money; no conversation tables |
 | [api_contract.md](data/api_contract.md) | §§3–4, 7.6, 8, 11–12: scalar formats, AI API, errors, checkout and unresolved gates |
-| [ui_convertion.md](ui/ui_convertion.md) | §§3, 9.2, 9.4, 11: MVP boundaries, selection/checkout, loading and fallback |
+| [ui_convertion.md](ui/ui_convertion.md) | §§3, 9.2, 9.4, 11: V1.0 boundaries, selection/checkout, loading and fallback |
 
-Use **Student**, **Restaurant Owner**, **Admin**, **Restaurant**, **Dish**, **Pickup point** and **Delivery quote** as defined in requirements §9. “Food/item/quán” in supporting material maps to Dish or Restaurant as appropriate. A pickup point is a fixed MVP delivery destination; it does not imply a driver role or a new fulfillment mode.
+Use **Student**, **Restaurant Owner**, **Admin**, **Restaurant**, **Dish**, **Pickup point** and **Delivery quote** as defined in requirements §9. “Food/item/quán” in supporting material maps to Dish or Restaurant as appropriate. A pickup point is a fixed V1.0 delivery destination; it does not imply a driver role or a new fulfillment mode.
 
 Canonical document paths are maintained in docs/README.md. Requirements govern business behavior. Architecture paths/service names are proposed locations, not verified code. UI examples are not business policies.
 
-- **MVP at VJU:** AI recommendations; fixed pickup points; surveyed distance and fee for each restaurant–point pair; cash paid directly to the restaurant.
-- **Should / post-MVP:** random dish selection (US09). Its appearance in the UI does not enable it in MVP.
-- Free-form destinations, route-based delivery and QR payment belong to later scope. No provider or hosting infrastructure is selected here.
+- **V0.8/V1.0 at VJU:** approved controlled AI recommendations; fixed surveyed VJU pairs; cash and direct QR belong to the normal order/payment flow. DEC-09 blocks provider/semantics-dependent implementation.
+- **Should / post-V1.0:** random dish selection (US09). Its appearance in the UI does not enable it in V1.0.
+- Free addresses/route delivery belong to V1.2; random is V1.1. QR/refunds are required by V0.6/V1.0. No provider/hosting is selected here.
 
 ## 2. Objective and exact budget semantics
 
@@ -44,7 +44,7 @@ Once quantity and budget rules are approved, compute `dish_amount_vnd = quantity
 | Component | Responsibility |
 | --- | --- |
 | Frontend | Collect intent, show loading/results/errors, render backend prices, let the Student select a dish and continue through normal cart/checkout. |
-| HTTP controller/guard | Validate DTO, authenticate/authorize the Student using the approved auth contract, enforce request limits, call the workflow. |
+| HTTP controller/guard | Validate DTO, authenticate/authorize the ordinary buyer, including a current manager using the approved auth contract, enforce request limits, call the workflow. |
 | `RecommendationWorkflow.suggest` | Coordinate public Restaurant/Dish/Delivery services; construct candidates; invoke recommendations/AI; revalidate results. |
 | `RecommendationService` | Apply approved recommendation rules, validate structured output and candidate membership. |
 | `AiGateway` and provider adapter | Make a bounded provider request and normalize its response; no business authority. |
@@ -64,7 +64,7 @@ Restaurants deliver themselves. Payment verification remains with the Restaurant
 
 ### 4.1 Frontend → backend
 
-All endpoint paths here are relative to `/api/v1`. The current API defines Student-only `POST /ai/recommendations` with required `pickup_point_id`, `budget_vnd` and `preferences` (plain text). Preserve its names and envelope; final semantic validation remains gated by §2.
+All endpoint paths here are relative to `/api/v1`. The current API defines authenticated ordinary-buyer `POST /ai/recommendations` with required `pickup_point_id`, `budget_vnd` and `preferences` (plain text). Preserve its names and envelope; final semantic validation remains gated by §2.
 
 - Validate ID/money formats against API §3; IDs are positive canonical decimal strings, never JavaScript numbers.
 - Resolve the selected active pickup point server-side. Do not accept client-supplied candidate lists, prices, availability or fee claims as authoritative.
@@ -180,7 +180,7 @@ Apply these checks both before invoking AI and after receiving a selection:
 | Orderable dish | `is_visible=true` and `is_available=true`; a visible sold-out dish may appear in browsing but must not be recommended. |
 | Orderable restaurant | `is_active=true`, currently open and `is_accepting_orders=true`; evaluate hours in `Asia/Ho_Chi_Minh`, including overnight intervals. |
 | Active destination | Existing active `pickup_points` row for the selected point. |
-| MVP deliverability | Enabled exact `restaurant_pickup_rates` pair with valid surveyed distance/fee and current policy. Missing/disabled pair is not free delivery. |
+| V1.0 deliverability | Enabled exact `restaurant_pickup_rates` pair with valid surveyed distance/fee and current policy. Missing/disabled pair is not free delivery. |
 | Budget/constraints | Recompute using current exact money and the approved scope, quantity and mandatory preference rules. No model judgment substitutes for hard checks. |
 | Current data | Re-read relevant dish/restaurant/point/policy/survey data; versions support detecting changes but do not replace current-time opening checks. |
 | Presentation | Only current backend prices/fees and validated explanations; no invented distance, unknown-as-zero fee or checkout guarantee. |
@@ -250,7 +250,7 @@ Use API §4's standard error envelope and localized UI copy; never return provid
 
 Do not automatically convert an AI failure into a random suggestion. Optional deterministic recommendation fallback would require a separate approved policy (**TBD**); manual browsing is the required fallback (BR31).
 
-Keep cart/input state and show retry/manual actions. A map outage does not block a valid surveyed MVP quote. Manual order confirmation still requires real eligible dishes and valid delivery data; fallback does not bypass BR08. Selecting an alternative from a different restaurant requires the existing cart-switch confirmation.
+Keep cart/input state and show retry/manual actions. A map outage does not block a valid surveyed V1.0 quote. Manual order confirmation still requires real eligible dishes and valid delivery data; fallback does not bypass BR08. Selecting an alternative from a different restaurant requires the existing cart-switch confirmation.
 
 ## 11. Prompt injection, data boundaries and observability
 
@@ -292,12 +292,12 @@ Version a fixed fixture set with exact integer prices, surveyed fees, hours and 
 | Output content attack | HTML/script, secret requests and unsupported price/dietary promises are rejected/suppressed; no executable rendering. |
 | Timeout/outage/quota | Controlled clock/provider failures produce safe errors and bounded calls; UI remains usable and late results do not overwrite current intent. |
 | Manual fallback and checkout | AI outage still allows valid surveyed ordering; fresh quote and changed-price/fee reconfirmation remain enforced. |
-| Auth and storage | Non-Student access denied per contract; provider receives no auth data; no transcript persistence or order/payment writes. |
+| Auth and storage | Anonymous AI access denied; ordinary buyer-managers allowed under the same account; Admin has no implicit buyer privilege; provider receives no auth data; no transcript persistence or order/payment writes. |
 | Random path | No `AiGateway` call; eligible set only, empty/race outcomes and normal checkout verified separately. |
 
 ## 13. Separate non-LLM random-dish selection
 
-US09 is **Should / post-MVP**. API §11 reserves Student-only `POST /recommendations/random`; request/response DTOs and eligibility/budget/destination details are **TBD**, so do not enable it from the UI mockup alone.
+US09 is **Should / post-V1.0**. API §11 reserves authenticated ordinary-buyer `POST /recommendations/random`; request/response DTOs and eligibility/budget/destination details are **TBD**, so do not enable it from the UI mockup alone.
 
 Proposed implementation:
 
@@ -316,6 +316,8 @@ Tests inject a deterministic random source for reproducibility and exercise excl
 - **AI adapter:** provider/model, retention/training compatibility, endpoint/credentials configuration, timeout split, tokens/bytes, quota/concurrency/retries and spend controls.
 - **Validation:** privacy filtering and grounded-reason verification; approve proposed internal schema and malformed-output/error mappings without weakening backend checks.
 - **Release/operations:** prompt artifact paths, evaluation rubric/thresholds, safe metadata retention and cost accounting; no transcript storage.
-- **Post-MVP random:** final DTO/errors, sampling policy, candidate cap and revalidation/resampling bound.
+- **Post-V1.0 random:** final DTO/errors, sampling policy, candidate cap and revalidation/resampling bound.
 
 These decisions must be explicit reviewed changes. None authorizes AI to invent dishes/fees, bypass delivery eligibility, create orders or weaken manual fallback.
+
+Execution: [roadmap](roadmap.md) P26–P28; [DEC-09](decisions.md) owns unresolved choices. Current implementations/evidence remain in [status](implementation-status.md).

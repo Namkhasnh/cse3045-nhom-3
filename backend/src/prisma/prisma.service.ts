@@ -1,13 +1,13 @@
 import 'dotenv/config';
-import { Injectable, type OnModuleDestroy, type OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, Optional, type OnModuleDestroy, type OnModuleInit } from '@nestjs/common';
 import { PrismaMariaDb } from '@prisma/adapter-mariadb';
 import { PrismaClient } from '../generated/prisma/client.js';
 import { databaseConfig } from './database.config.js';
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
-  constructor() {
-    super({ adapter: new PrismaMariaDb(databaseConfig()) });
+  constructor(@Optional() @Inject('DATABASE_CONNECTION_URL') value?: string) {
+    super({ adapter: new PrismaMariaDb(databaseConfig(value)) });
   }
 
   async onModuleInit() {

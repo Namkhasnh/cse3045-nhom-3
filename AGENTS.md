@@ -1,110 +1,94 @@
 # AI Contributor Guide
 
-This file applies to the entire repository. Use it as the entry point for coding tasks; detailed contracts live in `docs/`. Write repository instructions and technical documentation in English. Product UI copy remains Vietnamese as specified by the UI guide.
+Applies to the whole repository. Users may give short Vietnamese requests; infer the necessary scope, contracts and checks. Technical docs/prompts are English, UI copy and task reports Vietnamese. [Documentation map](docs/README.md) owns navigation; [contributor workflow](docs/contributor-workflow.md) contains task routing and handoff details.
+
+## Interpret the request before loading context
+
+| Request | Route | Expected behavior |
+| --- | --- | --- |
+| Run Pxx, continue roadmap, finish a named V0.x/V1.0 | [run-roadmap](.agents/skills/run-roadmap/SKILL.md) | Load only the selected prompt; verify accepted dependencies/decisions; implement or prepare its required decision |
+| Add business behavior, API/data workflow | [implement-feature](.agents/skills/implement-feature/SKILL.md) | Infer IDs and needed layers; keep a backend/frontend-only request scoped |
+| Build/change React page/component/style | [build-component](.agents/skills/build-component/SKILL.md) | Reuse approved UI; connect real APIs only within requested scope |
+| Repair reported failing tests/CI | [fix-tests](.agents/skills/fix-tests/SKILL.md) | Reproduce, diagnose against current contracts, fix and verify |
+| Review diff/commit/PR | [review-change](.agents/skills/review-change/SKILL.md) | Read-only findings by default |
+| Explain code/flow | [explain-code](.agents/skills/explain-code/SKILL.md) | Read-only Vietnamese explanation of actual source |
+| Design direction / focused UX evidence | [frontend-design](.agents/skills/frontend-design/SKILL.md) / [ui-ux-pro-max](.agents/skills/ui-ux-pro-max/SKILL.md) | Advisory input; build-component owns React changes |
+
+Select one primary workflow. A roadmap request uses run-roadmap for orchestration and only the matching implementation/decision workflow for the current step. Do not stack every skill or load every prompt/specification. A normal bug/UI/explanation task does not require replaying P01–P36 or asking for a task template.
 
 ## Start every task
 
-1. Read [docs/README.md](docs/README.md) for the document map and implementation status.
-2. Read the relevant stories, scope, rules and acceptance criteria in [requirements](docs/requirements.md). Identify the applicable US/FR/BR/AC IDs and MVP or later scope. For maintenance tasks without a product story, identify the affected technical contract instead.
-3. For code changes, read the relevant parts of [architecture](docs/architecture.md) and [development guide](docs/development_guide.md), then all matching rows in the table below. Cross-cutting work must follow more than one row.
-4. Inspect current source, manifests, lockfiles, migrations and tests before editing. Check `git status` and preserve unrelated or in-progress user changes.
-5. Implement the smallest coherent change, verify it with existing tools, and update affected documents in the same change.
-
-Do not require the user to supply a fully specified task template. Infer traceability and routine implementation choices from the repository. If an unresolved product/security decision is necessary, ask a focused question and continue independent work; do not turn a `TBD` into behavior silently.
-
-Reusable workflows for test repair, UI authoring, code explanation, feature implementation, and change review are cataloged in [Repository skills](docs/README.md#repository-skills). Use a matching skill when appropriate; this guide and the owning contracts apply whether or not a skill is selected. `build-component` coordinates React work; consult `frontend-design` for substantial aesthetic direction and `ui-ux-pro-max` for focused research under [design skill coordination](docs/ui/design-skills.md). Do not load all three for every edit or trigger redesign during explanations/test repair.
+1. Read the documentation map once per session; reuse unchanged material. Inspect git status and preserve unrelated/staged/untracked work. Follow existing user authorization and task limits.
+2. For roadmap execution, resolve the requested prompt/version or next unaccepted handoff through roadmap/backlog and [progress records](docs/progress/README.md). For other tasks, identify only affected US/FR/BR/AC or technical contract; a similarity to Pxx does not expand the assignment into the entire milestone.
+3. Read the relevant owning contract before changing behavior or diagnosing a bug. Use the routing table below; detailed section/board references are in contributor workflow. Inspect actual source, scripts, lockfiles/migrations and relevant tests before editing code. Treat status docs as a dated guide, not proof of current source.
+4. Infer routine implementation details and proceed. For a necessary unresolved product/security choice, prepare a concrete recommendation with alternatives/impact, ask one focused question, cite its DEC/owning source and continue independent authorized work. Do not ask again for an already approved choice or invent values.
+5. Complete the smallest coherent authorized task, verify it, update affected docs and leave a factual handoff. Do not stop at a plan when implementation is requested. A scoped task does not authorize unrelated features, deployment or messages.
 
 <!-- CODEGRAPH_START -->
 ## CodeGraph
 
-When `.codegraph/` exists at the repository root, use CodeGraph before text search or source reads to understand or locate code:
-
-- Prefer `codegraph_explore` for questions/source/call paths and `codegraph_node` for a symbol or file when the MCP tools are available. Discover deferred tools by name when supported.
-- Shell equivalents: `codegraph explore "<symbols or question>"` and `codegraph node <symbol-or-file>`.
-- If `.codegraph/` does not exist, skip CodeGraph. Do not create an index unless asked.
-- If an existing index cannot be queried, report that limitation and use ordinary source inspection. Use `rg` / `rg --files` for text/file search.
+When `.codegraph/` exists, query CodeGraph **before source search/reads** to understand or locate code: MCP `codegraph_explore`/`codegraph_node` or shell `codegraph explore "question"` / `codegraph node <symbol-or-file>`. If querying fails, disclose the limitation and use `rg`/`rg --files` and source inspection. If no index exists, skip it. Never create an index unless asked. Documentation/skill editing does not require a code query unless actual code behavior needs inspection.
 <!-- CODEGRAPH_END -->
 
 ## Read before changing an area
 
-Section numbers below refer to the linked documents. Read the relevant requirements and architecture sections in addition to each row.
+Read only applicable rows and sections. Cross-cutting work uses multiple rows; do not reload unchanged documents within a session.
 
-| Task / trigger | Required reading before implementation |
+| Area | Owning contracts |
 | --- | --- |
-| Scope, roles, business behavior, new feature | [Requirements §§2–4, 6–8](docs/requirements.md), [architecture §§3–5](docs/architecture.md); downstream contracts for the feature |
-| File placement, imports, module boundaries, refactor | [Architecture §§3–4, 10](docs/architecture.md), [target code structure](docs/code_structure.md), [development §§7–10](docs/development_guide.md) |
-| Any frontend UI, page, component, CSS, layout or responsive change | [UI guide §§1–8, 10–13](docs/ui/ui_convertion.md), relevant §9 rules, and the relevant board in [reference HTML](docs/ui/Hoa%20Lac%20Food%20Ordering%20Platform.html); [API §§2–4](docs/data/api_contract.md) for connected UI |
-| API endpoint, DTO, HTTP client, error handling, pagination | [API §§2–7, 12](docs/data/api_contract.md) plus affected endpoint/examples; [database §§4–7](docs/data/database.md); [development §§10.2–10.4, 10.7](docs/development_guide.md) |
-| Prisma model, SQL, migration, seed, index, database config | [Database §§4, 7–11](docs/data/database.md), [development §§4–5](docs/development_guide.md); [deployment §5](docs/deployment.md) when retained data/deployment is affected |
-| Registration, login, JWT, session, CSRF, authorization, owner assignment | [Requirements §4.1, §7](docs/requirements.md), [architecture §9](docs/architecture.md), [API §2, §7.1–7.2, §12](docs/data/api_contract.md), [database §4.1, §10](docs/data/database.md), [testing §5](docs/testing.md) |
-| Restaurant/menu discovery, filters, dish CRUD, hiding/deactivation | [Requirements US02–03, US11–12, US16, §7](docs/requirements.md), [database §4.1, §§8–9](docs/data/database.md), [API §3, §7.2, §10](docs/data/api_contract.md); UI boards 01–02, 08–09, 11 |
-| Cart, checkout, quote, pricing, snapshots, order creation/retry | [Requirements BR01–BR10](docs/requirements.md), [architecture §5.1, §§6–7](docs/architecture.md), [database §§4.2–4.3, 6, 10](docs/data/database.md), [API §5, §§7.3–7.4, 8](docs/data/api_contract.md), [UI §§9.2–9.3](docs/ui/ui_convertion.md); boards 02–03 |
-| Pickup points, surveyed fees, maps, distance tiers | [Requirements BR07–BR10](docs/requirements.md), [database §4.2, §10](docs/data/database.md), [API §7.3, §8.1, §11](docs/data/api_contract.md), [testing §§6, 9](docs/testing.md); boards 03, 09 |
-| Order acceptance/rejection/cancellation/completion, tracking, polling | [Requirements BR15–BR19](docs/requirements.md), [architecture §§5.2–5.3, 7–8](docs/architecture.md), [database §§5, 10](docs/data/database.md), [API §§7.4, 9](docs/data/api_contract.md), [UI §§9.1, 9.3](docs/ui/ui_convertion.md); boards 04, 07 |
-| Cash/QR payment, confirmation, refund | [Requirements BR11–BR14](docs/requirements.md), [architecture §5.4](docs/architecture.md), [database §4.4, §10](docs/data/database.md), [API §7.4, §§9, 11](docs/data/api_contract.md), [testing §8](docs/testing.md); boards 03–04, 07, 09 |
-| Commission, rate, adjustment, settlement, receipt, financial report | [Requirements BR20–BR27](docs/requirements.md), [architecture §5.3, §§6–7](docs/architecture.md), [database §4.5, §§6–11](docs/data/database.md), [API §5, §7.5, §11](docs/data/api_contract.md), [testing §§6–8](docs/testing.md); boards 10, 12 |
-| AI provider/adapter, prompt/schema, recommendation, random selection | [AI integration](docs/ai_integration.md), [requirements BR28–BR31](docs/requirements.md), [API §7.6, §11–12](docs/data/api_contract.md), [architecture §5.5](docs/architecture.md), [testing §9](docs/testing.md); board 05 |
-| Audit, logs, telemetry, history retention | [Requirements NFR07, §7](docs/requirements.md), [architecture §§6, 9](docs/architecture.md), [database §4.6, §§8, 10](docs/data/database.md), [AI §11](docs/ai_integration.md), [deployment §8](docs/deployment.md); board 13 for UI, whose read API is still TBD |
-| Reorder, support, reviews, favorites or other later feature | [Requirements §§2–3, BR16, BR32](docs/requirements.md), [API §11–12](docs/data/api_contract.md), [database §2](docs/data/database.md); finalize the selected feature's contract before exposing it |
-| Tests, regression fix, concurrency, performance, accessibility | [Testing](docs/testing.md), especially §4 case IDs and the affected scenario sections; [UI §§11, 13](docs/ui/ui_convertion.md) for browser work |
-| Dependencies, local setup, scripts, CI | [Development §§2–6, 12](docs/development_guide.md), both package manifests/lockfiles and [CI workflow](.github/workflows/ci.yml); [testing §12](docs/testing.md) |
-| Hosting, release, bootstrap, backup/restore, rollback, operations | [Deployment](docs/deployment.md), [testing §§11–13](docs/testing.md), [database §11](docs/data/database.md); provider/security contracts for enabled features |
-| Documentation reorganization or contract change | [Documentation maintenance rules](docs/README.md#maintaining-documentation), owning specification, all referencing documents and this routing table |
+| Scope / version / prerequisite | [Requirements](docs/requirements.md), [roadmap](docs/roadmap.md), [decisions](docs/decisions.md) |
+| Placement / imports / refactor | [Architecture §§3–4, 10](docs/architecture.md), [target structure](docs/code_structure.md), [development §§7–10](docs/development_guide.md) |
+| Identity / MFA / user availability / support / audit reads | [Account security](docs/account-security.md), requirements §4.1, architecture §9, API §§2/7, database §§4.1/10 |
+| Opening applications / terms / approval / manual partners | [Onboarding](docs/onboarding.md), [migration plan](docs/data/migration-plan.md), security, API/database §4.1/§7 |
+| Catalog / menu / images / partner CRUD | Requirements US02–03/11–12/16, API §§3/7.2/10, database §§4.1/8–10 |
+| Cart / quote / checkout / order retries | Requirements BR01–10, architecture §§5.1/6–7, API §§5/7.3–7.4/8, database §§4.2–4.3/6/10 |
+| Fulfillment / history / polling | Requirements BR15–19, architecture §§5.2–5.3/7–8, API §§7.4/9, database §§5/10 |
+| Cash / QR / refunds | [Payment policy](docs/payments-policy.md), requirements BR11–14, architecture §5.4, API §§7.4/9/11, database §§4.4/10 |
+| Commission / reconciliation / reports | Requirements BR20–27, architecture §5.3, database §§4.5–11, API §§5/7.5/11 |
+| AI | [AI integration](docs/ai_integration.md), requirements BR28–31, API §§7.6/12, architecture §5.5 |
+| UI of any feature | [UI guide](docs/ui/ui_convertion.md) relevant layout/states/§§9–13, [reference boards](docs/ui/Hoa%20Lac%20Food%20Ordering%20Platform.html), connected API §§2–4 |
+| Test / dependency / CI / setup | [Testing](docs/testing.md), development §§2–6/12, current manifests/lockfiles/[CI](.github/workflows/ci.yml) |
+| Retention / migration / backup / incident / release | Database §§8/10–11, [migration plan](docs/data/migration-plan.md), [deployment](docs/deployment.md), [release checklist](docs/release-checklist.md) |
+| Documentation / skill maintenance | [Maintenance rules](docs/README.md#maintaining-documentation), owning specification, contributor workflow and affected references |
 
-For a bug, read the governing contract before reproducing/fixing it; a current implementation bug does not override requirements. UI board numbers are cataloged in UI §4.1. Inspect embedded board templates/resources, not only the HTML export wrapper; preserve the reference file unchanged.
-
-## Authority and actual implementation
-
-- Requirements govern product scope and business behavior. Architecture governs technical boundaries; database governs storage semantics; API governs wire contracts. UI and AI guides refine their domains within those constraints. Testing and deployment specify evidence and operations.
-- Current source, manifests, lockfiles and CI describe what exists and which commands run. They do not authorize replacing required behavior. When code and a target contract differ, describe the gap explicitly.
-- The reference HTML is a visual reference with fictional data and known corrections in UI §10. It cannot introduce roles, endpoints, states or MVP features.
-- Architecture service names/directories are target designs. Create only what the task needs. `docs/data/openapi.yaml` is a planned artifact and does not exist yet.
-- Resolve conflicting requirements or necessary `TBD` decisions in their owning documents before implementing dependent behavior. Routine coding choices within documented contracts do not require extra approval.
-
-Repository baseline checked on October 16, 2026 (recheck before use):
-
-- `frontend/`: Vite/React/TypeScript, Tailwind CSS 4, self-hosted Be Vietnam Pro and a Student restaurant-list preview with labeled fixtures, local filters and development-only state previews. No API calls, router, auth or connected business features. See `frontend/README.md` for the fixture boundary and verification procedure.
-- `backend/`: NestJS with environment configuration, global validation and shared Prisma lifecycle. ESM imports use `.js` specifiers. Preserve `prisma7.config.ts` and the generated-client configuration.
-- Prisma targets MySQL with the MariaDB-named adapter. The schema has account/audit foundation models and a first SQL migration; no order/financial models, seed or business endpoint exists. `/` and `/todos` return 404. `/api/v1` is configured, with shared HTTP envelopes and scalar helpers.
-- CI uses Node.js `24.x`, npm and separate package lockfiles. Backend unit/E2E tests use Node's built-in test runner and mock Prisma; they do not prove real MySQL constraints or races. A Chrome fixture smoke script and a real-MySQL audit integration job are configured; connected browser and business DB race suites remain unconfigured.
+Requirements govern behavior; architecture boundaries, database storage and API wire contracts own their respective domains. UI/AI refine within them; testing/deployment own evidence/operations. Roadmap owns version/dependency/acceptance gates. Source/manifests/CI establish implementation, never permission to override contracts. Correct conflicting downstream rules at their owner before dependent implementation. HTML is visual reference with fictional data; apply UI §10 corrections and preserve the asset unchanged.
 
 ## Rules that every implementation must preserve
 
-1. **Scope:** MVP uses fixed VJU pickup points, surveyed restaurant–point fees, cash, AI suggestions and manual commission reconciliation. Free addresses/maps, QR/refunds and expanded reporting are later Must; random/history UI/reorder/support are Should; reviews/favorites are Could. Durable order history/recovery is already MVP.
-2. **Operating model:** restaurants deliver and receive money directly. No driver accounts/dispatch, multi-restaurant orders, automatic splitting/collection or AI conversation/training storage.
-3. **Permissions:** derive the actor from verified authentication and enforce role plus current ownership on the server, including reads/lists/replays/nested IDs. One owner can manage several restaurants. Admin does not inherit owner fulfillment/payment powers.
-4. **Orderability:** require active/open/accepting restaurant, visible/available dishes and valid delivery data. Unknown fee differs from zero; never invent a fee or substitute straight-line distance for route distance.
-5. **Money and consent:** server computes integer VND with exact arithmetic. REST IDs/money are strings; rate is an eight-place decimal fraction (`0.10000000` = 10%). Never coerce them wholesale to `Number`. Changed accepted unit prices or fees require conflict and explicit reconfirmation.
-6. **Snapshots/history:** retain accepted names/prices, recipient/destination, fee/distance/quote and rate on orders. Later edits do not rewrite history. Ordered dishes hide; restaurants with orders/settlements deactivate. Preserve owner accounts and other restaurant access when deleting an unused partner.
-7. **Lifecycles:** `pending → accepted → delivering → completed`; only pending may become owner-rejected (reason required) or student-cancelled. Terminal states stay terminal. Payment (`unpaid/paid/refund_pending/refunded`) is separate. QR scans/customer claims never prove payment. Completion may be unpaid.
-8. **Idempotency/concurrency:** retain one key and original payload through an uncertain outcome; changed confirmed intent gets a new key. Persist actor + operation + key/hash/result atomically. Same key/content replays; changed content conflicts. Authorized current-status repeats have no duplicate effects. Follow database §10's concrete lock order, including its account prefix; a process-local mutex is insufficient.
-9. **Transactions:** workflows coordinate public services using one transaction context. Required mutation/history/audit commit together; completion and its single base commission commit together. No external AI/map/storage/money calls inside retried DB transactions.
-10. **Finance:** commission uses completed-order dish subtotal × snapshotted rate, excludes delivery and rounds half-up once per order. One base per order; adjustments append with reasons. One same-restaurant settlement per entry; receipts record manual collection. Preserve signed balances and append-only history; do not invent settlement states or correction policies.
-11. **AI:** backend builds/revalidates eligible candidate IDs; provider output is untrusted. AI neither sets money nor writes orders/payments. Minimize/filter payloads; no personal contacts, detailed destinations, secrets or transcripts in provider requests/logs. Manual ordering stays usable on AI failure when valid delivery data exists. Budget semantics/provider/limits remain TBD.
-12. **Security/data safety:** backend secrets never enter `VITE_*`, bundles, docs or logs. Keep `.env` private. Preserve retained data; no reset/destructive push/demo seed on shared/real data, no rewriting applied migrations or historical snapshots. Use reviewed forward migrations.
+- **Identity:** public homepage/list/menu and guest cart; role-free ordinary signup. Managers retain buyer rights. Each account manages at most one restaurant, including inactive/setup-required. One operator-owned Admin with MFA/recovery; no website Admin request/grant and no implicit owner fulfillment/payment powers.
+- **Onboarding:** versioned terms consent and review history. Approval/manual create atomically persists eligible user ownership, setup-required restaurant, decision/result and audit. Approval alone never enables selling. Legacy Admin/ownership migration requires explicit primary selection/conflict mapping, never auto-selection/deletion.
+- **Operating model:** V1.0 at VJU, fixed verified surveyed points, cash+direct restaurant QR, restaurant delivery, manual commission reconciliation, history/recovery, support/users/audit and controlled AI. No drivers, custody/splitting, automatic collection or multi-restaurant orders. V1.1 reorder/random/reviews/favorites; V1.2 areas/free addresses/route fees.
+- **Orderability and consent:** ready/active/open/accepting restaurant, visible/available dishes, valid configured destination/fee/rate. Unknown fee is not zero; never invent surveys or replace route distance with straight-line. Login preserves/revalidates the cart and never submits an order automatically. Changed accepted unit prices/fees require conflict and explicit reconfirmation.
+- **Exact money/history:** REST IDs/integer VND are strings; rates are eight-place fractions (`0.10000000` = 10%). BigInt/Decimal exact arithmetic; no wholesale Number coercion. Immutable accepted names/prices/recipient/destination/quote/fee/distance/rate snapshots. Ordered dishes hide; history-bearing restaurants deactivate; accounts and history survive deletion of unused partners.
+- **Lifecycles:** pending → accepted → delivering → completed; pending alone may be owner-rejected with reason or buyer-cancelled. Terminal stays terminal. Receipt/payment/refund and fulfillment are independent; scans/customer claims never prove payment. Completion may be unpaid. Preserve late-payment/refund obligations under approved policy.
+- **Atomicity:** actor+operation+key/hash/result commits with mutation/history/audit. Original uncertain intent keeps its key/payload; changed confirmed intent gets a new key. Authorized current-state repeats have no duplicate effects. Follow database §10 account-first lock order including authority/application groups. Public services share one transaction context; no process-local mutex as cross-instance protection or external calls in retried transactions.
+- **Finance:** completion and one base commission commit together; completed dish subtotal × snapshotted rate, delivery excluded, round half-up once per order. Append reasoned adjustments/receipts/history; one same-restaurant settlement per entry. Preserve signed balances; no invented rates, settlement states or correction policies.
+- **AI/privacy:** backend builds/revalidates eligible candidate IDs; provider output is untrusted and cannot set money or write orders/payments. No contacts, detailed destinations, secrets, transcripts or training storage. Manual valid surveyed ordering survives AI failure; DEC-09 gates provider/semantics/cost limits.
+- **Runtime/data:** Oracle MySQL Community Server **9.2.0** with InnoDB in local/CI/staging/production; preserve Prisma adapter/config (`prisma7.config.ts`) and ESM .js imports. Secrets never enter VITE_*, bundles/docs/logs. No retained/shared-data reset, destructive push, demo seed or rewriting applied migrations. Use reviewed forward migrations; never invent missing historical facts.
 
 ## Code placement
 
-- Backend: `http/ → workflows/ → modules/<domain>/public.ts → owning repository → Prisma`. Controllers do not query Prisma or implement pricing/state rules. Workflows pass the transaction context and do not query tables. Modules do not write another module's data or import workflows back. Adapters live in `integrations/`; `common/` is infrastructure only.
-- Frontend: `app/` composes features through `features/<feature>/index.ts`; features depend on their own internals and `shared/`; `shared/` never imports upward. Cross-feature coordination belongs in app composition. Hooks/API layers own requests; presentational components receive data/callbacks. Keep domain widgets in their feature and generic controls in `shared/ui`.
-- Use the [target structure](docs/code_structure.md) as placement guidance. Do not create empty scaffolding or edit generated Prisma, `dist/` or `.test-dist/` outputs.
-- Connected code follows `/api/v1`, `snake_case`, exact scalar formats, documented envelopes/errors and retry behavior in the API contract. Do not invent missing endpoints or treat a mock response as real success.
-- UI follows the approved direction in the UI guide (currently Be Vietnam Pro and cream/orange), semantic tokens, distinct role layouts, Vietnamese copy, loading/empty/error/conflict states, accessibility and the 360 px flow. Font, color and shape alternatives may be proposed; apply identity changes only after the user approves the concrete proposal and record that decision in the UI guide. Skill recommendations and the initial HTML reference do not override approved direction. Follow UI §10 corrections before copying board behavior. Label intentional fixtures at the data boundary.
+Backend: HTTP → workflows → modules/domain/public.ts → owning repository → Prisma. Controllers do not query Prisma or own business rules; workflows pass transaction context without querying tables; modules do not write another module's tables or import workflows back. Adapters belong in integrations; common is infrastructure only.
+
+Frontend: app composes features through index.ts; a feature imports its internals/shared; shared never imports upward. Requests live in hooks/API layers; presentation receives data/callbacks. Domain widgets stay in features, generic controls in shared/ui. Do not create empty scaffolding or edit generated Prisma/dist/.test-dist.
+
+UI retains approved Be Vietnam Pro, cream/orange, white compact discovery and distinct manager/Admin layouts, Vietnamese copy and semantic tokens. Routine work reuses identity; a font/palette/shape change needs a concrete proposal and recorded user decision. Keep fixtures labeled at their boundary; missing APIs never become fake mutation success. Support loading/empty/error/conflict, 360 px and keyboard/accessibility states.
 
 ## Verification and completion
 
-Run commands from the repository root using the package prefixes below, after inspecting current scripts. Install with `npm --prefix <package> ci` when dependencies are needed. There is no root npm workspace/test command.
+Inspect scripts first; run from repository root. No root npm workspace/test command. Install with npm --prefix package ci only when needed.
 
-| Change | Existing commands |
+| Change | Required existing checks |
 | --- | --- |
-| Frontend code | `npm --prefix frontend run lint`; `npm --prefix frontend run build` (includes TypeScript checking) |
-| Backend code | `npm --prefix backend run lint`; `npm --prefix backend test`; `npm --prefix backend run test:e2e`; `npm --prefix backend run build` |
-| Prisma schema/config | `npm --prefix backend run prisma:validate`; `npm --prefix backend run prisma:generate`, plus affected backend checks |
-| Actual local DB connectivity | `npm --prefix backend run db:check` (builds and executes `SELECT 1`; needs configured MySQL and `DATABASE_URL`) |
-| Documentation only | Check relative links/section references, canonical paths, line limits and consistency with actual source/scripts; application tests are unnecessary unless executable behavior/config changes |
+| Frontend code | npm --prefix frontend run lint; npm --prefix frontend run build; applicable browser checks |
+| Backend code | npm --prefix backend run lint; npm --prefix backend test; npm --prefix backend run test:e2e; npm --prefix backend run build |
+| Prisma schema/config | npm --prefix backend run prisma:validate; npm --prefix backend run prisma:generate; affected backend checks and real migration tests |
+| SQL/transactions/races | Disposable real MySQL 9.2.0 constraint/rollback/race checks; existing backend test:integration covers only its actual cases |
+| Connectivity | npm --prefix backend run db:check = SELECT 1 only; not constraint/race evidence |
+| Documentation/skills only | Frontmatter/metadata where changed; links/anchors/paths, <500 Markdown lines, routing/examples and diff checks; no application tests required |
 
-Backend build/dev/start/test compilation automatically generate Prisma Client. Do not claim this generation validates the target business schema. Do not invent `test:integration`, browser-test, migration or seed scripts; add appropriate tooling only when it is part of the task.
+Build/dev/start/test compilation generates Prisma Client; generation is not proof of the intended schema. HTTP E2E mocks Prisma; frontend test:smoke is limited fixture/auth-route Chrome evidence. Add scoped missing meaningful tooling when required; do not invent passing scripts. Match testing case IDs; money/state needs unit evidence, persistence/races actual MySQL, journeys real browsers. Rerun broader checks only when changes/failures/unresolved concerns warrant them.
 
-For changed rules, add meaningful tests using [testing case IDs](docs/testing.md). Money/state policies need unit coverage; DB constraints, transactions and races need real MySQL/InnoDB; UI behavior needs applicable browser/visual/accessibility checks. Existing mocked E2E tests are scaffold HTTP checks only. Report missing tooling as `NOT CONFIGURED`, unexecuted checks as `NOT RUN`, and policy-dependent work as `BLOCKED` with its source; never imply a passing result.
+Report outcome, changed areas, exact verification and material limitations concisely in Vietnamese. Distinguish source inspection, automated tests and browser observation. Use NOT CONFIGURED for missing tooling, NOT RUN for available unexecuted checks, BLOCKED with DEC/source for necessary decisions. Update only affected contracts/navigation/status; keep every Markdown document under 500 lines.
 
-Before finishing, update contracts/navigation affected by the change and ensure instructions still point to real files. Report the outcome, changed areas, exact verification results, and material unresolved decisions/limitations. Distinguish source inspection, automated tests and browser observation. Keep every Markdown documentation file under 500 lines; split long detail by responsibility and link it from its parent.
+For roadmap work, store resumable evidence using [progress records](docs/progress/README.md) and update backlog consistently. Do not check off code-only, partial or unverified work. Do not invent independent/user review; identify self-review honestly. P32 real pilot and P35 concrete production release require explicit authorization; missing answers are not approval. Completing docs, prompts or deployment alone never proves V1.0 readiness.

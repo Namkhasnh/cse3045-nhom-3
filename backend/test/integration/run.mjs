@@ -21,5 +21,6 @@ const run = (bin, args) => {
   if (result.error) throw result.error;
   if (result.status !== 0) process.exit(result.status ?? 1);
 };
-run('./node_modules/.bin/prisma', ['migrate', 'deploy']);
+run('node', ['scripts/prepare-test-db.mjs']);
+run('./node_modules/.bin/prisma', ['migrate', 'deploy', '--config', 'prisma7.config.ts']);
 run('node', ['--test', '.test-dist/test/integration/*.integration-spec.js']);

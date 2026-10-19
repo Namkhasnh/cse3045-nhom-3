@@ -2,7 +2,7 @@
 
 > Status: source-derived deployment runbook; no deployment, backup, restore or test execution is certified by this document.
 > Hosting, providers, infrastructure configuration and unverified commands remain **TBD**. Operational procedures below are proposed controls to implement and rehearse, not existing capabilities.
-> Repository location: [docs/deployment.md](deployment.md). Current scripts/configuration were checked on October 16, 2026; production decisions and execution evidence remain incomplete.
+> Repository location: [docs/deployment.md](deployment.md). Current script availability is recorded in implementation-status.md (October 18, 2026); production decisions and execution evidence remain incomplete.
 
 ## 1. Sources, authority and release scope
 
@@ -21,10 +21,10 @@ Based on the repository specifications below; docs/README.md maintains navigatio
 
 Follow the development guide's precedence: requirements → architecture → database → API → UI → AI; inspect application source/manifests/lockfiles for implemented behavior and commands. Testing defines evidence. This runbook does not resolve upstream TBDs or claim scaffold folders are working features.
 
-- **MVP at Vietnam Japan University (VJU):** fixed Pickup points, per-Restaurant surveyed distance/fee, cash paid directly to the Restaurant, AI recommendations, order tracking, owner/admin management, basic manual commission reconciliation and transactional audit.
-- **Post-MVP Must:** free address/map pin, route distance/fee tiers, QR transfer/refund recording and expanded financial reports. Should/Could features require their own completed contracts.
-- Restaurants deliver their own orders. Roles are Student, Restaurant Owner and Admin (`student`, `restaurant_owner`, `admin`). No driver accounts, platform payment processing, automatic splitting/collection, multi-restaurant orders or AI conversation storage.
-- A required MVP decision remains a release blocker. Keeping an unfinished MVP feature disabled during development does not establish a complete MVP release.
+- **V1.0 at VJU:** public catalog/guest cart, ordinary buyer-managers/one restaurant each, sole MFA Admin, opening agreements, fixed surveyed points, cash+direct QR/refunds, durable history, finance/reports/support/users/audit, approved AI and proven operations.
+- **V1.1:** reorder/random/favorites/reviews; **V1.2:** free address/map pin, route fees and expansion. Later features require their own completed contracts.
+- Restaurants deliver their own orders. Ordinary users retain buying rights with current management of at most one restaurant; one MFA Admin has administrative capabilities only. No driver accounts, platform payment processing, automatic splitting/collection, multi-restaurant orders or AI conversation storage.
+- A required V1.0 decision remains a release blocker. Keeping an unfinished V1.0 feature disabled during development does not establish a complete V1.0 release.
 
 ## 2. Stack and component placement
 
@@ -36,12 +36,12 @@ Follow the development guide's precedence: requirements → architecture → dat
 | Database | MySQL/InnoDB, real FKs, enforced CHECKs | Private network; backend runtime access, separately controlled migration/backup/recovery access; service/host/region **TBD** |
 | Images | Optional Dish image references; media/storage adapter if uploads enabled | Conditional object storage proposal; provider/location/retention **TBD**; no image blobs in MySQL or durable uploads on temporary app filesystems |
 | AI | Backend `AiGateway` adapter | External provider/model/endpoint **TBD**; no browser provider calls |
-| Maps | Backend route adapter after MVP | Provider **TBD**; valid surveyed MVP pairs do not depend on online routing |
+| Maps | Backend route adapter after V1.0 | Provider **TBD**; valid surveyed V1.0 pairs do not depend on online routing |
 | Public entry | Architecture's proposed same-origin reverse proxy | Frontend at the selected origin, `/api/v1` routed to backend; domain/proxy/TLS implementation **TBD** |
 
-The three logical tiers are presentation, business logic and data. Separate frontend/backend placement does not turn modules into microservices. The MVP does not require Redis, a broker, queues or a driver dispatch service.
+The three logical tiers are presentation, business logic and data. Separate frontend/backend placement does not turn modules into microservices. The V1.0 does not require Redis, a broker, queues or a driver dispatch service.
 
-CI uses Node.js `24.x`; installed package versions are recorded in manifests/lockfiles. Pin the exact production Node.js patch and npm before deploying; MySQL is selected as **Oracle MySQL Community Server 8.4.11** in database §1. MySQL 8.0.16 is only the historical CHECK floor. A MariaDB-named Prisma adapter does not change the MySQL target. Preserve the repository's actual Prisma configuration, including `prisma7.config.ts` where present.
+CI uses Node.js `24.x`; installed package versions are recorded in manifests/lockfiles. Pin the exact production Node.js patch and npm before deploying; MySQL is selected as **Oracle MySQL Community Server 9.2.0** in database §1. MySQL 8.0.16 is only the historical CHECK floor. A MariaDB-named Prisma adapter does not change the MySQL target. Preserve the repository's actual Prisma configuration, including `prisma7.config.ts` where present.
 
 ## 3. Environment configuration
 
@@ -72,9 +72,9 @@ These are logical settings, **not invented environment-variable names**. Map eac
 | Frontend API base/origin | Public value; route through `/api/v1`; exact config name **TBD** |
 | JWT signing material, issuer, audience | Backend only; per-environment values TBD, lifecycle and rotation policy in API §2 |
 | Origin/CORS/CSRF/cookie configuration | Configure one exact HTTPS origin and backend CSRF HMAC key; names/protocol in API §2 |
-| Delivery quote authentication | Encoding/protection and required material **TBD**; not assumed to be JWT; route TTL/normalization remain post-MVP gates |
+| Delivery quote authentication | Encoding/protection and required material **TBD**; not assumed to be JWT; route TTL/normalization remain post-V1.0 gates |
 | AI endpoint/model/credentials and limits | Backend only; readiness and limits in §12; exact settings **TBD** |
-| Map routing credentials / public rendering key | Conditional post-MVP; privileged keys backend only; public key restricted by domain/quota |
+| Map routing credentials / public rendering key | Conditional post-V1.0; privileged keys backend only; public key restricted by domain/quota |
 | Image storage and upload controls | Conditional; provider, object location, allowed types/size and access settings **TBD** |
 | Health/log/alert/backup configuration | Implementation, destinations and access **TBD**; complete §§8–10 before live operation |
 | Feature availability | Match approved milestone and backend contract; configuration mechanism **TBD** |
@@ -85,9 +85,9 @@ Never commit real `.env` files or put DB/JWT/AI/storage secrets into `VITE_*`, b
 
 1. Inspect `frontend/package.json`, `backend/package.json`, their lockfiles and Prisma config; record verified versions/scripts.
 2. Start disposable MySQL/InnoDB, create a local database and least-privilege development identity, and set the actual backend configuration.
-3. Install from each package's reviewed lockfile and generate Prisma Client. Only the account/audit foundation migration exists; apply it after review with `prisma7.config.ts` on the intended target.
+3. Install from each package's reviewed lockfile and generate Prisma Client. Four account/audit/version/login/email-role migration files exist; apply reviewed forward SQL with `prisma7.config.ts` on the intended target.
 4. Run a seed only if configured and explicitly guarded for the local/test database. Use fictional data and label fees/distances as test values.
-5. Start the backend/frontend dev scripts. Current checks cover startup/DB connectivity, the fixture page and `/api/v1` envelope behavior; authentication and surveyed cash ordering remain target flows.
+5. Start the backend/frontend dev scripts. Current checks cover startup/DB connectivity, the fixture page and `/api/v1` envelope behavior; legacy auth exists; the revised commercial identity and surveyed cash/QR ordering remain target flows.
 
 Inspect tooling from the repository root; development_guide.md §12 lists verified package commands:
 
@@ -136,7 +136,7 @@ Record and test certificate renewal, secret replacement and resulting session/qu
 
 ### 5.2 Production release
 
-1. Confirm staging evidence, operations ownership, bootstrap readiness and successful isolated restore evidence. Resolve every decision required for enabled MVP behavior.
+1. Confirm staging evidence, operations ownership, bootstrap readiness and successful isolated restore evidence. Resolve every decision required for enabled V1.0 behavior.
 2. Confirm a recent verified daily backup and take/verify a pre-migration backup for a data/schema change; include image recovery references if applicable. Record the recovery point and expected interruption/data-loss implications.
 3. Select the reviewed traffic/write-control procedure (**TBD implementation**). Drain requests before incompatible changes; prevent new writes during any migration that cannot coexist safely with current readers/writers. Do not assume rolling/zero-downtime deployment is supported.
 4. Apply reviewed deploy migrations once through the controlled migration identity. Record start/end, exact command and result; stop on failure. Do not allow competing application instances to run migrations independently.
@@ -149,22 +149,17 @@ Never edit an already-applied migration, run reset/force-reset/destructive schem
 
 ## 6. First Admin and initial partner bootstrap
 
-Bootstrap is a controlled, reviewed operational procedure, separate from the guarded fictional local/test seed. **Initial privileged account provisioning is specified below.** Pickup-point permissions/workflow and category management remain TBD. Public registration may request Owner/Admin, but always creates a Student account; only a current Admin can approve an email-verified request through the audited review endpoint.
+Target procedure for P03/P10/P29–P35; not execution authorization. [Account security](account-security.md) owns singleton MFA/recovery; [migration plan](data/migration-plan.md) owns legacy mappings. The current signed-manifest CLI implements the accepted V0.1 sole-authority/MFA model; retired role approvals grant no authority. See [acceptance evidence](progress/V0.1.md). Never run the previous role-based provisioner after cutover.
 
-1. Use the API §2 username/password/hash policy. Record two authorized operators (requester and reviewer), environment, target account, role and reason in a protected change record without credentials.
-2. Implement one operator-only CLI command `npm --prefix backend run account:provision -- --role <admin|restaurant_owner> --username <username>` before provisioning. Require an explicit environment/database identity check and reviewer-approved manifest; read the password from a protected interactive prompt (never arguments, env, files or logs). Use application password service and one transaction to create account plus audit event. Fail closed on an existing username, mismatched role/environment or missing reviewer record; rerun after success reports already provisioned without changing the hash. Rehearse in staging with temporary least-privilege operator access, then remove access.
+1. Inventory real target/migration state without exposing contacts/secrets. Operator explicitly selects primary Admin and resolves all legacy privilege/ownership conflicts under DEC-01. Never auto-select/delete old identities.
+2. Adapt protected operator provisioning to sole authority and approved DEC-02 MFA enrollment/recovery; protect credentials/manifest/signature/keys outside Git and command arguments. Verify environment/database/MySQL 9.2.0, approval and singleton state before writes. Runtime must not provision authority; no website Admin grant exists.
+3. Establish the one Admin with MFA; verify password-only denial and recovery/revocation in staging. Secure factor/recovery custody; remove temporary access. Operational backup people do not mean additional application Admins.
+4. Real partners use approved opening application/review or manual create-with-eligible-user plus valid agreement evidence. Each account owns at most one restaurant, including inactive/setup-required records. Create ownership/partner/review/audit/result atomically; ordinary manager retains buyer rights.
+5. Verify actual partner profile/consent, menu/hours/media, VJU points and surveyed restaurant–point distance/fee, explicit commission and direct QR payee/configuration. No default rate, fictional survey or copied bank data.
+6. Partners stay setup_required/not accepting until all readiness checks pass. V1.0 QR readiness additionally follows approved DEC-06 evidence/refund procedures; cash readiness alone does not satisfy the full launch gate.
+7. Approve limited pilot cohort/limits/window/support/rollback plan before real P32 traffic. Final P35 production release requires explicit approval of the concrete P34 dossier/candidate.
 
-The CLI now reads `ACCOUNT_PROVISION_MANIFEST` and `ACCOUNT_PROVISION_REVIEWER_PUBLIC_KEY` as protected filesystem paths. The manifest JSON contains exactly `request_id`, `environment`, `database`, `role`, `username`, `display_name`, `requester`, `reviewer`, `reason`, and `approved_at`; requester and reviewer must differ. The reviewer signs the exact JSON bytes with Ed25519; the adjacent `<manifest>.sig` file contains the base64 signature. Provisioning verifies the signature against the pinned PEM public key, matches CLI role/username and `NODE_ENV`, checks `SELECT DATABASE(), VERSION()` against the manifest and selected MySQL 8.4.11, then prompts for the password on a TTY. `request_id` ties the creation audit row to the protected approval record. The first Admin creation uses its own new account ID as the audit actor because no prior account exists; requester/reviewer identity is retained in the signed external record. Restrict who can set the trusted public-key path and access the manifest; an arbitrary replacement key cannot establish approval. Do not commit manifests, signatures, private keys or credentials.
-3. Provision the first active `admin` through that mechanism. Supply its credential via the selected protected channel, hash it using the application password service, and exclude it from command arguments/history, output, logs and this document. No shared/default real password is supplied.
-4. Verify Admin login and server-side role enforcement. Remove temporary provisioning access/material according to the approved procedure; ongoing credential lifecycle remains governed by the finalized auth contract.
-5. Initial owner accounts may use the same reviewed CLI workflow. Later public applicants can request Owner/Admin, but remain Student until an email-verified request is approved by a current Admin through the audited API. Deactivation and credential resets still require the controlled operator procedure; approved role changes increment `auth_version`.
-6. Admin creates each Restaurant with name, address/location, contact and one responsible active owner through the implemented contract. One owner may manage several Restaurants. New Restaurants begin with `is_accepting_orders=false` and empty hours; do not create ownerless partners.
-7. Populate verified VJU Pickup points with names/coordinates through the approved provisioning workflow (**TBD**). Collect actual per-Restaurant surveyed distance and fee; sample coordinates, fees and names from documentation are not operational survey data.
-8. The responsible owner configures opening hours and surveyed delivery policy; Admin configures the agreed commission rate explicitly. Populate categories through the approved mechanism and Dishes through owner-scoped management. No default commission percentage is inferred from examples.
-9. Check each enabled `restaurant_pickup_rates` pair, active point, menu availability, exact integer VND fee and configured rate. Missing distance/fee or commission policy blocks ordering; unknown fee never means zero.
-10. Verify roles, quotes and representative order/finance behavior in staging. Enable production order acceptance only when the Restaurant is ready and its owner has verified configuration. Preserve setup/audit evidence without secrets or unnecessary personal data.
-
-Bootstrap must not create fictional financial history in production. Errors are corrected through authorized workflows; never erase orders, receipts or audit to make setup appear clean.
+Never seed fictional orders/finance in production, fabricate consent or erase history to make bootstrap pass. The [launch checklist](release-checklist.md) records real evidence, not completed instructions.
 
 ## 7. Release checks and acceptance evidence
 
@@ -256,7 +251,7 @@ No restore evidence was supplied. Initial status: **NOT RUN — production recov
 | --- | --- |
 | Run ID / date / operator / reviewer | TBD |
 | Synthetic fixture / application commit / migration state | TBD |
-| MySQL/backup/restore tool versions and target settings | MySQL 8.4.11 selected; backup/restore tools and target settings TBD |
+| MySQL/backup/restore tool versions and target settings | MySQL 9.2.0 selected; backup/restore tools and target settings TBD |
 | Backup ID / recovery timestamp / size / checksum | TBD |
 | Protected backup and sanitized report references | TBD |
 | Isolated target / image recovery scope | TBD |
@@ -295,7 +290,7 @@ No provider, provider-billing currency, price, free tier, operating budget or ca
 | Domain/HTTPS/observability | Selected arrangements **TBD**; renewals, log/metric storage and alert delivery costs |
 | Images, conditional | Storage, requests, egress, retained versions and recovery cost **TBD** |
 | AI | Provider/model **TBD**; pricing basis, input/output tokens, failed/retried billed calls, per-request and aggregate spend cap, period/currency |
-| Maps, post-MVP | Provider **TBD**; routing/geocoding/rendering usage, unit pricing, quota period and spend cap; no routing dependency for valid MVP surveys |
+| Maps, post-V1.0 | Provider **TBD**; routing/geocoding/rendering usage, unit pricing, quota period and spend cap; no routing dependency for valid V1.0 surveys |
 
 AI launch requires approved budget/quantity/preferences semantics, privacy minimization, provider retention/training compatibility, prompt/schema versions and synthetic live evaluation. Finalize preference/candidate/byte/token/result limits, per-IP/account quotas, concurrency, retries/backoff, provider timeout and cost-accounting mechanism; all remain **TBD**. Missing limits must not mean unlimited access.
 
@@ -324,11 +319,21 @@ Restaurant Owners remain responsible for their Restaurants' fulfillment and paym
 Before claiming production readiness, confirm:
 
 - [ ] Hosting/placement, domains/HTTPS, network boundaries, pinned versions, exact scripts/config and access mechanisms recorded and verified.
-- [ ] All required MVP security/business/integration/provisioning decisions resolved in owning documents; future scope remains disabled.
-- [ ] First Admin, owner accounts, real VJU Pickup points, surveyed pairs, menus and explicit commission policies verified without demo production data.
+- [ ] All required V1.0 security/business/integration/provisioning decisions resolved in owning documents; future scope remains disabled.
+- [ ] Sole MFA Admin/recovery, ordinary buyer-manager accounts, approved agreements, real VJU pickup points, surveyed pairs, menus and explicit commission policies verified without demo production data.
 - [ ] Reviewed builds/migrations and enabled-scope tests/NFR evidence accepted; safe post-release checks and compatible rollback rehearsed.
 - [ ] Daily backup schedule/location/retention/access and alerts configured; OPS-01 isolated restore passed with evidence; RPO/RTO and incident gap-reconciliation decisions recorded.
 - [ ] Conditional image recovery, AI/map quotas/cost controls and safe log retention configured for enabled services.
 - [ ] Named owners/backups, escalation/acknowledgement process, alert thresholds, budget review and recurring recovery-drill cadence recorded.
 
 Until these records and results exist, this document is a deployment plan, not authorization or evidence that the platform is ready for live operation.
+
+### 13.1 Commercial release authority
+
+[Roadmap](roadmap.md) P29–P36 and [release checklist](release-checklist.md) govern acceptance. Hosting/email/media/health/alerts remain DEC-10; RPO/RTO/retention/restore gaps DEC-11; exact public Vietnamese notices and launch criteria DEC-12. No missing answer, completed document or successful build authorizes production mutations. Prepare the complete candidate and evidence first, then obtain explicit release approval before P35.
+
+The CI database service now pins mysql:9.2.0, matching the selected version across environments. Remaining implementation/evidence gaps are in [implementation status](implementation-status.md). This documentation revision runs no deployment, migration, provisioner, backup or restore. Historical role-request checks are not sole Admin/onboarding evidence.
+
+## 14. Scoped runtime/provision identity configuration
+
+[Verified local handoff](auth-followup.md) records the authorized local split and evidence. Runtime `DATABASE_URL` has reviewed auth/catalog grants; `PROVISION_DATABASE_URL` is mandatory for CLI, distinct and same-database. Keep provisioning/migration credentials in protected operator storage outside runtime `.env`; inject them only into private operator subprocesses. For migration jobs use command-scoped `DATABASE_URL="$MIGRATION_DATABASE_URL"`. Never give runtime global/database ALL, DDL, GRANT OPTION, authority writes or secret-replacement rights. Apply [grants](../backend/prisma/permissions/grants.sql) to fresh users without inherited roles; additive GRANT statements cannot narrow an existing broad identity. Production setup remains NOT RUN.

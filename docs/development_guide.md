@@ -1,485 +1,189 @@
 # Development Guide — Hoa Lac Food Ordering Platform
-> **Purpose:** define how developers and AI coding assistants work safely and consistently in the repository.
-> **Status:** derived from [requirements.md](requirements.md), [architecture.md](architecture.md), [database.md](data/database.md), [api_contract.md](data/api_contract.md), [ui_convertion.md](ui/ui_convertion.md), and [ai_integration.md](ai_integration.md).
-> **Repository check:** October 17, 2026. CI uses Node.js `24.x`; current scripts and auth configuration names are verified below. Exact runtime Node/npm patches and future provider configuration remain **TBD**; MySQL 8.4.11 and auth policy are selected in the owning contracts. Recheck manifests/config before use.
+
+Commercial target revision: October 18, 2026. Follow [roadmap](roadmap.md), [full prompts](prompts/README.md) and [implementation/evidence status](implementation-status.md). This guide describes safe implementation; it does not certify the target as built.
+
 ## 1. Authority and conflict resolution
-Requirements govern behavior; the following documents own their respective domains:
-1. [docs/requirements.md](requirements.md) — scope, roles, US/FR/BR/AC.
-2. [docs/architecture.md](architecture.md) — module ownership, dependencies, transactions.
-3. [docs/data/database.md](data/database.md) — schema semantics, constraints, snapshots, exact arithmetic.
-4. [docs/data/api_contract.md](data/api_contract.md) — `/api/v1`, DTOs, errors, retry/idempotency.
-5. [docs/ui/ui_convertion.md](ui/ui_convertion.md) — frontend structure, UI behavior, visual consistency.
-6. [docs/ai_integration.md](ai_integration.md) — AI boundaries, privacy, validation.
-7. Current source, manifests, lockfiles and CI — exact versions, scripts and implemented behavior; these do not override product requirements. See [documentation map](README.md) and [AGENTS.md](../AGENTS.md) for task routing.
-Rules:
-- Never change a business rule only to simplify implementation.
-- Do not silently resolve a **TBD**.
-- Do not treat mock/demo data or scaffold folders as implemented behavior.
-- Keep MVP, post-MVP Must, Should, Could, and out-of-scope work distinct.
+
+Requirements own behavior, architecture owns boundaries, database owns storage/locks, API owns wire contracts and UI/AI own their domain refinements. Roadmap owns version order/acceptance; the decision register owns unresolved choices. Source/manifests/lockfiles/CI describe actual tooling, never override the target. Read [documentation map](README.md) and AGENTS.md before implementing.
+
+Public browsing and guest carts, ordinary buyer-manager identity, one restaurant maximum and one MFA Admin are decided. Old requested-role code is legacy. Necessary TBDs block dependent work; routine implementation details within settled contracts need no new product decision.
+
 ## 2. Technology baseline
-| Area | Decision / status |
-| --- | --- |
-| Frontend | Vite + React + TypeScript |
-| Styling | Tailwind CSS 4 via `@tailwindcss/vite`; semantic CSS theme and self-hosted Be Vietnam Pro |
-| Backend | NestJS + TypeScript |
-| API | REST + JSON; `/api/v1` prefix, shared envelopes and auth endpoints are configured; no other business routes yet |
-| Auth | 15-minute JWT cookie, no refresh, signed CSRF and versioned logout; API §2 |
-| ORM | Prisma |
-| Database | MySQL / InnoDB |
-| Architecture | Modular monolith, logical 3-tier separation |
-| Node.js | CI: `24.x`; exact local/production patch remains to be pinned |
-| npm | **TBD — verify and pin** |
-| Exact MySQL release | Oracle MySQL Community Server **8.4.11**, per database §1 |
-| AI/LLM provider/model | **TBD** |
-| Map provider | **TBD** |
-| Image storage provider | **TBD if uploads are enabled** |
-### 2.1 MySQL requirement
-- The schema relies on enforced `CHECK` constraints.
-- Use Oracle MySQL Community Server **8.4.11** with InnoDB in local, test, staging and production; verify `SELECT VERSION()` and actual CHECK enforcement.
-- `8.0.16+` explains the historical CHECK floor; it is not the selected release.
-- Financial/concurrency integration tests must run against real MySQL/InnoDB, not SQLite.
-- A local `SELECT 1` on MySQL 9.2.0 verifies connectivity only; it does not change the selected 8.4.11 release or satisfy version-specific integration evidence.
+
+React/Vite/TypeScript, Tailwind CSS 4 and self-hosted Be Vietnam Pro; NestJS/TypeScript REST `/api/v1`; Prisma with the MariaDB-named adapter and `prisma7.config.ts`; modular monolith. Target Oracle MySQL Community Server **9.2.0**, InnoDB, real FKs/CHECKs/strict mode/UTC sessions. Preserve installed package versions/lockfiles; no unrelated upgrades.
+
+CI uses Node.js 24.x. Exact deployment Node/npm patches and services are DEC-10. CI pins mysql:9.2.0, matching the selected local/staging/production release; the updated CI run remains unobserved. Verify actual SELECT VERSION() and CHECK rejection in 9.2.0 suites. Connectivity alone proves neither constraints nor concurrency.
+
 ## 3. Environment setup
-### 3.1 Verify local tools
-Before coding:
-```bash
-node --version
-npm --version
-mysql --version
+
+Inspect current scripts/manifests/lockfiles and git status first. Install only when needed, from repository root:
+
+```sh
+npm --prefix frontend ci
+npm --prefix backend ci
 ```
-Use Node.js 24 to match CI; record/pin exact deployment versions when selected. The source/lockfiles remain authoritative for package versions.
-Do not upgrade Node, npm, Prisma, NestJS, React, Vite, or database packages only because newer versions exist. Follow manifests and lockfiles.
-### 3.2 Install dependencies
-The repository has separate frontend/backend lockfiles.
-```bash
-cd frontend
-npm ci
-cd ../backend
-npm ci
-```
-Use `npm install` when intentionally modifying dependencies or when an approved lockfile update is required.
-Rules:
-- Commit intentional `package.json` + `package-lock.json` changes together.
-- Do not delete lockfiles to solve dependency errors.
-- Do not perform broad upgrades in unrelated PRs.
-- Inspect manifests before adding a package; do not assume a router, state library, test runner, or Tailwind version is already installed.
+
+Separate packages/lockfiles; no root npm workspace command. Commit intentional dependency changes with their lockfile. Do not delete lockfiles to fix unrelated failures. Use CodeGraph before source search/reads when indexed; fall back with an explanation if unavailable.
+
 ## 4. Configuration and environment variables
-### 4.1 General rules
-- Never commit real `.env` files.
-- `.env.example` contains names and safe placeholders only.
-- Backend secrets must never be exposed through `VITE_*`.
-- Exact env names must match current code/config. If no approved name exists, mark it **TBD**.
-### 4.2 Backend configuration inventory
-Current settings come from `backend/.env.example`, `backend/src/main.ts` and `backend/src/prisma/database.config.ts`; future settings remain logical/TBD. Copy the example only if no configured `.env` already exists.
-| Logical setting | Required when | Safe example / note |
-| --- | --- | --- |
-| `DATABASE_URL` | Backend uses MySQL | Required `mysql://user:password@host:port/database`; URL-encode credentials; current parser rejects query/fragment; database must already exist |
-| Runtime environment | All environments | `development` |
-| `PORT` | Backend listen port | Optional; defaults to `3000` |
-| `JWT_SIGNING_KEY`, `CSRF_HMAC_KEY` | Auth enabled | Distinct backend-only 32-byte random hex values |
-| `JWT_ISSUER`, `JWT_AUDIENCE`, `JWT_KEY_ID` | Auth enabled | Required exact per-environment strings; key ID identifies the active signing key |
-| `JWT_PREVIOUS_KEYS` | Key rotation | Optional JSON array of old `{id,key,retired_at}` entries; `retired_at` is Unix seconds, accepted for at most 15 minutes |
-| Allowed frontend origin | Separate origins | Example `http://localhost:5173`; never wildcard with credentials |
-| `PUBLIC_ORIGIN` | Auth enabled | Required exact HTTPS public origin; unsafe requests with absent/mismatched Origin fail |
-| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` | Email registration enabled | Backend-only SMTP relay; port 465 uses implicit TLS, port 587 requires STARTTLS. Use a dedicated app password and a verified sender; never put credentials in `VITE_*`. |
-| `ACCOUNT_PROVISION_MANIFEST`, `ACCOUNT_PROVISION_REVIEWER_PUBLIC_KEY`, `NODE_ENV` | Privileged provisioning | Operator-only signed approval paths and exact environment; see deployment §6 |
-| AI endpoint/model/credential | AI enabled | Provider/model **TBD**; backend only |
-| AI timeout/quota/cost limits | AI enabled | **TBD**; absent limits must not mean unlimited |
-| Map settings | Post-MVP map delivery | **TBD** |
-| Storage settings | Image upload enabled | **TBD** |
-### 4.3 Frontend configuration
-Frontend config contains public/non-secret values only.
-| Logical setting | Status |
+
+Preserve existing `.env`; copy backend/.env.example only if no configured file exists. Never commit real environment files or print credentials. Current configuration names must be verified in code before adding settings.
+
+| Setting | Purpose / boundary |
 | --- | --- |
-| API origin/base URL | **TBD**; same-origin production preferred |
-| Public map-rendering key | Only if provider requires it; restrict by domain/quota |
-| Feature flags | Only for approved scope/configuration |
-| Secrets | **Forbidden** |
-Do not create variables equivalent to `VITE_DATABASE_URL`, `VITE_JWT_SECRET`, or `VITE_AI_API_KEY`.
+| DATABASE_URL | Backend-only MySQL URL; encode credentials; current parser rejects query/fragment |
+| PROVISION_DATABASE_URL | CLI-only distinct user on the same DB; required, no fallback; keep outside runtime .env |
+| MIGRATION_DATABASE_URL, DB_OPERATOR_URL | Private operator storage; command-scoped migration/configuration only, never HTTP runtime environment |
+| PORT | Backend defaults 3000 |
+| JWT_SIGNING_KEY, CSRF_HMAC_KEY | Distinct backend-only 32-byte hex secrets |
+| JWT_ISSUER, JWT_AUDIENCE, JWT_KEY_ID, optional JWT_PREVIOUS_KEYS | Current access-token validation/rotation; API §2 |
+| PUBLIC_ORIGIN | Exact browser origin; unsafe requests verify Origin; production same-origin HTTPS |
+| SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SMTP_FROM | Backend email; dedicated verified sender; current code supports TLS 465 or STARTTLS 587 |
+| ACCOUNT_PROVISION_MANIFEST, ACCOUNT_PROVISION_REVIEWER_PUBLIC_KEY, NODE_ENV | Protected signed provisioning config; see cutover handoff and P03 CLI evidence |
+| ADMIN_MFA_ENCRYPTION_KEY, CUTOVER_RESTORE_EVIDENCE | Approved backend-only factor encryption key and checksum/inventory-verified restore proof; see cutover handoff |
+| AI/media/hosting/backup config | Approved names/values in P13/P26/P29; unresolved choices are not defaults |
+
+Backend secrets never belong in VITE_* or bundles. Public API origin/feature flags contain no secrets. Trusted proxy handling, login limits, cookie/JWT/CSRF/password policy remain API §2 contracts. No refresh-token endpoint is promised.
+
 ## 5. Local database and Prisma
-Use a disposable local MySQL database for tests. A configured development database may be used for non-destructive connectivity checks; do not run synthetic auth/integration cases against retained data.
-Setup flow:
-1. Start MySQL/InnoDB.
-2. Create a local database and least-privilege dev account.
-3. Configure backend DB access using the repo's actual config.
-4. Generate Prisma Client.
-5. Apply reviewed migrations if present.
-6. Seed only when a guarded local/test seed exists.
-7. Start backend and frontend.
-### 5.1 Prisma commands
-Use the existing generation/validation scripts. Generate a migration only when schema work is in scope, using the installed Prisma CLI and explicit config:
-```bash
+
+Keep `backend/prisma/schema.prisma`, reviewed forward migration files and custom config. Do not edit generated Prisma code, dist or .test-dist. Build/dev/start/test compilation generates Client; generation is not validation of the intended business schema.
+
+```sh
+npm --prefix backend run prisma:validate
+npm --prefix backend run prisma:generate
+# Only for an explicitly scoped future migration task on a disposable target:
 cd backend
-npm run prisma:generate
-npm run prisma:validate
-# Only for intended disposable local migration work:
 npx --no-install prisma migrate dev --create-only --config prisma7.config.ts
 ```
-Inspect generated SQL before applying a migration. Build/dev/start/test compilation generate Prisma Client automatically. There are no business migrations, seed configuration or migration/seed npm wrappers yet. Commands needing the datasource/migration config must explicitly select `prisma7.config.ts`; do not assume this custom filename is auto-discovered.
-### 5.2 Migration safety
-- Maintain `backend/prisma/schema.prisma` and reviewed `backend/prisma/migrations/`.
-- Inspect generated SQL, especially CHECKs, composite FKs, indexes, and FK actions.
-- Do not edit migrations already applied to shared environments.
-- Use forward corrective migrations.
-- Never reset/force-reset/destructively push schema against retained data.
-- Never invent missing historical snapshots from current menu/restaurant data.
-- For populated DBs prefer: `expand → backfill → validate → constrain → contract`.
-- Production backup/rollback belongs in [deployment.md](deployment.md).
-### 5.3 Seed safety
-Seed only explicit local/test targets.
-- Refuse known production/shared DBs.
-- Use deterministic fictional users/business data.
-- No real contacts, QR/bank data, provider keys, or production credentials.
-- Clearly label test distances/fees/rates.
-- Preserve valid snapshot/history/ledger relationships in history fixtures.
+
+Review generated SQL for CHECK/FK/UQ/composite keys/indexes/actions. P01/P10 follow [migration plan](data/migration-plan.md): inventory, explicit primary Admin and legacy ownership mapping, expand/backfill/validate/constrain/cutover. Preserve accounts/partners/snapshots/orders/finance/audit/keys. No auto-selection, reset, destructive push, demo seed on retained/shared data or rewriting applied migration SQL. Missing historical facts cannot be reconstructed from current menu data.
+
+Guard future seeds by explicit disposable target allowlist. Use fictional ordinary users, two buyer-managers with one restaurant each, one sole Admin, unknown/zero surveyed-fee variants and valid snapshots/history. Deliberate legacy multi-owner/Admin conflicts test migration refusal, not valid target fixtures. No actual partner/QR/contact/provider credentials in fixtures.
+
 ## 6. Running locally
-Use Node.js 24 and npm. Preserve any existing local `.env`; otherwise copy `backend/.env.example` to `backend/.env` and configure MySQL. Never print credentials.
-```bash
-# Repository root, after installing dependencies and configuring local MySQL:
-npm --prefix backend run prisma:validate
+
+After configuring MySQL and backend auth settings:
+
+```sh
 npm --prefix backend run db:check
 npm --prefix backend run dev
-# Separate terminal:
+# Another terminal:
 npm --prefix frontend run dev
 ```
-Backend defaults to port 3000; Vite defaults to 5173 (use its printed URL). Backend startup requires MySQL and the auth variables in §4.2. New registration requires the SMTP variables there; absent configuration returns `EMAIL_NOT_CONFIGURED` before account creation. A delivery failure after account creation returns `EMAIL_UNAVAILABLE`, leaving an unverified account that may resend after 60 seconds. Vite proxies `/api` to local backend port 3000; configure `PUBLIC_ORIGIN` to match the browser origin in development. The frontend `/preview` route keeps labeled restaurant fixtures available without backend access; see [frontend guide](../frontend/README.md). The backend exposes registration, email verification/resend, login/me/logout, profile and Admin role-request review under `/api/v1`; a production SPA must use the exact same HTTPS origin configured by `PUBLIC_ORIGIN`. `/` and `/todos` return 404.
-Documented `/api/v1` endpoints and the authenticated surveyed cash-order flow are targets to implement, not startup smoke checks that currently pass. Frontend code must not import Prisma, query MySQL or call the AI provider.
+
+Backend default 3000, Vite default 5173 (use printed URL); Vite proxies /api to 3000. Match PUBLIC_ORIGIN exactly; localhost and 127.0.0.1 are different origins. SMTP is required for new email verification. A send failure can leave an unverified legacy account for resend; inspect actual error behavior.
+
+Current `/login`, `/register`, `/verify-email`, `/account` implement accepted V0.1 capability/MFA auth; role-request website routes are retired. Public homepage/menu source exists and P04/P05 acceptance is separate. `/preview` remains development-only labeled fixtures without auth/me. No fixture mutation counts as real success. `/` and `/todos` on the backend return 404, independently of frontend SPA routes.
+
 ## 7. Target repository structure
-| Area | Target location |
-| --- | --- |
-| Documentation | `docs/` |
-| Frontend app composition | `frontend/src/app/` |
-| Frontend business features | `frontend/src/features/<feature>/` |
-| Frontend shared HTTP/UI/lib | `frontend/src/shared/` |
-| Backend transport DTO/controllers | `backend/src/http/` |
-| Cross-module workflows | `backend/src/workflows/` |
-| Business modules | `backend/src/modules/<module>/` |
-| External adapters | `backend/src/integrations/` |
-| Prisma infrastructure | `backend/src/prisma/` |
-| Shared backend infrastructure | `backend/src/common/` |
-| Prisma schema/migrations | `backend/prisma/` |
-| Integration/E2E/race tests | `backend/test/` |
-Target feature folders include `auth`, `restaurants`, `dishes`, `delivery`, `cart`, `orders`, `payments`, `commissions`, and `recommendations`. Post-MVP/support/review/favorite folders are created only when in scope.
-Do not create empty directories/classes only to match the target architecture.
+
+Follow [target structure](code_structure.md). Frontend app composes features through public index.ts; domain UI stays inside its feature; generic controls in shared/ui. Backend follows HTTP → workflow → module public service → owning repository → Prisma. Add onboarding, security/user-management, support, media and financial code only when its scoped prompt needs it; no empty scaffolding.
+
 ## 8. Frontend code conventions
-Dependency direction:
-```text
-app
-  → features/<feature>/public exports
-      → feature pages/hooks/api/components
-          → shared/api, shared/ui, shared/lib
-```
-Rules:
-- `app` may compose multiple features.
-- Features import their own internals + `shared`; no deep-import of another feature.
-- `shared` must not import `features` or `app`.
-- Single-feature pages stay inside the feature; cross-feature pages go in `app/pages`.
-- Presentation components do not call `fetch` directly.
-- Feature API modules use the shared HTTP client.
-- Generic reusable controls go in `shared/ui`; domain components stay in their domain.
-- Cart draft is frontend-owned; created orders are backend-owned.
-- React must not decide authoritative prices, fees, commission, or authorization.
-- BIGINT IDs and money strings must not be coerced to JavaScript `Number`.
-- For UI work, read [docs/ui/ui_convertion.md](ui/ui_convertion.md) and the relevant reference design board first.
+
+- app → feature public exports → own internals/shared; shared never imports upward; no cross-feature deep imports.
+- Single-feature pages belong in feature/pages; cross-feature checkout/navigation composition in app/pages/hooks.
+- Hooks/API layers own requests; presentational components receive data/callbacks. Reuse shared API errors/envelopes and semantic UI tokens.
+- Public catalog rendering cannot depend on auth/me success. Ordinary manager retains buyer/cart/history links; no multi-restaurant selector or role chooser.
+- Guest local cart is non-sensitive intent; login restores/revalidates and requires explicit confirmation. Private checkout/unknown-result key persistence is account scoped; clear stale private views on account switch/logout.
+- IDs/money stay strings; format exact VND without wholesale Number coercion. Backend owns totals/fees/rate/eligibility/transitions.
+- UI guide/approved boards govern Be Vietnam Pro, cream/orange/white discovery and distinct manager/Admin layouts; Vietnamese copy, 360 px and accessibility states required. Do not copy HTML fictional identities, metrics or policies.
+
 ## 9. Backend code conventions
-Main direction:
-```text
-HTTP controller / guard
-  → workflow
-    → public business service
-      → owning repository
-        → Prisma / MySQL
-```
-Rules:
-- Controllers: DTO parsing/validation, auth, preliminary role checks, workflow call, HTTP mapping.
-- Controllers must not contain money formulas, state machines, Prisma queries, or provider logic.
-- Cross-module coordination belongs in `workflows/`.
-- Business modules own their data and rules.
-- Expose narrow public services; do not export repositories for cross-module access.
-- Workflows open transactions and pass one shared transaction context.
-- Repositories own queries, locks, and conditional writes for their module.
-- AI/maps/storage stay behind adapters/ports.
-- AI never gets order/payment/database write tools.
-Suggested substantial-module shape:
-```text
-modules/orders/
-├── orders.module.ts
-├── public.ts
-├── application/
-│   ├── order.service.ts
-│   └── order-query.service.ts
-├── domain/
-│   ├── order-state.policy.ts
-│   └── order-pricing.policy.ts
-└── infrastructure/
-    └── order.repository.ts
-```
-Smaller modules may use fewer files.
+
+Controllers parse/validate transport, authenticate and call workflows; they do not query Prisma or implement pricing/state rules. Workflows coordinate public services with one shared transaction context and never query tables. Each repository accesses its owning module only; modules do not import workflows back. common/ is infrastructure, not business logic. Keep ESM .js specifiers and Prisma config.
+
+onboarding owns immutable submissions/terms/reviews; accounts owns ordinary identity/sole authority/MFA; restaurants owns unique ownership/readiness; orders/payments/commissions own their facts. Approval/manual create crosses them in a workflow, atomically with audit and key/result. External AI/media/maps remain adapter calls outside retried DB transactions.
+
 ## 10. Cross-cutting coding rules
+
 ### 10.1 Naming and placement
-Follow existing repo conventions. Architecture examples use:
-- React components/classes/types: `PascalCase`.
-- Variables/functions/hooks/services: `camelCase`.
-- Hooks: `use...`.
-- Backend filenames: `order.workflow.ts`, `order.service.ts`, `order.repository.ts`.
-- Feature API: `orders.api.ts`.
-- DB tables/columns and API JSON keys: `snake_case`.
-Do not rename public wire fields to camelCase without an explicit API contract change.
+
+TypeScript naming follows existing source; API/DB fields snake_case; exact paths follow target structure. No empty directories/classes to match a diagram.
+
 ### 10.2 Validation and authority
-- Reject unknown fields, wrong types, and client-supplied server-controlled fields.
-- Frontend validation is usability only; backend validation is authoritative.
-- Enforce role + ownership server-side.
-- Do not trust client user/role/restaurant scope, totals, prices, fees, or commission.
-- Re-read current data for orderability/financial decisions.
-- Treat AI output as untrusted input.
-### 10.3 Money, IDs, rates
-- Money is integer VND.
-- REST money = canonical decimal string.
-- BIGINT IDs = decimal strings over REST.
-- Commission rate = exact decimal fraction with 8 fractional digits.
-- Never use JS binary floating-point for money/rate calculations.
-- UI formatters display; backend decides.
+
+Reject unknown/server-controlled fields. Derive active actor and current capabilities/ownership server-side for reads/lists/nested IDs/replays and locked writes. Public responses use explicit allowlists. Admin is sole authority with MFA, not inherited owner power; a hidden UI button is no authorization proof.
+
+### 10.3 Money, IDs and rates
+
+REST IDs and integer VND are canonical strings; rate has eight places as a fraction (`0.10000000` = 10%). BigInt/Decimal exact arithmetic, overflow validation and half-up once per completed-order dish subtotal excluding delivery. Commercial rate/cap is DEC-04, never the example rate.
+
 ### 10.4 Errors
-Use the API error envelope:
-```json
-{"error":{"code":"VALIDATION_ERROR","message":"Check the highlighted fields.","field_errors":[],"details":{},"request_id":"req_example","retryable":false}}
-```
-- Preserve stable machine-readable codes.
-- Never expose stack traces, SQL, secrets, raw provider responses, or another actor's data.
-- Treat 409 as a conflict requiring the contract-defined recovery/refetch/reconfirmation.
-- Preserve one idempotency key for one durable intent.
+
+API owns success/list/error envelopes and machine codes. Localize UI copy; no SQL/stack/secret/private data in errors. 409 requires specific refetch/reconfirmation/reconciliation. Preserve user input and same original key/payload after unknown outcome.
+
 ### 10.5 Transactions and concurrency
-- Required business mutation + audit commit/rollback together.
-- Completion + unique base commission commit together.
-- Follow documented lock order + conditional writes.
-- Retry only transient deadlocks/lock timeouts, boundedly.
-- Do not retry validation/auth/state conflicts automatically.
-- No AI/map/storage/external money movement inside retried DB transactions.
-- A Node.js mutex is not sufficient for cross-instance correctness.
+
+Follow database §10 account-first lock order, including singleton/application groups where relevant. Mutation/history/audit/key/result commit together; completion and unique base commission too. Same-key same-content replay; changed content conflict. Authorized current-state repeat has no extra facts. Only bounded whole-transaction transient retries; no external side effects or process-local mutex as cross-instance protection.
+
 ### 10.6 Logging
-Safe operational metadata:
-- request/correlation ID;
-- safe resource IDs;
-- safe actor ID when appropriate;
-- outcome category;
-- latency/timing.
-Do not log passwords/hashes, JWTs/cookies/auth headers, secrets, full recipient details, AI prompts/preferences/candidate payloads/raw responses, or payment secrets.
-Audit logs and operational logs are separate.
+
+Safe IDs/outcome/timing/version/cost metadata only. No passwords/hashes/tokens/cookies, MFA/recovery material, contacts/recipient snapshots, QR secrets or AI prompts/preferences/candidates/raw outputs/transcripts. Business audit is transactional; operational collector failure is separate.
+
 ### 10.7 API client
-Frontend API code:
-- belongs to the owning feature `api/`;
-- uses `shared/api`;
-- uses `/api/v1`;
-- preserves documented JSON envelopes and `snake_case`;
-- centralizes common error handling where useful;
-- never invents endpoints/DTOs while backend work is incomplete.
+
+Feature API modules use shared/api and /api/v1 with approved snake_case/scalars/envelopes. No invented endpoints/DTOs while decisions are open. The V0.1 [OpenAPI](data/openapi.yaml) covers auth/profile; extend it alongside later enabled groups. HTTP/SMTP schema checks are implemented, not SDK generation.
+
 ## 11. Feature workflow
-For each feature/fix:
-1. **Read requirements**
-   - Identify US, FR, BR, AC, and delivery scope.
-2. **Check ownership/contracts**
-   - Identify owning module.
-   - Read API + database docs.
-   - Read UI/AI docs when relevant.
-3. **Inspect current code**
-   - Verify package versions, scripts, DTOs, services, migrations, tests.
-4. **Plan smallest consistent change**
-   - Avoid unrelated refactors.
-   - Do not resolve TBDs silently.
-5. **Implement**
-   - Keep backend authority and architecture boundaries.
-6. **Test**
-   - Add relevant unit/integration/E2E/race coverage.
-   - Use real MySQL where constraints/locking matter.
-7. **Run repo checks**
-   - Use actual scripts from `package.json`.
-8. **Update docs**
-   - Requirements first if business behavior changes.
-   - Update downstream docs when contracts change.
-   - Keep every documentation file under 500 lines.
-9. **Prepare PR**
-   - State scope, traceability, verification, risks, docs, and remaining TBDs.
+
+Read AGENTS/map/roadmap and next prompt; identify US/FR/BR/AC/test cases and owning contracts; inspect current source/scripts/working tree; check prior acceptance and decision gates; implement the smallest coherent scoped change; verify meaningful failures/races/browser paths; update affected docs/status; hand off actual evidence. A decision prompt prepares concrete choices and obtains unresolved policy decisions before dependent work.
+
 ## 12. Verification commands
-These scripts were checked against package manifests and CI on October 17, 2026. Run from the repository root and recheck scripts when tooling changes.
 
-| Check | Existing command / status |
+Inspect current manifests before use; commands below exist at the inspected baseline:
+
+| Check | Repository-root command / boundary |
 | --- | --- |
-| Frontend development | `npm --prefix frontend run dev` |
-| Frontend lint | `npm --prefix frontend run lint` (Oxlint) |
-| Frontend TypeScript + production build | `npm --prefix frontend run build` |
-| Frontend unit/component/browser tests | **NOT CONFIGURED** |
-| Backend development | `npm --prefix backend run dev` |
-| Backend lint | `npm --prefix backend run lint` (ESLint) |
-| Backend unit tests | `npm --prefix backend test` (TypeScript compile, then Node test runner) |
-| Backend HTTP E2E | `npm --prefix backend run test:e2e` (Prisma mocked) |
-| Backend build | `npm --prefix backend run build` |
-| Prisma schema validation / generation | `npm --prefix backend run prisma:validate` / `npm --prefix backend run prisma:generate` |
-| Local MySQL connectivity | `npm --prefix backend run db:check` (build then `SELECT 1`; configured DB required) |
-| Real-MySQL auth flow, business constraints/races, OpenAPI and import-boundary automation | **NOT CONFIGURED** |
+| Frontend lint/build | npm --prefix frontend run lint; npm --prefix frontend run build |
+| Fixture/auth-route Chrome smoke | npm --prefix frontend run test:smoke; local Chrome or BROWSER_BIN; not commercial browser acceptance |
+| Backend lint/unit/E2E/build | npm --prefix backend run lint; npm --prefix backend test; npm --prefix backend run test:e2e; npm --prefix backend run build |
+| Isolated audit/auth MySQL | npm --prefix backend run test:integration; configured disposable loopback TEST_DATABASE_URL and test-name guard required |
+| Prisma syntax/client | npm --prefix backend run prisma:validate; npm --prefix backend run prisma:generate |
+| Connectivity | npm --prefix backend run db:check; SELECT 1 only |
 
-CI runs frontend lint/build and backend lint/unit/HTTP E2E/build plus isolated MySQL 8.4.11 integration. Backend HTTP E2E tests mock DB access. On October 17, 2026, local `db:check` reached `cse3045`, and all four account/audit/login-limit/email-role migrations were applied. Source-level checks include 22 unit/5 mocked HTTP E2E tests. A disposable Docker MySQL 8.4.11 container passed the audit and AUTH-01 integration suite (2/2), including email verification and pending Owner approval. Chrome smoke rendered the new email verification route at 360 px. A prior one-time connected headless Chrome journey covered the former auth flow; the new email/approval journey and real SMTP delivery have not been observed. Containers were removed. A CI run and repeatable connected browser suite remain unobserved/unconfigured. No root npm workspace or standalone type-check script is configured. Build/test compilation covers current TypeScript checks.
-For documentation-only changes, verify links, canonical paths, referenced sections, line limits and source/script consistency. Run application checks when executable code/config changes. Report configured-but-unrun checks as `NOT RUN`, missing tooling as `NOT CONFIGURED`, and policy-dependent work as `BLOCKED: <decision/source>`.
-Real-MySQL audit integration is opt-in: set `TEST_DATABASE_URL` to a disposable loopback MySQL database named `test_*` or `*_test`, then run `npm --prefix backend run test:integration`. The runner applies the checked-in migration without reset and checks transactional audit rollback. Browser fixture smoke uses local Chrome or `BROWSER_BIN` via `npm --prefix frontend run test:smoke`; it is not a connected checkout test.
+HTTP E2E mocks Prisma. Node's built-in test runner is used, not assumed Jest/Vitest. CI configures Node.js 24.x/MySQL 9.2.0; configuration alone does not establish a passing compatibility run. Current auth/catalog MySQL, CLI MFA recovery, local SMTP and connected Chrome checks are recorded in [P01–P03 progress](progress/README.md); full accessibility, later business/onboarding/finance races and production load/AI/restore coverage remain incomplete. Add scoped tooling with implementation; never invent a passing script or use --if-present to conceal a required missing check.
 
-## 13. Minimum test expectations
-Add only tests relevant to the changed area, while preserving these invariants:
-- server-side price/fee recalculation and one restaurant per order;
-- hidden/sold-out/closed/not-accepting rejection;
-- pending-only cancellation and accept/cancel races;
-- durable same-key retry and changed-content idempotency conflict;
-- repeated completion creates one base commission; delivery fee excluded;
-- historical snapshots survive catalog/rate edits;
-- payment and order lifecycles stay separate;
-- cross-account/restaurant authorization;
-- one-settlement-per-entry and mutation+audit rollback;
-- history-preserving hide/deactivate;
-- AI invalid output/privacy/outage/manual fallback.
-Use real MySQL for constraints, locks, and concurrency; ORM mocks are insufficient evidence.
+Documentation-only work checks links/anchors/references/path/script consistency, P01–P36 and Markdown <500 lines; application tests are unnecessary. Report actual PASS/FAIL, NOT CONFIGURED, NOT RUN, BLOCKED with owning decision, and separate source inspection/browser observation/automated evidence.
+
+## 13. Meaningful test requirements
+
+Use [testing case IDs](testing.md). Unit-test exact money/state rules; use actual MySQL 9.2.0 for SQL constraints, transaction/audit rollback, approval/manual uniqueness, request replays, accept/cancel/payment/refund/settlement races. Browser-test public browsing, guest continuity, buyer-manager navigation, application/terms, MFA, checkout/history and sensitive workflows. Include keyboard/360px/accessibility and measured NFRs. Mock/fixture/source evidence cannot replace real DB/browser/restore results.
+
 ## 14. Git and PR
-The repository does not establish enforced Git naming syntax. The following is a **proposed team convention**; align it with actual branch protection before enforcing it.
-### 14.1 Branches
-```text
-feat/<topic>
-fix/<topic>
-docs/<topic>
-test/<topic>
-refactor/<topic>
-chore/<topic>
-```
-Rules:
-- one focused task per branch;
-- branch from the team's current integration branch;
-- do not assume the integration branch name;
-- avoid direct changes to a protected integration branch;
-- do not mix unrelated features.
-### 14.2 Commits
-Proposed prefixes:
-```text
-feat:
-fix:
-docs:
-test:
-refactor:
-chore:
-```
-Each commit should represent one coherent change. Avoid messages such as `update`, `fix stuff`, or `changes`.
-### 14.3 PR description
-```text
-## Scope
-- Changed:
-- Not changed:
-## Traceability
-- US:
-- FR:
-- BR:
-- AC:
-- Scope: MVP / Post-MVP Must / Should / Could
-## Implementation
-- Frontend:
-- Backend:
-- Database/API/AI:
-## Verification
-- Commands:
-- Tests:
-- Manual checks:
-## Documentation
-- Updated:
-- Remaining TBDs:
-## Risk
-- Data/concurrency/security/history:
-```
-### 14.4 Definition of done
-Ready to merge when:
-- requirements/business rules are satisfied;
-- API/data/UI/AI contracts are not silently changed;
-- backend authorization/ownership is enforced;
-- exact money/ID handling is preserved;
-- migration SQL is reviewed when applicable;
-- relevant tests/checks pass or missing tooling is explicitly reported;
-- no real secret/`.env` is committed;
-- no unsafe DB reset/destructive command is introduced;
-- docs are updated when contracts changed;
-- no TBD became behavior without a decision;
-- PR explains verification and remaining risk.
+
+Use focused branches/commits following the team's current integration/protection policy; no branch name is assumed. PR description leads with concrete behavior, traceability, migration/compatibility implications, exact tests/evidence and unresolved decisions. Preserve unrelated work. Do not deploy/merge/publish/send messages merely because implementation is complete; use actual task authorization.
+
+Ready to merge requires settled affected contracts, server authority, exact money/history, reviewed SQL, meaningful relevant verification, updated docs and no secrets/destructive retained-data commands. Merge readiness is separate from commercial release acceptance.
+
 ## 15. Data and secret safety
-Never commit:
-- real `.env`;
-- DB credentials;
-- JWT signing material;
-- AI/map/storage credentials;
-- production tokens/cookies;
-- real bank/QR secrets;
-- private customer datasets;
-- raw AI conversation content.
-Never:
-- reset a DB containing data that must be retained;
-- delete historical order/payment/commission/audit data to fix tests;
-- rewrite snapshots from current data;
-- physically delete entities when rules require hide/deactivate;
-- run demo seeds on shared/production data;
-- use production/private user content as AI training/evaluation input.
+
+No real .env, credentials, MFA/recovery/bank material or private customer/provider content in Git/reports. No resetting shared/retained data, deleting history for tests, rewriting snapshots/applied migrations or fabricating consent/fees/rates. Physical account purge/retention is DEC-08; no automatic purge job. Use forward corrective migrations and isolated restoration drills.
+
 ## 16. Giving tasks to AI coding assistants
-AI contributors should infer these fields from the request and repository where possible; ask only for decisions that cannot be inferred. Use this template for complex handoffs:
-| Field | Required content |
-| --- | --- |
-| Goal | One concrete feature/fix |
-| Traceability | US/FR/BR/AC IDs |
-| Scope | MVP / post-MVP Must / Should / Could |
-| Read first | Relevant requirements/architecture/API/DB/UI/AI docs |
-| Allowed changes | Specific folders/files |
-| Acceptance | Observable pass/fail criteria |
-| Verification | Exact existing commands/tests |
-| Data rules | Money, snapshots, idempotency, ownership, history |
-| Forbidden changes | Unrelated refactors/tech/providers/contracts |
-| TBD handling | Decisions the AI must not invent |
+
+Use complete [P01–P36 prompts](prompts/README.md) in order. For maintenance, identify affected technical contract and meaningful checks without forcing a product template. Do not turn a missing product/security decision into behavior.
+
 ### 16.1 AI task template
+
 ```text
-Task: <short title>
-Goal: <one concrete goal>
-Traceability:
-- US:
-- FR:
-- BR:
-- AC:
-- Scope:
-Read first:
-- docs/requirements.md
-- docs/architecture.md
-- docs/data/api_contract.md
-- docs/data/database.md
-- docs/ui/ui_convertion.md   # when frontend changes
-- docs/ai_integration.md  # when AI changes
-Allowed changes:
-- <specific folders/files>
-Do not change:
-- unrelated modules
-- approved business rules
-- API/DB contracts unless requested
-- package versions/tooling unless approved
-- unresolved TBD decisions
-Acceptance criteria:
-1. ...
-2. ...
-Verification:
-- <exact existing command>
-- <test/manual check>
-Report:
-- files changed
-- behavior implemented
-- commands/tests + results
-- remaining TBDs
-- intentional UI/docs deviations
+Execute Pxx / version from docs/roadmap.md, after accepted prior handoff.
+Read AGENTS.md, documentation map, owning requirements/API/data/UI/AI and decision gates.
+Inspect actual source/scripts/working tree and preserve unrelated work.
+State scope/traceability, implement only authorized settled behavior and verify it.
+Use exact scalar/history/transaction/current-capability contracts and forward migrations.
+Report actual checks/evidence, changed docs, blockers and acceptance status.
 ```
+
 ### 16.2 AI-specific rules
-AI must inspect current files first, preserve architecture boundaries, prefer the smallest coherent change, use actual repository scripts, report missing tools honestly, and update docs when approved contracts change.
-AI must not invent endpoints/enums/fields/roles/providers/infrastructure; resolve auth/CSRF/TBD policy silently; add driver dispatch or automatic payment splitting/collection; let AI set authoritative price/fee or create orders; bypass backend validation; expose secrets; reset retained data; or fix unrelated code outside scope.
-For frontend tasks, include:
-```text
-Read and follow docs/ui/ui_convertion.md and the relevant reference design board before changing UI. Preserve requirements and backend contracts.
-```
+
+No invented roles/providers/endpoints/policies, automatic checkout, Admin grant, extra ownership, custody/splitting, driver dispatch or AI money/order writes. No silent TBD resolution. Prepare concrete proposals before seeking required decisions; continue independent work within authorization.
+
 ## 17. Quick checklist
-Before coding: read US/FR/BR/AC, confirm scope, identify owning module, check API/DB contracts, verify scripts/tool versions, and list unresolved TBDs.
-Before PR: update tests, run existing repo checks, use real MySQL where DB behavior matters, ensure no secret/destructive operation, update changed contract docs, include traceability/verification, and keep remaining TBDs explicit.
+
+Before coding: identify version/prompt/IDs, read owning contracts, inspect current source and prior acceptance, resolve necessary decisions. Before handoff: run relevant real checks, protect secrets/history, update docs/status, report limits honestly. Before release: complete concrete dossier and obtain explicit approval.
+
 ## 18. Setup decisions still TBD
-Resolve and record: exact deployment Node.js patch/npm versions (CI currently uses Node.js 24.x); future test/tooling scripts and auth/provider/frontend env names; AI provider/model/config/limits; post-MVP map config; optional storage config; real-MySQL/browser runners and additional CI gates; and protected integration-branch/review policy.
-Do not replace these gaps with guessed values. Update this guide and the relevant config/examples together after each approved decision.
+
+[Decision register](decisions.md) owns factor/recovery (DEC-02), onboarding/partnership (03), commission (04), surveys/quotes (05), QR/refunds (06), finance (07), user/support/retention (08), AI (09), infrastructure/services (10), backups/RPO/RTO (11), launch policies/authority (12). Providers, budgets and hosting are not chosen by this guide. Update exact config/runbooks after approval, then prove them under [release checklist](release-checklist.md).

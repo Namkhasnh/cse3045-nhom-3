@@ -1,3 +1,6 @@
 interface:
   display_name: "Fix Tests"
-  short_description: "Diagnose failing tests and verify targeted fixes"
+  short_description: "Repair test failures without weakening contracts"
+  default_prompt: "$fix-tests Diagnose the failing check, fix its cause under current contracts, and rerun the relevant verification."
+policy:
+  allow_implicit_invocation: true

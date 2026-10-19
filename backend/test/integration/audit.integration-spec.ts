@@ -14,7 +14,7 @@ test('business change and audit commit together, and audit failure rolls back bu
   await prisma.$connect();
   try {
     const rows = await prisma.$queryRaw<Array<{ version: string }>>`SELECT VERSION() AS version`;
-    assert.match(rows[0]?.version ?? '', /^8\.4\.11(?:[-.]|$)/);
+    assert.match(rows[0]?.version ?? '', /^9\.2\.0(?:[-.]|$)/);
     const username = `foundation_${crypto.randomUUID().replaceAll('-', '').slice(0, 24)}`;
     const account = await prisma.account.create({ data: {
       loginIdentifier: username,

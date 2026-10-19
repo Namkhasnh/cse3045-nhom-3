@@ -1,3 +1,6 @@
 interface:
   display_name: "Explain Code"
-  short_description: "Explain real code and flows in plain Vietnamese"
+  short_description: "Explain actual code and target gaps in Vietnamese"
+  default_prompt: "$explain-code Explain the requested code path in Vietnamese using real source references and distinguish target design from current behavior."
+policy:
+  allow_implicit_invocation: true

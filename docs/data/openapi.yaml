@@ -1,0 +1,1374 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Hoa Lac Food V0.1 account API",
+    "version": "0.1.0",
+    "description": "Accepted V0.1 auth/profile scope only. Existing public catalog is reviewed separately in P04; later business APIs are excluded. JSON syntax is valid YAML 1.2 and permits dependency-free document parsing. IDs remain strings. No website privilege grant/enrollment route exists."
+  },
+  "servers": [
+    {
+      "url": "/api/v1"
+    }
+  ],
+  "paths": {
+    "/auth/register": {
+      "post": {
+        "operationId": "register",
+        "summary": "register",
+        "description": "Create only an ordinary user. Email verification is required before login; SMTP failure can leave a pending account for resend.",
+        "tags": [
+          "V0.1 accounts"
+        ],
+        "security": [],
+        "responses": {
+          "201": {
+            "description": "Successful register",
+            "headers": {
+              "Cache-Control": {
+                "description": "Never cache auth/profile responses.",
+                "schema": {
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Register"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Origin"
+          }
+        ]
+      }
+    },
+    "/auth/verify-email": {
+      "post": {
+        "operationId": "verifyEmail",
+        "summary": "verifyEmail",
+        "description": "Code expires after ten minutes or five wrong attempts. Successful verification clears the code and grants no session.",
+        "tags": [
+          "V0.1 accounts"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful verifyEmail",
+            "headers": {
+              "Cache-Control": {
+                "description": "Never cache auth/profile responses.",
+                "schema": {
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyEmail"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Origin"
+          }
+        ]
+      }
+    },
+    "/auth/resend-email-code": {
+      "post": {
+        "operationId": "resendEmail",
+        "summary": "resendEmail",
+        "description": "Generic acceptance for unknown/already verified users. Pending accounts may resend after 60 seconds; resets attempts/ten-minute expiry.",
+        "tags": [
+          "V0.1 accounts"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful resendEmail",
+            "headers": {
+              "Cache-Control": {
+                "description": "Never cache auth/profile responses.",
+                "schema": {
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AcceptedEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResendEmail"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Origin"
+          }
+        ]
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "operationId": "login",
+        "summary": "login",
+        "description": "Buyer/manager success issues cookies. Admin password success only issues a restricted five-minute challenge and no cookies. Five password failures per username/IP in fifteen minutes cause backoff.",
+        "tags": [
+          "V0.1 accounts"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful login",
+            "headers": {
+              "Cache-Control": {
+                "description": "Never cache auth/profile responses.",
+                "schema": {
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              },
+              "Set-Cookie": {
+                "description": "Success with a session sets two __Host- cookies (Secure, SameSite=Lax, Path=/, 15 minutes); access is HttpOnly, CSRF readable. Challenge/recovery sets none; logout clears both.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Login"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Origin"
+          }
+        ]
+      }
+    },
+    "/auth/admin/mfa/verify": {
+      "post": {
+        "operationId": "verifyMfa",
+        "summary": "verifyMfa",
+        "description": "Exactly one TOTP or recovery proof. TOTP success issues MFA-assured cookies. Recovery revokes old sessions/factor/codes and grants no session; operator CLI must re-enroll the same sole authority. Five challenge attempts; shared account/IP quota 20 per fifteen minutes.",
+        "tags": [
+          "V0.1 accounts"
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful verifyMfa",
+            "headers": {
+              "Cache-Control": {
+                "description": "Never cache auth/profile responses.",
+                "schema": {
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              },
+              "Set-Cookie": {
+                "description": "Success with a session sets two __Host- cookies (Secure, SameSite=Lax, Path=/, 15 minutes); access is HttpOnly, CSRF readable. Challenge/recovery sets none; logout clears both.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MfaEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MfaProof"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Origin"
+          }
+        ]
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "operationId": "currentUser",
+        "summary": "currentUser",
+        "description": "Read current availability, server-computed capabilities, ownership and MFA assurance. Private self projection.",
+        "tags": [
+          "V0.1 accounts"
+        ],
+        "security": [
+          {
+            "AccessCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful currentUser",
+            "headers": {
+              "Cache-Control": {
+                "description": "Never cache auth/profile responses.",
+                "schema": {
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "operationId": "logout",
+        "summary": "logout",
+        "description": "Increment auth_version and version, invalidate all existing sessions and clear access/CSRF cookies.",
+        "tags": [
+          "V0.1 accounts"
+        ],
+        "security": [
+          {
+            "AccessCookie": [],
+            "CsrfHeader": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful logout",
+            "headers": {
+              "Cache-Control": {
+                "description": "Never cache auth/profile responses.",
+                "schema": {
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              },
+              "Set-Cookie": {
+                "description": "Success with a session sets two __Host- cookies (Secure, SameSite=Lax, Path=/, 15 minutes); access is HttpOnly, CSRF readable. Challenge/recovery sets none; logout clears both.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Empty"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Origin"
+          }
+        ]
+      }
+    },
+    "/profile": {
+      "patch": {
+        "operationId": "updateProfile",
+        "summary": "updateProfile",
+        "description": "Only self display_name/phone, expected_version required; stale profile returns 409. Actor and privileges cannot be supplied.",
+        "tags": [
+          "V0.1 accounts"
+        ],
+        "security": [
+          {
+            "AccessCookie": [],
+            "CsrfHeader": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful updateProfile",
+            "headers": {
+              "Cache-Control": {
+                "description": "Never cache auth/profile responses.",
+                "schema": {
+                  "enum": [
+                    "no-store"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfilePatch"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Origin"
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "AccessCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "__Host-hlf_access",
+        "description": "15-minute signed JWT; current account/auth_version/ownership checked each request; Admin requires MFA assurance."
+      },
+      "CsrfHeader": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-CSRF-Token",
+        "description": "Must equal __Host-hlf_csrf cookie and its HMAC/jti binding to the current access session."
+      }
+    },
+    "parameters": {
+      "Origin": {
+        "name": "Origin",
+        "in": "header",
+        "required": true,
+        "description": "Must exactly equal configured PUBLIC_ORIGIN, including scheme/host/port. Unsafe requests require application/json.",
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "schemas": {
+      "Id": {
+        "type": "string",
+        "pattern": "^[1-9][0-9]*$",
+        "description": "Canonical positive signed BIGINT decimal, maximum 9223372036854775807."
+      },
+      "User": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "login_identifier",
+          "display_name",
+          "phone",
+          "email",
+          "email_verified",
+          "capabilities",
+          "managed_restaurant_id",
+          "is_active",
+          "version",
+          "updated_at"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "login_identifier": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9._-]{2,31}$",
+            "description": "ASCII case-insensitive input, canonicalized to lowercase; never an email."
+          },
+          "display_name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "pattern": "\\S"
+          },
+          "phone": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^\\+?[0-9]{9,15}$"
+          },
+          "email": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 254
+          },
+          "email_verified": {
+            "type": "boolean"
+          },
+          "capabilities": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "enum": [
+                "buy",
+                "manage_restaurant",
+                "apply_for_restaurant",
+                "admin"
+              ]
+            }
+          },
+          "managed_restaurant_id": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Id"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Register": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "login_identifier",
+          "password",
+          "display_name",
+          "email"
+        ],
+        "properties": {
+          "login_identifier": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{2,31}$",
+            "description": "ASCII case-insensitive input, canonicalized to lowercase; never an email."
+          },
+          "password": {
+            "type": "string",
+            "minLength": 12,
+            "maxLength": 128,
+            "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f]+$",
+            "description": "Maximum 1024 UTF-8 bytes; server rejects compromised passwords. No requested_role/role/capabilities fields."
+          },
+          "display_name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "pattern": "\\S"
+          },
+          "email": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 254,
+            "description": "Server validates ASCII local part/domain, lowercases and enforces uniqueness."
+          },
+          "phone": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^\\+?[0-9]{9,15}$"
+          }
+        },
+        "examples": [
+          {
+            "login_identifier": "example_user",
+            "password": "Synthetic example passphrase",
+            "display_name": "Example user",
+            "email": "example@example.invalid"
+          }
+        ]
+      },
+      "Login": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "login_identifier",
+          "password"
+        ],
+        "properties": {
+          "login_identifier": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{2,31}$",
+            "description": "ASCII case-insensitive input, canonicalized to lowercase; never an email."
+          },
+          "password": {
+            "type": "string"
+          }
+        }
+      },
+      "VerifyEmail": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "login_identifier",
+          "code"
+        ],
+        "properties": {
+          "login_identifier": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{2,31}$",
+            "description": "ASCII case-insensitive input, canonicalized to lowercase; never an email."
+          },
+          "code": {
+            "type": "string",
+            "pattern": "^[0-9]{6}$"
+          }
+        }
+      },
+      "ResendEmail": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "login_identifier"
+        ],
+        "properties": {
+          "login_identifier": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{2,31}$",
+            "description": "ASCII case-insensitive input, canonicalized to lowercase; never an email."
+          }
+        }
+      },
+      "Empty": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [],
+        "properties": {}
+      },
+      "ProfilePatch": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "expected_version"
+        ],
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "display_name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "pattern": "\\S"
+          },
+          "phone": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^\\+?[0-9]{9,15}$"
+          }
+        },
+        "anyOf": [
+          {
+            "required": [
+              "display_name"
+            ]
+          },
+          {
+            "required": [
+              "phone"
+            ]
+          }
+        ]
+      },
+      "MfaProof": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "challenge_id"
+        ],
+        "properties": {
+          "challenge_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{43}$"
+          },
+          "code": {
+            "type": "string",
+            "pattern": "^[0-9]{6}$"
+          },
+          "recovery_code": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{32}$"
+          }
+        },
+        "oneOf": [
+          {
+            "required": [
+              "code"
+            ],
+            "not": {
+              "required": [
+                "recovery_code"
+              ]
+            }
+          },
+          {
+            "required": [
+              "recovery_code"
+            ],
+            "not": {
+              "required": [
+                "code"
+              ]
+            }
+          }
+        ],
+        "examples": [
+          {
+            "challenge_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "code": "123456"
+          },
+          {
+            "challenge_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "recovery_code": "abababababababababababababababab"
+          }
+        ]
+      },
+      "Challenge": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "mfa_required",
+          "challenge_id",
+          "expires_in"
+        ],
+        "properties": {
+          "mfa_required": {
+            "const": true
+          },
+          "challenge_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{43}$"
+          },
+          "expires_in": {
+            "const": 300
+          }
+        }
+      },
+      "ReEnrollment": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "re_enrollment_required"
+        ],
+        "properties": {
+          "re_enrollment_required": {
+            "const": true
+          }
+        }
+      },
+      "Accepted": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "accepted"
+        ],
+        "properties": {
+          "accepted": {
+            "const": true
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "code",
+              "message",
+              "field_errors",
+              "details",
+              "request_id",
+              "retryable"
+            ],
+            "properties": {
+              "code": {
+                "enum": [
+                  "MALFORMED_REQUEST",
+                  "AUTH_REQUIRED",
+                  "TOKEN_INVALID",
+                  "ACCOUNT_INACTIVE",
+                  "FORBIDDEN",
+                  "CSRF_FAILED",
+                  "VALIDATION_ERROR",
+                  "VERSION_CONFLICT",
+                  "ACCOUNT_TAKEN",
+                  "INVALID_CREDENTIALS",
+                  "EMAIL_CODE_INVALID",
+                  "MFA_INVALID",
+                  "RATE_LIMITED",
+                  "PASSWORD_CHECK_UNAVAILABLE",
+                  "EMAIL_UNAVAILABLE",
+                  "EMAIL_NOT_CONFIGURED",
+                  "INTERNAL_ERROR",
+                  "TEMPORARILY_UNAVAILABLE"
+                ]
+              },
+              "message": {
+                "type": "string"
+              },
+              "field_errors": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "path",
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "path": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "details": {
+                "type": "object"
+              },
+              "request_id": {
+                "type": "string"
+              },
+              "retryable": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "examples": [
+          {
+            "error": {
+              "code": "EMAIL_CODE_INVALID",
+              "message": "Invalid or expired verification code.",
+              "field_errors": [],
+              "details": {},
+              "request_id": "synthetic-request",
+              "retryable": false
+            }
+          }
+        ]
+      },
+      "UserEnvelope": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "data"
+        ],
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/User"
+          }
+        },
+        "examples": [
+          {
+            "data": {
+              "id": "1",
+              "login_identifier": "example_user",
+              "display_name": "Example user",
+              "phone": null,
+              "email": "example@example.invalid",
+              "email_verified": true,
+              "capabilities": [
+                "buy",
+                "apply_for_restaurant"
+              ],
+              "managed_restaurant_id": null,
+              "is_active": true,
+              "version": 1,
+              "updated_at": "2026-10-19T00:00:00.000Z"
+            }
+          }
+        ]
+      },
+      "LoginEnvelope": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "data"
+        ],
+        "properties": {
+          "data": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/User"
+              },
+              {
+                "$ref": "#/components/schemas/Challenge"
+              }
+            ]
+          }
+        },
+        "examples": [
+          {
+            "data": {
+              "id": "1",
+              "login_identifier": "example_user",
+              "display_name": "Example user",
+              "phone": null,
+              "email": "example@example.invalid",
+              "email_verified": true,
+              "capabilities": [
+                "buy",
+                "apply_for_restaurant"
+              ],
+              "managed_restaurant_id": null,
+              "is_active": true,
+              "version": 1,
+              "updated_at": "2026-10-19T00:00:00.000Z"
+            }
+          },
+          {
+            "data": {
+              "mfa_required": true,
+              "challenge_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "expires_in": 300
+            }
+          }
+        ]
+      },
+      "MfaEnvelope": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "data"
+        ],
+        "properties": {
+          "data": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/User"
+              },
+              {
+                "$ref": "#/components/schemas/ReEnrollment"
+              }
+            ]
+          }
+        },
+        "examples": [
+          {
+            "data": {
+              "id": "1",
+              "login_identifier": "example_user",
+              "display_name": "Example user",
+              "phone": null,
+              "email": "example@example.invalid",
+              "email_verified": true,
+              "capabilities": [
+                "buy",
+                "apply_for_restaurant"
+              ],
+              "managed_restaurant_id": null,
+              "is_active": true,
+              "version": 1,
+              "updated_at": "2026-10-19T00:00:00.000Z"
+            }
+          },
+          {
+            "data": {
+              "re_enrollment_required": true
+            }
+          }
+        ]
+      },
+      "AcceptedEnvelope": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "data"
+        ],
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/Accepted"
+          }
+        },
+        "examples": [
+          {
+            "data": {
+              "accepted": true
+            }
+          }
+        ]
+      }
+    },
+    "responses": {
+      "Error400": {
+        "description": "Safe error envelope; see API Markdown §§2/4/7.1 and enabled errors in Error schema.",
+        "headers": {
+          "Cache-Control": {
+            "description": "Never cache auth/profile responses.",
+            "schema": {
+              "enum": [
+                "no-store"
+              ]
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error401": {
+        "description": "Safe error envelope; see API Markdown §§2/4/7.1 and enabled errors in Error schema.",
+        "headers": {
+          "Cache-Control": {
+            "description": "Never cache auth/profile responses.",
+            "schema": {
+              "enum": [
+                "no-store"
+              ]
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error403": {
+        "description": "Safe error envelope; see API Markdown §§2/4/7.1 and enabled errors in Error schema.",
+        "headers": {
+          "Cache-Control": {
+            "description": "Never cache auth/profile responses.",
+            "schema": {
+              "enum": [
+                "no-store"
+              ]
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error409": {
+        "description": "Safe error envelope; see API Markdown §§2/4/7.1 and enabled errors in Error schema.",
+        "headers": {
+          "Cache-Control": {
+            "description": "Never cache auth/profile responses.",
+            "schema": {
+              "enum": [
+                "no-store"
+              ]
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error422": {
+        "description": "Safe error envelope; see API Markdown §§2/4/7.1 and enabled errors in Error schema.",
+        "headers": {
+          "Cache-Control": {
+            "description": "Never cache auth/profile responses.",
+            "schema": {
+              "enum": [
+                "no-store"
+              ]
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error429": {
+        "description": "Safe error envelope; see API Markdown §§2/4/7.1 and enabled errors in Error schema.",
+        "headers": {
+          "Cache-Control": {
+            "description": "Never cache auth/profile responses.",
+            "schema": {
+              "enum": [
+                "no-store"
+              ]
+            }
+          },
+          "Retry-After": {
+            "description": "Positive seconds remaining in the applicable rate window.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 900
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error500": {
+        "description": "Safe error envelope; see API Markdown §§2/4/7.1 and enabled errors in Error schema.",
+        "headers": {
+          "Cache-Control": {
+            "description": "Never cache auth/profile responses.",
+            "schema": {
+              "enum": [
+                "no-store"
+              ]
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error503": {
+        "description": "Safe error envelope; see API Markdown §§2/4/7.1 and enabled errors in Error schema.",
+        "headers": {
+          "Cache-Control": {
+            "description": "Never cache auth/profile responses.",
+            "schema": {
+              "enum": [
+                "no-store"
+              ]
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,6 @@
+interface:
+  display_name: "Run Roadmap"
+  short_description: "Run or resume numbered project roadmap prompts"
+  default_prompt: "$run-roadmap Run the next unaccepted roadmap prompt, checking prerequisites and leaving a resumable handoff."
+policy:
+  allow_implicit_invocation: true

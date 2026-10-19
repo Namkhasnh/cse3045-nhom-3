@@ -4,14 +4,15 @@ import { createHmac } from 'node:crypto';
 import { hashPassword, needsRehash, verifyPassword } from './password-hash.js';
 import { PasswordSafetyService } from './password-policy.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
-import type { Account, AccountRole } from '../../generated/prisma/client.js';
+import type { Account } from '../../generated/prisma/client.js';
+import { AccountAccessRepository } from './account-access.repository.js';
 import { AuditService } from '../audit/audit.service.js';
 import { EmailVerificationService } from './email-verification.service.js';
 
-export function publicAccount(account: Account) {
+export function publicAccount(account: Account, access: { capabilities: string[]; managed_restaurant_id: string | null } = { capabilities: [], managed_restaurant_id: null }) {
   return { id: account.id.toString(), login_identifier: account.loginIdentifier,
     display_name: account.displayName, phone: account.phone, email: account.email,
-    email_verified: account.email === null || account.emailVerifiedAt !== null, role: account.role,
+    email_verified: account.email === null || account.emailVerifiedAt !== null, ...access,
     is_active: account.isActive, version: account.version,
     updated_at: account.updatedAt.toISOString() };
 }
@@ -23,7 +24,7 @@ export class AccountsService {
     private readonly emailVerification: EmailVerificationService) {}
 
   async register(loginIdentifier: string, password: string, displayName: string, phone: string | null,
-    email: string, requestedRole: 'student' | 'restaurant_owner' | 'admin') {
+    email: string) {
     this.emailVerification.assertConfigured();
     await this.passwordSafety.check(password);
     const hash = await hashPassword(password);
@@ -35,10 +36,8 @@ export class AccountsService {
         const pending = await db.account.update({ where: { id: account.id }, data: {
           emailCodeHash: this.emailVerification.hash(account.id, code),
           emailCodeExpiresAt: new Date(Date.now() + 600000), emailCodeSentAt: new Date() } });
-        if (requestedRole !== 'student') await db.accountRoleRequest.create({ data: {
-          accountId: account.id, requestedRole } });
         await this.audit.record({ db }, { actorId: account.id, action: 'account.created',
-          targetType: 'account', targetId: account.id, changes: { role: 'student', requested_role: requestedRole } });
+          targetType: 'account', targetId: account.id, changes: { classification: 'user' } });
         return { account: pending, code };
       });
       await this.emailVerification.send(email, result.code);
@@ -155,69 +154,22 @@ export class AccountsService {
     }).then(async (code) => { if (code) await this.emailVerification.send(account.email!, code); });
   }
 
-  async pendingRoleRequests() {
-    const requests = await this.prisma.accountRoleRequest.findMany({ where: { status: 'pending',
-      applicant: { emailVerifiedAt: { not: null }, isActive: true } },
-      include: { applicant: true }, orderBy: { requestedAt: 'asc' }, take: 100 });
-    return requests.map((request) => ({ id: request.id.toString(), account_id: request.accountId.toString(),
-      login_identifier: request.applicant.loginIdentifier, display_name: request.applicant.displayName,
-      requested_role: request.requestedRole, requested_at: request.requestedAt.toISOString() }));
+  async access(account: Account) {
+    const { authority, managed, factor } = await new AccountAccessRepository(this.prisma).context(account.id);
+    const capabilities: string[] = [];
+    if (account.isActive) {
+      capabilities.push('buy');
+      if (managed.length === 1) capabilities.push('manage_restaurant');
+      if (managed.length === 0) capabilities.push('apply_for_restaurant');
+      if (authority?.accountId === account.id && factor?.enrolledAt) capabilities.push('admin');
+    }
+    return { capabilities, managed_restaurant_id: managed.length === 1 ? managed[0].id.toString() : null,
+      isAdmin: authority?.accountId === account.id };
   }
 
-  async reviewRoleRequest(requestId: bigint, reviewerId: bigint, approve: boolean) {
-    return this.prisma.$transaction(async (db) => {
-      const request = await db.accountRoleRequest.findUnique({ where: { id: requestId } });
-      if (!request) throw new ConflictException({ code: 'ROLE_REQUEST_NOT_PENDING', message: 'Request is not pending.' });
-      const firstId = request.accountId < reviewerId ? request.accountId : reviewerId;
-      const secondId = request.accountId < reviewerId ? reviewerId : request.accountId;
-      await db.$queryRaw`SELECT id FROM accounts WHERE id = ${firstId} FOR UPDATE`;
-      if (secondId !== firstId) await db.$queryRaw`SELECT id FROM accounts WHERE id = ${secondId} FOR UPDATE`;
-      const current = await db.accountRoleRequest.findUnique({ where: { id: requestId } });
-      const applicant = await db.account.findUnique({ where: { id: request.accountId } });
-      if (!current || current.status !== 'pending' || !applicant?.isActive || !applicant.emailVerifiedAt ||
-          applicant.role !== 'student') throw new ConflictException({ code: 'ROLE_REQUEST_NOT_PENDING', message: 'Request is not eligible.' });
-      const reviewer = await db.account.findUnique({ where: { id: reviewerId } });
-      if (!reviewer?.isActive || reviewer.role !== 'admin') throw new ForbiddenException();
-      if (approve && (applicant.authVersion >= 2147483647 || applicant.version >= 2147483647)) {
-        throw new ConflictException({ code: 'VERSION_CONFLICT', message: 'Account version limit reached.' });
-      }
-      if (approve) await db.account.update({ where: { id: applicant.id }, data: {
-        role: current.requestedRole, authVersion: { increment: 1 }, version: { increment: 1 } } });
-      await db.accountRoleRequest.update({ where: { id: requestId }, data: {
-        status: approve ? 'approved' : 'rejected', reviewedBy: reviewerId, reviewedAt: new Date() } });
-      await this.audit.record({ db }, { actorId: reviewerId, action: 'account.updated',
-        targetType: 'account', targetId: applicant.id, changes: { role_request: approve ? 'approved' : 'rejected' } });
-      return { id: requestId.toString(), status: approve ? 'approved' : 'rejected' };
-    });
-  }
-
-  async provision(loginIdentifier: string, password: string, role: Exclude<AccountRole, 'student'>,
-    displayName: string, requestId: string) {
-    const existing = await this.prisma.account.findUnique({ where: { loginIdentifier } });
-    if (existing) {
-      if (existing.role !== role) throw new ConflictException({ code: 'LOGIN_IDENTIFIER_TAKEN', message: 'Existing account has another role.' });
-      const original = await this.prisma.auditLog.findFirst({ where: { actorId: existing.id,
-        targetType: 'account', targetId: existing.id, action: 'account.created', requestId } });
-      if (!original) throw new ConflictException({ code: 'LOGIN_IDENTIFIER_TAKEN', message: 'Account was provisioned by another request.' });
-      return { account: existing, created: false };
-    }
-    await this.passwordSafety.check(password);
-    const passwordHash = await hashPassword(password);
-    try {
-      const account = await this.prisma.$transaction(async (db) => {
-        const created = await db.account.create({ data: { loginIdentifier, passwordHash,
-          role, displayName } });
-        await this.audit.record({ db }, { actorId: created.id, action: 'account.created',
-          targetType: 'account', targetId: created.id, changes: { role }, requestId });
-        return created;
-      });
-      return { account, created: true };
-    } catch (error) {
-      if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
-        throw new ConflictException({ code: 'LOGIN_IDENTIFIER_TAKEN', message: 'Login identifier is taken.' });
-      }
-      throw error;
-    }
+  async present(account: Account) {
+    const { capabilities, managed_restaurant_id } = await this.access(account);
+    return publicAccount(account, { capabilities, managed_restaurant_id });
   }
 
   async updateProfile(id: bigint, expectedVersion: number, changes: { displayName?: string; phone?: string | null }) {

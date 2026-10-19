@@ -3,7 +3,7 @@ import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/c
 import type { Account } from '../../generated/prisma/client.js';
 import { AccountsService } from '../../modules/accounts/accounts.service.js';
 
-type Claims = { sub: string; jti: string; ver: number; iss: string; aud: string; iat: number; exp: number };
+type Claims = { sub: string; jti: string; ver: number; iss: string; aud: string; iat: number; exp: number; amr?: string };
 const b64 = (value: Buffer | string) => Buffer.from(value).toString('base64url');
 const equal = (left: string, right: string) => {
   const a = Buffer.from(left), b = Buffer.from(right);
@@ -40,10 +40,10 @@ export class SessionService {
     }
   }
 
-  issue(account: Account) {
+  issue(account: Account, mfa = false) {
     const now = Math.floor(Date.now() / 1000);
     const claims: Claims = { sub: account.id.toString(), jti: randomBytes(16).toString('base64url'),
-      ver: account.authVersion, iss: this.issuer!, aud: this.audience!, iat: now, exp: now + 900 };
+      ver: account.authVersion, iss: this.issuer!, aud: this.audience!, iat: now, exp: now + 900, ...(mfa ? { amr: 'mfa' } : {}) };
     const unsigned = `${b64(JSON.stringify({ alg: 'HS256', typ: 'JWT', kid: this.keyId }))}.${b64(JSON.stringify(claims))}`;
     const jwt = `${unsigned}.${createHmac('sha256', this.key).update(unsigned).digest('base64url')}`;
     const nonce = randomBytes(16).toString('base64url');
@@ -77,6 +77,8 @@ export class SessionService {
       if (!account.isActive) throw new ForbiddenException({ code: 'ACCOUNT_INACTIVE', message: 'Account is inactive.' });
       if (account.email !== null && account.emailVerifiedAt === null) throw new Error();
       if (account.authVersion !== claims.ver) throw new Error();
+      const access = await this.accounts.access(account);
+      if (access.isAdmin && (claims.amr !== 'mfa' || !access.capabilities.includes('admin'))) throw new Error();
       return { account, claims };
     } catch (error) {
       if (error instanceof ForbiddenException) throw error;

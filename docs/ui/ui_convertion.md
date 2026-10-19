@@ -10,7 +10,7 @@ Before every UI change, read this document, the relevant business requirements, 
 4. The HTML is the initial visual reference; this guide records approved visual decisions; [requirements.md](../requirements.md) defines business behavior. Do not copy mock content that violates business rules.
 5. Preserve Vite + React + TypeScript + Tailwind CSS and the frontend boundaries defined in [architecture.md](../architecture.md).
 6. Demo data, prices, fees, accounts, QR codes, metrics, and timestamps in the HTML are not production data.
-7. Do not assume that a button shown in the design means the feature is approved for production. Determine whether it belongs to MVP, post-MVP, or Could scope.
+7. Do not assume that a button shown in the design means the feature is approved for production. Determine whether it belongs to V1.0, post-V1.0, or Could scope.
 8. Every screen must support appropriate loading, empty, error, and interaction states; do not implement only the ideal state.
 9. Do not change business flows, states, APIs, or schemas for UI convenience.
 10. When finished, clearly report which screens/components changed, how to verify them, which parts still use fixtures, and any intentional differences from the HTML.
@@ -29,17 +29,17 @@ The paths below are relative to the repository root `cse3045-nhom-3`:
 **Resolution order:** use requirements for business behavior, architecture for technical boundaries, and database documentation for data semantics. Use the approved direction recorded here for visuals, with the HTML as the initial reference after §10 corrections. Skill output does not become a requirement automatically. Keep approved decisions here, not in a competing `MASTER.md`. If business sources still conflict, document the conflict and request a decision for the affected part while continuing independent work. Do not silently resolve a conflict by inventing a new field or enum.
 The dimensions, colors, and typography marked as “original” below are extracted from the HTML content/CSS. Breakpoints, page routes, and application rules that are not defined by the HTML are marked as **conversion conventions/proposals**, not as current code behavior.
 ## 3. Product Context AI Must Preserve
-Hòa Lạc Food helps students discover restaurants, browse dishes, receive AI recommendations, place orders, and track food delivery in the Hòa Lạc area. The MVP is initially deployed at Vietnam Japan University (VJU).
-- Three roles: `student`, `restaurant_owner`, and `admin`. There is no delivery-driver account.
+Hòa Lạc Food helps students discover restaurants, browse dishes, receive AI recommendations, place orders, and track food delivery in the Hòa Lạc area. The V1.0 is initially deployed at Vietnam Japan University (VJU).
+- Ordinary users may buy and manage at most one restaurant through current ownership. The single operator-owned Admin uses MFA/recovery. Student/Owner names describe buyer/management layouts, not exclusive account roles. There is no delivery-driver account.
 - Restaurants deliver orders themselves; students pay restaurants directly. The platform tracks commission and supports manual settlement/reconciliation.
-- One order and one cart belong to exactly one restaurant. One restaurant owner may manage multiple restaurants; each restaurant has one responsible owner account.
+- One order and one cart belong to exactly one restaurant. Each restaurant has one responsible current manager; each account manages at most one restaurant, including setup-required/inactive partners.
 - The frontend presents data, keeps drafts, and submits user intent. The backend determines final prices/fees, authorization, state transitions, and financial data.
 - AI recommendations may reference only real, currently available, deliverable dishes. AI does not create orders or determine authoritative monetary values.
 | Scope | UI handling |
 | --- | --- |
-| MVP | Login/register, restaurant/dish discovery, cart, fixed pickup points with surveyed fees, cash payment, order creation/tracking, restaurant order handling, dish/restaurant CRUD, AI recommendations, minimal manual reconciliation |
-| Post-MVP | Free-form addresses/map pins, route-based fees, QR/refund transfer flows, extended reporting |
-| Should | Random food selection, order history/reorder, order-linked support requests |
+| V1.0 | Public homepage/list/menu and guest cart; ordinary signup, sole MFA Admin, opening applications/terms, fixed surveyed points, cash+direct QR/refunds, history/recovery, menu/partner management, AI, finance/reports, support/users/audit |
+| V1.2 | Area expansion, free-form addresses/map pins and route-based fees after finalized provider/quote policies |
+| V1.1 | Random selection, reorder, favorites/reviews after finalized contracts; durable history and support are already V1.0 |
 | Could | Reviews and favorites; enable only after data design and backend support exist |
 | Out of scope | Multi-restaurant cart, driver assignment, payment splitting/automatic commission collection, storing AI conversations |
 All mock design boards may be converted into previews for visual comparison, but production routes and menus should expose only features included in the current delivery scope and backed by real behavior. Do not leave fake buttons or fake success messages in real user flows.
@@ -140,11 +140,12 @@ Keep motion subtle and functional. The original skeleton animation runs for 1.4 
 ### 5.6. Approved Student Discovery Revision — October 16, 2026
 The user selected direction 1, a compact restaurant list for students. This overrides the earlier card composition for Student discovery only; Owner/Admin identity and the generic cream-page token remain unchanged.
 - White Student surface (`surface`), Be Vietnam Pro, 22 px/700 page title, 16 px/700 restaurant names and 14 px price text; left alignment throughout. Existing brown text, orange selection and green status tokens remain.
-- One title, “Quán quanh VJU”, followed by the read-only sample pickup point. Remove greetings, promotional descriptions, uppercase eyebrows, duplicate list titles and footer slogans.
+- The October 18 public-homepage request extends the compact list with a cream introductory section (“Hôm nay, ăn gì ở VJU?”), a discovery anchor and a header with guest login/register or account/management links. The catalog title remains “Quán quanh VJU” with a read-only sample pickup point. Keep the introduction brief, without promotional claims, invented metrics or footer slogans.
 - Border-separated horizontal rows with no enclosing card outline/shadow; 80 px square thumbnails below 1024 px, 96 px from 1024 px, 8 px image radius. One column below 1024 px, two above; loading skeletons follow the same layout.
 - Search uses the standard 10 px input radius; category chips retain touch targets/pressed semantics. A labeled native select replaces price chips; reset and filter behavior remain unchanged. Filters have no enclosing panel.
 - Rows show visible-catalog dish price ranges (including sold-out dishes, excluding hidden dishes), independent of current filters. Use exact BigInt comparisons and the shared VND formatter; equal endpoints show one price, no visible dishes shows “Chưa có giá món”. This display summary is not an order quote.
-- Keep text-bearing availability, hours, delivery fee/distance, persistent and per-row fixture notices, illustration labels and missing/broken-image fallback. Unknown fee stays distinct from known zero. No menu/order action is enabled.
+- Keep text-bearing availability, hours, delivery fee/distance, persistent and per-row notices only for intentional fixtures, illustration labels and missing/broken-image fallback. Unknown fee stays distinct from known zero. The original preview enabled no menu/order action; P05 enables real public menu navigation and later prompts enable eligible order actions.
+- Public `/` renders independently of auth/me loading/failure for every actor; this UI change alone does not implement the public catalog API, guest cart or new identity. Fixture notices stay visible until real catalog integration. Mobile retains fixed bottom navigation; at 1024 px and above it follows the content without an overlay.
 ## 6. Layout and Responsive Behavior
 The visual treatments below describe the current baseline; approved identity revisions must retain role clarity, responsive behavior and accessible navigation.
 ### 6.1. Student — `StudentLayout`
@@ -154,10 +155,10 @@ Keep mobile content padding close to the reference, approximately 16–20 px. Do
 ### 6.2. Restaurant Owner — `OwnerLayout`
 - Desktop sidebar width: **240 px**, background `owner-sidebar`, text `owner-sidebar-ink`; active item uses an orange background and white text.
 - Navigation groups: **Incoming Orders, Dish Management, Restaurant Settings, Statistics** according to enabled scope.
-- Sidebar header shows the active restaurant and order-acceptance state. Add a restaurant selector when the account owns multiple restaurants, using the same system input/popover patterns.
+- Sidebar header shows the single managed restaurant and order-acceptance/readiness state. No multi-restaurant selector. Keep a visible path back to the buyer homepage/cart/account under the same identity.
 - Reference main-area spacing: 28 px top padding, 32 px horizontal padding, 48 px bottom padding; 20 px group gaps.
 - The incoming-orders page keeps a list-left/detail-right layout when enough width is available. On narrow screens, switch to list then detail instead of forcing two columns.
-- Switching restaurants must switch data scope, stop stale queries, and prevent mutations from targeting the previous restaurant.
+- Ownership change/session expiry must stop stale private queries and prevent mutations using a former management context.
 ### 6.3. Admin — `AdminLayout`
 - Desktop sidebar width: **240 px**, navy background `#1F2A44`, text `#E8ECF5`; active item uses white background and navy text.
 - Navigation: **Restaurant Management, Commission and Settlement, Audit Log**.
@@ -241,11 +242,13 @@ The paths below are **proposed UI routes**, not existing backend endpoints. If t
 | Cart, checkout | `/cart`, `/checkout` | Student / 02–03 |
 | Order tracking | `/orders/:orderId` | Student / 04 |
 | Order list/history | `/orders` | Student / 04; history according to scope |
-| AI, random | `/recommendations`, `/random` | Student / 05; random post-MVP |
+| AI, random | `/recommendations`, `/random` | Student / 05; random post-V1.0 |
 | Account | `/account` | Student; extended from form patterns in 01 |
 | Restaurant orders, dishes, settings, statistics | `/owner/restaurants/:restaurantId/{orders,dishes,settings,statistics}` | Owner / 07–10 |
 | Restaurant management | `/admin/restaurants` | Admin / 11 |
-| Role request review | `/admin/role-requests` | Admin / account approval |
+| Opening application / own history | `/open-restaurant`, `/applications` | Verified ordinary user; no role choice |
+| Opening review | `/admin/applications` | Sole MFA Admin; P07 approved contract |
+| User/support/audit | `/admin/users`, `/support`, `/admin/support`, `/admin/audit` | Scoped P25 contracts; no Admin-grant control |
 | Settlement | `/admin/settlements` | Admin / 12 |
 | Audit logs | `/admin/audit-logs` | Admin / 13 |
 New pages such as account/profile editing should inherit existing form and layout patterns; do not assume the HTML already contains a detailed design for them. Validate session and role before rendering protected areas, and handle 401/403 according to the contract. Hiding menu items in the frontend does not replace backend authorization.
@@ -259,17 +262,20 @@ New pages such as account/profile editing should inherit existing form and layou
 7. Connect real APIs, add price/fee revalidation, retry/idempotency behavior, and connectivity states.
 8. Compare screenshots at sizes matching each screen inside the artboard; do not compare an entire multi-screen board against a single route.
 9. Verify responsive behavior, keyboard support, and error flows; update reusable conventions when new decisions are made.
-### 8.4. Implemented Student Discovery Preview
-As of October 17, 2026, authenticated Student `/` renders a presentation-only restaurant list (US02/US03, FR02, NFR06), and `/preview` is a development-only public fixture view; see the [frontend guide](../../frontend/README.md) for fixture data, routes and tooling. This is not connected discovery or proof of full MVP acceptance.
-- Tailwind CSS 4 uses `@tailwindcss/vite`. `src/index.css` owns semantic `@theme` tokens, font imports and component styles. Be Vietnam Pro is bundled through Fontsource, including Vietnamese glyphs and weights 400/500/600/700/800. Existing token values are preserved; no new business-state palette is introduced.
-- Implemented shared controls: Button (`primary`/`neutral`, native disabled), Input (required visible label/id, native attributes), FilterChip (`aria-pressed`), Badge (`neutral`/`success`/`warning`, text plus dot), decorative Icon, and ListState (message, optional action, alert for errors). Other variants in §7 remain target contracts.
-- StudentLayout contains the brand header, skip link, persistent fixture notice and safe-area-aware fixed navigation. Account navigation is enabled; Cart and Orders remain visibly disabled. Minimal Owner/Admin layouts provide role-specific Account navigation while business pages remain unconnected.
-- The search Input and native price select use the standard 10 px radius. Focus combines a dark-orange outline with the original light focus ring for contrast.
-- Reference adaptations: no phone frame/gallery; a 1200 px maximum container, one restaurant column below 1024 px and two from 1024 px, using the approved horizontal rows (§5.6); wrapping touch-size filter chips; a read-only example pickup point; local labeled SVG illustrations/fallbacks; no fictional user identity, ratings, AI/random tiles, featured-dish additions or dead menu links.
-- Every restaurant, delivery value and availability flag is synthetic and labeled. No map, delivery-fee or order-pricing calculation is performed; dish-price ranges summarize the visible fixture catalog only. Missing fee and known zero fee stay distinct; fixture view models are not API DTOs.
-- Development-only `/preview?demo_state=loading|empty|error` selects labeled states; retry leaves filters intact. Production hides `/preview` and ignores these parameters; authenticated Student home still labels fixture data.
-- Registration asks for email, requested role and password twice, reporting a mismatch before submitting. The API receives one password field. New accounts verify a six-digit emailed code before login; Owner/Admin selections stay Student until an Admin approves through `/admin/role-requests`. Browser observations for the original discovery view are recorded in the [verification report](student-discovery-verification.md). Connected email and role-review browser E2E remains unconfigured.
-- The connected login route uses a direct username form. Its desktop presentation pairs the form with a decorative plate motif; narrow screens show the form alone. The approved cream/orange tokens and Be Vietnam Pro remain unchanged. Registration and email verification retain their compact layout.
+### 8.4. Current implementation boundary
+
+The [implementation status](../implementation-status.md) and [frontend guide](../../frontend/README.md) distinguish legacy auth/role navigation and fixture discovery from these targets. The unchanged [October 16 verification](student-discovery-verification.md) proves only its stated presentation checks. Old requested-role registration/review is superseded; it is not a new onboarding application or Admin-security acceptance.
+
+### 8.5. Public routes, login return and new workflows
+
+Homepage/list/menu render without an auth/me gate. Guests can select dishes; checkout asks “Đăng nhập để đặt hàng”. On success restore the cart and a validated internal return path, refresh catalog/quote and ask explicit confirmation. Login never submits an order. Store no JWT in browser storage; isolate private checkout/recovery data by account and clear stale private views on account changes.
+
+Signup has username/email/password/confirmation and ordinary profile fields, no role choice or Admin request. Ordinary account navigation shows buyer access and either “Đăng ký mở quán”, own application history or “Quản lý quán” based on current capabilities. Management must not remove buyer/cart/history navigation.
+
+Opening form shows the approved Vietnamese terms/version and explicit consent, submission/history/rejection/conflict states. Approval shows “Cần hoàn thiện cấu hình”, not a selling success. One-restaurant limit includes inactive/setup-required partners. Admin manual-create selects an eligible ordinary user and records approved agreement evidence; no ownerless/extra-Admin flow.
+
+Admin UI needs MFA challenge/recovery guidance under approved DEC-02. No password-only privileged state, role grant or self-suspension control. User/support/audit screens follow the protected projections and finalized P25 contract. QR panels display approved payee/reference/amount, verified receipt and refund obligation separately; scan/customer claim never marks paid.
+
 ## 9. Data and Behavior That Must Not Be Implemented Incorrectly
 ### 9.1. Order and Payment Are Separate Lifecycles
 | Order enum | UI label | Color family |
@@ -302,7 +308,7 @@ pending → cancelled  (student who owns the order)
 - `is_visible=false`: dish is hidden from students. `is_visible=true` and `is_available=false`: show as unavailable and disable add. Do not infer a new database status enum from three form options.
 - A restaurant can accept orders only when active, currently open, and order acceptance is enabled; do not check only one flag.
 - Changing restaurant/pickup point/items must refresh dependent data. Do not reuse a quote that no longer matches the current order intent.
-- MVP uses the surveyed distance/fee for the exact restaurant–pickup-point pair. Post-MVP uses route distance from the backend; do not replace it with straight-line distance or calculate authoritative fees in the browser.
+- V1.0 uses the surveyed distance/fee for the exact restaurant–pickup-point pair. Post-V1.0 uses route distance from the backend; do not replace it with straight-line distance or calculate authoritative fees in the browser.
 - If no valid fee exists, show “Not determined” rather than `0đ` or “Free delivery.” Disable confirmation and provide retry/choose-another-point actions.
 - When the backend reports changed prices/fees, show old → new values, the new total, and require user confirmation. Do not automatically resubmit using the new price.
 - Cart totals are estimates and must be labeled accordingly; final totals are determined by the backend. Created orders use snapshots of dish name/price, pickup information, fee, distance, and the finalized rate.
@@ -313,7 +319,7 @@ pending → cancelled  (student who owns the order)
 - When the client does not know whether an order was created, show a verification/recovery state according to the backend contract; do not immediately invite the user to place another order.
 - UI click prevention is only supplemental; server-side idempotency is still required.
 - If order acceptance and cancellation race, use the server result, refetch current state, and explain that the action is no longer valid.
-- Target MVP architecture: REST polling around every 5 seconds while the tab is visible; do not overlap requests, back off on errors, pause when hidden/offline, and refresh when returning.
+- Target V1.0 architecture: REST polling around every 5 seconds while the tab is visible; do not overlap requests, back off on errors, pause when hidden/offline, and refresh when returning.
 - Stop order-status polling at `completed`, `cancelled`, or `rejected`; payment/refund state may continue independently. Only one place in the page should own polling for the same order.
 - Show last-updated/connectivity state; late stale responses must not overwrite newer data.
 ### 9.4. AI, Administration, and Finance
@@ -329,23 +335,23 @@ pending → cancelled  (student who owns the order)
 This table preserves the visual form while correcting content/behavior that is wrong or not yet decided.
 | Detail in HTML | Correct implementation |
 | --- | --- |
-| Admin creates restaurant: “One account can manage one restaurant” | Change to “One restaurant-owner account may manage multiple restaurants”; owner layout supports restaurant switching |
+| Admin creates restaurant: “One account can manage one restaurant” | Preserve the one-restaurant cap; choose an eligible ordinary user, record agreement and atomically create ownership; manager retains buyer rights |
 | “Preparing” tab | Map to `accepted` or label as “Accepted by restaurant”; do not add an enum |
 | Adjustment/audit: “order #1987 was cancelled after commission was calculated” | Remove this example: completed is terminal and cancelled orders do not generate base commission. Use an adjustment fixture with a valid reason; do not describe completed → cancelled |
-| QR, free-form address, map, fee tiers shown together | Separate by scope; MVP uses cash and fixed surveyed pickup points/fees |
+| QR, free-form address, map, fee tiers shown together | V1.0 requires cash plus direct QR/refunds at fixed surveyed points; free address/maps/route tiers are V1.2 |
 | Map failure blocks every order | Block only when there is no valid quote; surveyed fixed points with valid data may still be ordered |
 | “Radius” in delivery UI | Express clearly as a route-distance limit when route delivery is enabled; do not interpret as straight-line circular radius |
 | Reviews, stars, review counts | Show only when the feature and real data exist; remove demo counts from production |
 | School email, `@st.vju.ac.vn`, 8-character password, 10-digit phone | Mock form examples only; auth/validation follows the approved contract, not the HTML example |
 | JPG/PNG up to 5 MB | Mockup guidance only; align with the media contract and do not treat UI validation as final security validation |
-| “Live”, “updated 3 seconds ago” | Show real timestamps; do not infer a WebSocket requirement. MVP follows polling architecture |
+| “Live”, “updated 3 seconds ago” | Show real timestamps; do not infer a WebSocket requirement. V1.0 follows polling architecture |
 | Response within 3 minutes / ETA 10 minutes | Show only if backed by a reliable source/rule; do not hardcode operational promises |
 | “Settled”, “Partially collected”, “Uncollected” | Do not add a settlement enum/field; use derived labels only if rules are approved. Otherwise show amount due/received/difference and history |
 | Receipt/adjustment form selects only restaurant | Add the correct settlement period or order/base entry according to business rules using existing components |
 | Audit example assigns owner from “unassigned” | Do not create ownerless restaurants: schema requires a responsible owner. Use create-with-owner or owner A → B reassignment |
 | Price, fee, 10% rate, bank account, QR, example identity | Illustration fixtures, not production defaults |
 | “2 dishes” and “3 dishes” used inconsistently for the same cart | Normalize to “2 dish types · 3 portions” when distinguishing line count from total quantity |
-Do not copy example bank/account details into real QR generation. Unapproved limits such as maximum commission rate, quote expiry, and receipt-editing workflow remain **TBD**; do not silently turn them into working features.
+Do not copy example bank/account details into real QR generation. Unapproved commission/quote/payment/finance decisions remain in [decision register](../decisions.md); do not silently turn them into working features.
 ## 11. States, Content, and Accessibility
 ### 11.1. Minimum State Matrix
 | Situation | UI and action |
@@ -374,16 +380,16 @@ Do not expose stack traces, raw enum names, or raw error codes to students. A sa
 - Support 200% zoom, long names, Vietnamese diacritics, and reduced motion; do not use fixed heights that clip content.
 ## 12. Process for Adding Future Pages or Features
 Before writing code, identify briefly:
-1. Which role uses it; which user story/FR applies; is it MVP or post-MVP?
+1. Which role uses it; which user story/FR applies; is it V1.0 or post-V1.0?
 2. Which existing HTML board/page is closest? If none exists, which existing pattern will it inherit?
 3. Which layout, tokens, components, and states can be reused?
 4. Does the required data/API exist; what authorization and business-error conditions apply?
 5. Should an existing component be extended, or is a new feature-owned component required?
 Then implement according to the architecture. Move a component to `shared/ui` only when it is genuinely general-purpose. Changes to shared tokens or shared-component behavior must be checked across all three roles. When adding a new variant, document why it exists, where it is used, and update this file; do not leave conventions only in AI chat history.
-**Example:** a post-MVP order-support page uses `StudentLayout`, `OrderSummary`, a labeled/error-aware form, an orange CTA, and submission states. Do not create a visually unrelated full-screen chatbot, do not turn a support request into an order cancellation, and do not expose the feature before a backend contract exists.
+**Example:** a V0.7/V1.0 order-support page uses `StudentLayout`, `OrderSummary`, a labeled/error-aware form, an orange CTA, and submission states. Do not create a visually unrelated full-screen chatbot, do not turn a support request into an order cancellation, and do not expose the feature before a backend contract exists.
 **Task template for AI:**
 ```text
-Implement [page/feature] for role [role], in [MVP/post-MVP] scope.
+Implement [page/feature] for role [role], in [V1.0/post-V1.0] scope.
 Read docs/ui/ui_convertion.md and the relevant requirements/architecture/database sections.
 Compare against board [board name] in docs/ui/Hoa Lac Food Ordering Platform.html.
 Follow the approved direction in the UI guide and role-based layout; prioritize existing components.
@@ -405,7 +411,7 @@ Report changes, verification steps, and all intentional differences from the HTM
 ### Behavior and Data
 - [ ] One-restaurant cart; switching restaurant requires confirmation; cancelling the dialog preserves the cart.
 - [ ] Unavailable/hidden dishes and closed/inactive/non-accepting restaurants cannot be ordered against business rules.
-- [ ] Unknown fee is different from `0đ`; MVP works with surveyed pickup points.
+- [ ] Unknown fee is different from `0đ`; V1.0 works with surveyed pickup points.
 - [ ] Changed price/fee requires reconfirmation; do not auto-accept a new value.
 - [ ] Order and payment states are separate; show and submit only valid actions.
 - [ ] QR does not auto-mark payment as paid; admin does not implicitly inherit owner actions.
@@ -413,7 +419,7 @@ Report changes, verification steps, and all intentional differences from the HTM
 - [ ] Historical orders display snapshots rather than reconstructing history from current prices or pickup data.
 - [ ] Delete/hide/deactivate behavior and commission figures follow business rules.
 - [ ] AI failure still allows manual ordering; no demo data is presented as real.
-- [ ] Post-MVP/Could features are not enabled merely because they appear in the HTML.
+- [ ] Post-V1.0/Could features are not enabled merely because they appear in the HTML.
 ### Implementation Quality
 - [ ] Shared tokens/components are used; do not copy each board stylesheet or place everything in `App.tsx`.
 - [ ] Imports/state/API follow architecture boundaries; backend remains authoritative for permissions and money.
@@ -421,3 +427,5 @@ Report changes, verification steps, and all intentional differences from the HTM
 - [ ] Tests cover risky flows such as price conflict, duplicate submit, accept/cancel race, missing quote, authorization, and snapshots—not only CSS classes.
 - [ ] Clearly state whether verification used a browser/screenshots or source inspection only; do not claim pixel-perfect or production-ready status without verification.
 **Completion condition:** the interface follows the approved direction recorded in this guide, behaves according to business rules within the assigned scope, and is structured so future pages can reuse the same design system. A visually similar copy with non-functional buttons, incorrect states, or fake data presented as real is not considered complete.
+
+Version acceptance follows [roadmap](../roadmap.md); new journeys must cover PUBLIC-01, GUEST-01, AUTH-04, ADMIN-01/02 and ONBOARD-01–03 alongside UI-02.

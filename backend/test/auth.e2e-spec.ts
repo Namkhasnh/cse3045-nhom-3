@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { contractFetch } from './auth-contract.js';
 import { test } from 'node:test';
 import { Test } from '@nestjs/testing';
 import { ServiceUnavailableException, type INestApplication } from '@nestjs/common';
@@ -21,6 +22,9 @@ test('Student auth HTTP journey checks cookie, CSRF, profile version and logout 
   let emailSent = false;
   const limits = new Map<string, { scope: string; subject_hash: string; window_start: Date; failure_count: number }>();
   const db = {
+    adminAuthority: { findUnique: async () => null },
+    adminFactor: { findUnique: async () => null },
+    restaurants: { findMany: async () => [] },
     $executeRaw: async (_parts: TemplateStringsArray, scope: string, subjectHash: string) => {
       const key = `${scope}:${subjectHash}`;
       if (!limits.has(key)) limits.set(key, { scope, subject_hash: subjectHash,
@@ -74,25 +78,30 @@ test('Student auth HTTP journey checks cookie, CSRF, profile version and logout 
   const base = await app.getUrl();
   const json = { origin: 'https://test.example', 'content-type': 'application/json' };
   try {
-    const unavailable = await fetch(`${base}/api/v1/auth/register`, { method: 'POST', headers: json,
+    const unavailable = await contractFetch(base, '/auth/register', { method: 'POST', headers: json,
       body: JSON.stringify({ login_identifier: 'Student.One', password: 'correct horse battery staple',
-        display_name: 'Student One', email: 'student@example.com', requested_role: 'student' }) });
+        display_name: 'Student One', email: 'student@example.com' }) });
     assert.equal(unavailable.status, 503);
     assert.equal((await unavailable.json() as { error: { code: string } }).error.code, 'PASSWORD_CHECK_UNAVAILABLE');
+    const escalation = await contractFetch(base, '/auth/register', { method: 'POST', headers: json,
+      body: JSON.stringify({ login_identifier: 'privilege.test', password: 'correct horse battery staple',
+        display_name: 'Rejected', email: 'rejected@example.com', requested_role: 'admin' }) });
+    assert.equal(escalation.status, 422);
+    assert.equal((await fetch(`${base}/api/v1/admin/role-requests`)).status, 404);
     passwordCheckUnavailable = false;
-    const registration = await fetch(`${base}/api/v1/auth/register`, { method: 'POST', headers: json,
+    const registration = await contractFetch(base, '/auth/register', { method: 'POST', headers: json,
       body: JSON.stringify({ login_identifier: 'Student.One', password: 'correct horse battery staple',
-        display_name: 'Student One', email: 'student@example.com', requested_role: 'student' }) });
+        display_name: 'Student One', email: 'student@example.com' }) });
     assert.equal(registration.status, 201);
     assert.equal(emailSent, true);
-    assert.equal((await registration.json() as { data: { role: string } }).data.role, 'student');
-    const unverified = await fetch(`${base}/api/v1/auth/login`, { method: 'POST', headers: json,
+    assert.equal((await registration.json() as { data: { capabilities: string[] } }).data.capabilities.includes('buy'), true);
+    const unverified = await contractFetch(base, '/auth/login', { method: 'POST', headers: json,
       body: JSON.stringify({ login_identifier: 'student.one', password: 'correct horse battery staple' }) });
     assert.equal(unverified.status, 401);
-    const verification = await fetch(`${base}/api/v1/auth/verify-email`, { method: 'POST', headers: json,
+    const verification = await contractFetch(base, '/auth/verify-email', { method: 'POST', headers: json,
       body: JSON.stringify({ login_identifier: 'student.one', code: '123456' }) });
     assert.equal(verification.status, 200);
-    const login = await fetch(`${base}/api/v1/auth/login`, { method: 'POST', headers: json,
+    const login = await contractFetch(base, '/auth/login', { method: 'POST', headers: json,
       body: JSON.stringify({ login_identifier: 'student.one', password: 'correct horse battery staple' }) });
     assert.equal(login.status, 200);
     assert.equal(login.headers.get('cache-control'), 'no-store');
@@ -102,26 +111,34 @@ test('Student auth HTTP journey checks cookie, CSRF, profile version and logout 
     assert.ok(access && csrf);
     assert.match(cookies[0], /Secure/);
     const cookie = `${access}; ${csrf}`;
-    const me = await fetch(`${base}/api/v1/auth/me`, { headers: { cookie } });
+    const me = await contractFetch(base, '/auth/me', { headers: { cookie } });
     assert.equal(me.status, 200);
-    const rejected = await fetch(`${base}/api/v1/profile`, { method: 'PATCH', headers: { ...json, cookie },
+    const rejected = await contractFetch(base, '/profile', { method: 'PATCH', headers: { ...json, cookie },
       body: JSON.stringify({ expected_version: 1, display_name: 'Updated' }) });
     assert.equal(rejected.status, 403);
     assert.equal((await rejected.json() as { error: { code: string } }).error.code, 'CSRF_FAILED');
     const token = csrf.split('=')[1];
-    const profile = await fetch(`${base}/api/v1/profile`, { method: 'PATCH',
+    const crossAccount = await contractFetch(base, '/profile', { method: 'PATCH',
+      headers: { ...json, cookie, 'x-csrf-token': token },
+      body: JSON.stringify({ expected_version: 1, display_name: 'Foreign', user_id: '2' }) });
+    assert.equal(crossAccount.status, 422);
+    assert.equal(account!.displayName, 'Student One');
+    const mixedMfa = await contractFetch(base, '/auth/admin/mfa/verify', { method: 'POST', headers: json,
+      body: JSON.stringify({ challenge_id: 'a'.repeat(43), code: '123456', recovery_code: 'ab'.repeat(16) }) });
+    assert.equal(mixedMfa.status, 422);
+    const profile = await contractFetch(base, '/profile', { method: 'PATCH',
       headers: { ...json, cookie, 'x-csrf-token': token },
       body: JSON.stringify({ expected_version: 1, display_name: 'Updated' }) });
     assert.equal(profile.status, 200);
     assert.equal((await profile.json() as { data: { version: number } }).data.version, 2);
-    const stale = await fetch(`${base}/api/v1/profile`, { method: 'PATCH',
+    const stale = await contractFetch(base, '/profile', { method: 'PATCH',
       headers: { ...json, cookie, 'x-csrf-token': token },
       body: JSON.stringify({ expected_version: 1, display_name: 'Stale' }) });
     assert.equal(stale.status, 409);
-    const logout = await fetch(`${base}/api/v1/auth/logout`, { method: 'POST',
+    const logout = await contractFetch(base, '/auth/logout', { method: 'POST',
       headers: { ...json, cookie, 'x-csrf-token': token }, body: '{}' });
     assert.equal(logout.status, 200);
-    const revoked = await fetch(`${base}/api/v1/auth/me`, { headers: { cookie } });
+    const revoked = await contractFetch(base, '/auth/me', { headers: { cookie } });
     assert.equal(revoked.status, 401);
   } finally { await app.close(); }
 });

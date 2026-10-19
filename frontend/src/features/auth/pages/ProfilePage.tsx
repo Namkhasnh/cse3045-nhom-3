@@ -43,8 +43,8 @@ export function ProfilePage({ user, onUpdate, onLogout }: {
     <h1 id="profile-title">Tài khoản</h1>
     <p className="profile-hint">Tên đăng nhập: <strong>{user.login_identifier}</strong></p>
     <p className="profile-hint">Email: <strong>{user.email ?? 'Chưa có'}</strong></p>
-    <p className="profile-hint">Vai trò hiện tại: <strong>{user.role === 'admin' ? 'Quản trị viên' :
-      user.role === 'restaurant_owner' ? 'Chủ quán' : 'Người dùng / Sinh viên'}</strong></p>
+    <p className="profile-hint">Vai trò hiện tại: <strong>{user.capabilities.includes('admin') ? 'Quản trị viên' :
+      user.capabilities.includes('manage_restaurant') ? 'Chủ quán' : 'Người dùng / Sinh viên'}</strong></p>
     {notice && <p className="form-notice" role="status">{notice}</p>}
     <form className="auth-form" onSubmit={submit}>
       <Input id="profile-name" label="Họ và tên" value={displayName} onChange={event => setDisplayName(event.target.value)}

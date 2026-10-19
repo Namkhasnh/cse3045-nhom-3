@@ -1,5 +1,5 @@
 import { Body, Controller, Patch, Req, UnprocessableEntityException, UseGuards } from '@nestjs/common';
-import { AccountsService, publicAccount } from '../../modules/accounts/accounts.service.js';
+import { AccountsService } from '../../modules/accounts/accounts.service.js';
 import { SessionGuard, type AuthRequest } from './session.guard.js';
 
 @Controller('profile')
@@ -34,7 +34,7 @@ export class ProfileController {
       }
       changes.phone = body.phone;
     }
-    return publicAccount(await this.accounts.updateProfile(request.authAccount!.id,
+    return this.accounts.present(await this.accounts.updateProfile(request.authAccount!.id,
       body.expected_version as number, changes));
   }
 }

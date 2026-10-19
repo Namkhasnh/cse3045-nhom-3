@@ -13,7 +13,7 @@ const prices: { value: PriceRange; label: string }[] = [
 
 export function RestaurantFilters({ values, categories, onChange, onReset, hasFilters }: {
   values: RestaurantFilterValues
-  categories: readonly string[]
+  categories: readonly (string | { id: string; name: string })[]
   onChange: (values: RestaurantFilterValues) => void
   onReset: () => void
   hasFilters: boolean
@@ -37,14 +37,14 @@ export function RestaurantFilters({ values, categories, onChange, onReset, hasFi
         <Icon name="reset" />Xóa bộ lọc
       </Button>
     </div>
-    <p id="search-help" className="filter-help">Tìm từ đầu tên quán, có phân biệt dấu tiếng Việt.</p>
+    <p id="search-help" className="filter-help">Tìm từ đầu tên quán, không phân biệt hoa thường và dấu tiếng Việt.</p>
     <fieldset className="filter-group">
       <legend>Danh mục món</legend>
       <div className="chip-row">
         <FilterChip selected={values.category === 'all'} onClick={() => onChange({ ...values, category: 'all' })}>Tất cả</FilterChip>
         {categories.map(category => (
-          <FilterChip key={category} selected={values.category === category} onClick={() => onChange({ ...values, category })}>
-            {category}
+          <FilterChip key={typeof category === 'string' ? category : category.id} selected={values.category === (typeof category === 'string' ? category : category.id)} onClick={() => onChange({ ...values, category: typeof category === 'string' ? category : category.id })}>
+            {typeof category === 'string' ? category : category.name}
           </FilterChip>
         ))}
       </div>

@@ -27,8 +27,8 @@ export function RestaurantCard({ restaurant }: { restaurant: RestaurantSummary }
       <RestaurantImage key={restaurant.imageSrc} restaurant={restaurant} />
     </div>
     <div className="restaurant-card-content">
-      <h2 id={`restaurant-${restaurant.id}`}>{restaurant.name}</h2>
-      <p className="restaurant-price">{formatDishPriceRange(restaurant.dishes)}</p>
+      <h2 id={`restaurant-${restaurant.id}`}>{restaurant.fixture ? restaurant.name : <a href={`/restaurants/${restaurant.id}`}>{restaurant.name}</a>}</h2>
+      <p className="restaurant-price">{restaurant.priceRange ? restaurant.priceRange.min === null ? 'Chưa có giá món' : `Món: ${formatVnd(restaurant.priceRange.min)}${restaurant.priceRange.max && restaurant.priceRange.max !== restaurant.priceRange.min ? ` – ${formatVnd(restaurant.priceRange.max)}` : ''}` : formatDishPriceRange(restaurant.dishes)}</p>
       <div className="restaurant-status"><Badge tone={status.tone}>{status.label}</Badge></div>
       <div className="restaurant-delivery">
         <span className={restaurant.deliveryFeeVnd === null ? 'unknown-fee' : 'known-fee'}>
@@ -39,8 +39,8 @@ export function RestaurantCard({ restaurant }: { restaurant: RestaurantSummary }
           <span className="restaurant-distance"><Icon name="pin" />{formatDistance(restaurant.distanceMetres)}</span>
         )}
       </div>
-      <p className="restaurant-hours">Mở {restaurant.hours}</p>
-      <p className="fixture-card-note">Quán & giao hàng mẫu</p>
+      <p className="restaurant-hours">{restaurant.hours}</p>
+      {restaurant.fixture && <p className="fixture-card-note">Quán & giao hàng mẫu</p>}
     </div>
   </article>
 }

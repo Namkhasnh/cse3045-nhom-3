@@ -1,10 +1,11 @@
 import { useState, type FormEvent } from 'react'
+import { authPath } from '../return-path'
 import { Button } from '../../../shared/ui/Button'
 import { Input } from '../../../shared/ui/Input'
 import { authApi, ApiError, type User } from '../api/auth.api'
-import type { AccountRole } from '../api/auth.api'
 
 const errorText: Record<string, string> = {
+  MFA_INVALID: 'Mã MFA không hợp lệ, đã hết hạn hoặc hết lượt thử. Bạn có thể đăng nhập lại.',
   INVALID_CREDENTIALS: 'Tên đăng nhập hoặc mật khẩu chưa đúng.',
   LOGIN_IDENTIFIER_TAKEN: 'Tên đăng nhập đã được sử dụng.',
   VALIDATION_ERROR: 'Vui lòng kiểm tra thông tin đã nhập.',
@@ -34,7 +35,9 @@ export function AuthPage({ mode, onLogin, onNavigate }: {
   const [password, setPassword] = useState('')
   const [passwordConfirmation, setPasswordConfirmation] = useState('')
   const [email, setEmail] = useState('')
-  const [requestedRole, setRequestedRole] = useState<AccountRole>('student')
+  const [challenge, setChallenge] = useState<string | null>(null)
+  const [mfaCode, setMfaCode] = useState('')
+  const [recoveryMode, setRecoveryMode] = useState(false)
   const [code, setCode] = useState('')
   const [displayName, setDisplayName] = useState('')
   const [phone, setPhone] = useState('')
@@ -54,15 +57,26 @@ export function AuthPage({ mode, onLogin, onNavigate }: {
     try {
       if (mode === 'register') {
         await authApi.register({ login_identifier: username, password, display_name: displayName,
-          phone: phone.trim() || null, email, requested_role: requestedRole })
-        onNavigate(`/verify-email?username=${encodeURIComponent(username)}`)
+          phone: phone.trim() || null, email })
+        onNavigate(authPath(`/verify-email?username=${encodeURIComponent(username)}`))
       } else if (mode === 'verify') {
         await authApi.verifyEmail(username, code)
-        onNavigate('/login?verified=1')
-      } else onLogin(await authApi.login(username, password))
+        onNavigate(authPath('/login?verified=1'))
+      } else if (challenge) {
+        const result = await authApi.verifyMfa(challenge, recoveryMode ? { recovery_code: mfaCode } : { code: mfaCode })
+        if ('re_enrollment_required' in result) {
+          setChallenge(null); setPassword(''); setMfaCode('')
+          setNotice('Mã phục hồi đã được dùng. Phiên cũ đã bị thu hồi. Hãy đăng ký lại TOTP qua CLI operator trước khi đăng nhập Admin.')
+        } else onLogin(result)
+      } else {
+        const result = await authApi.login(username, password)
+        setPassword('')
+        if ('mfa_required' in result) { setChallenge(result.challenge_id); setMfaCode('') }
+        else onLogin(result)
+      }
     } catch (cause) {
       if (mode === 'register' && cause instanceof ApiError && cause.code === 'EMAIL_UNAVAILABLE') {
-        onNavigate(`/verify-email?username=${encodeURIComponent(username)}&delivery_failed=1`)
+        onNavigate(authPath(`/verify-email?username=${encodeURIComponent(username)}&delivery_failed=1`))
         return
       }
       setError(cause instanceof ApiError ? describeError(cause) :
@@ -83,9 +97,9 @@ export function AuthPage({ mode, onLogin, onNavigate }: {
       </div>
     </aside>}
     <main id="main-content" className={`auth-panel${mode === 'login' ? ' auth-panel--login' : ''}`}>
-      <a href="/login" className="brand auth-brand">Hòa Lạc <span className="text-brand">Food</span></a>
+      <a href="/" className="brand auth-brand" aria-label="Hòa Lạc Food — Trang chủ">Hòa Lạc <span className="text-brand">Food</span></a>
       <h1>{verify ? 'Xác minh email' : register ? 'Tạo tài khoản' : 'Đăng nhập'}</h1>
-      <p className="auth-intro">{verify ? 'Nhập mã 6 số đã gửi tới email của bạn.' : register ? 'Chọn vai trò mong muốn để đăng ký.' : 'Chào mừng bạn trở lại. Dùng tên tài khoản để tiếp tục.'}</p>
+      <p className="auth-intro">{verify ? 'Nhập mã 6 số đã gửi tới email của bạn.' : register ? 'Tạo tài khoản để mua hàng và theo dõi thông tin của bạn.' : 'Chào mừng bạn trở lại. Dùng tên tài khoản để tiếp tục.'}</p>
       {verify && new URLSearchParams(window.location.search).has('delivery_failed') &&
         <p className="form-notice" role="status">Chưa gửi được mã. Hãy thử gửi lại sau ít phút.</p>}
       {new URLSearchParams(window.location.search).has('verified') && !register && !verify &&
@@ -102,15 +116,10 @@ export function AuthPage({ mode, onLogin, onNavigate }: {
         {register && <p className="form-help">Dùng tên đăng nhập 3–32 ký tự, không dùng email.</p>}
         {register && <Input id="email" label="Email" type="email" autoComplete="email" value={email}
           onChange={event => setEmail(event.target.value)} maxLength={254} required />}
-        {register && <div className="input-field"><label htmlFor="requested-role">Vai trò mong muốn</label>
-          <select id="requested-role" className="input" value={requestedRole} onChange={event => setRequestedRole(event.target.value as AccountRole)}>
-            <option value="student">Người dùng / Sinh viên</option><option value="restaurant_owner">Chủ quán</option>
-            <option value="admin">Quản trị viên</option>
-          </select><p className="form-help">Chủ quán và quản trị viên chỉ được cấp quyền sau khi quản trị viên duyệt.</p></div>}
         {register && <Input id="phone" label="Số điện thoại (không bắt buộc)" autoComplete="tel" value={phone}
           onChange={event => setPhone(event.target.value)} maxLength={16} pattern="\+?[0-9]{9,15}"
           title="9–15 chữ số, có thể bắt đầu bằng +" />}
-        {!verify && <Input id="password" label="Mật khẩu" type="password" autoComplete={register ? 'new-password' : 'current-password'}
+        {!verify && !challenge && <Input id="password" label="Mật khẩu" type="password" autoComplete={register ? 'new-password' : 'current-password'}
           value={password} onChange={event => setPassword(event.target.value)} minLength={register ? 12 : undefined} required />
         }
         {register && <Input id="password-confirmation" label="Nhập lại mật khẩu" type="password" autoComplete="new-password"
@@ -119,15 +128,27 @@ export function AuthPage({ mode, onLogin, onNavigate }: {
         {register && <p className="form-help">Từ 12 đến 128 ký tự. Không dùng mật khẩu phổ biến.</p>}
         {verify && <Input id="email-code" label="Mã xác minh" inputMode="numeric" autoComplete="one-time-code"
           pattern="[0-9]{6}" maxLength={6} value={code} onChange={event => setCode(event.target.value)} required />}
-        <Button type="submit" disabled={busy}>{busy ? 'Đang xử lý…' : verify ? 'Xác minh email' : register ? 'Tạo tài khoản' : 'Đăng nhập'}</Button>
+        {challenge && <>
+          <Input id="mfa-code" label={recoveryMode ? 'Mã phục hồi' : 'Mã Authenticator'} autoFocus
+            autoComplete="one-time-code" inputMode={recoveryMode ? 'text' : 'numeric'}
+            pattern={recoveryMode ? '[a-f0-9]{32}' : '[0-9]{6}'} maxLength={recoveryMode ? 32 : 6}
+            value={mfaCode} onChange={event => setMfaCode(event.target.value)} required />
+          <Button type="button" variant="neutral" disabled={busy} onClick={() => { setRecoveryMode(!recoveryMode); setMfaCode('') }}>
+            {recoveryMode ? 'Dùng Authenticator' : 'Dùng mã phục hồi'}
+          </Button>
+          <Button type="button" variant="neutral" disabled={busy} onClick={() => { setChallenge(null); setMfaCode(''); setPassword('') }}>Đăng nhập lại</Button>
+        </>}
+        <Button type="submit" disabled={busy}>{busy ? 'Đang xử lý…' : verify ? 'Xác minh email' : register ? 'Tạo tài khoản' : challenge ? 'Xác minh MFA' : 'Đăng nhập'}</Button>
       </form>
       {verify && <Button type="button" disabled={busy} onClick={async () => {
+        setBusy(true); setError(''); setNotice('')
         try { await authApi.resendEmailCode(username); setNotice('Nếu tài khoản chưa xác minh, mã mới đã được gửi.') }
         catch (cause) { setError(cause instanceof ApiError ? describeError(cause) : 'Không kết nối được máy chủ.') }
+        finally { setBusy(false) }
       }}>Gửi lại mã</Button>}
-      {!register && !verify && <p className="auth-verify-link"><a href="/verify-email">Cần xác minh email? Nhập mã xác minh</a></p>}
+      {!register && !verify && <p className="auth-verify-link"><a href={authPath('/verify-email')}>Cần xác minh email? Nhập mã xác minh</a></p>}
       <p className="auth-switch">{register ? 'Đã có tài khoản?' : 'Chưa có tài khoản?'}{' '}
-        <a href={register || verify ? '/login' : '/register'}>{register || verify ? 'Đăng nhập' : 'Đăng ký'}</a></p>
+        <a href={authPath(register || verify ? '/login' : '/register')}>{register || verify ? 'Đăng nhập' : 'Đăng ký'}</a></p>
     </main>
   </div>
 }

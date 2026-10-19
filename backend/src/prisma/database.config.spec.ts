@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { databaseConfig } from './database.config.js';
+import { databaseConfig, provisionDatabaseUrl } from './database.config.js';
 
 test('database URL decodes credentials and defaults to the MySQL port', () => {
   const config = databaseConfig('mysql://app%40user:p%40ss%3Aword@localhost/cse3045');
@@ -31,5 +31,25 @@ test('invalid connection URLs fail without exposing credentials', () => {
       assert.ok(!error.message.includes('secret'));
       return true;
     });
+  }
+});
+
+test('operator URL is mandatory, distinct and scoped to the runtime database', () => {
+  const previous = { runtime: process.env.DATABASE_URL, provision: process.env.PROVISION_DATABASE_URL };
+  try {
+    process.env.DATABASE_URL = 'mysql://runtime:synthetic@localhost/test_db';
+    delete process.env.PROVISION_DATABASE_URL;
+    assert.throws(() => provisionDatabaseUrl(), /PROVISION_DATABASE_URL/);
+    for (const value of ['mysql://runtime:other@localhost/test_db', 'mysql://provision:synthetic@localhost/other', 'mysql://provision:synthetic@remote/test_db']) {
+      process.env.PROVISION_DATABASE_URL = value;
+      assert.throws(() => provisionDatabaseUrl(), /distinct users/);
+    }
+    process.env.PROVISION_DATABASE_URL = 'mysql://provision:synthetic@localhost/test_db';
+    assert.equal(provisionDatabaseUrl(), process.env.PROVISION_DATABASE_URL);
+    assert.equal(databaseConfig().user, 'runtime');
+  } finally {
+    for (const [key, value] of [['DATABASE_URL', previous.runtime], ['PROVISION_DATABASE_URL', previous.provision]]) {
+      if (value === undefined) delete process.env[key!]; else process.env[key!] = value;
+    }
   }
 });

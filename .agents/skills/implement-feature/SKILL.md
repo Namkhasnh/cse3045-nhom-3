@@ -1,34 +1,28 @@
 ---
 name: implement-feature
-description: "Implement a scoped product feature in this repository, connecting requirements with the necessary backend, database, API, and frontend changes. Use for thêm tính năng, user stories, or business workflows; not for a presentation-only component, explanation, or isolated failing-test repair."
+description: "Implement scoped business capabilities across the necessary backend, database, API and frontend layers in this repository. Use for thêm tính năng, API behavior or business workflows; run-roadmap orchestrates explicit Pxx/version requests. Not for UI-only work, explanations, reviews or isolated test failures."
 ---
 
 # Implement Feature
 
-Deliver the smallest complete capability within the user's requested scope, with traceable behavior and honest verification.
+Deliver the requested capability under [AGENTS](../../../AGENTS.md). Infer US/FR/BR/AC/test IDs, relevant version and necessary layers from [requirements](../../../docs/requirements.md) and actual source. A backend-only or frontend-only request stays scoped; matching Pxx does not authorize the whole milestone.
 
-## Define the capability from existing contracts
+## Establish the contract
 
-- Follow [AGENTS.md](../../../AGENTS.md) and the [document map](../../../docs/README.md). Map the request to [requirements](../../../docs/requirements.md) IDs, actor, milestone, and acceptance criteria. Infer routine details from the repository rather than demanding a task template.
-- Read all matching rows of the AGENTS.md routing table. Use the owning API/database/UI/AI specifications for the selected behavior; do not load unrelated domain detail by default.
-- Inspect the working tree and use CodeGraph first when indexed. Inspect existing implementations, callers, manifests/lockfiles, migrations, and tests before choosing what to extend. Distinguish a target design from implemented behavior.
-- Establish a short acceptance checklist: user action, authoritative result, necessary error/permission behavior, and evidence. Respect a backend-only or frontend-only request; do not expand it into all layers automatically.
-- If a necessary product/security decision is unresolved or conflicting, identify its owning document, ask a focused question, and continue independent work. Record the approved decision in the owning contract before implementing dependent behavior. Routine choices within settled contracts do not require additional approval.
+Read only owning contracts from AGENTS routing. For shared identity/MFA use account-security; applications/terms use onboarding; retained data use migration-plan; payments use payments-policy. Check relevant DEC entries before policy-dependent work. Do not ask the user for IDs, file paths or settled routine choices the repository can supply.
 
-## Implement the required layers
+Inspect current implementations/callers, scripts/lockfiles, migrations and tests with CodeGraph first when indexed. State a short action/result/failure/evidence checklist; reuse existing code. If required policy is missing, prepare a concrete recommendation and focused question, cite the source and continue independent work without inventing it.
 
-- Follow [architecture](../../../docs/architecture.md), [target structure](../../../docs/code_structure.md), and [development §§7–11](../../../docs/development_guide.md). Create only the layers/files needed for this capability.
-- For backend changes, preserve HTTP → workflow → module public service → owning repository → Prisma boundaries. Coordinate participating writes with the documented shared transaction context and database lock order; do not move domain rules into controllers or React.
-- For API/schema changes, use the owning [API](../../../docs/data/api_contract.md) and [database](../../../docs/data/database.md) contracts. Preserve exact scalar formats, authorization scope, snapshots, retry/idempotency, and history as applicable. Do not invent an endpoint or policy to fill a documented gap.
-- Use forward migrations and the checked-in Prisma configuration for storage changes. Validate empty/upgrade fixtures in an isolated test database when relevant; do not reset retained/shared data or rewrite applied migrations.
-- For frontend changes, follow the [UI guide](../../../docs/ui/ui_convertion.md) and relevant embedded reference board. Wire actual data/actions, states, and error recovery. Keep prototypes/fixtures explicitly labeled and separate from real success paths.
-- Put external providers behind the documented adapters. Follow the [AI integration contract](../../../docs/ai_integration.md) when AI is involved; provider output does not become trusted business data.
-- Keep necessary groundwork within scope, preserve unrelated edits, and avoid empty scaffolding or broad dependency upgrades. Do not enable future features merely because they appear in the visual reference.
+## Implement the smallest complete scope
 
-## Prove and document completion
+- Backend: HTTP → workflow → public domain service → owning repository → Prisma. One transaction context; current capabilities/ownership checked for reads/lists/nested/replay/writes. Atomically commit required mutation/history/audit/key-result; use database §10 lock order.
+- Target identity is ordinary buyer with optional management of one restaurant, plus one operator-owned MFA Admin. No Owner-role promotion, extra Admin or multi-restaurant switcher. Opening approval/manual create must enforce cap/consent/setup readiness atomically.
+- Preserve exact scalar formats, consent/conflict handling, immutable snapshots and uncertain-outcome keys. No fabricated survey/rate, price authority in React, AI money/order writes or external calls inside retried transactions.
+- Schema changes use reviewed forward SQL and [migration plan](../../../docs/data/migration-plan.md); no applied-migration edits/reset/retained-data cleanup. Real MySQL is **9.2.0**. Do not introduce business tables or providers beyond this capability.
+- Connected UI follows [build-component](../build-component/SKILL.md) where needed, with actual approved APIs. No fake mutation success. Respect the requested presentation/connection boundary.
 
-- Select relevant case IDs and test layers from [testing](../../../docs/testing.md). Use unit evidence for policies, real MySQL/InnoDB for constraints/transactions/races, and applicable browser evidence for user journeys. Test meaningful failures and ownership/retry boundaries when affected.
-- Run the affected checks in [AGENTS.md](../../../AGENTS.md#verification-and-completion) after inspecting current scripts. Lint/build, mocked HTTP tests, and connectivity checks each have limited evidence boundaries.
-- Update owning contracts, implementation status/navigation, and setup instructions affected by the feature. Keep approved design and measured implementation distinct.
-- Report in Vietnamese unless requested otherwise: delivered behavior, traceability, changed areas, exact verification results, and limitations. Use `NOT CONFIGURED`, `NOT RUN`, or `BLOCKED` with its source as appropriate. A missing required decision or acceptance check prevents claiming full completion.
-- Implementation does not by itself authorize publishing, deployment, merging, or messages to other people; follow the user's actual requested scope.
+## Verify and hand off
+
+Use [testing](../../../docs/testing.md) case IDs and [AGENTS checks](../../../AGENTS.md#verification-and-completion). Unit-test money/state policies; use real MySQL for persistence/rollback/races and browsers for affected journeys. Meaningful failure/scope/retry checks matter more than mirroring implementation. Missing tooling/evidence is not a pass.
+
+Update affected contracts and implementation status only where behavior changed. For explicit roadmap work, hand evidence to run-roadmap using [progress rules](../../../docs/progress/README.md); do not claim full Pxx acceptance from a slice. Report behavior, exact verification and material blockers in Vietnamese. No deploy/merge/publish/real pilot permission is implied by completed code.

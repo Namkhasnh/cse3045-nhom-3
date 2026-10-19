@@ -1,0 +1,21 @@
+{
+  "account_role_requests": "743f9daaaed9865bb66e63b522f84ecd44598579fc3d6b2565da6b17bda94199",
+  "accounts": "922536fadeede22febde2c6c37c1aba117e4f98d1f0fe51c5acec7a96e01c711",
+  "audit_logs": "ec5837593ee7fe5b2ae1cff6bdd6ed2a1216502eff863cb3bdb4161fcebc802c",
+  "auth_login_limits": "331fc604306d608c816141683938b4f59a873f4149dd4970fc55f5076bacb2b7",
+  "commission_entries": "f72914dc0e4f09ab49429c002651a13b141926f760a1d81e558c59bda43be854",
+  "commission_policies": "baabc4a82d2367853c23b3f51c17b7c8ba5676029b72bd3b978e9c3f3ac54f4d",
+  "delivery_policies": "a81a0569601634469a4721087cbf1d3d2fcc9c8619f6b275a2aca3aba9e2c2ac",
+  "dish_categories": "bb2481d0bd3c00545826a1f8583f45b8931ea2eb3d2468f05e369f2ef731ff19",
+  "dishes": "83c15494c9fd5bc6e223b1a858402d32edc97b03d21d0d36a5c32d115c5ddca9",
+  "order_items": "7c3cda5ac79d836ff4ba8687cb4c1504d8b7b6bdbe8b929daeafa5baf82fb009",
+  "order_payment_history": "546a870054733ce2a3a1e73aa08417efe969ec55a134a15e0da5d5e4dda5a3d3",
+  "order_payments": "59c48f9199a8b784756ccd5b222b44397d682712e3e16997c9dc05a37cefc2aa",
+  "order_requests": "de5dbc3328c509290f178c34e7d1beb0a3bd56eba95aac9e2d25144377f95a6c",
+  "order_status_history": "967e2020a98de7b4ae1faf814588058fe9f0a8c2c794e0d77299a16ba14e26de",
+  "orders": "599b977bca2251f79e4055c2dd4d386c9db0d2f36d4e70d79c9cedb10be955e5",
+  "pickup_points": "5b74171d73aeca1a7dae9cc1903dec057fd6042101d6d163bdca6e13ef481f8d",
+  "restaurant_hours": "7e6cee69a04a3ebb208f3397ea1640aa2790199bc4c678ee7d30d30e3895282e",
+  "restaurant_pickup_rates": "7c36a55701ce0edb39584a9febc5b11b0bedbdc679862077515dfb25693bf83f",
+  "restaurants": "7eb7a9ada7566ebd238d800334265b7e1ae95e2fe242b7434497e1006b028f7e"
+}

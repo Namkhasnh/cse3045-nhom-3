@@ -1,32 +1,30 @@
 ---
 name: build-component
-description: "Create or update React components, pages, styles, and responsive UI in this repository. Use for thêm component, làm giao diện, UI states, or layout changes. Owns UI work; a backend business capability belongs to a feature implementation task."
+description: "Create or fix React components, pages, layout, styling and interaction states in this repository. Use for làm giao diện, sửa UI, responsive or component work. A business workflow across backend/data belongs to implement-feature; explicit Pxx/version execution is orchestrated by run-roadmap."
 ---
 
 # Build Component
 
-Build UI that follows the approved product direction and has a clear data and interaction contract. Use [design skill coordination](../../../docs/ui/design-skills.md): consult `frontend-design` for substantial aesthetic direction/critique and `ui-ux-pro-max` for focused UX, accessibility or stack research. Ordinary components reuse the current system; no need to load all skills.
+Build the requested UI under [AGENTS](../../../AGENTS.md) and the [approved UI guide](../../../docs/ui/ui_convertion.md). Infer the page/actor/data boundary from the request; no full task template is needed.
 
-## Ground the component
+## Load only relevant context
 
-- Follow [AGENTS.md](../../../AGENTS.md) and the [document map](../../../docs/README.md). Identify the role, relevant requirement IDs, delivery milestone, and whether the request is presentation-only or connected UI.
-- Read [UI guide §§1–8, 10–13](../../../docs/ui/ui_convertion.md) and the applicable §9 rules. Inspect the relevant embedded board in the [original HTML](../../../docs/ui/Hoa%20Lac%20Food%20Ordering%20Platform.html); the export wrapper is not the board. Keep the reference asset unchanged.
-- Use CodeGraph first when indexed, then inspect nearby components, styles, entrypoints, package scripts, and dependencies. Reuse what exists. The target tree and design system do not prove Tailwind, routing, or shared controls are already installed.
-- For connected UI, inspect the real endpoint and [API contract](../../../docs/data/api_contract.md), including §§2–4 and affected errors. Establish the props, callbacks, request owner, and relevant loading/error/conflict behavior before editing.
+Inspect nearby components, tokens, app composition, installed scripts/dependencies and callers; use CodeGraph first when indexed. Read UI identity/tokens/layout/component rules plus the relevant §9 behavior and §§10–13 corrections/states/accessibility. Inspect the matching embedded [reference board](../../../docs/ui/Hoa%20Lac%20Food%20Ordering%20Platform.html) when reconstructing/designing a screen; preserve it unchanged. A small existing-component bug need not load unrelated boards or the entire roadmap.
 
-## Implement within the UI boundary
+For connected UI, read actual endpoint/DTO/errors in API §§2–4 and its feature section. Identify request ownership, props/callbacks, session/current capability and required loading/empty/error/conflict states. If a necessary product choice is open, use the owning DEC/contract rather than inventing behavior.
 
-- Follow [architecture §10.1](../../../docs/architecture.md#101-splitting-the-frontend-into-small-components) and [target structure](../../../docs/code_structure.md). Keep domain widgets in their feature and generic reusable controls in `shared/ui`; compose features through public exports at app level.
-- Keep requests and server-state coordination in hooks/API layers. Presentational components receive data and callbacks; local interaction state may stay close to the UI. Do not duplicate backend money, permissions, or lifecycle decisions.
-- Follow the approved identity (currently Be Vietnam Pro and cream/orange), semantic tokens, Vietnamese product copy, and the relevant Student/Owner/Admin layout. Font, palette and shape changes may be proposed with concrete values, rationale and a preview/wireframe; obtain the user’s decision before applying a new identity and record approved decisions in the UI guide. Routine implementation within that identity requires no extra approval. Apply UI §10 corrections before copying reference behavior.
-- Implement states appropriate to the component: unavailable or disabled actions, pending submission, missing images, and loading/empty/error/conflict states where data is involved. Preserve input during failures; require server confirmation before displaying mutation success.
-- Build keyboard, label, focus, dialog, and responsive behavior alongside the UI. Follow UI §§11 and 13 for long text, zoom, contrast, and viewport checks.
-- For an explicitly requested prototype or presentation-only component, keep synthetic fixtures at a clearly labeled data boundary. An absent backend must not become a fake successful order, payment, or other real mutation. For requested connected behavior, report the missing contract/implementation and continue independent UI work; implement backend changes only within the user's authorized scope.
-- Add only dependencies and structural changes necessary for the requested UI. Do not scaffold every future page or extract every element into a component.
+## Build within the approved design
 
-## Verify and deliver
+Keep Be Vietnam Pro, cream/orange tokens, white compact discovery and distinct manager/Admin shells; product copy Vietnamese. [frontend-design](../frontend-design/SKILL.md) helps a substantial layout/design proposal, [ui-ux-pro-max](../ui-ux-pro-max/SKILL.md) a specific UX/accessibility concern. Routine UI uses neither automatically. Font/palette/shape changes require a concrete proposal and actual user decision; no redesign during a small fix.
 
-- Run the current frontend checks listed in [AGENTS.md](../../../AGENTS.md#verification-and-completion). Add meaningful interaction coverage when warranted; lint/build alone do not prove UI behavior.
-- Use an available browser to check the affected states, keyboard/focus behavior, and the viewports required by UI §13, including 360 px. Check affected role layouts when changing shared controls or tokens.
-- Report missing browser/test tooling as `NOT CONFIGURED`, available but unrun checks as `NOT RUN`, and unresolved policy dependencies as `BLOCKED` with their source. Separate source inspection, automated checks, and browser observation.
-- Update UI conventions when adding a shared token, component contract, or variant. Report the component's location, integration/props, verified behavior, fixture boundaries, and intentional differences from the reference in Vietnamese unless requested otherwise.
+Public homepage/menu cannot wait on successful auth/me. Guests build carts; login restores/revalidates and never submits orders. Managers retain buyer/cart/history navigation while managing at most one restaurant. Signup has no role choice; Admin access is sole MFA authority. Applications identify exact terms/consent and setup-required state; approval is not permission to sell.
+
+Keep domain widgets in features and generic controls in shared/ui; app composes through feature exports. Requests belong in hooks/API layers, presentation gets data/callbacks. Do not duplicate backend money, authorization or state decisions. Real mutation success requires backend confirmation; fixtures stay explicitly labeled when presentation-only work is requested. Do not expand UI-only work into an unrequested backend feature.
+
+Preserve input/retry context, exact string IDs/money, separate order/payment/refund display and explicit price/fee reconfirmation. Build semantic labels, keyboard/focus/dialog behavior and touch targets with the UI; ensure 360 px flow, long Vietnamese text, zoom/reduced motion and no clipped sticky controls.
+
+## Verify
+
+Run current frontend lint/build plus relevant meaningful browser checks under [AGENTS](../../../AGENTS.md#verification-and-completion). Check affected states, keyboard/focus, 360 px and applicable UI §13 widths; shared-control/token edits need affected layouts checked. Source inspection and lint/build do not prove browser/accessibility results. Report NOT CONFIGURED/NOT RUN/BLOCKED accurately.
+
+Update affected UI conventions for new shared contracts/variants. Hand off component location/integration, connected-versus-fixture boundary, actual verification and intentional reference differences in Vietnamese. A roadmap caller receives only this task's evidence, not automatic milestone acceptance.
