@@ -1,31 +1,24 @@
 ---
 name: fix-tests
-description: "Diagnose and repair failing tests or test-related CI checks in this repository. Use for sửa test, fix test, broken assertions, flaky tests, or test compilation failures; not for adding an unrelated feature or reviewing code without a reported failure."
+description: "Diagnose and repair reported failing tests, flaky tests or test-related CI failures in this repository. Use for sửa test, fix test or broken assertions/compilation. Not for unrelated feature work or a read-only review; no roadmap prerequisite ceremony for an isolated test repair."
 ---
 
 # Fix Tests
 
-Restore meaningful verification while preserving the behavior required by the project contracts.
+Restore meaningful evidence under [AGENTS](../../../AGENTS.md); a green test must still prove the current governing behavior.
 
-## Establish the expected behavior
+## Reproduce and decide what is wrong
 
-- Follow [AGENTS.md](../../../AGENTS.md) and the [document map](../../../docs/README.md). Read the governing contract before attempting a fix; map business failures to the relevant IDs in [testing](../../../docs/testing.md), especially §§4–9. For scaffold/tooling failures, identify the affected technical contract instead.
-- Accept a failing command, CI log, test name, or plain-language symptom. Discover missing paths and scripts yourself. Ask for a log or environment detail only when local inspection cannot establish it.
-- Check the working tree. Use CodeGraph first when its index exists, as instructed by AGENTS.md, to trace the failing test, production code, and callers.
-- Inspect current package scripts, lockfiles, test setup, and CI. Distinguish an assertion failure from compilation, missing tooling, database connectivity, or environment failure.
+Accept a failing command/test/log or plain symptom. Inspect git status, current runner/scripts/lockfiles/CI and relevant code with CodeGraph first when indexed. Read the affected requirement or technical contract and [testing](../../../docs/testing.md) case; do not load every roadmap prompt or require previous milestone acceptance to diagnose a test.
 
-## Diagnose and repair
+Run the smallest safe existing reproducer and record the first useful failure. Distinguish code/test expectation from compilation, missing config/tooling or environment. Tests using role-selected signup, Owner/Admin promotion, multi-restaurant ownership or a different MySQL version may encode superseded behavior; inspect actual current scope and migration compatibility rather than mechanically rewriting all tests.
 
-1. Reproduce with the smallest existing check that exercises the failure. Record the command and first useful error; redact secrets and personal data from logs.
-2. Compare actual behavior with the owning specification. Establish whether production code, the test expectation/fixture, or setup is wrong. A test is evidence to investigate, not authority to replace requirements.
-3. Make the smallest coherent correction. Update an incorrect test only with a contract-backed explanation. Do not skip tests, remove meaningful assertions, add blanket retries, or weaken validation to obtain a green run.
-4. For a product regression, add or strengthen a focused case that fails for the old behavior and passes for the fix. Avoid tests that merely mirror implementation. For flakiness, control clocks, randomness, asynchronous completion, or fixture isolation according to testing §3; do not add arbitrary sleeps.
-5. Keep unrelated failures and user changes intact. Do not upgrade dependencies broadly, delete lockfiles, edit generated outputs, or reset a database as a test repair shortcut.
+## Repair the cause
+
+Change only the necessary code/assertion/setup. Explain why a changed expectation follows its owning contract. Keep meaningful regression/failure assertions; no skipped tests, blanket retries, weakened authorization/precision, broad upgrades or reset of retained data to make green. Control clocks/randomness/barriers for flakiness instead of sleeps.
+
+For DB guarantees use disposable **MySQL 9.2.0** with actual CHECK/FK/UQ/rollback/races; ORM mocks and SELECT 1 are insufficient. Inspect the existing integration guard; never run synthetic suites against retained/shared data. Node's built-in runner is used; do not assume Jest/Vitest flags. Add tooling only when part of this repair.
 
 ## Verify and report
 
-- Rerun the reproducer, then the affected checks required by [AGENTS.md](../../../AGENTS.md#verification-and-completion) and [development §12](../../../docs/development_guide.md#12-verification-commands). Inspect scripts before using runner-specific filters; this repository must not be assumed to use Jest or Vitest.
-- Use real MySQL/InnoDB evidence for database constraints, transaction rollback, and races. Mocked HTTP tests and `db:check` do not establish those guarantees. Add missing tooling only when it belongs to the requested fix.
-- Update affected technical documentation if a command, contract, or setup changes.
-- Report in Vietnamese unless requested otherwise: symptom, root cause, corrected behavior, changed areas, exact commands/results, and remaining limitations. Mark missing checks `NOT CONFIGURED`, configured but unrun checks `NOT RUN`, and policy-dependent work `BLOCKED` with its source.
-- Do not claim the full suite passed from a focused run. If reproduction is unavailable, state that explicitly and distinguish an inspected hypothesis from a verified fix.
+Rerun reproducer and affected [AGENTS checks](../../../AGENTS.md#verification-and-completion); broaden only for changed behavior/failures/unresolved risk. Update affected command/technical docs. Report in Vietnamese: symptom, root cause, correction, exact command/results and limits. A focused run is not the full suite; unexecuted repro is an inspected hypothesis. An isolated repair cannot mark a roadmap step complete without its full evidence.

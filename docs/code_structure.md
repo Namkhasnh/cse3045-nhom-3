@@ -2,7 +2,7 @@
 
 This tree is placement guidance derived from [architecture §10](architecture.md), **not an inventory of implemented files**. Inspect current source before creating a feature. The [documentation map](README.md) summarizes the actual scaffold and documentation status.
 
-Keep the existing `frontend/` and `backend/` package roots. Add only the files needed for the assigned scope; do not generate empty feature/module shells or post-MVP folders merely to match this tree. Documentation paths below already exist; most business-code paths are proposed.
+Keep the existing `frontend/` and `backend/` package roots. Add only the files needed for the assigned scope; do not generate empty feature/module shells or post-V1.0 folders merely to match this tree. Documentation paths below already exist; most business-code paths are proposed.
 
 ```text
 cse3045-nhom-3/
@@ -74,7 +74,7 @@ cse3045-nhom-3/
 │   │   │   ├── payments/                 # Display payment state and submit confirmations
 │   │   │   ├── commissions/              # Basic manual reconciliation
 │   │   │   ├── recommendations/
-│   │   │   └── support/                  # After MVP; reviews/favorites if selected
+│   │   │   └── support/                  # V0.7/V1.0; reviews/favorites V1.1
 │   │   ├── shared/
 │   │   │   ├── api/                      # HTTP client, API errors, contract DTOs
 │   │   │   ├── ui/
@@ -110,7 +110,8 @@ cse3045-nhom-3/
 │   │   │   ├── restaurant-admin.workflow.ts
 │   │   │   └── settlement.workflow.ts
 │   │   ├── modules/
-│   │   │   ├── accounts/
+│   │   │   ├── accounts/                 # Ordinary identity, sole Admin/MFA, user availability
+│   │   │   ├── onboarding/               # V0.3 applications, terms and review history
 │   │   │   ├── restaurants/
 │   │   │   ├── dishes/
 │   │   │   ├── delivery/
@@ -120,10 +121,10 @@ cse3045-nhom-3/
 │   │   │   ├── recommendations/
 │   │   │   ├── audit/
 │   │   │   ├── media/                    # If image uploads are enabled
-│   │   │   └── support/                  # After MVP; reviews/favorites if selected
+│   │   │   └── support/                  # V0.7/V1.0; reviews/favorites V1.1
 │   │   ├── integrations/
 │   │   │   ├── ai/                       # Adapter implementing AiGateway
-│   │   │   ├── maps/                     # After MVP: RouteDistancePort
+│   │   │   ├── maps/                     # After V1.0: RouteDistancePort
 │   │   │   └── storage/                  # If needed: ImageStoragePort
 │   │   ├── prisma/                       # Existing DB infrastructure; add transactions
 │   │   │   ├── prisma.module.ts
@@ -155,3 +156,9 @@ cse3045-nhom-3/
 - Coordinate business modules in workflows; repositories access only their owning module's data using the supplied transaction context.
 - Generated Prisma code and build/test outputs are never implementation locations.
 - The tree does not select routing/state libraries, providers, auth lifecycle details or future feature contracts. Resolve the relevant documented TBDs before enabling those capabilities.
+
+## Commercial additions and status
+
+[Roadmap](roadmap.md) owns version delivery; [implementation status](implementation-status.md) is the actual inventory. Add frontend onboarding application/terms/history/review under its feature; app composition preserves buyer navigation alongside the single managed restaurant. accounts owns MFA/authority and availability; onboarding owns submissions/terms/reviews; restaurants owns unique ownership/readiness. Workflows coordinate atomic approval/manual create through public services with account-first locks. Support/audit administration is required V0.7, QR/refunds V0.6, media P13; maps V1.2, reorder/random/reviews/favorites V1.1.
+
+The documentation tree now includes roadmap.md, decisions.md, implementation-status.md, documentation-verification.md, onboarding.md, account-security.md, payments-policy.md, release-checklist.md, data/migration-plan.md and prompts/README.md plus v0.1.md–v1.0.md. These are documentation paths; proposed source folders are not claimed present.

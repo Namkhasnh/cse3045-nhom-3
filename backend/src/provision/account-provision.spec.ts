@@ -7,7 +7,7 @@ import { join } from 'node:path';
 import { readApprovedManifest, validateManifest } from './account-provision.js';
 
 const valid = { request_id: 'request_1234', environment: 'staging', database: 'test_auth',
-  role: 'admin', username: 'first.admin', display_name: 'First Admin', requester: 'Operator One',
+  role: 'admin', operation: 'initialize', legacy_admin_ids: [], legacy_owner_ids: [], username: 'first.admin', display_name: 'First Admin', requester: 'Operator One',
   reviewer: 'Operator Two', reason: 'Initial bootstrap', approved_at: '2026-10-17T00:00:00Z' };
 
 test('provision manifest rejects public student or same requester/reviewer', () => {

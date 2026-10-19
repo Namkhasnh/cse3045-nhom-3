@@ -7,7 +7,7 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   server: {
     strictPort: true,
-    proxy: { '/api': { target: 'http://127.0.0.1:3000', configure(proxy) {
+    proxy: { '/api': { target: process.env.API_PROXY_TARGET ?? 'http://127.0.0.1:3000', configure(proxy) {
       proxy.on('proxyReq', (proxyReq, request) => {
         proxyReq.setHeader('x-forwarded-for', request.socket.remoteAddress ?? '')
       })

@@ -1,3 +1,6 @@
 interface:
   display_name: "Build Component"
-  short_description: "Build React UI using project design contracts"
+  short_description: "Build focused React UI within the approved identity"
+  default_prompt: "$build-component Build or fix the requested UI using current components, approved identity and applicable browser checks."
+policy:
+  allow_implicit_invocation: true

@@ -1,57 +1,35 @@
-# Frontend
+# Frontend — Auth and Public Discovery
 
-Vite + React + TypeScript + Tailwind CSS 4. Student discovery preview for US02/US03, FR02 and NFR06, following boards 00, 01 and 06 in the [UI reference](../docs/ui/Hoa%20Lac%20Food%20Ordering%20Platform.html) and [conversion guide](../docs/ui/ui_convertion.md). This covers presentation only, not completed MVP business behavior.
+React/Vite/TypeScript, Tailwind 4 and self-hosted Be Vietnam Pro. Approved cream/orange identity and compact white discovery follow the [UI guide](../docs/ui/ui_convertion.md). This slice includes role-free signup, auth/profile, Admin MFA/recovery prompts and public restaurant/menu browsing. Cart, checkout and management business screens remain outside this slice.
 
 ## Run and check
 
-Use Node.js 24 and npm. From the repository root:
+From the repository root:
 
 ```sh
 npm --prefix frontend ci
 npm --prefix frontend run dev
 npm --prefix frontend run lint
 npm --prefix frontend run build
+npm --prefix frontend run test:smoke
 ```
 
-Open `/login` at the Vite URL (normally `http://localhost:5173/login`). Vite proxies `/api` to `127.0.0.1:3000`; the backend must be running with auth keys and `PUBLIC_ORIGIN` matching the browser origin. Production requires same-origin HTTPS. `/preview` is development-only and displays restaurant fixtures without backend access. No backend secrets belong in `VITE_*`.
+Open `/` at the Vite origin. `/api` proxies to `http://127.0.0.1:3000` by default; `API_PROXY_TARGET` overrides the development proxy target, without exposing credentials to the browser. Auth requires matching backend `PUBLIC_ORIGIN`; production requires same-origin HTTPS. Backend secrets never belong in `VITE_*`.
 
-## Approved compact Student list
+## Routes and boundaries
 
-Direction 1 was approved on October 16, 2026; see [UI §5.6](../docs/ui/ui_convertion.md#56-approved-student-discovery-revision--october-16-2026). White Student surface, one page title/pickup line, unframed filters and border-separated horizontal rows replace the previous large image cards. Thumbnails are 80 px below 1024 px and 96 px from 1024 px; the list has one column below that breakpoint and two above it. Owner/Admin identity is unchanged.
+- `/` and `/restaurants/:id` use real public catalog APIs independently of `/auth/me` loading/failure. Guests can search/filter and read menu availability; no unavailable cart/checkout action is exposed.
+- `/login`, `/register`, `/verify-email` and `/account` use same-origin cookie auth/CSRF. Signup has no role field or promotion request. The browser checks repeated passwords and sends one password. Admin password verification leads to a restricted MFA challenge; recovery success explains the required protected re-enrollment.
+- `/owner` and `/admin` are capability-gated landing shells. Managers keep buyer discovery/account navigation; backend capabilities/current ownership remain authoritative. `/admin/role-requests` is retired.
+- `/preview` is DEV-only and retains explicitly labeled fictional restaurant/dish/survey fixtures. Its `demo_state=loading|empty|error` parameters simulate presentation states only. Main/production browsing imports no fixture data at runtime.
+- `features/restaurants/api` owns DTOs/fetch/mapping; the feature hook owns cancellation, stale-response protection, filter reset, keyset pagination and retry. Presentational controls receive values/callbacks.
 
-Search/category semantics are unchanged. Price uses a labeled native select. Each row displays the min/max price across all visible catalog dishes, including sold-out dishes and excluding hidden dishes, independent of active filters. Single-price catalogs show one amount; empty visible catalogs show “Chưa có giá món”. The feature formatter compares with BigInt and reuses shared VND formatting; it never computes order prices or delivery fees.
+Public search is a trimmed name prefix under `utf8mb4_0900_ai_ci` (case/diacritic insensitive). Restaurant category and price must match the same visible dish. Visible sold-out dishes remain discoverable. Price bands are `<30000`, inclusive `30000–50000`, and `>50000` VND. Cards show the full visible price range, independent of active filters. IDs/money remain strings; fees and distances are never synthesized from fixtures. Unknown delivery fees remain unknown.
 
-## Fixture boundary and interactions
+Discovery preserves border-separated rows, 80 px thumbnails below 1024 px / 96 px above, one/two columns and distinct manager/Admin shells. Menu rows use the same tokens with a content-only layout. Loading, no-result, unpublished/missing menu, connection error, retry and load-more failure states keep useful input context.
 
-- `src/features/restaurants/fixtures/restaurants.fixture.ts` contains only fictional restaurants, dishes, hours, static availability and fixed-point delivery examples. Nothing is a real survey, live status, authoritative quote or production default.
-- The persistent banner and per-card notes identify sample data. Local SVG illustrations are marked as illustrations; absent/broken images use a labeled fallback. One invalid image data URI intentionally exercises that fallback.
-- Search uses trimmed, NFC-normalized, case-insensitive Vietnamese name prefixes, preserving diacritics. It does not establish the future server collation.
-- Category and price must match the same visible dish. Sold-out visible dishes remain discoverable; hidden dishes and inactive restaurants are excluded. Price ranges are `< 30000`, inclusive `30000–50000`, and `> 50000` VND. Filters default to all values.
-- IDs/money stay strings. Price comparisons and the shared VND formatter use BigInt. A null fee is unknown; `"0"` is a known sample zero fee.
-- Cards and the fixed sample pickup point are read-only. The Student navigation enables Account and keeps Cart/Orders disabled. Auth/profile actions use the backend; there are no connected menus, cart, ordering, AI, reviews or fake mutation successes.
+## Connected browser evidence
 
-Development-only state URLs:
+`npm --prefix frontend run test:connected` requires Chrome, a migrated disposable loopback MySQL 9.2.0 database in `TEST_DATABASE_URL`, and compiled backend tests (`npm --prefix backend run test:compile`). It starts a guarded real backend and Vite, seeds **only the disposable test database**, and exercises signup/email/login, manager buyer navigation, Admin TOTP/recovery and public discovery/menu. Only outbound SMTP/password-corpus calls are replaced by the test harness. It captures 360/1440 px screenshots and checks keyboard focus/no horizontal overflow.
 
-| URL suffix | Result |
-| --- | --- |
-| `/preview?demo_state=loading` | Persistent horizontal-row skeletons with an accessible loading label |
-| `/preview?demo_state=empty` | Empty dataset; applying filters shows the distinct no-match state |
-| `/preview?demo_state=error` | Explicit simulated error; retry restores fixtures and preserves filters |
-
-Every simulated state is labeled. `/preview` and these parameters are absent from production routing. The authenticated Student home still labels its restaurant fixture data until discovery is connected.
-
-## Component boundaries
-
-- `App` routes `/login`, `/register`, `/verify-email`, `/`, `/account`, `/owner`, `/admin`, `/admin/role-requests` and development-only `/preview`. It calls `/auth/me` on load for real routes, keeps session state only in memory and redirects by current role; the backend remains authoritative for permissions. `/preview` skips the session request and can run with the backend stopped. Student, Owner and Admin layouts have distinct navigation. No routing dependency or browser token storage is used.
-- `features/auth` owns same-origin requests, cookie CSRF forwarding, forms and profile updates. Successful registration goes to login; protected routes wait for `/auth/me`. Owner/Admin landing pages explain that their business features are not connected yet.
-- Registration requires an email, requested role and repeated password. The browser checks matching passwords before sending one password to the API. The backend sends a six-digit verification code; `/verify-email` confirms it before login. Owner/Admin applicants remain Student until an Admin reviews `/admin/role-requests`. Use the Vite origin that exactly matches the backend's `PUBLIC_ORIGIN`.
-- `RestaurantListPage` owns local filters and development state selection; presentational components do not fetch.
-- `RestaurantFilters` takes values, categories, `onChange`, `onReset` and `hasFilters`; `RestaurantCard` takes one read-only `RestaurantSummary`; `RestaurantList` takes status, results, `hasFilters`, `onReset` and `onRetry`.
-- Types are internal fixture view models, not invented API DTOs. Backend integration will replace the fixture source through an approved feature hook/API layer.
-- `shared/ui` contains generic Button, Input, FilterChip, Badge, Icon and ListState. The CSS theme is the single token source; Fontsource bundles the Vietnamese, Latin and extended Latin subsets for weights 400/500/600/700/800.
-
-## Verification
-
-A narrow headless Chrome fixture smoke check is configured: `npm --prefix frontend run test:smoke` (or set `BROWSER_BIN`). It verifies rendering at 360 px; unit/component, connected browser journey and accessibility automation remain **NOT CONFIGURED**. Lint/build do not prove browser behavior. See the [discovery verification report](../docs/ui/student-discovery-verification.md) for actual checks and limitations.
-
-Check widths 360, 390, 768, 1024 and 1440 px; auth/profile forms, role navigation, keyboard/focus, 200% zoom and no horizontal scrolling. The existing fixture smoke checks `/preview` at 360 px; connected auth browser E2E remains **NOT CONFIGURED**.
+`test:smoke` is the smaller offline/public/DEV-preview/auth rendering check. Neither test proves production SMTP, password corpus availability, full accessibility, fulfillment or checkout. Current results and operator cutover prerequisites are in [implementation status](../docs/implementation-status.md) and the [cutover handoff](../docs/auth-discovery-cutover.md). Historical fixture observations remain in [the original report](../docs/ui/student-discovery-verification.md).

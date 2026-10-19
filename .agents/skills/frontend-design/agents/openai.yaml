@@ -1,0 +1,6 @@
+interface:
+  display_name: "Frontend Design"
+  short_description: "Propose intentional layouts within project identity"
+  default_prompt: "$frontend-design Propose the requested page layout using the approved identity, concrete content and responsive states."
+policy:
+  allow_implicit_invocation: true

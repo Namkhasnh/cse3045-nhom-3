@@ -10,8 +10,8 @@ export function RestaurantList({ status, restaurants, hasFilters, onReset, onRet
   onRetry: () => void
 }) {
   if (status === 'loading') {
-    return <div role="status" aria-busy="true" aria-label="Đang tải danh sách quán mẫu">
-      <p className="loading-label">Đang tải danh sách quán mẫu…</p>
+    return <div role="status" aria-busy="true" aria-label="Đang tải danh sách quán">
+      <p className="loading-label">Đang tải danh sách quán…</p>
       <div className="restaurant-grid" aria-hidden="true">
         {[0, 1, 2].map(item => (
           <div className="restaurant-card skeleton-card" key={item}>
@@ -27,8 +27,8 @@ export function RestaurantList({ status, restaurants, hasFilters, onReset, onRet
     </div>
   }
   if (status === 'error') {
-    return <ListState error title="Chưa tải được danh sách quán" icon="alert" action="Thử lại dữ liệu mẫu" onAction={onRetry}>
-      Đây là lỗi mô phỏng. Thử lại để xem danh sách mẫu; các bộ lọc của bạn vẫn được giữ.
+    return <ListState error title="Chưa tải được danh sách quán" icon="alert" action="Thử lại" onAction={onRetry}>
+      Kiểm tra kết nối và thử lại. Các bộ lọc của bạn vẫn được giữ.
     </ListState>
   }
   if (restaurants.length === 0) {
@@ -37,7 +37,7 @@ export function RestaurantList({ status, restaurants, hasFilters, onReset, onRet
           Thử tên quán khác hoặc bỏ bớt bộ lọc danh mục và giá nhé.
         </ListState>
       : <ListState title="Chưa có quán trong danh sách" icon="bowl">
-          Danh sách mẫu hiện đang trống. Các quán sẽ xuất hiện ở đây khi có dữ liệu.
+          Các quán sẽ xuất hiện ở đây khi sẵn sàng công khai.
         </ListState>
   }
   return <div className="restaurant-grid">

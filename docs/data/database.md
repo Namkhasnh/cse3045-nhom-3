@@ -3,32 +3,32 @@
 ## 1. Authority, scope and implementation boundary
 
 - Business authority: [requirements.md](../requirements.md), especially §§6–7 and §9; architecture authority: [architecture.md](../architecture.md), especially §§3–7, §9 and §12.
-- Target: **MySQL/InnoDB + Prisma + NestJS**, one database in a modular monolith. The account/audit slice, login counters, email verification and role requests have forward migrations; remaining business tables are proposed and absent.
+- Target: **MySQL/InnoDB + Prisma + NestJS**, one database in a modular monolith. See [implementation status](../implementation-status.md): four account/audit/auth SQL migrations exist under the legacy model; restaurant/menu are target work in the final snapshot; orders/finance/onboarding/sole Admin are target structures.
 - Requirements determine behavior; this document chooses storage layouts, keys and numeric precision to implement that behavior. It does not add payment gateways, driver accounts, automatic collection or cross-restaurant orders.
 - **DB** means an actual PK, FK, UNIQUE, CHECK or atomic transaction guarantee. **BE** means a NestJS domain/workflow/repository rule; a TypeScript type or Prisma annotation alone is not a database constraint.
 - Tables use `snake_case`; Prisma models may use PascalCase with mapping attributes. Use real foreign keys, not application-only relation emulation. Keep the package versions/configuration from the project lockfile, including `prisma7.config.ts`; the MariaDB-named adapter does not change the MySQL target.
-- Target **Oracle MySQL Community Server 8.4 LTS, release 8.4.11**, with InnoDB. Production/staging/local DB tests must use this release; changing patch or series requires reviewed compatibility and migration/race tests. MySQL 8.0.16 is only the historical CHECK-enforcement floor. Verify `SELECT VERSION()` and actual CHECK rejection before applying business migrations; fail on MariaDB or a different release. [MySQL 8.4 CHECK documentation](https://dev.mysql.com/doc/refman/8.4/en/create-table-check-constraints.html) describes enforcement.
+- Target **Oracle MySQL Community Server 9.2, release 9.2.0**, with InnoDB. Production/staging/local DB tests must use this release; changing patch or series requires reviewed compatibility and migration/race tests. MySQL 8.0.16 is only the historical CHECK-enforcement floor. Verify `SELECT VERSION()` and actual CHECK rejection before applying business migrations; fail on MariaDB or a different release. Verify actual CHECK rejection on 9.2.0; current CI mismatch is tracked in [implementation status](../implementation-status.md).
 
 ## 2. Data groups and ownership
 
 | Group / owning module | Tables | Delivery scope |
 | --- | --- | --- |
-| Accounts / `accounts` | `accounts`, `account_role_requests`, `auth_login_limits` | MVP: contact data, email verification, password hash, role requests, account availability and login limits |
-| Restaurants / `restaurants` | `restaurants`, `restaurant_hours` | MVP: one responsible owner per restaurant, multiple restaurants per owner |
-| Menu / `dishes` | `dish_categories`, `dishes` | MVP: current catalog; visibility and availability are independent |
-| Delivery / `delivery` | `pickup_points`, `delivery_policies`, `restaurant_pickup_rates`, `delivery_fee_tiers` | MVP surveyed points; fee tiers/free locations after MVP |
-| Orders / `orders` | `orders`, `order_items`, `order_status_history`, `order_requests` | MVP, including durable history and snapshots |
-| Payments / `payments` | `order_payments`, `payment_status_history`, `restaurant_qr_settings` | MVP cash; QR/refund extension after MVP |
-| Commission / `commissions` | `commission_policies`, `commission_entries`, `settlements`, `settlement_receipts`, `financial_requests` | MVP manual reconciliation; later dashboards reuse these records |
-| Audit / `audit` | `audit_logs` | MVP; transactional business audit |
+| Accounts / `accounts` | `accounts`, `admin_authority`, approved MFA/recovery structures, `auth_login_limits` | V1.0: ordinary identity, email verification, password hash, singleton authority/MFA, account availability and login limits; legacy role requests retained separately |
+| Restaurants / `restaurants` | `restaurants`, `restaurant_hours` | V1.0: one responsible manager per restaurant, at most one restaurant per account |
+| Menu / `dishes` | `dish_categories`, `dishes` | V1.0: current catalog; visibility and availability are independent |
+| Delivery / `delivery` | `pickup_points`, `delivery_policies`, `restaurant_pickup_rates`, `delivery_fee_tiers` | V1.0 surveyed points; fee tiers/free locations after V1.0 |
+| Orders / `orders` | `orders`, `order_items`, `order_status_history`, `order_requests` | V1.0, including durable history and snapshots |
+| Payments / `payments` | `order_payments`, `payment_status_history`, `restaurant_qr_settings` | V0.5 cash; V0.6 QR/refund, all required by V1.0 |
+| Commission / `commissions` | `commission_policies`, `commission_entries`, `settlements`, `settlement_receipts`, `financial_requests` | V0.7/V1.0 manual reconciliation, approved dashboards and reports |
+| Audit / `audit` | `audit_logs` | V1.0; transactional business audit |
 
-The frontend owns the cart draft; no server cart table is required. Reorder builds a new intent and revalidates current conditions. AI conversations/training data are not stored. Support is Should; its order link is required but fields/workflow remain **TBD**. Reviews/favorites are Could and remain **TBD**, not implicit MVP tables. Image upload/media metadata is conditional; store only image references until that design is selected. MVP has no refresh-token/session table. `accounts.auth_version` invalidates issued JWTs on logout or operator credential/status changes; current account state is checked on every authenticated request.
+The frontend owns the cart draft; no server cart table is required. Reorder builds a new intent and revalidates current conditions. AI conversations/training data are not stored. Support is V0.7/V1.0 required; order link/scoped access mandatory; exact workflow/retention is DEC-08. V1.1 reviews/favorites are Could and remain **TBD**, not implicit V1.0 tables. Image upload/media metadata is conditional; store only image references until that design is selected. V1.0 has no refresh-token/session table. `accounts.auth_version` invalidates issued JWTs on logout or operator credential/status changes; current account state is checked on every authenticated request.
 
 ## 3. ERD and cardinalities
 
 ```mermaid
 erDiagram
-    accounts ||--o{ restaurants : responsible_owner
+    accounts ||--o| restaurants : responsible_manager
     restaurants ||--o{ restaurant_hours : opens_at
     restaurants ||--o{ dishes : offers
     dish_categories ||--o{ dishes : classifies
@@ -87,7 +87,7 @@ Use `utf8mb4` for user text, `utf8mb4_0900_ai_ci` for catalog text, `utf8mb4_bin
 | --- | --- | --- | --- | --- |
 | `login_identifier` | VARCHAR(191) | N | — | Canonical lowercase ASCII username, UQ under binary collation; API §2 regex and length |
 | `password_hash` | VARCHAR(255) | N | — | Argon2id PHC hash; API §2 parameters, never plaintext |
-| `role` | ENUM(student, restaurant_owner, admin) | N | — | Canonical role mapping; public registration assigns student in BE |
+| `role` (retained compatibility) | Legacy ENUM student/restaurant_owner/admin | N | — | P01 preserves the column; new/cutover identity stores student. Sole Admin derives only from singleton; management only from ownership. No role-based privilege grant |
 | `display_name` | VARCHAR(200) | N | — | Account/contact name |
 | `phone` | VARCHAR(32) | Y | NULL | Current contact phone; recipient phone required at checkout; not implicitly unique |
 | `email` | VARCHAR(254) binary-collated | Y | NULL | Canonical lowercase unique email; null only for pre-migration/provisioned accounts |
@@ -100,18 +100,23 @@ Use `utf8mb4` for user text, `utf8mb4_0900_ai_ci` for catalog text, `utf8mb4_bin
 
 `auth_login_limits` stores shared login backoff counters with composite PK (`scope`, `subject_hash`). `scope` is `ip` or `username`; `subject_hash` is a binary-collated 64-character HMAC-SHA-256 hex digest keyed by the backend CSRF key over the client IP selected under API §2's trusted-proxy rule or canonical username. `window_start` is `DATETIME(3)` UTC and `failure_count` is `INT UNSIGNED` with a CHECK ceiling of five. Each attempt locks both scope rows in fixed order before checking credentials; failures update both counters atomically. The table contains no password or plaintext IP/username. Cleanup/retention policy for expired counters remains an operations decision before production.
 
-`account_role_requests` keeps one request per applicant account: `account_id` is unique and references `accounts`; `requested_role` is Owner/Admin (DB CHECK); `status` is pending/approved/rejected; `requested_at`, `reviewed_at`, and `reviewed_by` retain review history. Approval updates the account role, auth version, request and audit in one transaction. Existing accounts have no request row unless one is explicitly created.
+Target `admin_authority`: fixed singleton key (CHECK key=1), non-null UQ account FK, retained establishment/change audit. Runtime cannot insert/delete authority. This enforces at most one Admin; provisioning/readiness guarantees existence. [Account security](../account-security.md) owns assurance/recovery. Approved MFA material is protected separately; schema/limits gated by DEC-02, never plaintext logs or ordinary account DTOs.
+
+Legacy `account_role_requests` is historical input only: no target role approval API. Preserve records under [migration plan](migration-plan.md); never backfill terms acceptance or additional Admin authority from them.
+
+Target onboarding tables, terms-version hashes/consent and append-only reviews follow [onboarding §7](../onboarding.md#7-target-storage-and-api-handoff). P07 must finalize column limits and full schemas before their forward migrations. Required database guarantees: applicant/terms/reviewer/result FKs, immutable submitted consent/history, one resulting restaurant per approved application, actor+operation+key uniqueness for onboarding requests, atomic request result and unique ownership. A pending placeholder may exist only within the transaction, never as a successful committed request without result. Exact duplicate/resubmission rules remain DEC-03.
 
 `restaurants` — common: `id`, `created_at`, `updated_at`, `version`.
 
 | Column | Type | Null | Default | Meaning / keys |
 | --- | --- | --- | --- | --- |
-| `owner_id` | ID | N | — | FK → accounts.id; deliberately **not unique** |
+| `owner_id` | ID | N | — | FK → accounts.id; **UNIQUE across all restaurants**, including inactive/setup-required |
 | `name` | VARCHAR(200) | N | — | Current restaurant name |
 | `address` | VARCHAR(1000) | N | — | Current restaurant address |
 | `latitude`, `longitude` | LAT, LNG | Y | NULL | Both null or both populated; coordinates required by BE for route-based delivery |
 | `contact_phone` | VARCHAR(32) | N | — | Restaurant contact |
-| `is_active` | BOOLEAN | N | TRUE | Partner activation; FALSE blocks new orders |
+| `is_active` | BOOLEAN | N | FALSE | Target initial activation false; FALSE blocks new orders |
+| `readiness` | ENUM(setup_required, ready) | N | setup_required | Target configuration readiness; independent of activation/open/accepting |
 | `is_accepting_orders` | BOOLEAN | N | FALSE | Operational switch; TRUE alone does not mean open/orderable |
 
 `restaurant_hours` — common: `id`; no implicit timestamps.
@@ -154,7 +159,7 @@ Hours are a proposed structured representation of required opening hours. Multip
 | Table.column | Type | Null | Default | Meaning / keys |
 | --- | --- | --- | --- | --- |
 | delivery_policies.restaurant_id | ID | N | — | PK, FK → restaurants.id; one policy at most per restaurant |
-| delivery_policies.max_route_distance_m | INT UNSIGNED | Y | NULL | Post-MVP route limit; required by BE before enabling route-based quotes |
+| delivery_policies.max_route_distance_m | INT UNSIGNED | Y | NULL | Post-V1.0 route limit; required by BE before enabling route-based quotes |
 | restaurant_pickup_rates.restaurant_id | ID | N | — | Composite PK with pickup_point_id; FK → delivery_policies.restaurant_id |
 | restaurant_pickup_rates.pickup_point_id | ID | N | — | Composite PK with restaurant_id; FK → pickup_points.id |
 | restaurant_pickup_rates.distance_m | INT UNSIGNED | N | — | Surveyed distance in whole metres |
@@ -165,9 +170,9 @@ Hours are a proposed structured representation of required opening hours. Multip
 | delivery_fee_tiers.max_distance_m | INT UNSIGNED | N | — | Upper boundary; exclusive except last tier; CHECK max > min |
 | delivery_fee_tiers.delivery_fee_vnd | MONEY | N | — | Fee, CHECK ≥ 0 |
 
-MVP requires an enabled surveyed restaurant/point pair; missing pair means no confirmable quote. After MVP, BE checks route range, tier non-overlap and `[min,max)` boundaries, with the final maximum included (BR07–BR10). Missing coverage fails closed. All delivery edits bump policy version under the restaurant lock; pickup-point edits lock affected restaurants in ascending ID order before the point and bump point version.
+V1.0 requires an enabled surveyed restaurant/point pair; missing pair means no confirmable quote. After V1.0, BE checks route range, tier non-overlap and `[min,max)` boundaries, with the final maximum included (BR07–BR10). Missing coverage fails closed. All delivery edits bump policy version under the restaurant lock; pickup-point edits lock affected restaurants in ascending ID order before the point and bump point version.
 
-A delivery quote is not a payment transaction. Proposed storage uses a server-authenticated quote artifact, verified by BE, then an immutable order snapshot; no quote table or provider cache is required. It binds restaurant, destination/point version, policy/survey version, distance, fee and issuance/expiry. After MVP, route quotes must expire; TTL, map provider and normalization of provider distance to whole metres are **TBD**, to be settled before enabling route ordering. External route calls occur before DB transactions.
+A delivery quote is not a payment transaction. Proposed storage uses a server-authenticated quote artifact, verified by BE, then an immutable order snapshot; no quote table or provider cache is required. It binds restaurant, destination/point version, policy/survey version, distance, fee and issuance/expiry. After V1.0, route quotes must expire; TTL, map provider and normalization of provider distance to whole metres are **TBD**, to be settled before enabling route ordering. External route calls occur before DB transactions.
 
 ### 4.3. Orders, items, history and durable idempotency
 
@@ -175,10 +180,10 @@ A delivery quote is not a payment transaction. Proposed storage uses a server-au
 
 | Column | Type | Null | Default | Meaning / keys |
 | --- | --- | --- | --- | --- |
-| `student_id` | ID | N | — | FK → accounts.id; role/ownership checked by BE |
+| `student_id` | ID | N | — | FK → accounts.id; buyer/current-ownership checked by BE |
 | `restaurant_id` | ID | N | — | FK → restaurants.id; UQ `(id, restaurant_id)` for child consistency |
 | `status` | ENUM(pending, accepted, rejected, cancelled, delivering, completed) | N | pending | Current order lifecycle, independent of payment |
-| `pickup_point_id` | ID | Y | NULL | FK → pickup_points.id; required by BE for MVP, null for free location |
+| `pickup_point_id` | ID | Y | NULL | FK → pickup_points.id; required by BE for V1.0, null for free location |
 | `pickup_point_name_snapshot` | VARCHAR(200) | Y | NULL | Required by BE when a fixed point is selected |
 | `recipient_name_snapshot` | VARCHAR(200) | N | — | Recipient at checkout |
 | `recipient_phone_snapshot` | VARCHAR(32) | N | — | Recipient contact at checkout |
@@ -192,7 +197,7 @@ A delivery quote is not a payment transaction. Proposed storage uses a server-au
 | `commission_rate_snapshot` | RATE | N | — | Agreed-at-creation commission fraction; CHECK ≥ 0 |
 | `completed_at` | DATETIME(3) | Y | NULL | Set on completed; CHECK present iff status = completed |
 
-`delivery_quote_snapshot` keys: `schema_version`, `source` (`survey` or `route`, technical provenance), `restaurant_id`, `policy_version`, `pickup_point_version` and `survey_version` (nullable for route), `destination` (text/coordinates and optional pickup point ID/name), `distance_m`, `delivery_fee_vnd`, `issued_at`, `expires_at` (nullable for MVP survey), and `matched_tier` (null for survey; otherwise min/max/fee and whether upper bound is inclusive). Serialize IDs/money as strings. BE checks consistency with typed columns; DB checks JSON syntax only. Do not save entire provider responses or credentials.
+`delivery_quote_snapshot` keys: `schema_version`, `source` (`survey` or `route`, technical provenance), `restaurant_id`, `policy_version`, `pickup_point_version` and `survey_version` (nullable for route), `destination` (text/coordinates and optional pickup point ID/name), `distance_m`, `delivery_fee_vnd`, `issued_at`, `expires_at` (nullable for V1.0 survey), and `matched_tier` (null for survey; otherwise min/max/fee and whether upper bound is inclusive). Serialize IDs/money as strings. BE checks consistency with typed columns; DB checks JSON syntax only. Do not save entire provider responses or credentials.
 
 `order_items` — common: `id` only. `order_status_history` — common: `id`, `created_at` only, append-only.
 
@@ -228,12 +233,12 @@ Hash input includes restaurant ID, normalized/sorted dish IDs and quantities, ac
 
 Payment state lives in **`order_payments`**, not in `orders` and not in a platform payment-gateway ledger. The payments module alone writes it. `order_id` is both PK and FK, so DB allows at most one payment row; order creation ensures exactly one. History records every effective transition, initial unpaid, actor and evidence reference atomically. It is separate from commission collection receipts.
 
-`order_payments` — common: `created_at`, `updated_at`, `version`; no `id`. `payment_status_history` — common: `id`, `created_at` only. `restaurant_qr_settings` — common: `created_at`, `updated_at`, `version`; no `id`, post-MVP.
+`order_payments` — common: `created_at`, `updated_at`, `version`; no `id`. `payment_status_history` — common: `id`, `created_at` only. `restaurant_qr_settings` — common: `created_at`, `updated_at`, `version`; no `id`, required V0.6/V1.0.
 
 | Table.column | Type | Null | Default | Meaning / keys |
 | --- | --- | --- | --- | --- |
 | order_payments.order_id | ID | N | — | PK, FK → orders.id |
-| order_payments.method | ENUM(cash, qr) | N | — | Direct restaurant payment; BE enables cash only in MVP |
+| order_payments.method | ENUM(cash, qr) | N | — | Direct restaurant payment; cash V0.5, direct QR V0.6, both required V1.0 |
 | order_payments.status | ENUM(unpaid, paid, refund_pending, refunded) | N | unpaid | Independent payment lifecycle |
 | order_payments.confirmed_by | ID | Y | NULL | FK → accounts.id; actual restaurant confirmer |
 | order_payments.confirmed_at | DATETIME(3) | Y | NULL | Receipt confirmation instant |
@@ -252,6 +257,8 @@ Payment state lives in **`order_payments`**, not in `orders` and not in a platfo
 DB CHECKs pair each confirmer/refunder ID with its timestamp; require confirmation fields for paid/refund_pending/refunded and refund fields iff refunded. BE validates legal changes and verifies the actor's current ownership. Cash receipt confirmation changes unpaid → paid. No payment state is a prerequisite for completed; marking paid never completes an order or creates platform commission receipts.
 
 For the architectural QR extension: cancellation/rejection of an already-paid transfer changes paid → refund_pending in the same transaction; late confirmation on a cancelled/rejected order changes unpaid → refund_pending while recording confirmation fields/evidence. Restaurant-recorded completion changes refund_pending → refunded. Repeated effective confirmation/refund is a no-op after authorization. QR evidence requirements, other permitted refund transitions and exceptional cash refunds are **TBD**; do not silently enable extra transitions or automatic refunds.
+
+V0.6 requires independent retained receipt-confirmation and refund-obligation/progress facts/history, while the status projection stays unpaid/paid/refund_pending/refunded. [Payment policy](../payments-policy.md) and DEC-06 govern exact evidence, QR representation, partial/exceptional refunds and protected bank fields before P20 schemas. No paid/cancel/refund combination may overwrite receipt history or reopen fulfillment.
 
 ### 4.5. Commission, settlements and manual receipts
 
@@ -317,7 +324,7 @@ Audit dish/restaurant edits and deletes, policy/rate/owner changes, order transi
 
 ## 5. Enums and permitted state changes
 
-Canonical role labels are Student, Restaurant Owner and Admin; persisted values are `student`, `restaurant_owner`, `admin`. Canonical methods “cash” and “QR transfer” map to `cash`, `qr`. SQL ENUM restricts values only; it cannot enforce actor permissions or transition paths.
+Target ordinary identity is user; management derives from current unique ownership. Sole Admin derives from `admin_authority`. P01 retains the `student|restaurant_owner|admin` enum for expansion-window compatibility while explicitly mapping retained privileged accounts to student and revoking old sessions. Its values grant no authority in current code; future column removal requires a separate compatibility/retention review. Canonical methods “cash” and “QR transfer” map to `cash`, `qr`. SQL ENUM restricts values only; it cannot enforce actor permissions or transition paths.
 
 - Order: initial `pending`; `pending → accepted | rejected | cancelled`; `accepted → delivering`; `delivering → completed`. Rejected/cancelled/completed are terminal. Student cancellation is limited to their own pending order; the owner handles acceptance/rejection/delivery/completion and supplies a rejection reason.
 - Payment: `unpaid`, `paid`, `refund_pending`, `refunded`, governed separately as in §4.4. Scanning QR or reporting a transfer is never confirmation.
@@ -340,8 +347,8 @@ Let `S = subtotal_vnd ≥ 0`, `R = rate × 100000000` as an exact integer. Base 
 
 | Invariant | DB enforcement | BE enforcement |
 | --- | --- | --- |
-| One responsible owner; owner can manage many restaurants | Non-null owner FK, no owner UQ | Assigned account has restaurant_owner role; current ownership/active actor checked on locked writes; role changes cannot strand owned restaurants |
-| One restaurant per order; all lines match | Non-null order FK; composite item→order and item→dish FKs | Nonempty cart, visible/available dishes, active/open/accepting restaurant; historical dish/order restaurant IDs immutable |
+| One responsible manager; at most one restaurant per account | Non-null owner FK and owner UQ | Assigned active verified ordinary user; current ownership/active actor rechecked on locked writes; sole Admin not inherited as manager |
+| One restaurant per order; all lines match | Non-null order FK; composite item→order and item→dish FKs | Nonempty cart, visible/available dishes, ready/active/open/accepting restaurant; historical dish/order restaurant IDs immutable |
 | Valid totals, rates and quantities | NOT NULL, CHECK domain/row equations; BOOLEAN checks restrict 0/1 | Cross-row subtotal, overflow, exact rounding and agreed-price/fee conflict handling |
 | Durable order retries | Request scope UQ, result UQ/FK; atomic commit | Canonical hash, actor/result consistency, complete aggregate and result before commit |
 | One base per order; no commission for cancelled/rejected orders | Base guard CHECK + nullable UQ(base_order_id) | Completed-only base creation, correct snapshot formula, completion and base in one transaction; adjustments require an existing base on a completed order |
@@ -358,7 +365,7 @@ Define every CHECK in a reviewed SQL migration when Prisma cannot express it. Te
 **All FKs in this design use ON DELETE RESTRICT and ON UPDATE RESTRICT**, including history, request-result, actor and composite FKs. IDs are immutable. No cascade deletes of orders, payments, ledger entries, receipts or audit; no SET NULL that silently detaches history. Audit target_id is a logical reference, so deleting an unused target preserves its audit.
 
 - Dish: physically delete only when never ordered; item FKs block deletion otherwise. Hide/stop selling an ordered dish. Deleting a category with dishes is blocked; category lifecycle is not expanded here.
-- Restaurant: admin physically deletes only with no orders and no settlements. Under the shared restaurant lock, owner services explicitly delete unused menu, hours, delivery tiers/survey links/policy, QR configuration and commission policy, then restaurant; write audit in the same transaction. Retain owner account and their other restaurants. Historical FKs are a final safeguard if a check races.
+- Restaurant: admin physically deletes only with no orders and no settlements. Under the shared restaurant lock, owner services explicitly delete unused menu, hours, delivery tiers/survey links/policy, QR configuration and commission policy, then restaurant; write audit in the same transaction. Retain the owner account, buyer access and all historical actor references. Historical FKs are a final safeguard if a check races.
 - Restaurant with history: deactivate; keep handling existing orders and outstanding commission. This does not cancel orders or erase management links.
 - Pickup points: disable when referenced; RESTRICT protects orders. Unused points may be removed after configuration links are deliberately cleaned. Preserve snapshots regardless of later edits.
 - Accounts: deactivate to preserve ownership/actor history. Physical account deletion, personal-data retention/anonymization periods and privileged purge procedure are **TBD**; do not implement automatic purges. Retain successful idempotency keys for the order/financial history lifetime, not a short TTL.
@@ -371,7 +378,7 @@ Create PK/UQ indexes from the dictionary plus the following named-column indexes
 | Table | Index columns / uniqueness | Query or protection |
 | --- | --- | --- |
 | accounts | UQ login_identifier | Login lookup |
-| restaurants | `(owner_id, id)`; `(is_active, name, id)` | Owner scope; active restaurant browsing |
+| restaurants | UQ `owner_id`; `(is_active, name, id)` | Owner scope; active restaurant browsing |
 | restaurant_hours | `(restaurant_id, weekday, opens_at)` | Opening intervals |
 | dishes | `(restaurant_id, is_visible, is_available, category_id, price_vnd, id)`; `(name, id)` | Menus/category/price filters; prefix name search |
 | restaurant_pickup_rates | PK `(restaurant_id, pickup_point_id)`; `(pickup_point_id, restaurant_id)` | Quote lookup and point-change locking |
@@ -391,14 +398,14 @@ Substring searches such as `%term%` are not accelerated by ordinary name indexes
 
 Workflow opens one Prisma interactive transaction and passes the same TransactionContext to public services; each repository accesses only its module's tables. Use parameterized locking SQL in repositories where Prisma lacks a locking primitive. Read current data with locking reads, not earlier nonlocking snapshots; specify/test the isolation setting on real MySQL. No AI/map/storage calls or real-money transfers inside retried transactions.
 
-Global lock order: relevant account rows ascending ID (actor and any account being assigned) → request-key row when applicable → restaurant(s) ascending ID → orders then dishes, each ascending ID → referenced pickup point and delivery policy/survey/tier rows in fixed table/ID order → commission policy → payment → settlements ascending ID → commission entries ascending ID. The account prefix serializes role/deactivation checks; the remaining order follows architecture §7.1. Lock only needed groups. Catalog, owner assignment, fees/rates, activation and deletion all participate in restaurant locking. Point changes discover affected restaurants, lock them ascending, lock the point, recheck the relationship set and retry if it changed; pair creation also follows restaurant→point locking.
+Global lock order: relevant account rows ascending ID (actor and any account being assigned) → request-key row when applicable → singleton Admin authority (when required) → onboarding application/terms rows in fixed ID order (when required) → restaurant(s) ascending ID → orders then dishes, each ascending ID → referenced pickup point and delivery policy/survey/tier rows in fixed table/ID order → commission policy → payment → settlements ascending ID → commission entries ascending ID. The account prefix serializes authority/deactivation/ownership-cap checks; the remaining order follows architecture §7.1. Lock only needed groups. Catalog, owner assignment, fees/rates, activation and deletion all participate in restaurant locking. Point changes discover affected restaurants, lock them ascending, lock the point, recheck the relationship set and retry if it changed; pair creation also follows restaurant→point locking.
 
 1. **Create order:** authenticate and normalize payload; look up `(actor, create_order, key)`. For an existing successful key compare hash and return the original order, or conflict on changed content, before evaluating new prices. Otherwise insert/reserve the unique key inside the transaction; lock restaurant and relevant records, recheck actor, catalog, opening hours, destination, quote versions/expiry and commission rate. Reject stale agreed prices/fees. Compute and insert order/items, initial pending event, unpaid payment/event, audit and request result; commit together. On key collision roll back/re-read the winner, with bounded waiting; never commit a placeholder request alone.
 2. **Transition:** lock restaurant then order, recheck current owner/student access. If current target is already reached, return authorized no-op. Otherwise validate edge and issue `UPDATE orders SET status=?, version=version+1 ... WHERE id=? AND status=? AND version=?`; require exactly one affected row. Append history/audit. For completed insert the unique base using snapshots; failure rolls back completed. For paid QR cancellation/rejection include refund_pending and payment history/audit in this transaction.
 3. **Confirm payment/refund:** lock restaurant→order→payment, authorize current owner and inspect the latest order/payment states. Conditional update by status/version, confirmation/refund metadata, history and audit commit together. Handle late transfer confirmation on terminal orders as §4.4; never reopen the order. Repeated confirmation has no new receipt or commission effect.
 4. **Create settlement:** lock restaurant, selected entries in ID order (and any existing settlement rows first). Verify same restaurant, eligible selection and no previous assignment. Insert settlement and set each entry with `WHERE id=? AND restaurant_id=? AND settlement_id IS NULL`; require the expected total affected rows or roll back all assignments and audit. A non-null settlement FK alone does not prevent later reassignment; the conditional repository operation does.
 5. **Record receipt/adjustment:** after the account prefix, reserve a financial request key, then follow the shared locks, check admin permission and immutable financial context, insert fact plus audit and request result in one transaction. Adjustments require a completed order with its base entry and a nonempty reason. Same key/content returns prior result; changed content conflicts. No external collection is performed. Receipt and adjustment totals are derived on read, avoiding a second mutable balance source.
-6. **Mutate/delete catalog or policies:** after the account prefix, acquire shared restaurant lock, validate current authority/history, update rows and relevant versions or explicitly clean unused children, and append audit before commit. Account role changes lock the affected account before its restaurants; forbid removing the owner role while responsible restaurants remain. Every write workflow follows the same account prefix, never locking an account after a restaurant.
+6. **Mutate/delete catalog or policies:** after the account prefix, acquire shared restaurant lock, validate current authority/history, update rows and relevant versions or explicitly clean unused children, and append audit before commit. Account status and ownership changes lock affected accounts before their restaurants; preserve the one-restaurant constraint and current authority. No owner-role promotion/removal is used. Every write workflow follows the same account prefix, never locking an account after a restaurant.
 
 Retry only transient deadlocks/lock timeouts, bounded (architecture proposes up to three attempts with backoff), replaying the entire transaction with the same request key. Conflicts, invalid transitions and permission errors are not automatic retries. Unique violations require inspecting which constraint failed, not generic success. Never rely on a Node.js mutex for cross-instance correctness. A committed response lost in transit is recovered through its durable request record.
 
@@ -408,9 +415,13 @@ Retry only transient deadlocks/lock timeouts, bounded (architecture proposes up 
 - Develop against disposable local MySQL, review migration diffs, apply to an empty database and an upgraded fixture, then inspect actual constraints. Pin the selected MySQL version and verify its CHECK/strict-mode behavior. Do not substitute SQLite or ORM mocks for financial/concurrency integration tests.
 - For populated databases use expand→backfill→validate→constrain→contract: add compatible nullable/new structures, backfill in bounded batches from trustworthy data, verify invariants, then enforce required fields and retire old readers. Missing historical snapshots cannot be invented from current menu data; resolve and document migration policy first.
 - Production uses reviewed deploy migrations with a separate migration identity and pre-deploy backup/restore plan. Never run reset, force-reset, destructive schema push or demo seeds on real data. Do not edit migrations already applied; make forward corrective migrations. Coordinate incompatible schema/app deployment and explicitly plan restoration for destructive changes.
-- Seed only explicit local/test targets with a database-name/environment allowlist and a refusal for real deployments. Use deterministic fictional students, one owner with multiple restaurants, a second owner, admin, categories/dishes, fixed VJU pickup points and clearly labeled test survey fees/rates. Hash test passwords; no real contacts, QR accounts, provider keys or production credentials. Do not treat demo distances/fees as real surveys.
-- Include fixtures for hidden/sold-out dishes, inactive/closed restaurants, all order/payment states appropriate to the test scope, zero/fractional-rate rounding, adjustments, unassigned/assigned entries and partial receipts. Construct consistent snapshots/history/ledger, preferably through the same services. Post-MVP QR fixtures belong to an explicitly enabled test scope.
+- Seed only explicit local/test targets with a database-name/environment allowlist and a refusal for real deployments. Use deterministic fictional students, two ordinary buyer-managers with one restaurant each, a user without ownership and one sole Admin, categories/dishes, fixed VJU pickup points and clearly labeled test survey fees/rates. Hash test passwords; no real contacts, QR accounts, provider keys or production credentials. Do not treat demo distances/fees as real surveys.
+- Include fixtures for hidden/sold-out dishes, inactive/closed restaurants, all order/payment states appropriate to the test scope, zero/fractional-rate rounding, adjustments, unassigned/assigned entries and partial receipts. Construct consistent snapshots/history/ledger, preferably through the same services. QR/refund fixtures are required by V0.6/V1.0 after DEC-06 is resolved.
 - Required implementation tests: direct SQL constraint violations; accept/cancel race; concurrent same-key order creation and changed-hash conflict; price/fee/owner/deactivation races; repeated completed with one base; completion/audit rollback; payment/cancel and late-confirmation races; overlapping settlement assignment; financial retry deduplication; historical snapshots after edits; restricted deletion. Assert both results and durable row counts/history.
 - Daily backups and a successfully verified restore are required before go-live (NFR08). Retention, hosting, AI/map/storage providers, quote TTL, support/review/favorite design and unresolved financial correction/period policies remain **TBD**; finalize only the relevant decisions before enabling those capabilities.
 
 This document specifies guarantees to implement and verify; it does not claim that a schema migration, database integration test or production backup has already run.
+
+### 11.1 Commercial migration gate
+
+[Forward migration plan](migration-plan.md) is mandatory for P01/P10: explicit primary Admin selection, legacy multi-ownership resolution, preserved role-request history, expand/backfill/validate/constrain/cutover and empty/upgrade MySQL 9.2.0 evidence. This documentation revision changes no schema, applied migration or retained data. Any previously applied nonunique-owner schema/migration remains immutable evidence; add a reviewed forward constraint only after actual conflicts are resolved.

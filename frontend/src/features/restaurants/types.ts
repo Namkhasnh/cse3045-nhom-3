@@ -1,4 +1,4 @@
-// Fixture view models, not API DTOs or production eligibility decisions.
+// Presentation models; catalog API DTOs are mapped at the feature boundary.
 export type FixtureDish = {
   readonly id: string
   readonly category: string
@@ -8,6 +8,8 @@ export type FixtureDish = {
 }
 
 export type RestaurantSummary = {
+  readonly fixture?: boolean
+  readonly priceRange?: { min: string | null; max: string | null }
   readonly id: string
   readonly name: string
   readonly description: string

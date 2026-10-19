@@ -70,7 +70,7 @@ jobs:
         working-directory: backend
     services:
       mysql:
-        image: mysql:8.4.11
+        image: mysql:9.2.0
         env:
           MYSQL_ROOT_PASSWORD: local_test_only
           MYSQL_DATABASE: test_hlf

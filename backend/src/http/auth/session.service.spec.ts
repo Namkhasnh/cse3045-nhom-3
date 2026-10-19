@@ -30,7 +30,7 @@ test('Argon2id PHC hash verifies and rejects wrong password', async () => {
 
 test('JWT binds to active account version and CSRF binds to jti', async () => {
   let current = account;
-  const sessions = new SessionService({ findById: async () => current } as never);
+  const sessions = new SessionService({ findById: async () => current, access: async () => ({ isAdmin: false, capabilities: ['buy'] }) } as never);
   const { jwt, csrf } = sessions.issue(account);
   const verified = await sessions.verify(jwt);
   assert.equal(verified.account.id, 1n);

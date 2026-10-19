@@ -7,6 +7,7 @@ export const fixtureCategories = ['Cơm', 'Bún · Phở', 'Bánh mì', 'Đồ u
 
 export const restaurantFixtures = [
   {
+    fixture: true,
     id: '9007199254740993', name: 'Cơm Gà Bà Tư', cuisine: 'Cơm',
     description: 'Cơm dẻo, gà giòn — bữa trưa thật tròn vị.', hours: '07:00 – 21:00',
     isActive: true, isOpen: true, isAcceptingOrders: true,
@@ -17,6 +18,7 @@ export const restaurantFixtures = [
     ],
   },
   {
+    fixture: true,
     id: '2', name: 'Bún Chả Hà Nội 79', cuisine: 'Bún · Phở',
     description: 'Thơm mùi than hoa, đậm vị Hà Nội.', hours: '10:00 – 20:30',
     isActive: true, isOpen: true, isAcceptingOrders: true,
@@ -24,6 +26,7 @@ export const restaurantFixtures = [
     dishes: [{ id: '201', category: 'Bún · Phở', priceVnd: '50000', isVisible: true, isAvailable: true }],
   },
   {
+    fixture: true,
     id: '3', name: 'Bánh Mì Cô Lan', cuisine: 'Bánh mì',
     description: 'Ổ bánh nóng giòn cho những ngày bận rộn.', hours: '06:30 – 19:00',
     isActive: true, isOpen: true, isAcceptingOrders: true,
@@ -35,6 +38,7 @@ export const restaurantFixtures = [
     ],
   },
   {
+    fixture: true,
     id: '4', name: 'Phở Bò Gia Truyền', cuisine: 'Bún · Phở',
     description: 'Nước dùng thanh, một tô ấm bụng.', hours: '06:00 – 13:30',
     isActive: true, isOpen: false, isAcceptingOrders: true,
@@ -45,6 +49,7 @@ export const restaurantFixtures = [
     ],
   },
   {
+    fixture: true,
     id: '5', name: 'Trà Sữa Mộc', cuisine: 'Đồ uống',
     description: 'Chút ngọt ngào cho giờ nghỉ giữa buổi.', hours: '09:00 – 22:00',
     isActive: true, isOpen: true, isAcceptingOrders: false,
@@ -52,6 +57,7 @@ export const restaurantFixtures = [
     dishes: [{ id: '501', category: 'Đồ uống', priceVnd: '35000', isVisible: true, isAvailable: false }],
   },
   {
+    fixture: true,
     id: '6', name: 'Bếp Nhà — Cơm niêu & món Việt mỗi ngày', cuisine: 'Cơm · Ăn vặt',
     description: 'Bữa cơm nhà thân quen ngay gần trường.', hours: '10:30 – 20:00',
     isActive: true, isOpen: true, isAcceptingOrders: true,
@@ -64,6 +70,7 @@ export const restaurantFixtures = [
     ],
   },
   {
+    fixture: true,
     id: '7', name: 'Quán đã ngừng hoạt động', cuisine: 'Cơm', description: 'Excluded fixture.', hours: '07:00 – 21:00',
     isActive: false, isOpen: true, isAcceptingOrders: true,
     imageSrc: null, illustrationTone: 'rice', deliveryFeeVnd: '0', distanceMetres: 100,

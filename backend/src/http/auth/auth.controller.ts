@@ -1,9 +1,10 @@
 import { Body, Controller, Get, HttpCode, Post, Req, Res,
   UnprocessableEntityException, UseGuards } from '@nestjs/common';
-import { AccountsService, publicAccount } from '../../modules/accounts/accounts.service.js';
+import { AccountsService } from '../../modules/accounts/accounts.service.js';
 import { canonicalUsername } from '../../modules/accounts/password-policy.js';
 import { SessionService } from './session.service.js';
 import { SessionGuard, type AuthRequest } from './session.guard.js';
+import { MfaService } from '../../modules/accounts/mfa.service.js';
 import { isIP } from 'node:net';
 import { canonicalEmail } from '../../modules/accounts/email-verification.service.js';
 
@@ -35,11 +36,11 @@ function exactBody(value: unknown, required: string[], optional: string[] = []):
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly accounts: AccountsService, private readonly sessions: SessionService) {}
+  constructor(private readonly accounts: AccountsService, private readonly sessions: SessionService, private readonly mfa: MfaService) {}
 
   @Post('register')
   async register(@Body() body: unknown) {
-    const input = exactBody(body, ['login_identifier', 'password', 'display_name', 'email', 'requested_role'], ['phone']);
+    const input = exactBody(body, ['login_identifier', 'password', 'display_name', 'email'], ['phone']);
     const username = canonicalUsername(input.login_identifier);
     if (typeof input.password !== 'string') throw new UnprocessableEntityException();
     const name = input.display_name;
@@ -47,15 +48,12 @@ export class AuthController {
     let email: string;
     try { email = canonicalEmail(input.email); } catch { throw new UnprocessableEntityException({
       code: 'VALIDATION_ERROR', message: 'Invalid email address.' }); }
-    if (!['student', 'restaurant_owner', 'admin'].includes(input.requested_role as string)) {
-      throw new UnprocessableEntityException({ code: 'VALIDATION_ERROR', message: 'Invalid requested role.' });
-    }
     if (typeof name !== 'string' || !name.trim() || [...name].length > 200 ||
       (phone !== null && (typeof phone !== 'string' || !/^\+?[0-9]{9,15}$/.test(phone)))) {
       throw new UnprocessableEntityException({ code: 'VALIDATION_ERROR', message: 'Invalid contact details.' });
     }
-    return publicAccount(await this.accounts.register(username, input.password, name, phone,
-      email, input.requested_role as 'student' | 'restaurant_owner' | 'admin'));
+    return this.accounts.present(await this.accounts.register(username, input.password, name, phone,
+      email));
   }
 
   @Post('verify-email')
@@ -64,7 +62,7 @@ export class AuthController {
     const input = exactBody(body, ['login_identifier', 'code']);
     const username = canonicalUsername(input.login_identifier);
     if (typeof input.code !== 'string') throw new UnprocessableEntityException();
-    return publicAccount(await this.accounts.verifyEmail(username, input.code));
+    return this.accounts.present(await this.accounts.verifyEmail(username, input.code));
   }
 
   @Post('resend-email-code')
@@ -83,18 +81,39 @@ export class AuthController {
     const username = canonicalUsername(input.login_identifier);
     if (typeof input.password !== 'string') throw new UnprocessableEntityException();
     const account = await this.accounts.authenticate(username, input.password, clientIp(request));
-    const { jwt, csrf } = this.sessions.issue(account);
+    if ((await this.accounts.access(account)).isAdmin) return this.mfa.challenge(account, clientIp(request));
+    return this.completeLogin(account, response, false);
+  }
+
+  @Post('admin/mfa/verify')
+  @HttpCode(200)
+  async verifyMfa(@Body() body: unknown, @Req() request: PeerRequest,
+    @Res({ passthrough: true }) response: AuthResponse) {
+    const input = exactBody(body, ['challenge_id'], ['code', 'recovery_code']);
+    if (typeof input.challenge_id !== 'string' || !/^[A-Za-z0-9_-]{43}$/.test(input.challenge_id) ||
+      (('code' in input) === ('recovery_code' in input)) ||
+      ('code' in input && (typeof input.code !== 'string' || !/^[0-9]{6}$/.test(input.code))) ||
+      ('recovery_code' in input && (typeof input.recovery_code !== 'string' || !/^[a-f0-9]{32}$/.test(input.recovery_code)))) {
+      throw new UnprocessableEntityException({ code: 'VALIDATION_ERROR', message: 'Invalid MFA proof.' });
+    }
+    const result = await this.mfa.verify(input.challenge_id, input as { code?: string; recovery_code?: string }, clientIp(request));
+    if (result.recovery) return { re_enrollment_required: true };
+    return this.completeLogin(result.account, response, true);
+  }
+
+  private completeLogin(account: import('../../generated/prisma/client.js').Account, response: AuthResponse, mfa: boolean) {
+    const { jwt, csrf } = this.sessions.issue(account, mfa);
     response.cookie('__Host-hlf_access', jwt, { httpOnly: true, secure: true, sameSite: 'lax', path: '/', maxAge: 900000 });
     response.cookie('__Host-hlf_csrf', csrf, { httpOnly: false, secure: true, sameSite: 'lax', path: '/', maxAge: 900000 });
     response.setHeader('Cache-Control', 'no-store');
-    return publicAccount(account);
+    return this.accounts.present(account);
   }
 
   @Get('me')
   @UseGuards(SessionGuard)
   me(@Req() request: AuthRequest, @Res({ passthrough: true }) response: AuthResponse) {
     response.setHeader('Cache-Control', 'no-store');
-    return publicAccount(request.authAccount!);
+    return this.accounts.present(request.authAccount!);
   }
 
   @Post('logout')
@@ -106,6 +125,6 @@ export class AuthController {
     response.clearCookie('__Host-hlf_access', { secure: true, sameSite: 'lax', path: '/' });
     response.clearCookie('__Host-hlf_csrf', { secure: true, sameSite: 'lax', path: '/' });
     response.setHeader('Cache-Control', 'no-store');
-    return publicAccount(account);
+    return this.accounts.present(account);
   }
 }

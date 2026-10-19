@@ -1,97 +1,44 @@
 # Hoa Lac Food Ordering Platform
 
-Nền tảng khám phá món ăn và đặt món dành cho sinh viên Hòa Lạc, triển khai đầu tiên tại VJU.
-Yêu cầu sản phẩm: [docs/requirements.md](docs/requirements.md).
+Food discovery and ordering for VJU. V1.0 targets public browsing, ordinary-user accounts with optional management of one restaurant, a single MFA-protected Admin, fixed surveyed pickup points, cash and QR paid directly to restaurants, restaurant delivery, manual commission reconciliation and controlled AI suggestions.
 
-Documentation map: [docs/README.md](docs/README.md). AI contributor instructions: [AGENTS.md](AGENTS.md).
+Use [short requests](docs/prompts/quick-start.md) such as “Run P04”, “continue” or a scoped UI fix; repository instructions supply routine context. Start with the [documentation map](docs/README.md), [commercial roadmap](docs/roadmap.md) and [full P01–P36 prompts](docs/prompts/README.md). [Requirements](docs/requirements.md) govern behavior; [AGENTS.md](AGENTS.md) routes contributor work. Technical documents and prompts are English; product UI copy is Vietnamese.
 
-The repository contains backend accounts/authentication and frontend auth/profile routes. Student restaurant discovery still uses explicitly labeled fixtures; connected ordering workflows are not implemented.
+## Current implementation
 
-## Công nghệ hiện có
+This repository is not a completed commercial platform. Ordinary auth/profile/email, buyer-manager capabilities, sole Admin MFA/recovery and connected public discovery exist; preview fixtures remain labeled. Onboarding and later commercial workflows remain target work. **V0.1 is accepted**, October 19, 2026, under the [recorded criterion-by-criterion self-review](docs/progress/V0.1.md). Later milestones remain unaccepted. See [current source and evidence](docs/implementation-status.md); it separates clean-lockfile local verification, retained Admin observations and unobserved remote CI.
 
-- Frontend: Vite, React, TypeScript, Tailwind CSS 4, self-hosted Be Vietnam Pro.
-- Backend: NestJS, TypeScript, REST; global validation và cấu hình môi trường.
-- Database: MySQL qua Prisma và MariaDB adapter; quản lý kết nối theo vòng đời NestJS.
-- CI: lint, build frontend; lint, unit test, E2E và build backend.
+The documentation rewrite changes no application code, migrations, accounts or data. Old role requests are not opening applications and do not establish partnership consent. No V0.x or V1.0 completion is claimed.
 
-Student register/login/me/profile/logout use cookie JWT and CSRF. The frontend calls these endpoints and routes Student, Owner and Admin to separate layouts. Privileged account creation is an operator-only signed-manifest CLI; see [deployment §6](docs/deployment.md#6-first-admin-and-initial-partner-bootstrap).
+## Local setup
 
-## Chuẩn bị
-
-Dùng Node.js 24 và npm để khớp môi trường CI. Cần MySQL đang chạy và một database đã được tạo.
+Use Node.js 24 and the separate npm lockfiles; exact deployment patches are DEC-10. Target database: Oracle MySQL Community Server **9.2.0**, InnoDB. Preserve the MariaDB-named Prisma adapter and custom config. Inspect existing settings before setup; never overwrite a configured `.env` or expose secrets.
 
 ```sh
-cd backend
-npm ci
-[ -e .env ] || cp .env.example .env
+npm --prefix backend ci
+npm --prefix frontend ci
+npm --prefix backend run prisma:validate
+npm --prefix backend run db:check
+npm --prefix backend run dev
+# In another terminal:
+npm --prefix frontend run dev
 ```
 
-Sửa `backend/.env` bằng thông tin MySQL, JWT/CSRF, `PUBLIC_ORIGIN` và các biến `SMTP_*` trong `.env.example`. Giữ file `.env` hiện có nếu đã cấu hình. SMTP cần thiết để gửi mã xác minh email thật khi đăng ký; dùng tài khoản gửi riêng và không đặt mật khẩu SMTP trong `VITE_*`.
-`DATABASE_URL` có dạng `mysql://user:password@host:port/database`; mã hóa URL các ký tự đặc biệt trong thông tin đăng nhập.
-Không đưa mật khẩu thật vào Git hoặc frontend.
+Configure backend-only DATABASE_URL, JWT/CSRF, PUBLIC_ORIGIN and SMTP names from backend/.env.example and the [development guide](docs/development_guide.md). Registration needs SMTP to send verification codes. Vite proxies /api to port 3000; use the browser origin matching PUBLIC_ORIGIN. Production uses same-origin HTTPS; local behavior does not prove secure deployment.
 
-Ví dụ cấu hình SMTP trong `backend/.env` (thay toàn bộ giá trị mẫu bằng thông tin nhà cung cấp của bạn):
+Current `/login`, `/register`, `/verify-email` and `/account` belong to legacy auth. Development-only `/preview` shows fixtures without backend access; it is not public production discovery. [Frontend guide](frontend/README.md) explains the boundary.
 
-```dotenv
-SMTP_HOST=smtp.example.com
-SMTP_PORT=587
-SMTP_USER=your-smtp-account
-SMTP_PASSWORD=your-app-password
-SMTP_FROM="Hoa Lac Food <no-reply@example.com>"
-```
-
-`SMTP_FROM` cần là địa chỉ đã được dịch vụ SMTP cho phép gửi. Cổng 587 yêu cầu STARTTLS; cổng 465 dùng TLS ngay khi kết nối. Khởi động lại backend sau khi sửa `.env`. Không gửi các giá trị thật vào chat hoặc commit.
-
-## Chạy backend
-
-Trong thư mục `backend`:
+## Verification and next work
 
 ```sh
-npm run prisma:validate
-npm run db:check
-npm run dev
+npm --prefix frontend run lint
+npm --prefix frontend run build
+npm --prefix backend run lint
+npm --prefix backend test
+npm --prefix backend run test:e2e
+npm --prefix backend run build
 ```
 
-Backend mặc định dùng cổng 3000, có thể đổi bằng `PORT`.
-`db:check` build backend rồi chạy `SELECT 1`, không cần bảng nghiệp vụ.
-Prisma Client được sinh tự động trước build, dev, start và biên dịch test.
-The current schema has `accounts`, `account_role_requests`, `audit_logs`, `auth_login_limits` and four migrations; order/finance models do not exist yet. The backend exposes registration, email verification/resend, login/me/logout, profile and Admin role-request review under `/api/v1`; `/` and `/todos` return 404. Backend startup requires MySQL and auth configuration.
+Inspect scripts before running integration/browser/database checks and use disposable test targets. HTTP E2E mocks do not prove MySQL constraints; SELECT 1 proves connectivity only. Follow [testing](docs/testing.md), [backlog](BACKLOG.md) and the next unaccepted prompt. Apply reviewed forward migrations only in an authorized implementation task; never reset retained data or rewrite applied SQL.
 
-## Chạy frontend
-
-Mở terminal khác:
-
-```sh
-cd frontend
-npm ci
-npm run dev
-```
-
-Mở `/login` tại địa chỉ Vite in trong terminal (mặc định `http://localhost:5173/login`). Vite chuyển tiếp `/api` tới backend cổng 3000; `PUBLIC_ORIGIN` phải khớp origin của trình duyệt. `/preview` chỉ ở môi trường phát triển, bỏ qua `/auth/me` và xem được dữ liệu quán mẫu khi backend chưa chạy. Xem [hướng dẫn frontend](frontend/README.md).
-
-In this local setup, registration writes to `cse3045.accounts`; an Owner/Admin selection also writes a pending row to `cse3045.account_role_requests`. The account starts as Student, cannot log in before email verification, and stores an Argon2id password hash rather than plaintext. The form requires a username, email and password confirmation. Admin approval is required before a requested Owner/Admin role takes effect. Registration does not populate restaurant fixtures. If the browser uses `127.0.0.1:5173`, its Origin will not match the configured `http://localhost:5173`.
-
-## Kiểm tra
-
-Trong `backend`:
-
-```sh
-npm run lint
-npm test
-npm run test:e2e
-npm run build
-```
-
-Các HTTP E2E test mock Prisma. Ngày 17/10/2026, cả bốn migration đã áp dụng vào `cse3045`; migration mới và luồng xác minh/duyệt quyền đã qua kiểm tra trên container MySQL 8.4.11 tạm. `db:check` riêng lẻ chỉ kiểm tra kết nối. Phiên bản chuẩn vẫn là 8.4.11 theo [hợp đồng database](docs/data/database.md#1-authority-scope-and-implementation-boundary).
-
-Trong `frontend`:
-
-```sh
-npm run lint
-npm run build
-```
-
-## Phát triển tiếp
-
-Lấy `docs/requirements.md` làm nguồn yêu cầu. Thêm module NestJS và model Prisma theo từng tính năng; tạo migration tiến cho thay đổi schema.
-Không dùng reset database để dọn dữ liệu demo hoặc khởi tạo tính năng mới trên database có dữ liệu cần giữ.
+V1.0 launch requires verified real MySQL 9.2.0/browser/mobile/accessibility/security/restore/partner/operations evidence and explicit release approval under the [launch checklist](docs/release-checklist.md). Finishing documentation or executing all prompts is insufficient.

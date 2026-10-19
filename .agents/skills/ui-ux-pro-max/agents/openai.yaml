@@ -1,0 +1,6 @@
+interface:
+  display_name: "UX Research"
+  short_description: "Research focused UX questions from bundled local data"
+  default_prompt: "$ui-ux-pro-max Research the specific UX or accessibility concern using local data and explain which findings apply here."
+policy:
+  allow_implicit_invocation: true

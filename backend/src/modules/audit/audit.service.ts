@@ -13,7 +13,11 @@ export type AuditEvent = {
 };
 
 const allowedChanges: Record<string, readonly string[]> = {
-  'account.created': ['role', 'requested_role'],
+  'admin.recovery': ['re_enrollment_required'],
+  'admin.mfa_verified': ['method'],
+  'admin.cutover': ['legacy_admin_ids', 'legacy_owner_ids', 'ownership_preserved'],
+  'admin.reenrolled': ['legacy_admin_ids', 'legacy_owner_ids', 'ownership_preserved'],
+  'account.created': ['classification', 'role', 'requested_role'],
   'account.updated': ['display_name_changed', 'phone_changed', 'role_changed', 'is_active_changed',
     'email_verified', 'role_request'],
 };

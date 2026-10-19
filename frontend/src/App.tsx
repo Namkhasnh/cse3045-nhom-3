@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import { StudentLayout } from './app/layouts/StudentLayout'
 import { RoleLayout } from './app/layouts/RoleLayout'
-import { RestaurantListPage } from './features/restaurants'
-import { authApi, AuthPage, ProfilePage, RoleRequestsPage, type User } from './features/auth'
+import { RestaurantListPage, RestaurantMenuPage } from './features/restaurants'
+import { authApi, AuthPage, ProfilePage, safeReturnPath, type User } from './features/auth'
 
-function roleHome(role: User['role']) { return role === 'student' ? '/' : role === 'admin' ? '/admin' : '/owner' }
+function roleHome(user: User) { return user.capabilities.includes('admin') ? '/admin' : '/' }
 
 function pathNow() { return window.location.pathname }
 
@@ -34,29 +34,36 @@ function App() {
     window.scrollTo(0, 0)
   }
 
-  if (path === '/preview' && import.meta.env.DEV) return <StudentLayout path={path} preview><RestaurantListPage /></StudentLayout>
+  const publicUser = session.user?.is_active ? session.user : null
+  const management = publicUser?.capabilities.includes('manage_restaurant') ? { href: '/owner', label: 'Quản lý quán' }
+    : publicUser?.capabilities.includes('admin') ? { href: '/admin', label: 'Quản trị' } : undefined
+  if (path === '/' || /^\/restaurants\/[1-9][0-9]*$/.test(path) || (path === '/preview' && import.meta.env.DEV)) return <StudentLayout
+    path={path} preview={path === '/preview'} accountName={publicUser?.display_name}
+    authReturnPath={path === '/preview' ? undefined : window.location.pathname + window.location.search + window.location.hash}
+    sessionPending={path !== '/preview' && session.status === 'loading'} management={management}>
+    {path.startsWith('/restaurants/') ? <RestaurantMenuPage key={path} restaurantId={path.split('/')[2]} /> : <RestaurantListPage preview={path === '/preview'} />}
+  </StudentLayout>
   if (session.status === 'loading') return <main className="route-state" role="status">Đang kiểm tra phiên đăng nhập…</main>
   if (path === '/login' || path === '/register' || path === '/verify-email') {
-    if (session.user) return <Redirect to={roleHome(session.user.role)} />
+    if (session.user) return <Redirect to={safeReturnPath(new URLSearchParams(window.location.search).get('returnTo')) ?? roleHome(session.user)} />
     return <AuthPage key={path} mode={path === '/register' ? 'register' : path === '/verify-email' ? 'verify' : 'login'}
-      onNavigate={navigate} onLogin={user => { setSession({ status: 'ready', user }); navigate(roleHome(user.role)) }} />
+      onNavigate={navigate} onLogin={user => { setSession({ status: 'ready', user }); navigate(safeReturnPath(new URLSearchParams(window.location.search).get('returnTo')) ?? roleHome(user)) }} />
   }
   if (session.status === 'error') return <main className="route-state" role="alert">Không kết nối được máy chủ. Hãy tải lại trang.</main>
-  if (!session.user || !session.user.is_active) return <Redirect to="/login" />
+  if (!session.user || !session.user.is_active) return <Redirect to={`/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search + window.location.hash)}`} />
   const user = session.user
   const profile = <ProfilePage user={user} onUpdate={updated => setSession({ status: 'ready', user: updated })}
     onLogout={() => { setSession({ status: 'anonymous', user: null }); navigate('/login') }} />
-  if (path === '/account') return user.role === 'student' ? <StudentLayout path={path}>{profile}</StudentLayout> :
-    <RoleLayout user={user} title={user.role === 'admin' ? 'Quản trị' : 'Chủ quán'} path={path}>{profile}</RoleLayout>
-  if (path === '/' && user.role === 'student') return <StudentLayout path={path}><RestaurantListPage /></StudentLayout>
-  if (path === '/admin/role-requests' && user.role === 'admin') return <RoleLayout user={user} title="Quản trị" path={path}><RoleRequestsPage /></RoleLayout>
-  if ((path === '/owner' && user.role === 'restaurant_owner') || (path === '/admin' && user.role === 'admin')) {
-    return <RoleLayout user={user} title={user.role === 'admin' ? 'Quản trị' : 'Chủ quán'} path={path}>
+  if (path === '/account') return !user.capabilities.includes('admin') && !user.capabilities.includes('manage_restaurant') ? <StudentLayout path={path} accountName={user.display_name}>{profile}</StudentLayout> :
+    <RoleLayout user={user} title={user.capabilities.includes('admin') ? 'Quản trị' : 'Chủ quán'} path={path}>{profile}</RoleLayout>
+
+  if ((path === '/owner' && user.capabilities.includes('manage_restaurant')) || (path === '/admin' && user.capabilities.includes('admin'))) {
+    return <RoleLayout user={user} title={user.capabilities.includes('admin') ? 'Quản trị' : 'Chủ quán'} path={path}>
       <h1>Xin chào, {user.display_name}</h1>
       <p className="role-empty">Các chức năng quản lý sẽ xuất hiện khi dữ liệu quán và quyền tương ứng được kết nối.</p>
     </RoleLayout>
   }
-  return <main className="route-state" role="alert">Trang này không khả dụng với tài khoản của bạn. <a href={roleHome(user.role)}>Về trang chính</a></main>
+  return <main className="route-state" role="alert">Trang này không khả dụng với tài khoản của bạn. <a href={roleHome(user)}>Về trang chính</a></main>
 }
 
 export default App

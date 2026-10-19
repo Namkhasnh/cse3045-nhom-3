@@ -1,7 +1,7 @@
 # Product Requirements — Hoa Lac Food Ordering Platform
 
 > **Role of this document:** source of truth for *what the system must do*. Architecture, data, API, UI, AI, testing and deployment documents derive from it and MUST NOT contradict it.
-> **Sources:** requirement analysis and system design documents (Vietnamese originals). Terminology here is the canonical English form.
+> **Revision:** October 18, 2026 commercial V1.0 decision. Supersedes the former role-request, multi-restaurant-owner and cash-only launch design. See [roadmap](roadmap.md) for version gates and [implementation status](implementation-status.md) for source/evidence boundaries.
 
 ## 1. Project Overview
 
@@ -12,16 +12,16 @@
 | Initial deployment (MVP) | Vietnam Japan University (VJU) |
 | Future scope | Other universities in the Hoa Lac area |
 | Type | Live, operational website (not a prototype) |
-| Roles | Student, Restaurant Owner, Administrator |
+| Identities and capabilities | Ordinary user (buyer); current restaurant manager by ownership; one operator-owned Admin |
 | Frontend (decided) | Vite + React + TypeScript |
 | Backend (decided) | NestJS + TypeScript |
-| Database (decided) | MySQL (InnoDB) |
+| Database (decided) | Oracle MySQL Community Server 9.2.0 (InnoDB) |
 | ORM (decided) | Prisma |
 | API (decided) | REST API |
 | Auth (decided) | JWT |
 | Styling (decided) | Tailwind CSS |
 | Architecture (decided) | Modular monolith, logical 3-tier separation (presentation / business logic / data) |
-| External services | AI/LLM service and map/location service — providers **TBD** |
+| External services | AI, email, media and hosting decisions in [decision register](decisions.md); maps deferred to V1.2 |
 
 The Vite + React frontend communicates with the NestJS backend through REST APIs. The backend uses Prisma to access MySQL and validates JWTs for authenticated requests. Role and ownership checks are enforced in the backend. Tailwind CSS is used for frontend styling.
 
@@ -30,71 +30,52 @@ The Vite + React frontend communicates with the NestJS backend through REST APIs
 - Restaurants **deliver orders themselves**. The platform has no driver accounts.
 - Students pay **cash or QR directly to the restaurant**; the restaurant confirms receipt.
 - The platform computes and tracks **commission** on completed orders; collection is **manual**.
-- The platform determines route distance, delivery eligibility and delivery fee per each restaurant's policy.
+- V1.0 uses verified fixed VJU pickup points and surveyed restaurant–point fees. Route-based free addresses belong to V1.2.
 
 ## 2. Scope
 
-### 2.1 Priority Legend
+### 2.1 Version scope and priority
 
-| Label | Meaning |
-| --- | --- |
-| **Must** | Required for the complete product |
-| **Should** | Important, may be deferred |
-| **Could** | Added only if resources allow |
-| **Won't** | Out of current project scope |
-| **MVP** | A separate delivery milestone; does **not** equal "all Must" |
+[Roadmap](roadmap.md) owns versions, dependencies, acceptance gates and release conditions. “MVP” in retained older evidence means the former design, not commercial readiness. V0.x increments are implementation milestones; V1.0 is the first commercial VJU release. Must/Should/Could express priority within the assigned version, not permission to skip V1.0 gates.
 
-MoSCoW applies to the whole project. MVP is only the first rollout.
+### 2.2 V1.0 in scope
 
-### 2.2 In Scope (complete product)
+- Anonymous homepage, restaurant search/list and public menus; guests may build one-restaurant carts.
+- Email-verified ordinary-user registration without role selection. A manager keeps buyer rights under the same identity.
+- One restaurant maximum per account; opening application, versioned partnership consent and review history; approval creates restaurant and ownership atomically.
+- One operator-owned Admin, MFA, recovery and protected provisioning; no website flow can request or grant additional Admin access.
+- Restaurant setup, hours, dishes/images, fixed VJU points and surveyed fees; explicit commission configuration before selling.
+- Cash orders, durable tracking/history/recovery; QR paid directly to the restaurant, owner-verified receipt and recorded direct-refund obligations.
+- Manual commission ledger, reconciliation, receipts/reports; user/restaurant administration, order-linked support and audit lookup.
+- Grounded AI recommendations with approved privacy/cost controls and manual fallback.
+- Tested staging, real-partner pilot, backup/restore, incident/support procedures and approved controlled release.
 
-- Account registration/login and role-based authorization.
-- Restaurant and dish search, menu viewing.
-- Delivery location (address or map pin), route distance, delivery eligibility and fee.
-- Cart, order placement, order tracking, order cancellation (rule-limited).
-- Cash and QR payment tracking (restaurant-confirmed).
-- AI food recommendations; random dish selection.
-- Dish CRUD (restaurant owner) and restaurant CRUD (admin).
-- Commission calculation, tracking, settlement and reconciliation (manual collection).
-- Order history and reorder, support tickets, audit logging.
-- Reviews and favorites (Could).
+### 2.3 Excluded
 
-### 2.3 Out of Scope
+No driver accounts/dispatch (US21), automatic collection/splitting (US22), platform custody of customer funds, multi-restaurant orders, stored AI conversations/training, multiple restaurants per manager, or additional website-created Admins.
 
-| Item | Reason |
-| --- | --- |
-| Delivery-driver accounts, auto dispatch, route optimization (US21) | Restaurants deliver themselves |
-| Automatic payment splitting and automatic commission collection (US22) | Customers pay the restaurant directly; platform only computes, tracks, reconciles |
-| Orders spanning multiple restaurants | One order belongs to one restaurant |
-| Storing AI conversations or training data | Not in current scope |
+### 2.4 V0.x delivery increments
 
-### 2.4 MVP at VJU
+V0.1 identity/security; V0.2 public discovery/cart; V0.3 onboarding; V0.4 sell readiness; V0.5 cash ordering; V0.6 QR/refunds; V0.7 administration/reconciliation/support; V0.8 AI; V0.9 staging/pilot. These are cumulative dependencies of V1.0, not independent commercial launches.
 
-- A few partner restaurants, **fixed pickup points**, surveyed delivery fees.
-- Dish browsing, cart, ordering; restaurant accepts and updates status.
-- Dish CRUD by owner; basic restaurant CRUD by admin (history-preserving rules apply).
-- **Cash payment**, AI recommendations, manual commission reconciliation.
+### 2.5 After V1.0
 
-### 2.5 Complete Product (beyond MVP)
-
-- All Must stories; expand to other universities in the service area.
-- Free-form address / map pin, route distance, QR payment, commission dashboards for restaurants and admin.
-- Then Should stories, prioritizing random selection, order history/reorder, support.
+V1.1: reorder, favorites, reviews and random selection, each with finalized contracts. Durable order history is already V0.5/V1.0. V1.2: other service areas, free addresses/map pins and route-distance fee tiers. Drivers, custody/splitting, multiple restaurants per manager and extra Admins remain excluded.
 
 ## 3. User Stories
 
 | ID | Actor | Story (short) | Priority |
 | --- | --- | --- | --- |
-| US01 | Student | Register with a verified email, log in, manage contact info to place and track own orders. | Must |
-| US02 | Student | Search restaurants and dishes by name, category, price range. | Must |
-| US03 | Student | View menu, price, opening hours, dish availability. | Must |
-| US04 | Student | Enter address or pin a location; see distance, deliverability, delivery fee. | Must |
-| US05 | Student | Add dishes of one restaurant to cart, edit quantities, see total before ordering. | Must |
+| US01 | User | Register an ordinary account with verified email, log in and manage own contacts; no role selection. | V0.1 Must |
+| US02 | Visitor / User | Search restaurants and dishes by name, category, price range. | Must |
+| US03 | Visitor / User | View menu, price, opening hours, dish availability. | Must |
+| US04 | User | Select fixed VJU pickup point and see surveyed fee in V0.4; free address/map pin and route fees deferred to V1.2. | Must by version |
+| US05 | Visitor / User | Build one-restaurant cart before login; retain it through login, revalidate and explicitly confirm authenticated checkout. | V0.2/V0.5 Must |
 | US06 | Student | Choose cash or restaurant QR transfer. | Must |
 | US07 | Student | Track order status; cancel while restaurant has not accepted. | Must |
 | US08 | Student | Get AI dish suggestions by budget, preferences, pickup/delivery point. | Must |
 | US09 | Student | Pick a random dish that satisfies ordering conditions. | Should |
-| US10 | Student | View order history and reorder. | Should |
+| US10 | User | View durable order history/recovery in V0.5; reorder in V1.1. | History Must; reorder Should |
 | US11 | Restaurant Owner | Create, read, update, delete dishes in own restaurant's menu. | Must |
 | US12 | Restaurant Owner | Update restaurant info, hours, order-accepting status, delivery range and fees. | Must |
 | US13 | Restaurant Owner | Receive, accept or reject (with reason) orders and update progress. | Must |
@@ -102,18 +83,27 @@ MoSCoW applies to the whole project. MVP is only the first rollout.
 | US15 | Restaurant Owner | View completed orders, dish revenue and commission per period. | Must |
 | US16 | Admin | Create, read, update, delete restaurants; manage responsible owner accounts. | Must |
 | US17 | Admin | Set commission rate per restaurant; view monthly totals, receivable/collected amounts; reconcile. | Must |
-| US18 | Student / Restaurant Owner | Submit a support request linked to an order. | Should |
-| US19 | Student | Review a restaurant after a completed order. | Could |
-| US20 | Student | Save favorite dishes or restaurants. | Could |
+| US18 | User / Manager | Submit and track support linked to an authorized order; Admin handles support without fulfillment/payment powers. | V0.7 Must |
+| US19 | User | Review a restaurant after a completed order. | V1.1 Could |
+| US20 | User | Save favorite dishes or restaurants. | V1.1 Could |
 | US21 | Delivery person | Auto-assigned orders and optimized routes. | **Won't** |
 | US22 | Admin | Automatic payment splitting and commission collection. | **Won't** |
+
+New stories (US01–US22 retain their IDs; US21–22 remain excluded):
+
+| ID | Actor | Story | Version |
+| --- | --- | --- | --- |
+| US23 | User | Apply to open one restaurant, accept the current partnership terms and inspect review history. | V0.3 |
+| US24 | Admin | Review an opening application and atomically create its restaurant/manager link, or reject with a reason. | V0.3 |
+| US25 | Admin | Manage user availability and support/audit access without deleting retained history or assigning Admin. | V0.7 |
+| US26 | Sole Admin | Authenticate with MFA and recover access through a controlled operator procedure. | V0.1 |
 
 ## 4. Functional Requirements
 
 | ID | Area | Requirement |
 | --- | --- | --- |
-| FR01 | Accounts and authorization | Public applicants register with verified email and choose a requested role. Student access follows verification; Owner/Admin access requires current Admin approval. Students manage own account; owners manage own restaurant data; admin manages partners and operations. Roles: student, restaurant owner, admin. |
-| FR02 | Search and menu | View, search, filter restaurants and dishes; show price, hours, availability. |
+| FR01 | Accounts and authorization | Ordinary-user registration; one MFA-protected Admin; management derived from current ownership, maximum one restaurant per account. Managers retain buyer capabilities. |
+| FR02 | Search and menu | Anonymous view/search/filter of allowlisted public restaurant/menu data; no account, application or financial disclosure. |
 | FR03 | Location and delivery fee | Resolve pickup point/address, route distance, delivery range and fee per restaurant policy (produces a *delivery quote*). |
 | FR04 | Cart and orders | Manage cart, compute totals, place, accept, track and cancel orders per status rules. |
 | FR05 | Payment | Choose cash or QR; restaurant confirms receipt. |
@@ -121,23 +111,25 @@ MoSCoW applies to the whole project. MVP is only the first rollout.
 | FR07 | Dish CRUD | Owner creates, views, edits, deletes, or hides dishes of own restaurant. |
 | FR08 | Restaurant CRUD | Admin creates, views, edits, deletes, or deactivates restaurants; owner edits only permitted operational data of own restaurant. |
 | FR09 | Commission and settlement | Compute commission on completed orders; aggregate by restaurant, period, collected/uncollected. |
-| FR10 | Utilities and support | History, reorder, order-linked support; reviews and favorites by priority. |
+| FR10 | Utilities and support | History/recovery V0.5, order-linked support V0.7; reorder/reviews/favorites V1.1. |
+| FR11 | Opening applications | Versioned terms consent, applicant/review history; atomic approval and setup-required restaurant; manual create obeys the same ownership cap. |
+| FR12 | User administration | Audited availability controls, protected sole Admin, session revocation and privacy-scoped support/audit reads. |
 
-### 4.1 Role Permissions (summary)
+### 4.1 Identity and capability permissions
 
-| Capability | Student | Restaurant Owner | Admin |
-| --- | --- | --- | --- |
-| Browse restaurants/dishes | Yes | Yes | Yes |
-| Place / cancel (pending) own orders | Yes | — | — |
-| Manage dishes | — | Own restaurant only | — |
-| Edit operational info (hours, status, delivery policy, QR) | — | Own restaurant only | — |
-| Create / delete restaurant, assign owner | — | — | Yes |
-| Update order status | — | Own restaurant's orders | — |
-| Confirm payment / mark refunded | — | Own restaurant's orders | — |
-| Set commission rate, record receipts, adjustments | — | — | Yes |
-| View commissions / settlements | — | Own restaurant only | All |
+| Capability | Visitor | Active verified user | Current manager | Sole Admin |
+| --- | --- | --- | --- | --- |
+| Public homepage/list/menu | Yes | Yes | Yes | Yes |
+| Build local cart | Yes | Yes | Yes | Yes |
+| Place/cancel own pending order | Login required | Yes | Yes, as buyer | No implicit buyer/manager power from Admin |
+| Apply to open restaurant | Login required | Yes if owns none | Cannot create a second | No Admin application flow |
+| Manage menu/hours/settings/orders/payments | No | No | Own one restaurant | No implicit manager power |
+| Review applications/create partner with eligible user | No | No | No | Yes, MFA verified |
+| Configure rates/adjustments/receipts/users/support/audit | No | No | Own finance read only | Scoped administrative access |
 
-Authorization is enforced **server-side**; the client's claimed `user_id` or `role` is never trusted.
+“Student” in retained US/BR/AC IDs means buyer, not a required student-only identity or exclusive role. “Owner” means current manager capability derived from ownership. No role promotion is needed to buy or manage. Admin has only administrative capabilities; any buyer/manager capability would require an explicit future decision and relationship, not inheritance.
+
+Authentication derives the actor server-side; authorization uses current active account and current ownership, including lists, nested IDs and replays. Public responses use a dedicated allowlist. Account contacts, applications and finance have separate protected projections.
 
 ## 5. Non-Functional Requirements
 
@@ -164,17 +156,17 @@ Thresholds are **proposed acceptance targets** and must be measured during imple
 | BR02 | `total = subtotal (dish amounts) + delivery fee`. Money is integer VND. |
 | BR03 | The server computes all amounts. If price or fee changed since the customer agreed, reject with a conflict and require re-confirmation. |
 | BR04 | Dish names/prices, delivery fee, distance, recipient info and commission rate are **snapshotted on the order**; later edits to dishes, restaurants or policies never alter existing orders. |
-| BR05 | Orders can only be placed for dishes that are visible and available, at a restaurant that is active, open and accepting orders. |
+| BR05 | Orders can only be placed for dishes that are visible and available, at a restaurant that is ready, active, open and accepting orders. |
 | BR06 | Order creation must be idempotent: the same request retried returns the original order; the same key with different content is a conflict. |
 
 ### 6.2 Delivery
 
 | ID | Rule |
 | --- | --- |
-| BR07 | Distance is **route distance**; delivery range and fee tiers are configured per restaurant. |
+| BR07 | V1.0 uses surveyed route distance/fees for fixed pairs; V1.2 uses provider route distance and restaurant fee tiers, never straight-line substitution. |
 | BR08 | If the distance, eligibility or fee cannot be determined (e.g. map service failure), the order cannot be confirmed; the system never estimates or invents a fee. |
 | BR09 | Fee tiers must not overlap. Boundaries are `[min, max)`; the last tier includes its maximum distance. |
-| BR10 | MVP uses fixed pickup points with pre-surveyed distance and fee per restaurant. |
+| BR10 | V1.0 uses fixed VJU pickup points with verified surveyed distance and fee per restaurant. |
 
 ### 6.3 Payment
 
@@ -256,7 +248,10 @@ stateDiagram-v2
 - Deactivation does not cancel in-progress orders or remove commission still to be reconciled.
 - Deleting an unused restaurant also removes its menu and revokes the owner's management access.
 - The UI requires confirmation before delete and clearly distinguishes **delete** from **hide/deactivate**; APIs state which happened.
-- One owner may manage several restaurants; each restaurant has one responsible owner account.
+- Each restaurant has exactly one responsible manager; each account manages at most one restaurant, including inactive/setup-required restaurants. The DB enforces owner uniqueness. Managers retain buyer rights.
+- [Opening applications and partnership](onboarding.md) govern atomic approval/manual creation, versioned consent and setup readiness.
+- A restaurant created by approval starts `setup_required`, inactive for sale/not accepting orders; it cannot sell until the readiness checks pass.
+- Sole Admin provisioning, MFA/recovery and user administration follow [account security](account-security.md). No website grants Admin access.
 
 ## 8. Acceptance Criteria
 
@@ -279,9 +274,9 @@ stateDiagram-v2
 
 | Term | Definition |
 | --- | --- |
-| Student | End customer who browses and orders. |
-| Restaurant Owner | Account responsible for one or more partner restaurants; manages menu, operations, orders. |
-| Admin | Platform operator managing restaurants, commission policy and reconciliation. |
+| Student / User / Buyer | Ordinary user; browsing and cart building also work for anonymous visitors. |
+| Restaurant Owner / Manager | Current ownership capability for at most one restaurant; same ordinary identity can also buy. |
+| Admin | Single operator-owned administrative account; MFA and controlled recovery; no website privilege grant. |
 | Restaurant | Partner food business; delivers its own orders. |
 | Dish | A menu item with a price, belonging to one restaurant. |
 | Order | A student's purchase from one restaurant, with item snapshots and totals. |
@@ -296,18 +291,31 @@ stateDiagram-v2
 | Idempotency key | Client-supplied key preventing duplicate order creation. |
 | Audit log | Record of who changed what and when. |
 
-## 10. Assumptions and TBD
+## 10. Decisions and superseded requirements
 
 | Item | Status |
 | --- | --- |
 | Quán delivers itself; no driver accounts | Assumed, fixed |
-| One owner may manage multiple restaurants; one responsible owner per restaurant | Assumed |
+| Maximum one restaurant per account; exactly one responsible manager per restaurant | Decided October 18, 2026 |
 | One order = one restaurant | Assumed, fixed |
 | AI/LLM provider | **TBD** |
 | Map/location provider | **TBD** |
 | Server hosting and infrastructure configuration | **TBD** |
-| NFR thresholds | Proposed; confirm after measurement |
+| NFR thresholds | Proposed acceptance targets; measure before release |
+| Commercial policy/provider/hosting decisions | [Decision register](decisions.md); dependent versions BLOCKED until approved |
 | Reviews and favorites detail design | Could; defined at implementation |
+
+Superseded on October 18, 2026: FR01 role selection and Owner/Admin requests; §4.1 exclusive buyer/owner roles; §7.3 multi-restaurant management; cash-only MVP launch; post-MVP QR/support/reporting/history screen deferrals. IDs are retained with revised meaning above; old tests/evidence do not prove these revisions.
+
+| New AC | Scenario | Expected result |
+| --- | --- | --- |
+| AC13 | Guest browses and adds dishes, then logs in | Cart retained; current prices rechecked; no automatic order submission. |
+| AC14 | Manager buys and attempts a second restaurant | Own buyer flow works; second ownership fails under DB constraint and concurrent workflows. |
+| AC15 | Approve application or manually create partner | Eligible user, required consent, restaurant/link/review/audit commit together; failure rolls back all; starts setup-required. |
+| AC16 | Request Admin or duplicate provisioning | Website refuses role fields/grants; explicit primary selection required for legacy migration; singleton constraint enforced. |
+| AC17 | Admin MFA/recovery and user suspension | Protected operations require MFA; audited recovery revokes old sessions/factors without creating another Admin; suspension blocks new actions and preserves history. |
+| AC18 | Anonymous catalog privacy | Only public fields returned; no account contacts, application or finance data. |
+| AC19 | Release V1.0 | [Launch checklist](release-checklist.md) has accepted evidence and explicit release approval. Documentation completion alone is insufficient. |
 
 ## 11. Traceability
 
@@ -321,3 +329,5 @@ stateDiagram-v2
 | [docs/testing.md](testing.md) | Sections 5, 8 |
 | [docs/development_guide.md](development_guide.md) | Sections 1, 5–8 |
 | [docs/deployment.md](deployment.md) | Sections 1–2, 5–7 |
+
+Version ownership: [roadmap](roadmap.md). Policy gates: [decisions](decisions.md). Full implementation prompts: [prompt index](prompts/README.md).

@@ -1,109 +1,52 @@
-# MVP Backlog
+# Commercial Delivery Backlog
 
-Implementation order for the VJU MVP. Use each numbered item as one scoped task;
-split large items into smaller prompts without weakening their acceptance criteria.
-This checklist tracks delivery, not new business rules. Follow [AGENTS.md](AGENTS.md)
-and the owning contracts in [docs/README.md](docs/README.md).
+[Roadmap](docs/roadmap.md) is the canonical source for version order, dependencies, acceptance and release. This checklist mirrors its P01–P36 chain; [copyable prompts](docs/prompts/README.md) contain full instructions. [Current implementation/evidence](docs/implementation-status.md) records source and legacy gaps.
 
-## Current progress
+No checkbox below is accepted by the documentation rewrite. Some reusable code exists; reuse it after checking the revised contract. Check off only with accepted behavior, decisions and actual verification evidence. Missing policy = BLOCKED with decision ID; missing tool = NOT CONFIGURED; an available unexecuted check = NOT RUN.
 
-Source inspected on October 17, 2026:
+Use [short requests](docs/prompts/quick-start.md) to execute/resume work and [progress records](docs/progress/README.md) for evidence. The workflow convention alone accepts no prompt; completed gates below link actual acceptance evidence.
 
-- Backend scaffold, account/audit migrations, email-verified Student auth/profile, pending Owner/Admin review and signed-manifest initial privileged provisioning are present.
-- Frontend auth/profile routes and role navigation are present; Student discovery still uses labeled fixtures.
-- Steps 00 and 01 have been implemented; step 02 now has Student/auth source, a Pwned Passwords range check, a MySQL-backed five-failures/15-minutes login backoff, and passing audit/AUTH-01 integration on a disposable MySQL 8.4.11 container. Restaurant ownership checks depend on step 03's restaurant model. The real-MySQL CI job is configured but has not been observed running in CI. Step 07 has presentation work only.
-- Order/financial models, connected business APIs and ordering are not implemented.
-- Next: add restaurant ownership in step 03 and automate the already observed connected browser auth journey.
+## Ordered acceptance checklist
 
-## Implementation checklist
+- [x] **V0.1 / [P01](docs/prompts/v0.1.md#p01) — Identity data transition.** [Accepted](docs/progress/P01.md), October 19: preserved-data migration, explicit mapping, unique ownership/singleton and expansion-window compatibility.
+- [x] **V0.1 / [P02](docs/prompts/v0.1.md#p02) — Ordinary signup, login and email.** [Accepted after P01](docs/progress/P02.md): ordinary identity, SMTP/browser expiry/resend/logout, safe return and auth/profile OpenAPI.
+- [x] **V0.1 / [P03](docs/prompts/v0.1.md#p03) — Sole Admin MFA and recovery.** [Accepted after P02](docs/progress/P03.md): 18 CLI cases, MySQL MFA/recovery races, restricted runtime/provision and approved local config. [V0.1 acceptance](docs/progress/V0.1.md), Codex self-review.
+- [ ] **V0.2 / [P04](docs/prompts/v0.2.md#p04) — Public catalog API.** Record acceptance/evidence under roadmap rules.
+- [ ] **V0.2 / [P05](docs/prompts/v0.2.md#p05) — Homepage, restaurant page and header.** Record acceptance/evidence under roadmap rules.
+- [ ] **V0.2 / [P06](docs/prompts/v0.2.md#p06) — Guest cart and login return.** Record acceptance/evidence under roadmap rules.
+- [ ] **V0.3 / [P07](docs/prompts/v0.3.md#p07) — Approve onboarding policy and contract.** Record acceptance/evidence under roadmap rules.
+- [ ] **V0.3 / [P08](docs/prompts/v0.3.md#p08) — Applicant experience.** Record acceptance/evidence under roadmap rules.
+- [ ] **V0.3 / [P09](docs/prompts/v0.3.md#p09) — Atomic review and restaurant creation.** Record acceptance/evidence under roadmap rules.
+- [ ] **V0.3 / [P10](docs/prompts/v0.3.md#p10) — Manual partner creation and legacy compatibility.** Record acceptance/evidence under roadmap rules.
+- [ ] **V0.4 / [P11](docs/prompts/v0.4.md#p11) — Restaurant profile, hours and readiness.** Record acceptance/evidence under roadmap rules.
+- [ ] **V0.4 / [P12](docs/prompts/v0.4.md#p12) — VJU points, surveys and delivery quotes.** Record acceptance/evidence under roadmap rules.
+- [ ] **V0.4 / [P13](docs/prompts/v0.4.md#p13) — Dish CRUD and images.** Record acceptance/evidence under roadmap rules.
+- [ ] **V0.4 / [P14](docs/prompts/v0.4.md#p14) — Commission configuration and exact money.** Record acceptance/evidence under roadmap rules.
+- [ ] **V0.5 / [P15](docs/prompts/v0.5.md#p15) — Order backend, snapshots and idempotency.** Record acceptance/evidence under roadmap rules.
+- [ ] **V0.5 / [P16](docs/prompts/v0.5.md#p16) — Checkout and uncertain-result recovery.** Record acceptance/evidence under roadmap rules.
+- [ ] **V0.5 / [P17](docs/prompts/v0.5.md#p17) — Fulfillment and cash confirmation.** Record acceptance/evidence under roadmap rules.
+- [ ] **V0.5 / [P18](docs/prompts/v0.5.md#p18) — Tracking, history and concurrency acceptance.** Record acceptance/evidence under roadmap rules.
+- [ ] **V0.6 / [P19](docs/prompts/v0.6.md#p19) — Approve QR and refund policy.** Record acceptance/evidence under roadmap rules.
+- [ ] **V0.6 / [P20](docs/prompts/v0.6.md#p20) — Payment configuration and lifecycle backend.** Record acceptance/evidence under roadmap rules.
+- [ ] **V0.6 / [P21](docs/prompts/v0.6.md#p21) — QR, confirmation and refund interface.** Record acceptance/evidence under roadmap rules.
+- [ ] **V0.7 / [P22](docs/prompts/v0.7.md#p22) — Approve reconciliation policy.** Record acceptance/evidence under roadmap rules.
+- [ ] **V0.7 / [P23](docs/prompts/v0.7.md#p23) — Commission ledger, settlements and receipts.** Record acceptance/evidence under roadmap rules.
+- [ ] **V0.7 / [P24](docs/prompts/v0.7.md#p24) — Reconciliation UI and reports.** Record acceptance/evidence under roadmap rules.
+- [ ] **V0.7 / [P25](docs/prompts/v0.7.md#p25) — Users, partners, support and audit lookup.** Record acceptance/evidence under roadmap rules.
+- [ ] **V0.8 / [P26](docs/prompts/v0.8.md#p26) — Approve AI provider, privacy and budget.** Record acceptance/evidence under roadmap rules.
+- [ ] **V0.8 / [P27](docs/prompts/v0.8.md#p27) — Grounded recommendation backend.** Record acceptance/evidence under roadmap rules.
+- [ ] **V0.8 / [P28](docs/prompts/v0.8.md#p28) — Recommendation UI and failure acceptance.** Record acceptance/evidence under roadmap rules.
+- [ ] **V0.9 / [P29](docs/prompts/v0.9.md#p29) — Approve infrastructure and services.** Record acceptance/evidence under roadmap rules.
+- [ ] **V0.9 / [P30](docs/prompts/v0.9.md#p30) — CI/CD, forward migration and restore.** Record acceptance/evidence under roadmap rules.
+- [ ] **V0.9 / [P31](docs/prompts/v0.9.md#p31) — Whole-system acceptance.** Record acceptance/evidence under roadmap rules.
+- [ ] **V0.9 / [P32](docs/prompts/v0.9.md#p32) — VJU partner pilot.** Record acceptance/evidence under roadmap rules.
+- [ ] **V0.9 / [P33](docs/prompts/v0.9.md#p33) — Pilot fixes and acceptance.** Record acceptance/evidence under roadmap rules.
+- [ ] **V1.0 / [P34](docs/prompts/v1.0.md#p34) — Product, policy and operations launch review.** Record acceptance/evidence under roadmap rules.
+- [ ] **V1.0 / [P35](docs/prompts/v1.0.md#p35) — Approved controlled production release.** Record acceptance/evidence under roadmap rules.
+- [ ] **V1.0 / [P36](docs/prompts/v1.0.md#p36) — Post-release checks and incident drill.** Record acceptance/evidence under roadmap rules.
 
-Complete in order. Add the needed schema, reviewed forward migrations, API/OpenAPI
-contracts, UI, audit and meaningful tests with each feature. Do not defer all testing
-to step 18. Resolve necessary TBDs before implementing dependent behavior.
+## Scope and release discipline
 
-- [x] **00 — Foundation decisions.** Settle login identifier/password/hash policy,
-  JWT transport/lifecycle, CSRF, privileged provisioning, MySQL version and relevant
-  validation limits in the owning documents.
-- [x] **01 — Technical foundation (partial).** Add `/api/v1`, response/error
-  envelopes, exact scalar handling, transaction context and transactional audit.
-  Configure real-MySQL integration and browser smoke tooling incrementally.
-- [ ] **02 — Accounts and authentication (partial).** Student registration, login, identity
-  recovery, profile, approved Admin/Owner provisioning, router and role navigation.
-  Enforce current account/ownership checks server-side. (US01, FR01)
-- [ ] **03 — Restaurants and ownership.** Admin creates/edits partners and assigns
-  owners; owners switch between their restaurants and edit operational settings
-  and hours. Deletion follows in step 13. (US12, US16)
-- [ ] **04 — Menu management.** Approved category provisioning; owner creates/edits
-  dishes, prices, visibility and availability. Images are optional references;
-  physical deletion follows in step 13. (US11)
-- [ ] **05 — Pickup points and delivery quotes.** Settle point provisioning and
-  quote artifact protection; implement fixed VJU points and surveyed restaurant–point
-  distance/fee configuration. Missing fee must block ordering, not mean zero. (BR07–10)
-- [ ] **06 — Commission policy and exact money.** Settle the business rate limit;
-  Admin configures future rates, Owner reads them. Implement exact totals and
-  half-up commission arithmetic with rounding/overflow tests. (BR02, BR20–24)
-- [ ] **07 — Connected discovery (UI preview exists).** Connect restaurant/dish
-  search, filters, pagination and menu detail to real APIs; reuse the existing UI
-  and replace fixture data at its boundary. (US02–03)
-- [ ] **08 — Single-restaurant cart.** Add/remove dishes, edit quantities, show
-  estimated totals and confirm switching restaurants. Keep the draft in the
-  frontend and prevent cross-account leakage. (US05, BR01)
-- [ ] **09 — Order creation backend.** Revalidate eligibility, quote, price/fee and
-  rate; atomically persist snapshots, pending order, unpaid payment, histories,
-  audit and durable idempotency result. Verify retries/races on MySQL. (BR01–06)
-- [ ] **10 — Checkout, recovery and tracking.** Connect cash checkout; require
-  explicit changed-price/fee consent. Preserve original intent/key after unknown
-  results; recover after reload and poll authorized order details safely. (US05–07)
-- [ ] **11 — Fulfillment and base commission.** Owner accepts/rejects with reason,
-  delivers and completes; Student cancels pending only. Completion and one base
-  commission commit together. Test accept/cancel races and rollback. (BR15–23)
-- [ ] **12 — Cash confirmation.** Current Owner confirms receipt with history and
-  audit. Payment and order states remain independent; repeats have no duplicate
-  effects. (US06/14 MVP cash subset, BR11–13)
-- [ ] **13 — History-preserving deletion.** Delete never-ordered dishes, otherwise
-  hide; delete restaurants only without orders/settlements, otherwise deactivate.
-  Preserve snapshots, active orders, owner accounts and other access. (US11/16)
-- [ ] **14 — Reconciliation decisions.** Settle period membership, overlap/closure,
-  late adjustments, overcollection and receipt correction policies before enabling
-  dependent reconciliation behavior.
-- [ ] **15 — Minimal manual reconciliation.** Ledger reads, reasoned adjustments,
-  same-restaurant one-time settlement assignment, manual receipts and signed totals.
-  Admin writes; Owner reads own data. Deduplicate financial retries. (BR23–27)
-- [ ] **16 — AI decisions.** Settle budget/quantity/preferences, provider/model,
-  privacy filtering, grounded output validation, limits/timeouts/quotas/cost and
-  evaluation criteria. (US08, AI integration contract)
-- [ ] **17 — AI recommendations.** Build eligible candidates server-side, call the
-  adapter, validate/revalidate output and send selections through normal checkout.
-  No personal data/transcripts or AI money/order writes; manual ordering survives
-  AI failure. (BR28–31)
-- [ ] **18 — MVP acceptance.** Verify enabled auth, catalog, quote, checkout/recovery,
-  race/rollback, fulfillment, cash, finance, history and AI scenarios. Include mobile
-  360 px, accessibility and measured NFR evidence. Fix failures. (testing.md)
-- [ ] **19 — Staging and release.** Finalize hosting/HTTPS/secrets, migration release,
-  monitoring and real partner bootstrap/survey data. Evidence daily backups and a
-  successful isolated restore before go-live. (deployment.md, NFR08)
+P01–P03 replace the former role-request/multi-owner design; old completed-foundation checkboxes are not new identity acceptance. P07/P19/P22/P26/P29/P34 are policy/operational gates and must obtain the missing decisions before dependent actions. P32 real pilot traffic and P35 production release require explicit authorization for the concrete plan/candidate.
 
-## Task prompt
-
-```text
-Implement step XX in BACKLOG.md only.
-Read AGENTS.md and relevant owning contracts; inspect current source and git status.
-Check prerequisites and resolve necessary TBDs before dependent implementation.
-Preserve existing work; reuse completed components.
-Update affected contracts and add/run appropriate verification with the feature.
-Report completed scope, exact check results and remaining blockers.
-```
-
-For decision steps 00, 14 and 16, request concrete options and record the user's
-decision before implementing behavior that depends on it.
-
-## Completion and scope
-
-Check an item only after its required behavior and verification are complete.
-Report absent tooling as `NOT CONFIGURED`, unexecuted checks as `NOT RUN`, and
-policy-dependent work as `BLOCKED` with its source. A disabled required feature
-does not make the MVP complete.
-
-Post-MVP: free addresses/maps, route fee tiers, QR/refunds, expanded financial
-reports, random selection, history/reorder UI, support, reviews/favorites and audit
-browsing. Durable order recovery/history and transactional audit writing are MVP.
+V1.0 includes direct QR/refunds, finance reports, support/audit lookup and history/recovery. V1.1 holds reorder/favorites/reviews/random; V1.2 holds free addresses/route fees and regional expansion. Drivers/custody/splitting, multiple restaurants per manager and additional Admins remain excluded. See [decisions](docs/decisions.md) and [launch checklist](docs/release-checklist.md).
