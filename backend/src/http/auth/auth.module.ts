@@ -1,3 +1,5 @@
+import {CredentialRecoveryService} from '../../modules/accounts/credential-recovery.service.js';
+import {CredentialRecoveryController} from './credential-recovery.controller.js';
 import { Module } from '@nestjs/common';
 import { AuthController } from './auth.controller.js';
 import { SessionGuard } from './session.guard.js';
@@ -10,6 +12,6 @@ import { EmailVerificationService } from '../../modules/accounts/email-verificat
 import { MfaService } from '../../modules/accounts/mfa.service.js';
 import { MfaRepository } from '../../modules/accounts/mfa.repository.js';
 
-@Module({ controllers: [AuthController, ProfileController], providers: [MfaRepository, MfaService, AccountsService, PasswordSafetyService, EmailVerificationService, SessionService, SessionGuard, CapabilitiesGuard],
-  exports: [SessionGuard, CapabilitiesGuard, SessionService] })
+@Module({ controllers: [CredentialRecoveryController,AuthController, ProfileController], providers: [CredentialRecoveryService,MfaRepository, MfaService, AccountsService, PasswordSafetyService, EmailVerificationService, SessionService, SessionGuard, CapabilitiesGuard],
+  exports: [AccountsService, SessionGuard, CapabilitiesGuard, SessionService] })
 export class AuthModule {}

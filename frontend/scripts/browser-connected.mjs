@@ -4,6 +4,7 @@ import { mkdtemp, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
+import { createRequire } from 'node:module';
 import { createHmac } from 'node:crypto';
 const profile = await mkdtemp(join(tmpdir(),'hlf-connected-chrome-'));
 const screenshots = process.env.BROWSER_EVIDENCE_DIR ?? await mkdtemp(join(tmpdir(),'hlf-browser-evidence-'));
@@ -12,6 +13,13 @@ const start = (cmd,args,options={})=>{const child=spawn(cmd,args,{stdio:['ignore
 const backend = start(process.execPath,['../backend/.test-dist/test/browser-server.js']);
 const vite = start('./node_modules/.bin/vite',['--host','127.0.0.1','--port','43127','--strictPort'],{env:{...process.env,API_PROXY_TARGET:'http://127.0.0.1:43128'}});
 let socket;
+let captureFailure;
+let stage='public';
+const target=new URL(process.env.TEST_DATABASE_URL);
+if(!['localhost','127.0.0.1'].includes(target.hostname)||!/^test_/.test(target.pathname.slice(1)))throw new Error('Disposable local test DB required');
+const mariadb=createRequire(new URL('../../backend/package.json',import.meta.url))('mariadb');
+let db;
+const orderRequests=[];
 const assert=(condition,message)=>{if(!condition)throw new Error(message);};
 async function until(fn,message,ms=12000){const deadline=Date.now()+ms;while(Date.now()<deadline){try{if(await fn())return;}catch{/* startup/navigation */}await delay(100);}throw new Error(message);}
 try {
@@ -23,17 +31,35 @@ try {
  socket=new WebSocket(pages.find(p=>p.type==='page').webSocketDebuggerUrl);
  await new Promise((resolve,reject)=>{socket.onopen=resolve;socket.onerror=reject;});
  let id=0;const pending=new Map();
- socket.onmessage=event=>{const message=JSON.parse(event.data);if(message.id){const item=pending.get(message.id);if(item){pending.delete(message.id);if(message.error)item.reject(new Error(message.error.message));else item.resolve(message.result);}}};
+ socket.onmessage=event=>{const message=JSON.parse(event.data);if(message.method==='Network.requestWillBeSent' && /\/api\/v1\/orders(?:[/?]|$)/.test(message.params.request.url)) orderRequests.push(message.params.request);if(message.id){const item=pending.get(message.id);if(item){pending.delete(message.id);if(message.error)item.reject(new Error(message.error.message));else item.resolve(message.result);}}};
  const call=(method,params={})=>new Promise((resolve,reject)=>{const key=++id;pending.set(key,{resolve,reject});socket.send(JSON.stringify({id:key,method,params}));});
- const evaluate=async expression=>{const result=await call('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true});if(result.exceptionDetails)throw new Error(result.exceptionDetails.text);return result.result.value;};
+ const evaluate=async expression=>{const result=await call('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true});if(result.exceptionDetails)throw new Error(result.exceptionDetails.exception?.description ?? result.exceptionDetails.text);return result.result.value;};
  const text=()=>evaluate('document.body.innerText');
  const waitText=async value=>{try {await until(async()=> (await text()).includes(value),`Missing browser content: ${value}`);} catch(error) {await snapshot('failure');console.error(await text());throw error;}};
- const navigate=async path=>{await call('Page.navigate',{url:`http://127.0.0.1:43127${path}`});};
- const fill=async(selector,value)=>{await evaluate(`document.querySelector(${JSON.stringify(selector)}).focus()`);await call('Input.insertText',{text:value});};
- const click=selector=>evaluate(`document.querySelector(${JSON.stringify(selector)}).click()`);
+ const navigate=async path=>{
+  await evaluate("document.documentElement.dataset.navigationPending='true'");
+  await call('Page.navigate',{url:`http://127.0.0.1:43127${path}`});
+  await until(()=>evaluate(`document.readyState==='complete' && !document.documentElement.dataset.navigationPending`),'Navigation incomplete: '+path);
+ };
+ const fill=async(selector,value)=>{await until(()=>evaluate(`Boolean(document.querySelector(${JSON.stringify(selector)}))`),'Input missing: '+selector);await evaluate(`document.querySelector(${JSON.stringify(selector)}).focus()`);await call('Input.insertText',{text:value});};
+ const click=async selector=>{await until(()=>evaluate(`Boolean(document.querySelector(${JSON.stringify(selector)}))`),'Control not ready: '+selector);return evaluate(`(()=>{const el=document.querySelector(${JSON.stringify(selector)});if(!el||el.disabled)throw new Error('Missing or disabled control: '+${JSON.stringify(selector)});el.click()})()`);};
  const submit=()=>evaluate("document.querySelector('form').requestSubmit()");
  const snapshot=async name=>{await evaluate('document.fonts.ready');const shot=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:true});await writeFile(join(screenshots,`${name}.png`),Buffer.from(shot.data,'base64'));};
+ captureFailure=()=>snapshot('failure');
  await call('Page.enable');await call('Runtime.enable');
+ await call('Network.enable');
+ db=await mariadb.createConnection({host:target.hostname,port:Number(target.port||3306),user:decodeURIComponent(target.username),password:decodeURIComponent(target.password),database:target.pathname.slice(1),allowPublicKeyRetrieval:true});
+ const slowAuth=await call('Page.addScriptToEvaluateOnNewDocument',{source:`const originalFetch=window.fetch;window.fetch=(input,init)=>String(input).includes('/auth/me')?new Promise(()=>{}):originalFetch(input,init);`});
+ for(const width of [360,390,768,1024,1440]) {
+  await call('Emulation.setDeviceMetricsOverride',{width,height:900,deviceScaleFactor:1,mobile:width<768});
+  await navigate('/');await waitText('Quán kiểm thử VJU');await waitText('Đang kiểm tra tài khoản');
+  assert(await evaluate('document.documentElement.scrollWidth<=innerWidth'),`Homepage overflow ${width}`);await snapshot(`public-pending-${width}`);
+ }
+ await call('Page.removeScriptToEvaluateOnNewDocument',{identifier:slowAuth.identifier});
+ await call('Network.setBlockedURLs',{urls:['*api/v1/auth/me*']});
+ await navigate('/');await waitText('Quán kiểm thử VJU');await waitText('Đăng nhập');
+ await until(()=>evaluate("Boolean(document.querySelector('.restaurant-card h2 a'))"),'Auth failure blocked real public data');
+ await call('Network.setBlockedURLs',{urls:[]});
  await call('Emulation.setDeviceMetricsOverride',{width:360,height:800,deviceScaleFactor:1,mobile:true});
  await navigate('/');await waitText('Quán kiểm thử VJU');assert(!(await text()).includes('Dữ liệu quán là mẫu'),'Fixtures on homepage');
  assert(await evaluate('document.documentElement.scrollWidth<=innerWidth'),'Mobile horizontal overflow');await snapshot('home-360');
@@ -42,24 +68,108 @@ try {
  await call('Network.enable');await call('Network.setBlockedURLs',{urls:['*api/v1/restaurants*']});
  await navigate('/');await waitText('Chưa tải được danh sách quán');
  await call('Network.setBlockedURLs',{urls:[]});await evaluate("Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Thử lại').click()");await waitText('Quán kiểm thử VJU');
- await click('.restaurant-card h2 a');await waitText('Cơm kiểm thử');await waitText('Tạm hết món');assert(!(await text()).includes('Thêm vào giỏ'),'Unimplemented cart action');await snapshot('menu-360');
- const menuPath=await evaluate('location.pathname');await click('.header-actions .header-link');await waitText('Chào mừng bạn trở lại.');
+ await click('.restaurant-card h2 a');await waitText('Cơm kiểm thử');assert((await text()).includes('Thêm vào giỏ'),'Cart action missing');await snapshot('menu-360');
+ const menuPath=await evaluate('location.pathname');
+ await until(()=>evaluate(`Boolean(document.querySelector('[aria-label="Chưa có ảnh món Cơm kiểm thử"]'))`),'Broken image fallback missing');
+ for(const width of [360,390,768,1024,1440]) {
+  await call('Emulation.setDeviceMetricsOverride',{width,height:900,deviceScaleFactor:1,mobile:width<768});
+  assert(await evaluate('document.documentElement.scrollWidth<=innerWidth'),`Menu overflow ${width}`);await snapshot(`menu-${width}`);
+ }
+ await fill('#dish-search','Khong-co-mon');await waitText('Chưa tìm thấy món phù hợp');
+ await evaluate("Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Xóa bộ lọc').click()");await waitText('Cơm kiểm thử');
+ await call('Network.setBlockedURLs',{urls:['*api/v1/dishes*cursor=*']});
+ await evaluate("Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Tải thêm món').click()");await waitText('Chưa tải được trang tiếp theo');await waitText('Cơm kiểm thử');
+ await call('Network.setBlockedURLs',{urls:[]});await evaluate("Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Tải thêm món').click()");await waitText('Tạm hết món');
+ await navigate('/restaurants/9223372036854775807');await waitText('Quán chưa khả dụng');
+ await call('Network.setBlockedURLs',{urls:['*api/v1/restaurants/*']});await navigate(menuPath);await waitText('Chưa tải được thông tin quán');
+ await call('Network.setBlockedURLs',{urls:[]});await evaluate("Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Thử lại').click()");await waitText('Cơm kiểm thử');
+ await call('Input.dispatchKeyEvent',{type:'keyDown',key:'Tab',code:'Tab',windowsVirtualKeyCode:9});await call('Input.dispatchKeyEvent',{type:'keyUp',key:'Tab',code:'Tab',windowsVirtualKeyCode:9});
+ assert(await evaluate('document.activeElement!==document.body'),'Public keyboard focus missing');
+ stage='cart';
+ // P06 uses actual disposable catalog mutations to exercise stale guest intent.
+ const orderCount=(await db.query('SELECT COUNT(*) AS n FROM orders'))[0].n;
+ const cartValue=()=>evaluate("JSON.parse(localStorage.getItem('hlf.cart.v1'))");
+ const cartReady=()=>until(async()=>!(await text()).includes('Đang kiểm tra giá và tình trạng món'),'Cart revalidation incomplete');
+ const addFirst=async()=>{await click('.menu-dish button:not(:disabled)');await waitText('Đã thêm');};
+ await addFirst();await addFirst();
+ assert((await cartValue()).items[0].quantity===2,'Duplicate add lost quantity');
+ await navigate('/cart');await waitText('2 phần');await cartReady();
+ await navigate(await evaluate('location.pathname+location.search+location.hash'));await waitText('2 phần');await cartReady();
+ await click('[aria-label="Tăng Cơm kiểm thử"]');await waitText('3 phần');
+ await click('[aria-label="Giảm Cơm kiểm thử"]');await waitText('2 phần');
+ const originalCart=await cartValue();
+ const other=(await (await fetch('http://127.0.0.1:43128/api/v1/restaurants?q='+encodeURIComponent('Quán thứ hai'))).json()).data[0];
+ await navigate('/restaurants/'+other.id);await waitText('Món quán thứ hai');await click('.menu-dish button');await waitText('Đổi quán trong giỏ?');
+ assert(await evaluate("document.activeElement.textContent==='Giữ giỏ hiện tại'"),'Dialog must initially focus safe cancel');
+ await call('Emulation.setDeviceMetricsOverride',{width:360,height:900,deviceScaleFactor:1,mobile:true});await snapshot('cart-switch-360');
+ await call('Input.dispatchKeyEvent',{type:'keyDown',key:'Tab',code:'Tab',windowsVirtualKeyCode:9,modifiers:8});await call('Input.dispatchKeyEvent',{type:'keyUp',key:'Tab',code:'Tab',windowsVirtualKeyCode:9,modifiers:8});
+ assert(await evaluate("document.activeElement.textContent==='Xóa giỏ cũ và thêm món'"),'Dialog Shift+Tab escaped focus trap');
+ await call('Input.dispatchKeyEvent',{type:'keyDown',key:'Tab',code:'Tab',windowsVirtualKeyCode:9});await call('Input.dispatchKeyEvent',{type:'keyUp',key:'Tab',code:'Tab',windowsVirtualKeyCode:9});
+ assert(await evaluate("document.activeElement.textContent==='Giữ giỏ hiện tại'"),'Dialog Tab escaped focus trap');
+
+ await call('Input.dispatchKeyEvent',{type:'keyDown',key:'Escape',code:'Escape',windowsVirtualKeyCode:27});await call('Input.dispatchKeyEvent',{type:'keyUp',key:'Escape',code:'Escape',windowsVirtualKeyCode:27});
+ await until(()=>evaluate("!document.querySelector('dialog')"),'Escape did not cancel cart switch');
+ assert(JSON.stringify(await cartValue())===JSON.stringify(originalCart),'Cancel changed original cart');
+ assert(await evaluate("document.activeElement.textContent.includes('Thêm vào giỏ')"),'Dialog did not restore focus');
+ await click('.menu-dish button');await waitText('Đổi quán trong giỏ?');await evaluate("Array.from(document.querySelectorAll('dialog button')).find(b=>b.textContent==='Xóa giỏ cũ và thêm món').click()");
+ await until(async()=>(await cartValue()).restaurant.id===other.id,'Confirmed switch failed');
+ await navigate(menuPath);await waitText('Cơm kiểm thử');await click('.menu-dish button:not(:disabled)');await waitText('Đổi quán trong giỏ?');await evaluate("Array.from(document.querySelectorAll('dialog button')).find(b=>b.textContent==='Xóa giỏ cũ và thêm món').click()");await waitText('Đã đổi quán trong giỏ.');
+ await navigate('/cart');await waitText('1 phần');await cartReady();await click('[aria-label="Tăng Cơm kiểm thử"]');await waitText('2 phần');
+ const saved=await cartValue();
+ await evaluate("localStorage.setItem('hlf.cart.v1','{corrupt')");await navigate('/cart');await waitText('Giỏ hàng đang trống');await waitText('Giỏ đã lưu không hợp lệ');
+ await evaluate(`localStorage.setItem('hlf.cart.v1',${JSON.stringify(JSON.stringify(saved))})`);await navigate('/cart');await waitText('2 phần');
+ stage='storage-denied';
+ const denied=await call('Page.addScriptToEvaluateOnNewDocument',{source:`for(const method of ['getItem','setItem','removeItem']){const original=Storage.prototype[method];Storage.prototype[method]=function(key,...rest){if(key==='hlf.cart.v1')throw new DOMException('Denied','SecurityError');return original.call(this,key,...rest)}}`});
+ await navigate(menuPath);await waitText('Cơm kiểm thử');await waitText('Không thể lưu giỏ trên thiết bị');await addFirst();await waitText('1 phần');
+ await navigate(await evaluate('location.pathname+location.search+location.hash'));await waitText('Cơm kiểm thử');await waitText('Không thể lưu giỏ trên thiết bị');assert(!await evaluate("Boolean(document.querySelector('.cart-menu-link'))"),'Memory-only cart survived reload');
+ await call('Page.removeScriptToEvaluateOnNewDocument',{identifier:denied.identifier});await navigate('/cart');await waitText('2 phần');await cartReady();
+ stage='availability';
+ const mainId=saved.restaurant.id, dishId=saved.items[0].id;
+ await db.query('UPDATE dishes SET is_visible=FALSE WHERE id=?',[dishId]);await evaluate("Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Kiểm tra lại giỏ').click()");await waitText('Món không còn công khai');assert((await cartValue()).items[0].quantity===2,'Hidden dish was silently removed');
+ await db.query('UPDATE dishes SET is_visible=TRUE,is_available=FALSE WHERE id=?',[dishId]);await evaluate("Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Kiểm tra lại giỏ').click()");await waitText('Món đang tạm hết');
+ await db.query('UPDATE dishes SET is_available=TRUE WHERE id=?',[dishId]);await db.query('UPDATE restaurants SET is_accepting_orders=FALSE WHERE id=?',[mainId]);await evaluate("Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Kiểm tra lại giỏ').click()");await waitText('Quán đang đóng cửa hoặc tạm ngưng');
+ await db.query('UPDATE restaurants SET is_accepting_orders=TRUE WHERE id=?',[mainId]);
+ await call('Network.setBlockedURLs',{urls:['*api/v1/dishes/*']});await evaluate("Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Kiểm tra lại giỏ').click()");await waitText('Chưa tải được món');
+ await call('Network.setBlockedURLs',{urls:[]});await evaluate("Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Kiểm tra lại giỏ').click()");await cartReady();
+ stage='login-price';
+ await snapshot('cart-guest-1440');
+ await navigate('/login?returnTo=%2Fcart');await waitText('Chào mừng bạn trở lại.');
+ await db.query('UPDATE dishes SET price_vnd=35000 WHERE id=?',[dishId]);
+ await fill('#username','browser_manager');await fill('#password','synthetic browser passphrase');await submit();await waitText('Giá thay đổi');await waitText('Tiếp tục đặt món');assert(!(await text()).includes('Tiếp tục đặt món tiền mặt')&&!(await text()).includes('Thanh toán tiền mặt trực tiếp cho quán.'),'Cash-only copy remains');
+ assert(await evaluate('location.pathname')==='/cart','Login lost cart return');assert((await cartValue()).items[0].acceptedPriceVnd==='30000','Login silently accepted new price');assert((await cartValue()).items[0].quantity===2,'Login lost quantity');
+ await snapshot('cart-price-change-1440');await evaluate("Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Chấp nhận giá hiện tại').click()");await waitText('Đã xác nhận giá hiện tại');assert((await cartValue()).items[0].acceptedPriceVnd==='35000','Explicit price confirmation failed');
+ for(const width of [360,390,768,1024,1440]){await call('Emulation.setDeviceMetricsOverride',{width,height:900,deviceScaleFactor:1,mobile:width<768});assert(await evaluate('document.documentElement.scrollWidth<=innerWidth'),`Cart overflow ${width}`);await snapshot(`cart-${width}`);}
+ await call('Emulation.setDeviceMetricsOverride',{width:360,height:900,deviceScaleFactor:1,mobile:true});
+ await evaluate("Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Xóa toàn bộ giỏ').focus()");
+ assert(await evaluate("(()=>{const button=document.activeElement.getBoundingClientRect();const nav=document.querySelector('.student-nav').getBoundingClientRect();return button.bottom<=nav.top&&button.top>=0})()"),'Bottom navigation covers focused cart controls');
+ await db.query("UPDATE accounts SET auth_version=auth_version+1 WHERE login_identifier='browser_manager'");
+ await evaluate("window.dispatchEvent(new Event('focus'))");await waitText('Đăng nhập để đặt hàng');assert((await cartValue()).items[0].quantity===2,'Expired session lost guest cart');
+ assert((await db.query('SELECT COUNT(*) AS n FROM orders'))[0].n===orderCount,'Login created an order');assert(orderRequests.length===0,'Cart/login sent an order request');
+ await navigate(menuPath);await waitText('Cơm kiểm thử');
+ await click('.header-actions .header-link');await waitText('Chào mừng bạn trở lại.');
  assert(await evaluate("new URLSearchParams(location.search).get('returnTo')")===menuPath,'Menu login link lost destination');
+ stage='expired-email';
  await navigate('/verify-email?username=browser_expired&returnTo=%2Faccount%3Ftab%3Dprofile%23details');
  await waitText('Mã xác minh');await fill('#email-code','123456');await submit();
  await waitText('Mã xác minh không đúng, đã hết hạn');
  assert(await evaluate("fetch('/api/v1/auth/me').then(r=>r.status)")===401,'Expired email issued session');
  await snapshot('email-expired-360');
  await evaluate("Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Gửi lại mã').click()");
- await waitText('mã mới đã được gửi');
+ await waitText('mã mới đã được gửi');assert(await evaluate("document.querySelector('#email-code').getAttribute('aria-invalid')!=='true'&&!document.querySelector('#email-code-error')"),'Resend kept stale code error');
  await submit();await waitText('Email đã được xác minh');
  assert(await evaluate("new URLSearchParams(location.search).get('returnTo')")==='/account?tab=profile#details','Verification lost return path');
+ stage='registration';
  await navigate('/register?returnTo=%2Faccount%3Ftab%3Dprofile%23details');await waitText('Nhập lại mật khẩu');assert(!await evaluate("Boolean(document.querySelector('#requested-role'))"),'Role selector remains');
  const username=`browser_${Date.now()}`;
- await fill('#display-name','Người dùng kiểm thử');await fill('#username',username);await fill('#email',`${username}@example.com`);await fill('#password','synthetic browser passphrase');await fill('#password-confirmation','synthetic browser passphrase');await submit();
+ await fill('#display-name','Người dùng kiểm thử');await fill('#username',username);await fill('#email',`${username}@example.com`);await fill('#password','synthetic browser passphrase');await fill('#password-confirmation','synthetic browser mismatch');await evaluate("document.querySelector('button[type=submit]').focus()");await submit();await waitText('Mật khẩu nhập lại chưa khớp.');
+ assert(await evaluate("document.activeElement.id==='password-confirmation'&&document.activeElement.getAttribute('aria-invalid')==='true'&&document.getElementById(document.activeElement.getAttribute('aria-describedby')).textContent.includes('chưa khớp')"),'Password error lacks inline association/focus');await snapshot('uiux-password-error-360');
+ await evaluate("document.querySelector('#password-confirmation').select()");await call('Input.insertText',{text:'synthetic browser passphrase'});assert(await evaluate("document.querySelector('#password-confirmation').getAttribute('aria-invalid')!=='true'"),'Editing password kept stale field error');await submit();
  await waitText('Mã xác minh');await fill('#email-code','123456');await submit();await waitText('Email đã được xác minh');
  await fill('#username',username);await fill('#password','synthetic browser passphrase');await submit();await waitText('Đăng xuất');
  assert(await evaluate("location.pathname+location.search+location.hash")==='/account?tab=profile#details','Login lost return path');
+ await navigate('/cart');await waitText('2 phần');await waitText('Tiếp tục đặt món');assert(!(await text()).includes('Tiếp tục đặt món tiền mặt')&&!(await text()).includes('Thanh toán tiền mặt trực tiếp cho quán.'),'Cash-only copy remains');
+ assert((await cartValue()).items[0].acceptedPriceVnd==='35000','Account switch lost public draft');
+ assert(!JSON.stringify(await cartValue()).includes('browser_manager'),'Prior account leaked into guest intent');
  await navigate('/account');await waitText('Đăng xuất');await evaluate("Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Đăng xuất').click()");await waitText('Chào mừng bạn trở lại.');
  await navigate('/account?tab=profile#details');await waitText('Chào mừng bạn trở lại.');
  assert(await evaluate("new URLSearchParams(location.search).get('returnTo')")==='/account?tab=profile#details','Protected redirect lost destination');
@@ -72,6 +182,14 @@ try {
   assert(await evaluate("document.querySelector('.auth-switch a').getAttribute('href')")==='/register','Unsafe return propagated: '+JSON.stringify(unsafe));
  }
  await navigate('/login?returnTo=https%3A%2F%2Fevil.example');await waitText('Chào mừng bạn trở lại.');
+ stage='uiux-login-timeout';
+ await evaluate(`(()=>{const original=window.fetch;window.timeoutPosts=0;window.releaseLateLogin=null;window.fetch=(input,init)=>{if(String(input).endsWith('/auth/login')){window.timeoutPosts++;return new Promise(resolve=>{window.releaseLateLogin=()=>resolve(new Response(JSON.stringify({data:{mfa_required:true,challenge_id:'synthetic-late-challenge',expires_in:300}}),{status:200,headers:{'Content-Type':'application/json'}}))})}return original(input,init)}})()`);
+ await fill('#username','browser_manager');await fill('#password','synthetic browser passphrase');await submit();
+ await until(()=>evaluate("document.body.innerText.includes('Máy chủ phản hồi quá lâu.')"),'Login did not time out',18000);
+ assert(await evaluate("!document.querySelector('button[type=submit]').disabled&&document.querySelector('#username').value==='browser_manager'&&document.querySelector('#password').value===''&&window.timeoutPosts===1"),'Login timeout lost username, kept secret or retried automatically');
+ await evaluate('window.releaseLateLogin()');await delay(250);assert(await evaluate("!document.querySelector('#mfa-code')&&location.pathname==='/login'"),'Late login reply replaced timed-out state');await snapshot('uiux-login-timeout-360');
+ await navigate('/login?returnTo=https%3A%2F%2Fevil.example');await waitText('Chào mừng bạn trở lại.');
+ stage='admin';
  await fill('#username','browser_operator');await fill('#password','synthetic browser passphrase');await submit();await waitText('Mã Authenticator');
  assert(!await evaluate("document.cookie.includes('__Host-hlf_csrf=')"),'Admin password issued session');
  const counter=Buffer.alloc(8);counter.writeBigUInt64BE(BigInt(Math.floor(Date.now()/30000)));const digest=createHmac('sha1',Buffer.alloc(20,9)).update(counter).digest();const offset=digest[19]&15;const code=String((digest.readUInt32BE(offset)&0x7fffffff)%1000000).padStart(6,'0');
@@ -85,6 +203,7 @@ try {
  await fill('#username','browser_operator');await fill('#password','synthetic browser passphrase');await submit();await waitText('Mã Authenticator');
  await evaluate("Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Dùng mã phục hồi').click()");await fill('#mfa-code','ab'.repeat(16));await submit();await waitText('Mã phục hồi đã được dùng.');
  assert(await evaluate("fetch('/api/v1/auth/me').then(r=>r.status)")===401,'Recovery issued privileged session');
- console.log(`Connected Chrome passed: public/filter/empty/error/retry/menu/sold-out, role-free signup/expired email/resend/login/safe return, manager buyer navigation, Admin MFA/recovery; 360/1440 px + keyboard. Screenshots: ${screenshots}`);
-} catch(error) { console.error(String(error)); console.error(backend.log().slice(-1200));process.exitCode=1; }
-finally {socket?.close();for(const child of children)child.kill('SIGTERM');await delay(400);await rm(profile,{recursive:true,force:true});}
+ assert(orderRequests.length===0,'An order request was sent during V0.2');
+ console.log(`Connected Chrome passed: P06 cart reload/quantity/switch/Escape/focus/storage-denied/corrupt/revalidation/price-consent/login-return/expiry/account-switch/no-order; public/filter/empty/error/retry/menu/sold-out, role-free signup/expired email/resend/login/safe return, manager buyer navigation, Admin MFA/recovery; 360/390/768/1024/1440 px + keyboard/dialog focus. Screenshots: ${screenshots}`);
+} catch(error) { await captureFailure?.().catch(()=>{}); console.error('Stage: '+stage);console.error(String(error)); console.error(backend.log().slice(-1200));process.exitCode=1; }
+finally {await db?.end();socket?.close();for(const child of children)child.kill('SIGTERM');await delay(400);await rm(profile,{recursive:true,force:true});}

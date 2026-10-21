@@ -7,6 +7,7 @@ import { catalogApi, summary, type Category, type Restaurant } from '../api/cata
 import { useCatalog } from '../hooks/use-catalog'
 import type { RestaurantFilterValues } from '../types'
 import { FixtureRestaurantListPage } from './FixtureRestaurantListPage'
+import { DishDiscovery } from '../components/DishDiscovery'
 const defaults: RestaurantFilterValues = { query: '', category: 'all', priceRange: 'all' }
 export function RestaurantListPage({ preview = false }: { preview?: boolean }) {
   return preview && import.meta.env.DEV ? <FixtureRestaurantListPage /> : <ConnectedRestaurants />
@@ -30,6 +31,7 @@ function ConnectedRestaurants() {
       <p className="home-description">Tìm quán hợp khẩu vị, xem giá món và lựa chọn bữa ăn của bạn. Khám phá ngay, không cần đăng nhập.</p>
       <a className="home-discover-link" href="#kham-pha">Khám phá quán <span aria-hidden="true">↓</span></a>
     </section>
+    <DishDiscovery />
     <section id="kham-pha" className="discovery-header" aria-labelledby="discovery-title">
       <div className="discovery-heading"><h2 id="discovery-title">Quán quanh VJU</h2></div>
     </section>

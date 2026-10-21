@@ -28,11 +28,13 @@ Recovery verifies the operator using the approved out-of-band process, replaces/
 
 ## 4. User administration and support
 
+The [approved DEC-08 package](account-support-policy-proposal.md) owns restricted obligations access, support states/targets, retention/holds and audit filters. Approved October21 for synthetic P25 implementation; acceptance is separate.
+
 Admin list/detail is allowlisted and paginated; expose only necessary identifier/display/availability/management metadata. No passwords, factor material, auth tokens, full order contacts or unbounded account export. No role chooser, privilege promotion or hard-delete button.
 
-Suspension/resumption requires reason, expected version, current MFA Admin and transactional audit; increments auth version. Refuse self-suspension/removal of sole authority through ordinary user controls. Suspension denies new authenticated actions. Handling a suspended buyer/manager's existing orders, support read access and temporary operational coverage is DEC-08: resolve before enabling suspension against active obligations; never silently cancel orders or grant Admin fulfillment/payment power.
+Suspension/resumption requires reason, expected version, current MFA Admin and transactional audit; increments auth version. Refuse self-suspension/removal of sole authority through ordinary user controls. Suspension denies new ordinary actions and revokes existing sessions. Fresh restricted sessions allow only DEC-08 obligations operations; account-first transactional authorization rechecks availability. Existing orders/refunds/debt survive; no Admin fulfillment/payment powers.
 
-Order-linked support checks buyer/current-manager scope; Admin may triage only the approved protected projection. P25 finalizes ticket statuses, allowed transitions, message/file limits, escalation and retention under DEC-08 before implementation. Tickets neither cancel accepted orders nor prove payments/refunds. Audit lookup uses explicit filters, bounded keyset pagination and redacted changes; lookup/access is itself auditable where approved. No arbitrary SQL/export endpoint.
+Order-linked support checks buyer/current-manager scope; Admin may triage only the approved protected projection. [P25 contract](account-support-v07-contract.md) defines the approved closed DTOs, transitions, limits, escalation, retention and compromised-credential recovery. Tickets neither cancel accepted orders nor prove payments/refunds. Audit lookup uses explicit filters, bounded keyset pagination and redacted changes; lookup/access is itself auditable where approved. No arbitrary SQL/export endpoint.
 
 ## 5. Target API
 
@@ -46,7 +48,7 @@ Order-linked support checks buyer/current-manager scope; Admin may triage only t
 | GET `/admin/support/requests`; PATCH `/admin/support/requests/{id}` | Sole MFA Admin, finalized transitions/version/reason |
 | GET `/admin/audit-logs` | Sole MFA Admin, bounded approved filters/redacted projection |
 
-Absent finalized schemas are BLOCKED, not implementer discretion. Admin recovery has no anonymous account-promotion route. Every protected write uses CSRF/Origin; auth challenge endpoints retain exact Origin checks/rate limits under their approved P03 contract.
+The [enabled P25 schemas](data/administration.openapi.json) extend these target routes for synthetic scope; acceptance is recorded separately. Absent schemas remain BLOCKED, not implementer discretion. Admin recovery has no anonymous account-promotion route. Every protected write uses CSRF/Origin; auth challenge endpoints retain exact Origin checks/rate limits under their approved P03 contract.
 
 ## 6. Evidence
 

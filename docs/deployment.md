@@ -337,3 +337,7 @@ The CI database service now pins mysql:9.2.0, matching the selected version acro
 ## 14. Scoped runtime/provision identity configuration
 
 [Verified local handoff](auth-followup.md) records the authorized local split and evidence. Runtime `DATABASE_URL` has reviewed auth/catalog grants; `PROVISION_DATABASE_URL` is mandatory for CLI, distinct and same-database. Keep provisioning/migration credentials in protected operator storage outside runtime `.env`; inject them only into private operator subprocesses. For migration jobs use command-scoped `DATABASE_URL="$MIGRATION_DATABASE_URL"`. Never give runtime global/database ALL, DDL, GRANT OPTION, authority writes or secret-replacement rights. Apply [grants](../backend/prisma/permissions/grants.sql) to fresh users without inherited roles; additive GRANT statements cannot narrow an existing broad identity. Production setup remains NOT RUN.
+
+## V0.4 local-only configuration
+
+[Local verification](setup-local-verification.md) uses isolated MySQL9.2.0/MinIO with MEDIA_LOCAL_TEST and distinct MEDIA_S3_ENDPOINT/BUCKET/ACCESS_KEY/SECRET_KEY. Only loopback media endpoints are enabled; bucket must differ from ONBOARDING_S3_BUCKET. No new VITE secret/config is introduced. Public image access is backend-gated rather than bucket-public. Quote protection now uses DB-backed random artifacts with15minute expiry, not an undecided signing algorithm. Guarded media:cleanup:local refuses non-test/nonlocal DBs; production provider, scheduler, region, backup and retention adoption remain DEC-10/11.

@@ -1,0 +1,3 @@
+export type PaymentReceipt={id:string;amount_vnd:string;received_at:string;confirmed_at:string;classification:string;instruction_version:number;transaction_reference?:string;evidence_id?:string}
+export type PaymentRefund={id:string;receipt_id:string;amount_vnd:string;status:'pending'|'refunded';reason:string;due_at:string;overdue:boolean;refunded_at:string|null;transaction_reference?:string|null;evidence_id?:string|null}
+export type Payment={order_id:string;method:'cash'|'qr';status:'unpaid'|'paid'|'refund_pending'|'refunded';version:number;updated_at:string;order_paid?:boolean;refund_due_vnd?:string;claim?:{reported_at:string}|null;receipts?:PaymentReceipt[];refunds?:PaymentRefund[]}

@@ -9,8 +9,16 @@
 | [P01](P01.md) | ACCEPTED | No V0.1 blocker; expansion-window compatibility boundary recorded |
 | [P02](P02.md) | ACCEPTED after P01 | Auth/profile/email, OpenAPI, safe return and expired-email evidence complete |
 | [P03](P03.md) | ACCEPTED after P02 | MFA/recovery, restricted SQL/CLI/Chrome and approved local config complete |
+| [P04](P04.md) | ACCEPTED after P03 | Public catalog OpenAPI/HTTP/MySQL/privacy complete |
+| [P05](P05.md) | ACCEPTED after P04 | Real public UI, states and five-width Chrome evidence complete |
+| [P06](P06.md) | ACCEPTED after P05 | Guest cart, login/price consent/storage/account continuity complete |
 
 **V0.1 is ACCEPTED** by the [final criterion-by-criterion self-review](V0.1.md), October 19, 2026. The [scoped follow-up](../auth-followup.md) closes the preceding implementation/evidence gaps. CLI now has 18 signed-manifest/PTY scenarios (Python PTY), local real SMTP has STARTTLS/AUTH evidence, and all recorded checks use clean lockfile installs. Retained Admin enrollment is observed read-only, not performed by this follow-up. See P01 for exact commands, fingerprints and evidence boundaries.
+
+**V0.2 is ACCEPTED** by the [P04→P05→P06 self-review](V0.2.md), October 19, 2026. Checkout remains unavailable until P15/P16; production is not accepted.
+
+**V0.3 is ACCEPTED for local synthetic scope** by [P07→P10 self-review](V0.3.md), October19,2026. [P07](P07.md), [P08](P08.md), [P09](P09.md), [P10](P10.md) record sequential acceptance. No real partner intake, retained-data adoption or production publication; future order privacy/anti-evasion controls are contracted, not implemented.
+
 
 ## Record only when needed
 
@@ -42,3 +50,15 @@ Read only the active prompt's record and referenced prerequisite evidence. Compa
 Prefer the current unfinished task when “continue” has context. Otherwise choose the earliest unaccepted roadmap candidate; validate dependencies before execution. A blocked predecessor cannot be skipped by treating future-source presence as completion. Preserve unrelated work, original uncertain intent/keys and history.
 
 Keep records concise, sanitized and under 500 lines; link substantial artifacts at protected appropriate locations. No environment secrets, contacts, bank details, MFA/recovery material or provider transcripts in records. No extra operational permission comes from a status file.
+
+- V0.4: [P11](P11.md), [P12](P12.md), [P13](P13.md), [P14](P14.md) and [version acceptance](V0.4.md), local synthetic scope only.
+
+- V0.5: [P15 cash aggregate](P15.md), local synthetic acceptance; [P16 checkout](P16.md) accepted; [P17 fulfillment](P17.md), [P18 tracking/concurrency](P18.md) and [V0.5 acceptance](V0.5.md) accepted for local synthetic scope; retained adoption is separate.
+
+V0.6: [P19 QR/refund decision](P19.md); implementation acceptance remains separate.
+
+- V0.6: [P19 approved DEC-06](P19.md), [P20 backend](P20.md), [P21 connected UI](P21.md) and [version acceptance](V0.6.md), local synthetic scope only; retained adoption remains separate.
+
+- V0.7: [P22 approved DEC-07](P22.md)→[P23 finance backend](P23.md)→[P24 connected reports/reconciliation](P24.md) accepted for local synthetic scope October21. [Approved DEC-08](../account-support-policy-proposal.md) and [P25](P25.md) now also accepted for local synthetic scope; no separate production/version-release review is inferred.
+
+- Finance verification/adoption boundary: [actual commands and limitations](../finance-local-verification.md). Retained migration and production/publication remain separate.

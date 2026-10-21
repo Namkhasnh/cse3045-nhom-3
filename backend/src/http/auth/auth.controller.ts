@@ -3,7 +3,7 @@ import { Body, Controller, Get, HttpCode, Post, Req, Res,
 import { AccountsService } from '../../modules/accounts/accounts.service.js';
 import { canonicalUsername } from '../../modules/accounts/password-policy.js';
 import { SessionService } from './session.service.js';
-import { SessionGuard, type AuthRequest } from './session.guard.js';
+import { SessionGuard, AllowObligations, type AuthRequest } from './session.guard.js';
 import { MfaService } from '../../modules/accounts/mfa.service.js';
 import { isIP } from 'node:net';
 import { canonicalEmail } from '../../modules/accounts/email-verification.service.js';
@@ -110,6 +110,7 @@ export class AuthController {
   }
 
   @Get('me')
+  @AllowObligations()
   @UseGuards(SessionGuard)
   me(@Req() request: AuthRequest, @Res({ passthrough: true }) response: AuthResponse) {
     response.setHeader('Cache-Control', 'no-store');
@@ -117,6 +118,7 @@ export class AuthController {
   }
 
   @Post('logout')
+  @AllowObligations()
   @HttpCode(200)
   @UseGuards(SessionGuard)
   async logout(@Body() body: unknown, @Req() request: AuthRequest, @Res({ passthrough: true }) response: AuthResponse) {

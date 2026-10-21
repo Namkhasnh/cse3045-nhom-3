@@ -4,7 +4,7 @@ import { authContract, schema } from './auth-contract.js';
 
 test('V0.1 machine contract has complete examples and closes privilege/MFA fields', () => {
  assert.equal(authContract.openapi, '3.1.0');
- assert.equal(Object.keys(authContract.paths).length, 8);
+ for (const path of ['/auth/register','/auth/login','/auth/me','/profile','/restaurants','/dishes','/orders']) assert.ok(path in authContract.paths, `Missing route ${path}`);
  const references = (value: unknown): void => {
   if (!value || typeof value !== 'object') return;
   if ('$ref' in value) {

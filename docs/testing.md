@@ -123,7 +123,7 @@ US19–20 are Could: add detailed cases only when selected and specified. US21�
 - Verify `/api/v1`, `snake_case`, success/list/error envelopes, documented HTTP status and replay headers. Reject unknown fields, server-controlled totals/rates/status/actor fields, duplicate dish IDs and unsupported filters/sorts.
 - Preserve canonical string IDs/money, eight-decimal fraction rates, UTC instants and integer counts/metres/versions. Test negative/exponent/decimal/leading-zero IDs, bounds, rate excess precision and aggregate overflow. Signed adjustments/balances are valid; receipt amounts must be positive.
 - Verify stable keyset ordering/tie-breakers, limit 20/default and 100/max, scope/filter-bound cursors and 422 for invalid/mismatched cursors. Search collation expectations remain pending until deployment collation is recorded.
-- Validate enabled schemas/examples against [OpenAPI](data/openapi.yaml). V0.1 auth/profile examples/references and actual HTTP/SMTP exchanges are checked by `test:e2e`/`test:smtp` with Ajv. Client SDK generation and later endpoint contracts are not claimed. Auth tests follow API §2 username/Argon2id, 15-minute cookie JWT, versioned logout and bound CSRF protocol. Cover wrong Origin, missing/mismatched CSRF, expired/revoked JWT, key rotation and no refresh endpoint.
+- Validate enabled schemas/examples against [OpenAPI](data/openapi.yaml). V0.1 auth/profile examples/references and actual HTTP/SMTP exchanges are checked by `test:e2e`/`test:smtp` with Ajv. V0.2 adds public catalog schemas/examples and actual HTTP/MySQL response validation in `test:integration`. Client SDK generation and later endpoint contracts are not claimed. Auth tests follow API §2 username/Argon2id, 15-minute cookie JWT, versioned logout and bound CSRF protocol. Cover wrong Origin, missing/mismatched CSRF, expired/revoked JWT, key rotation and no refresh endpoint.
 
 ## 6. Pricing, quotes and historical records
 
@@ -251,6 +251,8 @@ CI targets hw1/main, uses Node.js 24.x and configures frontend/backend checks pl
 
 | Existing check | Command / evidence boundary |
 | --- | --- |
+| Guest-cart unit tests | `npm --prefix frontend run test:cart`; Node 24 exact totals/limits/queued actions/restaurant consent/storage parsing/safe returns; included in frontend CI |
+| Connected browser | `TEST_DATABASE_URL=... npm --prefix frontend run test:connected`; compiled backend tests and migrated isolated MySQL 9.2.0 required; public/menu/cart at five widths, guest continuity, catalog changes, storage denial and no order request; SMTP/password-corpus replaced. Run separately from smoke (shared Vite port). |
 | Frontend lint/build | `npm --prefix frontend run lint`; `npm --prefix frontend run build` (includes TypeScript) |
 | Backend lint/unit/build | `npm --prefix backend run lint`; `npm --prefix backend test`; `npm --prefix backend run build` |
 | Backend HTTP E2E | `npm --prefix backend run test:e2e`; mocks Prisma, checks `/api/v1` and envelope behavior |
@@ -293,3 +295,37 @@ Done for a milestone means its enabled cases pass, necessary NFR measurements an
 The [October 19 follow-up](auth-followup.md) adds previous-backend expansion-window compatibility, safe internal returns, expired-email Chrome coverage and real runtime/provision grants/CLI/browser evidence, including authorized local configuration. The subsequent [final review](progress/V0.1.md) accepts V0.1 after confirming the complete P01–P03 gates. Remote CI and production deployment remain NOT RUN.
 
 `test:compatibility` builds the previous backend/client and exercises actual HTTP reads/auth/profile/logout after expansion on a fresh empty loopback `test_*` DB. `test:permissions` requires a fresh migrated fixture without an authority and creates restricted synthetic users. `test:connected` accepts `TEST_RUNTIME_DATABASE_URL` only for a distinct user on its same disposable DB; fixture setup uses the test operator, HTTP uses runtime. See [exact evidence](auth-followup.md#exact-verification).
+
+## V0.3 amendment cases
+
+ONBOARD-01 includes private MinIO byte roundtrip, MIME/size/owner validation, terms retention, manual user confirmation and retryable evidence retention cleanup. ONBOARD-02 includes unique pending guard, confirmed-manual/approval races and audit rollback. Future order privacy tests assert omitted JSON fields before food-ready including lists/details/replay/notes, no commission at food-ready, and immutable terminal states. Anti-evasion reports alone cannot establish payment/delivery or fees.
+
+## V0.4 local setup evidence
+
+P11–P14 add actual MySQL/MinIO suites `settings`, `delivery`, `dishes` and `commission-setup` under test:integration; focused HTTP responses are checked against setup.openapi.json. Restricted-runtime harness runs all five setup/onboarding groups and denies ownership/object identity/consent/hash/history changes. Image tests include corrupt/oversized/spoofed inputs, metadata removal, private bucket, reference-checked cleanup and ambiguous metadata commit acknowledgement. Commission tests use an independent Decimal arithmetic oracle, exact consent/version races and unchanged old-order fixtures; these fixtures do not prove an order-write workflow.
+
+Frontend test:settings/test:delivery/test:dishes are scoped stage journeys; test:setup starts a fresh setup_required synthetic partner and completes configuration through UI/API before explicit acceptance switch. Existing smoke/connected/cart/onboarding regressions retain their original boundaries. [Local commands](setup-local-verification.md) and [V0.4 evidence](progress/V0.4.md) distinguish actual observations from later production readiness.
+
+## Local sample adoption follow-up
+
+The user-authorized retained-local exception, backup/restore proof and additive-row preservation checks are in [local adoption](local-demo-adoption.md). `demo:local` is an explicit guarded operator command, never a CI/startup seed. `npm --prefix frontend run test:local-demo` performs read-only connected local catalog checks and confines controlled API failures/pagination to its isolated Chrome profile. The onboarding browser suite additionally checks independent terms/history failure, a successful-read-only empty state and draft preservation through recovery.
+
+## V0.5 cash evidence tooling
+
+[Local verification](cash-ordering-local-verification.md) provides guarded commands for actual MySQL9.2.0 independent-process order races, rollback/snapshot/least-privilege evidence, Chrome cash checkout/fulfillment/history and deterministic polling/version tests. Existing HTTP mocks and fixture smoke retain their narrower coverage. Remote CI and retained-data adoption are separate from local acceptance.
+
+## V0.6 payment evidence
+
+PAY-01/02, RACE-01, AUTH-02, DATA-01, HIST-01 and UI-01/02: [P20](progress/P20.md)/[P21](progress/P21.md) record real MySQL9.2.0/process/MinIO/Chrome verification and its synthetic boundary. [Payment local reproduction](payments-local-verification.md) identifies commands, new DB refusal rules, both confirm/cancel-or-reject orderings, proof lifecycle and held-response/FileReader/account checks. No fixture establishes partner approval or real payment/refund.
+
+## V0.7 approved DEC-07 extension — October21
+
+[DEC-07.2026-10-21.v1](finance-policy-proposal.md) is explicitly approved and owns monthly membership/finalization, next-period adjustment booking, full append-only receipt reversal/replacement, signed account credit and collection caps, supporting-reference access, exact report fields/cutoffs, recovery and Vietnamese finance addendum. It supersedes the DEC-07 financial TBDs above only. Existing partner terms/consent hashes remain immutable; real publication/adoption is separate. FIN-03/04/05 implementation evidence follows P22→P23→P24; DEC-08 controls remain gated at P25.
+
+## V0.7 finance evidence
+
+[P23](progress/P23.md) and [P24](progress/P24.md) separate source, automated MySQL/HTTP/unit and real Chrome evidence for FIN-03/04/05, AUTH-02, DATA-01 and AUDIT-01. [Finance verification](finance-local-verification.md) lists actual scripts, fresh-test-DB guards, two-process/restricted-runtime/upgrade/recovery/cutoff/net-zero and five-width keyboard coverage. `test:finance-unit` also runs in frontend CI configuration; remote CI remains NOT RUN. Fixtures prove no real bank/partner/consent fact. DEC-08/P25, retained migration and production acceptance remain separate.
+
+P25/DEC-08 requires USER-01/SUPPORT-01/AUDIT-01/AUTH-02/ADMIN-02: revoked old sessions versus restricted fresh sessions, suspension/write races, owner/buyer nested denial, six-state deadlines/reply/retry, audit redaction/access rollback/cursors, holds versus cleanup, separated personal data and restore tombstones. Synthetic and production evidence must remain distinct.
+
+P25 enabled HTTP schemas and exact synthetic commands are in [account/support verification](account-support-local-verification.md) and [progress](progress/P25.md). Its runtime/Chrome checks distinguish restored DB metadata from production backup guarantees; code generation and HTTP mocks are not erasure/race proof.

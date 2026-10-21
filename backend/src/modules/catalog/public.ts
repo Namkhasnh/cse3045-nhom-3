@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CatalogRepository, type RestaurantRow, type DishRow } from './catalog.repository.js';
 import { cursor, id, parseQuery, type CatalogQuery } from './catalog-query.js';
-const dishDto = (row: DishRow) => ({ id: row.id.toString(), restaurant_id: row.restaurant_id.toString(), category_id: row.category_id.toString(),
+const dishDto = (row: DishRow) => ({ id: row.id.toString(), restaurant_id: row.restaurant_id.toString(), restaurant_name: row.restaurant_name, category_id: row.category_id.toString(),
   name: row.name, description: row.description, price_vnd: row.price_vnd.toString(), image_reference: row.image_reference,
   is_visible: Boolean(row.is_visible), is_available: Boolean(row.is_available), version: Number(row.version), updated_at: row.updated_at.toISOString() });
 function page<T extends { id: bigint; name: string; price_vnd?: bigint }, R>(rows: T[], q: CatalogQuery, convert: (v: T) => R) {

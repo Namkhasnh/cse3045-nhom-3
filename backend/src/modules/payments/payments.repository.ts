@@ -1,0 +1,8 @@
+import {ConflictException} from '@nestjs/common';import {invalid} from '../../common/http/input.js';
+import {Injectable} from '@nestjs/common';
+import type {TransactionContext} from '../../common/transactions/transaction-runner.js';
+@Injectable() export class PaymentsRepository {
+ async create(c:TransactionContext,id:bigint,actor:bigint,method:'cash'|'qr'='cash'){await c.db.order_payments.create({data:{order_id:id,method,updated_at:new Date()}});await c.db.order_payment_history.create({data:{order_id:id,payment_version:1,to_status:'unpaid',actor_id:actor}});}
+ async confirm(c:TransactionContext,id:bigint,actor:bigint,evidence:string|null){await c.db.$queryRaw`SELECT order_id FROM order_payments WHERE order_id=${id} FOR UPDATE`;const p=await c.db.order_payments.findUnique({where:{order_id:id}});if(!p)return invalid();if(p.method!=='cash')return invalid();if(p.status==='paid')return false;if(p.status!=='unpaid'||p.version>=2147483647)throw new ConflictException({code:'PAYMENT_STATE_CONFLICT',message:'Không thể xác nhận trạng thái này.',details:{order_id:id.toString(),current_status:p.status,current_version:p.version}});await c.db.order_payments.update({where:{order_id:id,version:p.version},data:{status:'paid',confirmed_by:actor,confirmed_at:new Date(),version:{increment:1},updated_at:new Date()}});await c.db.order_payment_history.create({data:{order_id:id,from_status:'unpaid',to_status:'paid',payment_version:p.version+1,actor_id:actor,evidence_reference:evidence}});return true;}
+ read(c:TransactionContext,id:bigint){return c.db.order_payments.findUnique({where:{order_id:id}});}
+}

@@ -1,0 +1,3 @@
+export const localMonth=(date:Date)=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Ho_Chi_Minh',year:'numeric',month:'2-digit'}).format(date)
+export function monthBoundary(value:string,next=false){if(!/^20[0-9]{2}-(0[1-9]|1[0-2])$/.test(value))throw new Error('Invalid month');const [y,m]=value.split('-').map(Number);return new Date(Date.UTC(y,m-1+(next?1:0),1)-25200000).toISOString()}
+export const monthLabel=(value:string)=>{const parts=new Intl.DateTimeFormat('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',month:'2-digit',year:'numeric'}).formatToParts(new Date(value));return parts.find(p=>p.type==='month')!.value+'/'+parts.find(p=>p.type==='year')!.value}

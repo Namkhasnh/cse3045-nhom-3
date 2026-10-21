@@ -1,0 +1,31 @@
+ĐIỀU KHOẢN HỢP TÁC HOALACFOOD — 2026-10-19.v1
+
+1. Đăng ký và xét duyệt
+Người đăng ký phải có tài khoản đang hoạt động, đã xác minh email và chưa quản lý quán nào, kể cả quán ngừng hoạt động hoặc chưa hoàn tất thiết lập. Mỗi tài khoản chỉ quản lý tối đa một quán và vẫn giữ quyền mua hàng.
+
+2. Thông tin và bằng chứng
+Hồ sơ gồm tên quán, địa chỉ, tên người liên hệ, số điện thoại, ảnh mặt tiền và giấy đăng ký hộ kinh doanh/doanh nghiệp. Người đăng ký chịu trách nhiệm về tính chính xác và quyền sử dụng tài liệu. hoalacfood kiểm tra thủ công và có thể từ chối kèm lý do. Không thu CCCD hoặc thông tin tài khoản ngân hàng trong hồ sơ này.
+
+3. Lịch sử hồ sơ
+Mỗi tài khoản có tối đa một hồ sơ đang chờ xác nhận hoặc xét duyệt. Hồ sơ đã gửi được giữ nguyên; chưa hỗ trợ sửa, rút hoặc tự hết hạn. Sau khi bị từ chối, người dùng có thể nộp hồ sơ mới. Kết quả và lý do xét duyệt được lưu trong lịch sử.
+
+4. Đồng ý điều khoản
+Người đăng ký phải chủ động đồng ý bản điều khoản hiển thị. Hệ thống lưu phiên bản, mã kiểm tra nội dung và thời điểm đồng ý. Hồ sơ chờ duyệt được xét theo bản đã đồng ý. Bản mới không sửa lại lịch sử. Khi Admin tạo quán thủ công, người được chọn phải đăng nhập và xác nhận đúng thông tin quán cùng điều khoản trước khi tạo. V0.3 chưa hỗ trợ chuyển chủ.
+
+5. Điều kiện hoạt động
+Duyệt hồ sơ chỉ tạo quán ở trạng thái cần thiết lập, chưa cho phép nhận đơn. Quán chỉ được bán sau khi hoàn tất hồ sơ công khai, thực đơn, giờ hoạt động, phương án giao hàng, phí giao đã xác minh, thanh toán và mức hoa hồng được hai bên đồng ý. Quán tự chịu trách nhiệm chế biến, an toàn thực phẩm và giao hàng.
+
+6. Hoa hồng và trung thực giao dịch
+Tỷ lệ được thỏa thuận riêng từng quán từ 3% đến 5%, không vượt quá 5%; không có mức mặc định. Chủ quán phải đồng ý mức cụ thể trước khi bán. Thay đổi tỷ lệ cần đồng ý lại và chỉ áp dụng cho đơn mới. Hoa hồng cơ bản phát sinh khi đơn hoàn thành, tính trên tiền món, không gồm phí giao, làm tròn đến đồng một lần cho mỗi đơn; đơn hoàn thành vẫn phát sinh hoa hồng nếu chưa thu được tiền khách.
+Quán không được khai sai trạng thái, ép khách hủy hoặc chuyển giao dịch ra ngoài để né phí. Khi xác minh đơn phát sinh từ hoalacfood đã được giao thực tế, quán vẫn có nghĩa vụ thanh toán hoa hồng đã thỏa thuận. Khoản truy thu phải được thông báo, có bằng chứng, lý do và quyền khiếu nại; lời khai một bên không tự chứng minh giao hàng hoặc thanh toán. Không sửa ngầm đơn đã hủy thành hoàn thành. Cơ chế xác minh và khoản truy thu riêng phải được triển khai, kiểm thử trước khi áp dụng.
+
+7. Thanh toán và hoàn tiền
+Khách trả tiền mặt hoặc chuyển QR trực tiếp cho quán; hoalacfood không giữ hoặc chia tiền. Quán xác minh tiền thực nhận; ảnh QR và thông báo đã chuyển không chứng minh thanh toán. Với đơn bị hủy/từ chối khi đang chờ nhận mà quán đã nhận tiền, quán hoàn đủ trực tiếp trong 24 giờ kể từ lúc xác nhận đã nhận tiền và phát sinh nghĩa vụ hoàn. Tiền đến muộn trên đơn đã hủy/từ chối áp dụng cùng quy tắc. Chưa hỗ trợ hoàn một phần.
+
+8. Đối soát
+Kỳ đối soát là tháng dương lịch theo giờ Việt Nam. hoalacfood gửi bảng tháng trước chậm nhất ngày 3; quán thanh toán chậm nhất 23:59:59 ngày 7, kể cả cuối tuần/ngày lễ. Sai lệch được ghi điều chỉnh có lý do ở kỳ sau; không sửa/xóa bảng hoặc khoản thu cũ. Giữ số dư âm để bù trừ; chưa thu vượt số còn phải trả. Chậm trả được liên hệ xử lý, chưa tự động phạt hoặc khóa quán.
+
+9. Dữ liệu, hỗ trợ và ngừng hợp tác
+Tài liệu xét duyệt chỉ dành cho người nộp và Admin có thẩm quyền; không tự công khai. Tài liệu hồ sơ bị từ chối được lưu 90 ngày từ ngày từ chối; hồ sơ được duyệt lưu trong thời gian hợp tác và một năm sau khi kết thúc. Sau hạn xóa file, giữ lịch sử xét duyệt/đồng ý và dấu vết xóa; không giữ bản sao tài liệu trong nhật ký.
+Trong đơn hàng, quán chỉ thấy mã đơn, món, tiền và điểm giao cố định trước mốc đã xong món – chờ giao. Nhận đơn chưa mở tên/số liên hệ. Chỉ thao tác đã xong món – chờ giao mới mở tên và số điện thoại người nhận để tổ chức giao. Không cung cấp ID tài khoản, username hoặc email người đặt cho quán; lọc tại API, kể cả ghi chú. Mốc xong món không tự hoàn thành đơn hoặc phát sinh hoa hồng. Quán chỉ sử dụng thông tin người nhận để thực hiện đơn.
+Hỗ trợ/ngừng hợp tác: Zalo 0352689944. Ngừng nhận đơn mới không xóa trách nhiệm xử lý đơn, hoàn tiền và công nợ đã phát sinh. Đình chỉ và tranh chấp chi tiết thuộc chính sách được phê duyệt riêng; không tự động áp dụng.

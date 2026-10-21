@@ -4,7 +4,7 @@ export type Category = { id: string; name: string }
 export type Restaurant = { id: string; name: string; address: string; is_active: boolean; is_open: boolean;
   is_accepting_orders: boolean; min_price_vnd: string | null; max_price_vnd: string | null;
   hours: { weekday: number; opens_at: string; closes_at: string; closes_next_day: boolean }[] }
-export type Dish = { id: string; restaurant_id: string; name: string; description: string;
+export type Dish = { id: string; restaurant_id: string; restaurant_name: string; name: string; description: string;
   price_vnd: string; image_reference: string | null; is_available: boolean }
 export class CatalogError extends Error { readonly status: number; constructor(status: number) { super('Không tải được danh mục'); this.status = status } }
 async function get<T>(path: string, signal?: AbortSignal): Promise<T> {
@@ -25,6 +25,7 @@ export function filterQuery(filters: RestaurantFilterValues, cursor?: string | n
 export const catalogApi = {
   restaurants: (query: URLSearchParams, signal?: AbortSignal) => get<Page<Restaurant>>(`/restaurants?${query}`, signal),
   restaurant: async (id: string, signal?: AbortSignal) => (await get<{ data: Restaurant }>(`/restaurants/${id}`, signal)).data,
+  dish: async (id: string, signal?: AbortSignal) => (await get<{ data: Dish }>(`/dishes/${id}`, signal)).data,
   dishes: (query: URLSearchParams, signal?: AbortSignal) => get<Page<Dish>>(`/dishes?${query}`, signal),
   categories: async (signal?: AbortSignal): Promise<Category[]> => {
     const result: Category[] = []; let cursor: string | null = null

@@ -15,21 +15,34 @@ function csrfToken() {
     .find(value => value.startsWith('__Host-hlf_csrf='))?.split('=')[1]
 }
 
-async function request<T = User>(path: string, method = 'GET', body?: object): Promise<T> {
+async function request<T = User>(path: string, method = 'GET', body?: object, timeoutMs?: number): Promise<T> {
   const headers: Record<string, string> = {}
   if (body !== undefined) headers['Content-Type'] = 'application/json'
   if (method !== 'GET' && csrfToken()) headers['X-CSRF-Token'] = csrfToken()!
-  const response = await fetch(`/api/v1${path}`, { method, headers, body: body === undefined ? undefined : JSON.stringify(body),
-    credentials: 'same-origin', cache: 'no-store' })
-  const payload = await response.json().catch(() => null) as { data?: T; error?: { code?: string; message?: string } } | null
-  if (!response.ok || !payload?.data) throw new ApiError(response.status,
-    payload?.error?.code ?? 'NETWORK_ERROR', payload?.error?.message)
-  return payload.data
+  const controller = new AbortController()
+  let timer: ReturnType<typeof setTimeout> | undefined
+  const exchange = async () => {
+    const response = await fetch(`/api/v1${path}`, { method, headers, body: body === undefined ? undefined : JSON.stringify(body),
+      credentials: 'same-origin', cache: 'no-store', signal: controller.signal })
+    const payload = await response.json().catch(() => null) as { data?: T; error?: { code?: string; message?: string } } | null
+    if (!response.ok || !payload?.data) throw new ApiError(response.status,
+      payload?.error?.code ?? 'NETWORK_ERROR', payload?.error?.message)
+    return payload.data
+  }
+  try {
+    if (!timeoutMs) return await exchange()
+    // Bound both headers and response-body reads, even if a transport ignores abort.
+    return await Promise.race([exchange(), new Promise<never>((_, reject) => {
+      timer = setTimeout(() => { reject(new ApiError(0, 'REQUEST_TIMEOUT')); controller.abort() }, timeoutMs)
+    })])
+  } finally { clearTimeout(timer) }
 }
 
 export const authApi = {
+  recoveryStart:(login_identifier:string)=>request<{accepted:true}>('/auth/recovery/start','POST',{login_identifier},15000),
+  recoveryComplete:(login_identifier:string,code:string,new_password:string)=>request<{recovered:true}>('/auth/recovery/complete','POST',{login_identifier,code,new_password},15000),
   me: () => request('/auth/me'),
-  login: (login_identifier: string, password: string) => request<User | MfaChallenge>('/auth/login', 'POST', { login_identifier, password }),
+  login: (login_identifier: string, password: string) => request<User | MfaChallenge>('/auth/login', 'POST', { login_identifier, password }, 15000),
   register: (input: { login_identifier: string; password: string; display_name: string; phone: string | null;
     email: string }) =>
     request('/auth/register', 'POST', input),
@@ -47,6 +60,6 @@ export const authApi = {
   profile: (input: { expected_version: number; display_name: string; phone: string | null }) =>
     request('/profile', 'PATCH', input),
   verifyMfa: (challenge_id: string, proof: { code: string } | { recovery_code: string }) =>
-    request<User | { re_enrollment_required: true }>('/auth/admin/mfa/verify', 'POST', { challenge_id, ...proof }),
+    request<User | { re_enrollment_required: true }>('/auth/admin/mfa/verify', 'POST', { challenge_id, ...proof }, 15000),
 }
 export type MfaChallenge = { mfa_required: true; challenge_id: string; expires_in: number }

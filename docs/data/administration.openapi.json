@@ -1,0 +1,5458 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Approved DEC-08 P25 synthetic API",
+    "version": "0.7.0"
+  },
+  "servers": [
+    {
+      "url": "/api/v1"
+    }
+  ],
+  "paths": {
+    "/admin/users": {
+      "get": {
+        "operationId": "p25_get_admin_users",
+        "tags": [
+          "V0.7 DEC-08"
+        ],
+        "description": "Approved DEC-08.2026-10-21.v1, synthetic implementation. Only current sole MFA Admin accesses /admin routes. Fresh restricted obligations sessions may access explicitly scoped participant routes. All private access and mutations commit required redacted audit; support never changes order/payment state. Lists bind cursors to actor/filters. CSRF/Origin required on writes.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Account-Id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "in": "query",
+            "name": "is_active",
+            "required": false,
+            "schema": {
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 2048
+            }
+          }
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized result; private no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/P25User"
+                      }
+                    },
+                    "page": {
+                      "$ref": "#/components/schemas/P25Page"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "page"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/users/{id}": {
+      "get": {
+        "operationId": "p25_get_admin_users_id",
+        "tags": [
+          "V0.7 DEC-08"
+        ],
+        "description": "Approved DEC-08.2026-10-21.v1, synthetic implementation. Only current sole MFA Admin accesses /admin routes. Fresh restricted obligations sessions may access explicitly scoped participant routes. All private access and mutations commit required redacted audit; support never changes order/payment state. Lists bind cursors to actor/filters. CSRF/Origin required on writes.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Account-Id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          }
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized result; private no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/P25User"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/users/{id}/availability": {
+      "patch": {
+        "operationId": "p25_patch_admin_users_id_availability",
+        "tags": [
+          "V0.7 DEC-08"
+        ],
+        "description": "Approved DEC-08.2026-10-21.v1, synthetic implementation. Only current sole MFA Admin accesses /admin routes. Fresh restricted obligations sessions may access explicitly scoped participant routes. All private access and mutations commit required redacted audit; support never changes order/payment state. Lists bind cursors to actor/filters. CSRF/Origin required on writes.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Account-Id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          }
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized result; private no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/P25Availability"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/P25AvailabilityPatch"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/audit-logs": {
+      "get": {
+        "operationId": "p25_get_admin_audit_logs",
+        "tags": [
+          "V0.7 DEC-08"
+        ],
+        "description": "Approved DEC-08.2026-10-21.v1, synthetic implementation. Only current sole MFA Admin accesses /admin routes. Fresh restricted obligations sessions may access explicitly scoped participant routes. All private access and mutations commit required redacted audit; support never changes order/payment state. Lists bind cursors to actor/filters. CSRF/Origin required on writes.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Account-Id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "in": "query",
+            "name": "from",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "in": "query",
+            "name": "to",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "in": "query",
+            "name": "actor_id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "in": "query",
+            "name": "action",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "target_type",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "target_id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "in": "query",
+            "name": "request_id",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 2048
+            }
+          }
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized result; private no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/P25Audit"
+                      }
+                    },
+                    "page": {
+                      "$ref": "#/components/schemas/P25Page"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "page"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/support/requests": {
+      "get": {
+        "operationId": "p25_get_support_requests",
+        "tags": [
+          "V0.7 DEC-08"
+        ],
+        "description": "Approved DEC-08.2026-10-21.v1, synthetic implementation. Only current sole MFA Admin accesses /admin routes. Fresh restricted obligations sessions may access explicitly scoped participant routes. All private access and mutations commit required redacted audit; support never changes order/payment state. Lists bind cursors to actor/filters. CSRF/Origin required on writes.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Account-Id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "enum": [
+                "open",
+                "in_progress",
+                "waiting_requester",
+                "waiting_partner",
+                "resolved",
+                "closed"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "order_id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 2048
+            }
+          }
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized result; private no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/P25Ticket"
+                      }
+                    },
+                    "page": {
+                      "$ref": "#/components/schemas/P25Page"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "page"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "p25_post_support_requests",
+        "tags": [
+          "V0.7 DEC-08"
+        ],
+        "description": "Approved DEC-08.2026-10-21.v1, synthetic implementation. Only current sole MFA Admin accesses /admin routes. Fresh restricted obligations sessions may access explicitly scoped participant routes. All private access and mutations commit required redacted audit; support never changes order/payment state. Lists bind cursors to actor/filters. CSRF/Origin required on writes.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Account-Id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[!-~]{1,128}$"
+            }
+          }
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized result; private no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/P25Ticket"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Idempotency-Replayed": {
+                "schema": {
+                  "enum": [
+                    "true",
+                    "false"
+                  ]
+                },
+                "description": "True only when the original successful actor/operation/key result is replayed."
+              }
+            }
+          },
+          "400": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Authorized result; private no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/P25Ticket"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Idempotency-Replayed": {
+                "schema": {
+                  "enum": [
+                    "true",
+                    "false"
+                  ]
+                },
+                "description": "True only when the original successful actor/operation/key result is replayed."
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/P25SupportCreate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/support/requests": {
+      "get": {
+        "operationId": "p25_get_admin_support_requests",
+        "tags": [
+          "V0.7 DEC-08"
+        ],
+        "description": "Approved DEC-08.2026-10-21.v1, synthetic implementation. Only current sole MFA Admin accesses /admin routes. Fresh restricted obligations sessions may access explicitly scoped participant routes. All private access and mutations commit required redacted audit; support never changes order/payment state. Lists bind cursors to actor/filters. CSRF/Origin required on writes.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Account-Id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "enum": [
+                "open",
+                "in_progress",
+                "waiting_requester",
+                "waiting_partner",
+                "resolved",
+                "closed"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "order_id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 2048
+            }
+          }
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized result; private no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/P25Ticket"
+                      }
+                    },
+                    "page": {
+                      "$ref": "#/components/schemas/P25Page"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "page"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/support/requests/{id}": {
+      "get": {
+        "operationId": "p25_get_support_requests_id",
+        "tags": [
+          "V0.7 DEC-08"
+        ],
+        "description": "Approved DEC-08.2026-10-21.v1, synthetic implementation. Only current sole MFA Admin accesses /admin routes. Fresh restricted obligations sessions may access explicitly scoped participant routes. All private access and mutations commit required redacted audit; support never changes order/payment state. Lists bind cursors to actor/filters. CSRF/Origin required on writes.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Account-Id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 2048
+            }
+          }
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized result; private no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/P25Ticket"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/support/requests/{id}/messages": {
+      "post": {
+        "operationId": "p25_post_support_requests_id_messages",
+        "tags": [
+          "V0.7 DEC-08"
+        ],
+        "description": "Approved DEC-08.2026-10-21.v1, synthetic implementation. Only current sole MFA Admin accesses /admin routes. Fresh restricted obligations sessions may access explicitly scoped participant routes. All private access and mutations commit required redacted audit; support never changes order/payment state. Lists bind cursors to actor/filters. CSRF/Origin required on writes.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Account-Id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[!-~]{1,128}$"
+            }
+          }
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized result; private no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/P25Ticket"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Idempotency-Replayed": {
+                "schema": {
+                  "enum": [
+                    "true",
+                    "false"
+                  ]
+                },
+                "description": "True only when the original successful actor/operation/key result is replayed."
+              }
+            }
+          },
+          "400": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Authorized result; private no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/P25Ticket"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Idempotency-Replayed": {
+                "schema": {
+                  "enum": [
+                    "true",
+                    "false"
+                  ]
+                },
+                "description": "True only when the original successful actor/operation/key result is replayed."
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/P25SupportReply"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/support/requests/{id}": {
+      "patch": {
+        "operationId": "p25_patch_admin_support_requests_id",
+        "tags": [
+          "V0.7 DEC-08"
+        ],
+        "description": "Approved DEC-08.2026-10-21.v1, synthetic implementation. Only current sole MFA Admin accesses /admin routes. Fresh restricted obligations sessions may access explicitly scoped participant routes. All private access and mutations commit required redacted audit; support never changes order/payment state. Lists bind cursors to actor/filters. CSRF/Origin required on writes.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Account-Id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          }
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized result; private no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/P25Ticket"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/P25SupportUpdate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/support/requests/{id}/escalate": {
+      "post": {
+        "operationId": "p25_post_support_requests_id_escalate",
+        "tags": [
+          "V0.7 DEC-08"
+        ],
+        "description": "Approved DEC-08.2026-10-21.v1, synthetic implementation. Only current sole MFA Admin accesses /admin routes. Fresh restricted obligations sessions may access explicitly scoped participant routes. All private access and mutations commit required redacted audit; support never changes order/payment state. Lists bind cursors to actor/filters. CSRF/Origin required on writes.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Account-Id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          }
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized result; private no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/P25Ticket"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/P25SupportAction"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/support/requests/{id}/hold-request": {
+      "post": {
+        "operationId": "p25_post_support_requests_id_hold_request",
+        "tags": [
+          "V0.7 DEC-08"
+        ],
+        "description": "Approved DEC-08.2026-10-21.v1, synthetic implementation. Only current sole MFA Admin accesses /admin routes. Fresh restricted obligations sessions may access explicitly scoped participant routes. All private access and mutations commit required redacted audit; support never changes order/payment state. Lists bind cursors to actor/filters. CSRF/Origin required on writes.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Account-Id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          }
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized result; private no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/P25Ticket"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/P25SupportAction"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/support/requests/{id}/accept-resolution": {
+      "post": {
+        "operationId": "p25_post_support_requests_id_accept_resolution",
+        "tags": [
+          "V0.7 DEC-08"
+        ],
+        "description": "Approved DEC-08.2026-10-21.v1, synthetic implementation. Only current sole MFA Admin accesses /admin routes. Fresh restricted obligations sessions may access explicitly scoped participant routes. All private access and mutations commit required redacted audit; support never changes order/payment state. Lists bind cursors to actor/filters. CSRF/Origin required on writes.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Account-Id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          }
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized result; private no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/P25Ticket"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/P25Accept"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/support/requests/{id}/holds": {
+      "get": {
+        "operationId": "p25_get_support_requests_id_holds",
+        "tags": [
+          "V0.7 DEC-08"
+        ],
+        "description": "Approved DEC-08.2026-10-21.v1, synthetic implementation. Only current sole MFA Admin accesses /admin routes. Fresh restricted obligations sessions may access explicitly scoped participant routes. All private access and mutations commit required redacted audit; support never changes order/payment state. Lists bind cursors to actor/filters. CSRF/Origin required on writes.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Account-Id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          }
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized result; private no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/P25Hold"
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/support/requests/{id}/holds": {
+      "post": {
+        "operationId": "p25_post_admin_support_requests_id_holds",
+        "tags": [
+          "V0.7 DEC-08"
+        ],
+        "description": "Approved DEC-08.2026-10-21.v1, synthetic implementation. Only current sole MFA Admin accesses /admin routes. Fresh restricted obligations sessions may access explicitly scoped participant routes. All private access and mutations commit required redacted audit; support never changes order/payment state. Lists bind cursors to actor/filters. CSRF/Origin required on writes.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Account-Id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[!-~]{1,128}$"
+            }
+          }
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized result; private no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/P25Hold"
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Idempotency-Replayed": {
+                "schema": {
+                  "enum": [
+                    "true",
+                    "false"
+                  ]
+                },
+                "description": "True only when the original successful actor/operation/key result is replayed."
+              }
+            }
+          },
+          "400": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Authorized result; private no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/P25Hold"
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Idempotency-Replayed": {
+                "schema": {
+                  "enum": [
+                    "true",
+                    "false"
+                  ]
+                },
+                "description": "True only when the original successful actor/operation/key result is replayed."
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/P25Reason"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/support/requests/{id}/reveal": {
+      "post": {
+        "operationId": "p25_post_admin_support_requests_id_reveal",
+        "tags": [
+          "V0.7 DEC-08"
+        ],
+        "description": "Approved DEC-08.2026-10-21.v1, synthetic implementation. Only current sole MFA Admin accesses /admin routes. Fresh restricted obligations sessions may access explicitly scoped participant routes. All private access and mutations commit required redacted audit; support never changes order/payment state. Lists bind cursors to actor/filters. CSRF/Origin required on writes.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Account-Id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          }
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized result; private no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/P25Reveal"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/P25Reason"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/data-holds/{id}": {
+      "get": {
+        "operationId": "p25_get_admin_data_holds_id",
+        "tags": [
+          "V0.7 DEC-08"
+        ],
+        "description": "Approved DEC-08.2026-10-21.v1, synthetic implementation. Only current sole MFA Admin accesses /admin routes. Fresh restricted obligations sessions may access explicitly scoped participant routes. All private access and mutations commit required redacted audit; support never changes order/payment state. Lists bind cursors to actor/filters. CSRF/Origin required on writes.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Account-Id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          }
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized result; private no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/P25HoldDetail"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/data-holds/{id}/release": {
+      "post": {
+        "operationId": "p25_post_admin_data_holds_id_release",
+        "tags": [
+          "V0.7 DEC-08"
+        ],
+        "description": "Approved DEC-08.2026-10-21.v1, synthetic implementation. Only current sole MFA Admin accesses /admin routes. Fresh restricted obligations sessions may access explicitly scoped participant routes. All private access and mutations commit required redacted audit; support never changes order/payment state. Lists bind cursors to actor/filters. CSRF/Origin required on writes.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Account-Id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          }
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized result; private no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/P25HoldRelease"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/P25SupportAction"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/restaurant-applications/{id}/holds": {
+      "post": {
+        "operationId": "p25_post_admin_restaurant_applications_id_holds",
+        "tags": [
+          "V0.7 DEC-08"
+        ],
+        "description": "Approved DEC-08.2026-10-21.v1, synthetic implementation. Only current sole MFA Admin accesses /admin routes. Fresh restricted obligations sessions may access explicitly scoped participant routes. All private access and mutations commit required redacted audit; support never changes order/payment state. Lists bind cursors to actor/filters. CSRF/Origin required on writes.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Account-Id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[!-~]{1,128}$"
+            }
+          }
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized result; private no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/P25HoldCreated"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Idempotency-Replayed": {
+                "schema": {
+                  "enum": [
+                    "true",
+                    "false"
+                  ]
+                },
+                "description": "True only when the original successful actor/operation/key result is replayed."
+              }
+            }
+          },
+          "400": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Authorized result; private no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/P25HoldCreated"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Idempotency-Replayed": {
+                "schema": {
+                  "enum": [
+                    "true",
+                    "false"
+                  ]
+                },
+                "description": "True only when the original successful actor/operation/key result is replayed."
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/P25Reason"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/privacy/erasure": {
+      "get": {
+        "operationId": "p25_get_privacy_erasure",
+        "tags": [
+          "V0.7 DEC-08"
+        ],
+        "description": "Approved DEC-08.2026-10-21.v1, synthetic implementation. Only current sole MFA Admin accesses /admin routes. Fresh restricted obligations sessions may access explicitly scoped participant routes. All private access and mutations commit required redacted audit; support never changes order/payment state. Lists bind cursors to actor/filters. CSRF/Origin required on writes.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Account-Id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          }
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized result; private no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/components/schemas/P25Erasure"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "p25_post_privacy_erasure",
+        "tags": [
+          "V0.7 DEC-08"
+        ],
+        "description": "Approved DEC-08.2026-10-21.v1, synthetic implementation. Only current sole MFA Admin accesses /admin routes. Fresh restricted obligations sessions may access explicitly scoped participant routes. All private access and mutations commit required redacted audit; support never changes order/payment state. Lists bind cursors to actor/filters. CSRF/Origin required on writes.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Account-Id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          }
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized result; private no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/P25Erasure"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {},
+                "required": []
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/users/{id}/erasure/verify": {
+      "post": {
+        "operationId": "p25_post_admin_users_id_erasure_verify",
+        "tags": [
+          "V0.7 DEC-08"
+        ],
+        "description": "Approved DEC-08.2026-10-21.v1, synthetic implementation. Only current sole MFA Admin accesses /admin routes. Fresh restricted obligations sessions may access explicitly scoped participant routes. All private access and mutations commit required redacted audit; support never changes order/payment state. Lists bind cursors to actor/filters. CSRF/Origin required on writes.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Account-Id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          }
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized result; private no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/P25Erasure"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/P25ErasureVerify"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/recovery/start": {
+      "post": {
+        "operationId": "p25_post_auth_recovery_start",
+        "tags": [
+          "V0.7 DEC-08"
+        ],
+        "description": "Origin-checked compromised-credential recovery only; generic start result, verified email, purpose-bound code10min, five shared username/IP requests per15min,60s resend, at most5code attempts. Password policy runs before atomic password/revoke/audit commit. No session issued; suspension remains.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Account-Id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          }
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Authorized result; private no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "accepted": {
+                          "const": true
+                        }
+                      },
+                      "required": [
+                        "accepted"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "login_identifier": {
+                    "type": "string",
+                    "maxLength": 64
+                  }
+                },
+                "required": [
+                  "login_identifier"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/recovery/complete": {
+      "post": {
+        "operationId": "p25_post_auth_recovery_complete",
+        "tags": [
+          "V0.7 DEC-08"
+        ],
+        "description": "Origin-checked compromised-credential recovery only; generic start result, verified email, purpose-bound code10min, five shared username/IP requests per15min,60s resend, at most5code attempts. Password policy runs before atomic password/revoke/audit commit. No session issued; suspension remains.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Account-Id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          }
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Authorized result; private no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "recovered": {
+                          "const": true
+                        }
+                      },
+                      "required": [
+                        "recovered"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Standard safe error; 404 conceals foreign resources.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/P25Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "login_identifier": {
+                    "type": "string",
+                    "maxLength": 64
+                  },
+                  "code": {
+                    "type": "string",
+                    "pattern": "^[0-9]{6}$"
+                  },
+                  "new_password": {
+                    "type": "string",
+                    "minLength": 12,
+                    "maxLength": 128
+                  }
+                },
+                "required": [
+                  "login_identifier",
+                  "code",
+                  "new_password"
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "cookieAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "__Host-hlf_access"
+      }
+    },
+    "schemas": {
+      "P25Error": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "code",
+              "message",
+              "field_errors",
+              "details",
+              "request_id",
+              "retryable"
+            ],
+            "properties": {
+              "code": {
+                "enum": [
+                  "MALFORMED_REQUEST",
+                  "AUTH_REQUIRED",
+                  "TOKEN_INVALID",
+                  "ACCOUNT_INACTIVE",
+                  "FORBIDDEN",
+                  "CSRF_FAILED",
+                  "VALIDATION_ERROR",
+                  "VERSION_CONFLICT",
+                  "ACCOUNT_TAKEN",
+                  "INVALID_CREDENTIALS",
+                  "EMAIL_CODE_INVALID",
+                  "MFA_INVALID",
+                  "RATE_LIMITED",
+                  "PASSWORD_CHECK_UNAVAILABLE",
+                  "EMAIL_UNAVAILABLE",
+                  "EMAIL_NOT_CONFIGURED",
+                  "INTERNAL_ERROR",
+                  "TEMPORARILY_UNAVAILABLE",
+                  "NOT_FOUND",
+                  "RESTAURANT_LIMIT_REACHED",
+                  "APPLICATION_PENDING",
+                  "APPLICATION_STATE_CONFLICT",
+                  "TERMS_VERSION_CONFLICT",
+                  "IDEMPOTENCY_KEY_REUSED",
+                  "PAYLOAD_TOO_LARGE",
+                  "ENTRY_ALREADY_ASSIGNED",
+                  "PERIOD_ALREADY_FINALIZED",
+                  "ELIGIBLE_ENTRIES_CHANGED",
+                  "COLLECTION_EXCEEDS_OUTSTANDING",
+                  "RECEIPT_ALREADY_REVERSED",
+                  "COLLECTION_REFERENCE_REUSED",
+                  "ACCOUNT_CHANGED",
+                  "ACCOUNT_RESTRICTED",
+                  "SOLE_ADMIN_PROTECTED",
+                  "SUPPORT_STATE_CONFLICT",
+                  "SUPPORT_MESSAGE_LIMIT",
+                  "EVIDENCE_DELETION_IN_PROGRESS",
+                  "DISPUTE_OPEN",
+                  "ERASURE_PENDING",
+                  "CREDENTIAL_RECOVERY_REQUIRED",
+                  "RECOVERY_CODE_INVALID",
+                  "PASSWORD_REUSED"
+                ]
+              },
+              "message": {
+                "type": "string"
+              },
+              "field_errors": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "path",
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "path": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "details": {
+                "type": "object"
+              },
+              "request_id": {
+                "type": "string"
+              },
+              "retryable": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "examples": [
+          {
+            "error": {
+              "code": "EMAIL_CODE_INVALID",
+              "message": "Invalid or expired verification code.",
+              "field_errors": [],
+              "details": {},
+              "request_id": "synthetic-request",
+              "retryable": false
+            }
+          }
+        ]
+      },
+      "P25Page": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2048
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "has_more",
+          "next_cursor"
+        ]
+      },
+      "P25ErasureSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483646
+          },
+          "verified_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "erased_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "version",
+          "verified_at",
+          "erased_at",
+          "created_at"
+        ]
+      },
+      "P25User": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "display_name": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483646
+          },
+          "managed_restaurant_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[1-9][0-9]{0,18}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "is_sole_admin": {
+            "type": "boolean"
+          },
+          "credentials_blocked": {
+            "type": "boolean"
+          },
+          "erasure_requested": {
+            "type": "boolean"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "erasure": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/P25ErasureSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "display_name",
+          "is_active",
+          "version",
+          "managed_restaurant_id"
+        ]
+      },
+      "P25Availability": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483646
+          }
+        },
+        "required": [
+          "id",
+          "is_active",
+          "version"
+        ]
+      },
+      "P25AvailabilityPatch": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483646
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000,
+            "pattern": "\\S"
+          },
+          "credential_compromised": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "expected_version",
+          "is_active",
+          "reason"
+        ],
+        "allOf": [
+          {
+            "if": {
+              "required": [
+                "credential_compromised"
+              ],
+              "properties": {
+                "credential_compromised": {
+                  "const": true
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "is_active": {
+                  "const": false
+                }
+              }
+            }
+          }
+        ],
+        "examples": [
+          {
+            "expected_version": 1,
+            "is_active": false,
+            "reason": "Synthetic policy suspension"
+          }
+        ]
+      },
+      "P25Ticket": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "order_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "category": {
+            "enum": [
+              "delivery",
+              "payment_refund",
+              "account_access",
+              "other"
+            ]
+          },
+          "priority": {
+            "enum": [
+              "normal",
+              "urgent"
+            ]
+          },
+          "status": {
+            "enum": [
+              "open",
+              "in_progress",
+              "waiting_requester",
+              "waiting_partner",
+              "resolved",
+              "closed"
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483646
+          },
+          "outcome": {
+            "anyOf": [
+              {
+                "enum": [
+                  "answered",
+                  "action_recorded",
+                  "unable_to_resolve"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "followup_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[1-9][0-9]{0,18}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "dispute_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[1-9][0-9]{0,18}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "escalated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "escalation_requested_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "resolved_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "closed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "first_response_due_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "next_update_due_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "overdue": {
+            "type": "boolean"
+          },
+          "is_requester": {
+            "type": "boolean"
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/P25Message"
+            }
+          },
+          "message_page": {
+            "$ref": "#/components/schemas/P25Page"
+          }
+        },
+        "required": [
+          "id",
+          "order_id",
+          "category",
+          "priority",
+          "status",
+          "version",
+          "outcome",
+          "followup_id",
+          "dispute_id",
+          "escalated_at",
+          "escalation_requested_at",
+          "resolved_at",
+          "closed_at",
+          "created_at",
+          "first_response_due_at",
+          "next_update_due_at",
+          "overdue"
+        ]
+      },
+      "P25Message": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "role": {
+            "enum": [
+              "internal",
+              "reason",
+              "resolution",
+              "admin",
+              "requester",
+              "partner"
+            ]
+          },
+          "body": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000,
+                "pattern": "\\S"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "deleted_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "role",
+          "body",
+          "deleted_at",
+          "created_at"
+        ]
+      },
+      "P25SupportCreate": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "order_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "category": {
+            "enum": [
+              "delivery",
+              "payment_refund",
+              "account_access",
+              "other"
+            ]
+          },
+          "priority": {
+            "enum": [
+              "normal",
+              "urgent"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000,
+            "pattern": "\\S"
+          },
+          "followup_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "dispute_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "operator_reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000,
+            "pattern": "\\S"
+          }
+        },
+        "required": [
+          "order_id",
+          "category",
+          "priority",
+          "description"
+        ],
+        "examples": [
+          {
+            "order_id": "1",
+            "category": "delivery",
+            "priority": "urgent",
+            "description": "Synthetic delivery question"
+          }
+        ]
+      },
+      "P25SupportReply": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "body": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000,
+            "pattern": "\\S"
+          },
+          "internal": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "body"
+        ],
+        "examples": [
+          {
+            "body": "Synthetic answer"
+          }
+        ]
+      },
+      "P25SupportUpdate": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483646
+          },
+          "status": {
+            "enum": [
+              "open",
+              "in_progress",
+              "waiting_requester",
+              "waiting_partner",
+              "resolved",
+              "closed"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000,
+            "pattern": "\\S"
+          },
+          "outcome": {
+            "enum": [
+              "answered",
+              "action_recorded",
+              "unable_to_resolve"
+            ]
+          },
+          "resolution": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000,
+            "pattern": "\\S"
+          }
+        },
+        "required": [
+          "expected_version",
+          "status",
+          "reason"
+        ],
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "status": {
+                  "const": "resolved"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "outcome",
+                "resolution"
+              ]
+            },
+            "else": {
+              "not": {
+                "anyOf": [
+                  {
+                    "required": [
+                      "outcome"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "resolution"
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        "examples": [
+          {
+            "expected_version": 1,
+            "status": "in_progress",
+            "reason": "Synthetic triage"
+          },
+          {
+            "expected_version": 2,
+            "status": "resolved",
+            "reason": "Synthetic review",
+            "outcome": "answered",
+            "resolution": "Synthetic public resolution"
+          }
+        ]
+      },
+      "P25SupportAction": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483646
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000,
+            "pattern": "\\S"
+          }
+        },
+        "required": [
+          "expected_version",
+          "reason"
+        ]
+      },
+      "P25Accept": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483646
+          }
+        },
+        "required": [
+          "expected_version"
+        ]
+      },
+      "P25Reason": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000,
+            "pattern": "\\S"
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
+      "P25Hold": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483646
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "review_due_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "released_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "version",
+          "created_at",
+          "review_due_at",
+          "released_at"
+        ]
+      },
+      "P25HoldRelease": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "released_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "released_at"
+        ]
+      },
+      "P25HoldCreated": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483646
+          }
+        },
+        "required": [
+          "id",
+          "version"
+        ]
+      },
+      "P25Erasure": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "acknowledge_due_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "acknowledged_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "verified_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "eligible_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "erasure_due_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "erased_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483646
+          }
+        },
+        "required": [
+          "created_at",
+          "acknowledge_due_at",
+          "acknowledged_at",
+          "verified_at",
+          "eligible_at",
+          "erasure_due_at",
+          "erased_at",
+          "version"
+        ]
+      },
+      "P25ErasureVerify": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483646
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000,
+            "pattern": "\\S"
+          },
+          "identity_verified": {
+            "const": true
+          }
+        },
+        "required": [
+          "expected_version",
+          "reason",
+          "identity_verified"
+        ]
+      },
+      "P25Reveal": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "recipient": {
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "maxLength": 200
+                  },
+                  "phone": {
+                    "type": "string",
+                    "maxLength": 32
+                  }
+                },
+                "required": [
+                  "name",
+                  "phone"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "recipient"
+        ]
+      },
+      "P25Audit": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "actor_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "action": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "target_type": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "target_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 128
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "changes": {
+            "type": "object",
+            "additionalProperties": {
+              "type": [
+                "string",
+                "number",
+                "boolean",
+                "null"
+              ]
+            }
+          },
+          "redacted": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "actor_id",
+          "action",
+          "target_type",
+          "target_id",
+          "created_at",
+          "request_id",
+          "changes",
+          "redacted"
+        ],
+        "examples": [
+          {
+            "id": "1",
+            "actor_id": "1",
+            "action": "account.availability",
+            "target_type": "account",
+            "target_id": "2",
+            "created_at": "2026-10-21T00:00:00.000Z",
+            "request_id": null,
+            "changes": {
+              "from_is_active": true,
+              "is_active": false
+            },
+            "redacted": true
+          }
+        ]
+      },
+      "P25HoldDetail": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483646
+          },
+          "order_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[1-9][0-9]{0,18}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "application_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[1-9][0-9]{0,18}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "review_due_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "released_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "version",
+          "order_id",
+          "application_id",
+          "created_at",
+          "review_due_at",
+          "released_at"
+        ]
+      }
+    }
+  }
+}

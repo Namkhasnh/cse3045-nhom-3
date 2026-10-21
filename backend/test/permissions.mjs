@@ -27,7 +27,7 @@ try {
  await denied('DELETE FROM audit_logs');
  await denied("UPDATE audit_logs SET action='forged'");
  await denied('CREATE TABLE forbidden(id INT)');
- await denied('UPDATE restaurants SET readiness=\'ready\'');
+ await denied('UPDATE restaurants SET owner_id=1');
  await provision.query('INSERT INTO admin_authority(id,account_id) VALUES(1,?)',[id]);
  await assert.rejects(provision.query('DELETE FROM admin_authority'), e=>e.errno===1142);
  await assert.rejects(provision.query('CREATE TABLE forbidden(id INT)'), e=>e.errno===1142);

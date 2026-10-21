@@ -3,7 +3,7 @@ import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/c
 import type { Account } from '../../generated/prisma/client.js';
 import { AccountsService } from '../../modules/accounts/accounts.service.js';
 
-type Claims = { sub: string; jti: string; ver: number; iss: string; aud: string; iat: number; exp: number; amr?: string };
+type Claims = { sub: string; jti: string; ver: number; iss: string; aud: string; iat: number; exp: number; amr?: string; scope?: string };
 const b64 = (value: Buffer | string) => Buffer.from(value).toString('base64url');
 const equal = (left: string, right: string) => {
   const a = Buffer.from(left), b = Buffer.from(right);
@@ -43,7 +43,7 @@ export class SessionService {
   issue(account: Account, mfa = false) {
     const now = Math.floor(Date.now() / 1000);
     const claims: Claims = { sub: account.id.toString(), jti: randomBytes(16).toString('base64url'),
-      ver: account.authVersion, iss: this.issuer!, aud: this.audience!, iat: now, exp: now + 900, ...(mfa ? { amr: 'mfa' } : {}) };
+      ver: account.authVersion, iss: this.issuer!, aud: this.audience!, iat: now, exp: now + 900, ...(mfa ? { amr: 'mfa' } : {}), ...(!account.isActive ? { scope: 'obligations' } : {}) };
     const unsigned = `${b64(JSON.stringify({ alg: 'HS256', typ: 'JWT', kid: this.keyId }))}.${b64(JSON.stringify(claims))}`;
     const jwt = `${unsigned}.${createHmac('sha256', this.key).update(unsigned).digest('base64url')}`;
     const nonce = randomBytes(16).toString('base64url');
@@ -73,8 +73,9 @@ export class SessionService {
         !Number.isInteger(claims.iat) || !Number.isInteger(claims.exp) ||
         claims.iat > now + 30 || claims.exp <= now - 30 || claims.exp - claims.iat !== 900) throw new Error();
       const account = await this.accounts.findById(BigInt(claims.sub));
-      if (!account) throw new Error();
-      if (!account.isActive) throw new ForbiddenException({ code: 'ACCOUNT_INACTIVE', message: 'Account is inactive.' });
+      if (!account || account.credentialsBlocked) throw new Error();
+      if (!account.isActive && claims.scope !== 'obligations') throw new Error();
+      if (account.isActive && claims.scope === 'obligations') throw new Error();
       if (account.email !== null && account.emailVerifiedAt === null) throw new Error();
       if (account.authVersion !== claims.ver) throw new Error();
       const access = await this.accounts.access(account);

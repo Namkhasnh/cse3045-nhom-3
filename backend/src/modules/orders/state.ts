@@ -1,0 +1,6 @@
+import {ConflictException} from '@nestjs/common';
+import {object,text,invalid} from '../../common/http/input.js';
+export type Target='accepted'|'rejected'|'delivering'|'completed'|'cancelled';
+export function transitionInput(raw:unknown){const b=object(raw,['status','reason'],['status']);if(!['accepted','rejected','delivering','completed'].includes(String(b.status)))return invalid();if(b.status!=='rejected'&&'reason' in b)return invalid();return {status:b.status as Target,reason:b.status==='rejected'?text(b.reason,1000):null};}
+export const allowed=(state:string,buyer:boolean):string[]=>buyer?(state==='pending'?['cancel']:[]):state==='pending'?['accepted','rejected']:state==='accepted'?['delivering']:state==='delivering'?['completed']:[];
+export function checkTransition(order:{id:bigint;status:string;version:number},target:Target,buyer:boolean){if(order.status===target)return false;if(!allowed(order.status,buyer).includes(target==='cancelled'?'cancel':target))throw new ConflictException({code:'ORDER_STATE_CONFLICT',message:'Thao tác không còn khả dụng.',details:{order_id:order.id.toString(),requested_status:target,current_status:order.status,current_version:order.version,allowed_actions:allowed(order.status,buyer)}});return true;}

@@ -28,3 +28,15 @@ Require DEC-01: primary Admin ID explicitly selected by the operator, intended h
 Apply reviewed migrations to empty and upgraded disposable fixtures on MySQL 9.2.0. Include multiple legacy Admins (must stop for selection), multi-restaurant legacy ownership (must stop for mapping), accounts referenced by history, pending old requests, audit failure, duplicate-owner races and retry/restart boundaries. Assert retained IDs/snapshots/counts/totals and session revocation, plus refusal to proceed on invalid inventory.
 
 Never reset, force-push schema, run demo seeds on retained/shared data, fabricate missing snapshots or delete evidence to pass migration. If restore becomes necessary, reconcile orders/direct restaurant receipts/manual commission receipts and durable keys after the recovery point before resuming writes. DEC-11 governs gap handling; an old app rollback never undoes database facts.
+
+## 5. Explicit local sample exception — October 20, 2026
+
+The user explicitly approved backed-up forward adoption and labeled synthetic sample additions on the existing local `hlf_dev_flow` database. [Local adoption evidence](../local-demo-adoption.md) records restore proof, unchanged original rows, restricted grants and fixture boundaries. This named exception does not permit seeds on other retained/shared/production targets, fabrication of existing partners’ consent, or changes to legacy ownership/authority.
+
+## 6. V0.5 ordering adoption is separate
+
+The October20 V0.5 implementation authorizes disposable MySQL9.2.0 tests only. Migrations `20261020030000_cash_orders` and `20261020040000_cash_fulfillment` were not applied to retained local data. The V0.4 sample exception above does not authorize this upgrade. A future adoption needs explicit authorization, a new backup/restore verification for that exact retained database, checksummed forward rehearsal/inventory and preservation mapping for inconsistent legacy relationships or missing facts. Item restaurant discriminators are derived from retained order links; conflicting dish links must stop migration rather than be rewritten/deleted. No food-ready, receipt or consent facts are backfilled. Incomplete legacy payment projections remain explicitly unknown. [V0.5 commands and boundary](../cash-ordering-local-verification.md).
+
+## V0.6 adoption remains separate
+
+P20 forward QR/refund migrations are rehearsed only on new disposable `test_*` MySQL9.2.0 targets. Retained local DB lacks V0.5; this task authorizes neither V0.5 nor V0.6 adoption there. A future explicitly authorized task must verify backup/restore, rehearse the complete chain, preserve unknown historical QR/payment facts and review grants before retained deployment. No reset, destructive push or applied-SQL rewrite.

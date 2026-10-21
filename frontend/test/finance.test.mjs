@@ -1,0 +1,8 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';
+import {financeIntent} from '../src/features/commissions/finance-intent.ts';
+import {formatVnd} from '../src/shared/lib/format.ts';
+test('FIN-03 unknown finance intent is bound to actor/restaurant/operation and stable key',()=>{const p={actor:'1',restaurant:'2',path:'/settlements/3/receipts',key:'stable',body:{amount_vnd:'9007199254740993'}};assert.deepEqual(financeIntent(p,'1','2'),p);for(const changed of [{actor:'9'},{restaurant:'9'},{path:'/orders/1/payment/confirm'},{key:null},{body:null}])assert.throws(()=>financeIntent({...p,...changed},'1','2'));const create={...p,path:'/settlements',key:null,body:{restaurant_id:'2',entry_ids:['8'],period_start_at:'2026-08-31T17:00:00.000Z',period_end_at:'2026-09-30T17:00:00.000Z'}};assert.deepEqual(financeIntent(create,'1','2'),create);assert.throws(()=>financeIntent({...create,key:'invented-create-key'},'1','2'));});
+test('FIN-05 exact signed VND formatter preserves credit and unsafe-Number integers',()=>{assert.equal(formatVnd('-1000'),'-1.000đ');assert.equal(formatVnd('9007199254740993'),'9.007.199.254.740.993đ');});
+
+import {monthBoundary,monthLabel,localMonth} from '../src/features/commissions/finance-time.ts';
+test('FIN-04 monthly report controls use Vietnam boundaries and stable Vietnamese month labels',()=>{assert.equal(monthBoundary('2026-03'),'2026-02-28T17:00:00.000Z');assert.equal(monthBoundary('2026-03',true),'2026-03-31T17:00:00.000Z');assert.equal(monthLabel('2026-08-31T17:00:00.000Z'),'09/2026');assert.equal(localMonth(new Date('2026-09-30T17:00:00.000Z')),'2026-10');assert.throws(()=>monthBoundary('2026-13'));});

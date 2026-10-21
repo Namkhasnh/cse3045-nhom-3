@@ -32,9 +32,19 @@
     "db:rehearse": "node scripts/rehearse-retained.mjs",
     "db:migrate": "prisma migrate deploy --config prisma7.config.ts",
     "test:permissions": "node test/permissions.mjs",
-    "test:compatibility": "npm run build && node test/compatibility.mjs"
+    "test:compatibility": "npm run build && node test/compatibility.mjs",
+    "test:onboarding-upgrade": "node scripts/verify-onboarding-upgrade.mjs",
+    "onboarding:cleanup:local": "npm run build && node dist/maintenance-onboarding-local.js",
+    "test:onboarding-permissions": "npm run test:compile && node test/onboarding-restricted.mjs",
+    "test:prepare": "node scripts/prepare-test-db.mjs && npm run db:migrate",
+    "media:cleanup:local": "npm run build && node dist/maintenance-media-local.js",
+    "demo:local": "npm run build && node scripts/local-demo.mjs",
+    "payments:cleanup:local": "npm run build && node dist/maintenance-payments-local.js",
+    "privacy:cleanup:local": "npm run build && node dist/maintenance-privacy-local.js",
+    "test:administration-permissions": "npm run test:compile && node test/administration-permissions.mjs"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "3.1152.0",
     "@nestjs/common": "12.1.3",
     "@nestjs/config": "12.0.1",
     "@nestjs/core": "12.1.3",
@@ -44,16 +54,19 @@
     "class-transformer": "0.5.1",
     "class-validator": "0.15.1",
     "dotenv": "18.0.7",
+    "express": "5.2.1",
     "mariadb": "3.4.5",
     "nodemailer": "7.0.11",
     "reflect-metadata": "0.2.2",
-    "rxjs": "7.8.2"
+    "rxjs": "7.8.2",
+    "sharp": "0.35.5"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
     "@nestjs/cli": "12.0.8",
     "@nestjs/schematics": "12.0.7",
     "@nestjs/testing": "12.1.3",
+    "@types/express": "5.0.6",
     "@types/node": "26.6.5",
     "@types/nodemailer": "7.0.4",
     "ajv": "8.20.0",

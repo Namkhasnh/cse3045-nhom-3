@@ -1,3 +1,4 @@
+import { json } from 'express';
 import { randomUUID } from 'node:crypto';
 import {
   CallHandler, Catch, type ArgumentsHost, type ExceptionFilter, HttpException,
@@ -20,7 +21,7 @@ type ErrorBody = {
 };
 
 const codes: Record<number, string> = {
-  400: 'MALFORMED_REQUEST', 401: 'AUTH_REQUIRED', 403: 'FORBIDDEN',
+  413:'PAYLOAD_TOO_LARGE', 400: 'MALFORMED_REQUEST', 401: 'AUTH_REQUIRED', 403: 'FORBIDDEN',
   404: 'NOT_FOUND', 409: 'VERSION_CONFLICT', 422: 'VALIDATION_ERROR',
   429: 'RATE_LIMITED', 500: 'INTERNAL_ERROR', 503: 'TEMPORARILY_UNAVAILABLE',
   504: 'AI_TIMEOUT',
@@ -33,7 +34,7 @@ export class ApiExceptionFilter implements ExceptionFilter {
       status(code: number): { json(body: ErrorBody): void };
       setHeader(name: string, value: string): void;
     }>();
-    const status = exception instanceof HttpException ? exception.getStatus() : 500;
+    const status = exception instanceof HttpException ? exception.getStatus() : exception && typeof exception==='object' && 'status' in exception && exception.status===413 ? 413 : 500;
     const payload = exception instanceof HttpException ? exception.getResponse() : null;
     const object = typeof payload === 'object' && payload !== null ? payload as Record<string, unknown> : {};
     if (status === 429 && Number.isInteger(object.retry_after) &&
@@ -69,12 +70,19 @@ export class ApiEnvelopeInterceptor implements NestInterceptor {
 }
 
 export function configureApiHttp(app: INestApplication): void {
+  app.use('/api/v1/onboarding-evidence', json({limit:'8mb'}));
+  app.use('/api/v1/admin/onboarding-evidence', json({limit:'8mb'}));
+  app.use(/^\/api\/v1\/owner\/restaurants\/[1-9][0-9]*\/dish-media$/, json({limit:'8mb'}));
+  app.use(/^\/api\/v1\/owner\/restaurants\/[1-9][0-9]*\/payment-evidence$/, json({limit:'8mb'}));
+  app.use(json({limit:'100kb'}));
   app.setGlobalPrefix('api/v1');
   app.useGlobalPipes(createValidationPipe());
   app.useGlobalInterceptors(new ApiEnvelopeInterceptor());
   app.useGlobalFilters(new ApiExceptionFilter());
   app.use((request: { method: string; originalUrl: string; headers: Record<string, string | undefined> }, response: { status(code: number): { json(body: unknown): void }; setHeader(name: string, value: string): void }, next: () => void) => {
-    if (/^\/api\/v1\/(auth(?:\/|$)|profile(?:\/|$))/.test(request.originalUrl)) response.setHeader('Cache-Control', 'no-store');
+    if (/^\/api\/v1\/(support(?:\/|$)|privacy(?:\/|$)|orders(?:\/|$)|auth(?:\/|$)|profile(?:\/|$)|restaurant-applications(?:\/|$)|onboarding-evidence(?:\/|$)|delivery-quotes(?:\/|$)|owner(?:\/|$)|admin(?:\/|$))/.test(request.originalUrl)) response.setHeader('Cache-Control', 'no-store');
+    if (/^\/api\/v1\/(commission-entries|commission-adjustments|settlements|reports)(?:[/?]|$)/.test(request.originalUrl)) response.setHeader('Cache-Control','no-store');
+    if (/^\/api\/v1\/restaurants\/[1-9][0-9]*\/commission-policy/.test(request.originalUrl)) response.setHeader('Cache-Control','no-store');
     if (['GET', 'HEAD', 'OPTIONS'].includes(request.method)) return next();
     const origin = process.env.PUBLIC_ORIGIN;
     if (!origin || request.headers.origin !== origin) {

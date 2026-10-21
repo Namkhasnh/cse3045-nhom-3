@@ -23,4 +23,4 @@ const run = (bin, args) => {
 };
 run('node', ['scripts/prepare-test-db.mjs']);
 run('./node_modules/.bin/prisma', ['migrate', 'deploy', '--config', 'prisma7.config.ts']);
-run('node', ['--test', '.test-dist/test/integration/*.integration-spec.js']);
+run('node', ['--test', '--test-concurrency=1', '.test-dist/test/integration/*.integration-spec.js']);

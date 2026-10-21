@@ -104,12 +104,12 @@ The following compact JSON objects define shared success shapes. `One<T>` means 
 ```
 
 Public `Restaurant` additionally exposes nullable exact-string `min_price_vnd,max_price_vnd` across visible dishes (including sold-out), for discovery cards.
-Management `Restaurant` adds `owner_id`; browsing omits it. Financial policy/rate is exposed through authorized finance endpoints, not public catalog data. `Order` below is shared between its student and current owner; `commission_rate_snapshot` is included only in the owner projection. The stored snapshot always exists.
+Management `Restaurant` adds `owner_id`; browsing omits it. Financial policy/rate is exposed through authorized finance endpoints, not public catalog data. `Order` below is the buyer projection; the current owner receives the filtered projection defined in the October19 amendment, with contact only after food-ready; `commission_rate_snapshot` is included only in the owner projection. The stored snapshot always exists.
 Write schemas: `Register` = required `login_identifier,password,display_name,email`, optional nullable `phone`; no role or privilege input is accepted. `Login` = required `login_identifier,password`. Apply §2 username/password policy and §3 text limits; never truncate passwords to a database hash-column length. A repeated password is checked by the browser and is never sent.
 `RestaurantCreate` = required `name,address,contact_phone,owner_id`; optional paired nullable coordinates; approved agreement evidence is required as finalized by P07. Server sets readiness setup_required, is_active=false, is_accepting_orders=false, hours empty and version 1. Manager must be an eligible active verified ordinary user owning no restaurant; no ownerless create or implied commission default.
 `RestaurantAdminPatch` = `expected_version` plus at least one of `name,address,contact_phone,latitude,longitude,owner_id,is_active`. `RestaurantOwnerPatch` = `expected_version` plus at least one of `name,address,contact_phone,latitude,longitude,hours,is_accepting_orders`; no owner/rate/activation reassignment. Changes to location invalidate relevant delivery quotes; surveyed data must remain valid before accepting orders.
 `DishCreate` = required `name,description,price_vnd,category_id`, optional `image_reference:null,is_visible:true,is_available:true`. `DishPatch` = `expected_version` plus any create fields; restaurant ID is immutable. Image-reference validation/storage/upload design TBD; no upload endpoint or 5 MB rule is implied.
-`SurveyPolicy` = `{"restaurant_id":"10","version":1,"pickup_rates":[{"pickup_point_id":"3","distance_m":450,"delivery_fee_vnd":"5000","is_enabled":true}]}`. PUT takes `expected_version` and a complete `pickup_rates` array; unique active point IDs, required row fields, omitted pairs become unserviceable; empty array disables all surveyed delivery. Version 0 means create-only if no policy exists.
+`SurveyPolicy` = `{"restaurant_id":"10","version":1,"pickup_rates":[{"pickup_point_id":"3","distance_m":450,"delivery_fee_vnd":"5000","is_enabled":true}]}`. PUT takes `expected_version` and a complete `pickup_rates` array; unique active point IDs, required row fields, omitted pairs become unserviceable; empty array disables all surveyed delivery. Version0 means no existing policy; PUT proposes a replacement and never activates it without Admin review.
 `AdjustmentCreate` = required `order_id,amount_vnd,reason`; signed amount, nonblank reason; referenced completed order must already have a base entry. `ReceiptCreate` = required `amount_vnd,received_at`, optional nullable `reference,note`; amount positive. `SettlementCreate` = required `restaurant_id,period_start_at,period_end_at,entry_ids`; nonempty unique entry IDs, end > start, same restaurant and currently unassigned entries.
 
 ## 7. Endpoint template and catalog
@@ -137,6 +137,8 @@ No `/auth/refresh` exists. Controlled provisioning/recovery enforces exactly one
 
 ### 7.2 Restaurants and dishes — V1.0
 
+The five public GET operations below are enabled in V0.2 and described by [OpenAPI](openapi.yaml), including closed public projections and errors. Public clients send no session credentials. Guest cart revalidation uses the existing restaurant/dish detail reads; no cart or checkout endpoint is added.
+
 | Purpose/trace | Method/path | Permission | Input | Success | Failure/UI | Effects | Retry |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Discover restaurants; US02–03 | GET `/restaurants` | B | Catalog query | 200 `List<Restaurant>` | 422 filters → fix | None; public published-ready active catalog only | R |
@@ -155,6 +157,8 @@ No `/auth/refresh` exists. Controlled provisioning/recovery enforces exactly one
 | Edit/hide/show dish; US11 | PATCH `/owner/restaurants/{restaurant_id}/dishes/{dish_id}` | O | `DishPatch` | 200 `One<Dish>` | 409 version; 422 fields | Update current menu; preserve order snapshots | V |
 | Delete/hide dish; US11/§7 | DELETE `/owner/restaurants/{restaurant_id}/dishes/{dish_id}` | O | Both path IDs; no body | 200 `DeletionOutcome` (§10) | 404 missing/wrong restaurant | Physical delete only if never ordered; otherwise hide | N; deleted ID later 404 |
 
+Public dish list/detail includes `restaurant_name`, the current public name of its parent restaurant, so discovery cards can identify the seller without per-dish lookups. Availability remains `is_available`; no stock count or rating is supplied.
+
 Public `Restaurant`/`Dish` projections are explicit allowlists (§6), not serialized models: restaurant identity/name/public address or coordinates/public business contact/hours/orderability and visible dishes only. Private owner account identifiers/contacts, applications/consent evidence, bank/QR settings, rates/finance and audit never appear. `contact_phone` is an explicitly published restaurant business contact, not an automatic copy of account phone. Public cache responses must not contain session-specific data; private reads use no-store. Hidden/inactive/setup-required resources return 404 publicly.
 
 Opening application/review/terms endpoints and schemas are owned by [onboarding §7](../onboarding.md#7-target-storage-and-api-handoff), user/support/audit and MFA endpoints by [account security](../account-security.md#5-target-api). These are required V0.1/V0.3/V0.7 target groups; finalize decision-gated schemas before implementation and include them in OpenAPI. `RestaurantCreate` additionally requires approved agreement evidence and `Idempotency-Key`; assignment cannot create a second ownership or automatically activate sales.
@@ -165,17 +169,17 @@ Opening application/review/terms endpoints and schemas are owned by [onboarding 
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Select fixed destination; US04/BR10 | GET `/pickup-points` | B | `limit,cursor,sort=name` | 200 `List<PickupPoint>` | Common errors | None; active points only | R |
 | Read survey policy; US12/BR10 | GET `/owner/restaurants/{restaurant_id}/delivery-policy` | O | Path ID | 200 `One<SurveyPolicy>` | 404 absent policy | None | R |
-| Set surveyed fees; US12/BR09–10 | PUT `/owner/restaurants/{restaurant_id}/delivery-policy` | O | SurveyPolicy write schema §6 | 200 `One<SurveyPolicy>` | 409 version; 422 invalid/missing point | Replace surveyed configuration; bump policy/survey versions | V |
+| Set surveyed fees; US12/BR09–10 | PUT `/owner/restaurants/{restaurant_id}/delivery-policy` | O | Idempotency-Key + SurveyWrite ([V0.4](../restaurant-setup-v04-contract.md)) | 200 survey proposal | 409 version; 422 invalid/missing point | Create immutable survey proposal; approved rates change only after Admin review | V |
 | Quote exact pair; US04/BR07–10 | POST `/delivery-quotes` | S | Required `restaurant_id,pickup_point_id` | 200 `One<DeliveryQuote>` (§8) | 422 unavailable/unserviceable → choose point/retry; never display unknown as zero | Compute/authenticate quote; no order/payment | R; new quote requires renewed consent if changed |
 
-Pickup-point creation/edit/deactivation permissions and provisioning workflow are **TBD**; do not infer an admin CRUD API from the mockup. An enabled surveyed pair is required. Missing fee/distance is 422, not a successful quote with invented zero values. AI/map outage does not block a valid surveyed V1.0 quote.
+DEC-05 approves sole MFA Admin point create/edit/deactivation and review of owner survey proposals; [V0.4 setup](../restaurant-setup-v04-contract.md) defines closed schemas and scope. An enabled surveyed pair is required. Missing fee/distance is 422, not a successful quote with invented zero values. AI/map outage does not block a valid surveyed V1.0 quote.
 
 ### 7.4 Orders and payments — V1.0
 
 | Purpose/trace | Method/path | Permission | Input | Success | Failure/UI | Effects | Retry |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Place order; US05–07/BR01–06 | POST `/orders` | S | `Idempotency-Key`; exact §8 payload | 201 `One<Order>`; replay 200 | 409 price/quote/key; 422 eligibility/policy; preserve draft/reconfirm | Atomic pending order, items/snapshots, unpaid payment, history/audit/key | K |
-| Recover own orders; US07/NFR05 | GET `/orders` | S | Order query §3 | 200 `List<OrderSummary>` (§8) | Common errors | None; only actor's orders; history/reorder UI later | R |
+| Recover own orders; US07/NFR05 | GET `/orders` | S | Order query §3 | 200 `List<OrderSummary>` (§8) | Common errors | None; only actor's orders; history V0.5, reorder V1.1 | R |
 | Track durable order; US07 | GET `/orders/{order_id}` | Owning S or O | Path ID | 200 `One<Order>` (§8) | 404 other actor/missing | None; snapshots plus current independent states | R |
 | Incoming/active orders; US13 | GET `/owner/restaurants/{restaurant_id}/orders` | O | Order query §3 | 200 `List<OrderSummary>` | Common errors | None; include existing orders if restaurant deactivated | R |
 | Cancel own pending; US07/BR15–19 | POST `/orders/{order_id}/cancel` | Owning S only | Empty object `{}` | 200 `One<Order>`; cancelled is no-op | 409 state → refetch; after acceptance no direct cancel | pending→cancelled, history/audit; V0.6 QR refund obligation atomically when applicable | N |
@@ -189,19 +193,19 @@ No server cart API is needed: cart is a frontend draft. No general order PATCH, 
 
 | Purpose/trace | Method/path | Permission | Input | Success | Failure/UI | Effects | Retry |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Read current rate; US15/17 | GET `/restaurants/{restaurant_id}/commission-policy` | O or A | Path ID | 200 `{"data":{"restaurant_id":"10","rate":"0.10000000","version":1}}` | 404 missing → setup needed | None | R |
-| Configure future rate; US17/BR24 | PUT `/restaurants/{restaurant_id}/commission-policy` | A only | `rate,expected_version`; 0=create-only | 200 policy shape above | 409 version; 422 precision/range | Versioned rate; never recalculate old orders | V |
+| Read current rate; US15/17 | GET `/restaurants/{restaurant_id}/commission-policy` | O or A | Path ID | 200 V0.4 policy with active agreed rate or null, version and proposals | 404 missing → setup needed | None | R |
+| Configure future rate; US17/BR24 | PUT `/restaurants/{restaurant_id}/commission-policy` | A only | `Idempotency-Key`, `rate,expected_version,terms_version,terms_hash`; 0=no policy | 200 immutable proposal | 409 version; 422 precision/range | Proposal only; current owner confirms exact version/hash before future-order effect | V |
 | Read financial entries; US15/17 | GET `/commission-entries` | O scoped to owned restaurants or A all | List query; `restaurant_id,order_id,settlement_id,kind,assigned` | 200 `List<CommissionEntry>` | 404 forbidden target; 422 filters | None; base/adjustment and signed amounts | R |
 | Correct commission; US17/BR23 | POST `/commission-adjustments` | A | `Idempotency-Key`; `AdjustmentCreate` | 201 `One<CommissionEntry>` kind adjustment; replay 200 | 422 base required; 409 key reuse | Append adjustment linked to completed order; no overwrite | K |
 | List reconciliation periods; US17 | GET `/settlements` | O own or A all | List query; restaurant filter | 200 `List<Settlement>` | Common errors | None; no invented settlement status | R |
 | Group entries; US17/BR25 | POST `/settlements` | A | `SettlementCreate` | 201 `One<Settlement>` | 409 entry assigned → refetch; 422 mixed restaurants/period | Atomic settlement and one-time assignment of all selected entries | C; inspect existing assignments after unknown result |
 | Reconcile one period; US15/17 | GET `/settlements/{settlement_id}` | O for settlement's restaurant or A | Path ID | 200 `One<Settlement>` | 404 other owner's period | None; authoritative totals | R |
-| Read receipt history; US17/BR26 | GET `/settlements/{settlement_id}/receipts` | O for restaurant or A | List query; sort `received_at,-received_at` (default descending, ID tie-breaker) | 200 `List<Receipt>` | Common errors | None; append-only history | R |
+| Read receipt history; US17/BR26 | GET `/settlements/{settlement_id}/receipts` | O for restaurant or A | List query; ascending recorded numeric ID, bounded keyset cursor | 200 `List<Receipt>` | Common errors | None; append-only history | R |
 | Record manual collection; US17/BR27 | POST `/settlements/{settlement_id}/receipts` | A | `Idempotency-Key`; `ReceiptCreate` | 201 `One<Receipt>`; replay 200 | 409 key reuse; 422 amount/reference | Append receipt/audit/key; does not transfer money | K |
 
 Commission is rounded half-up **once per completed order**: `(subtotal_vnd × scaled_rate + 50000000) div 100000000`, where `scaled_rate=rate×100000000`; delivery is excluded. No payment prerequisite for completion/base accrual. Cancelled/rejected orders have no base. Each completed order has at most one base; each entry at most one same-restaurant settlement.
-Receivable = assigned base + adjustments; collected = receipts; outstanding = receivable − collected. Do not clamp negative balances or multiply joined receipts/entries. No edit/delete financial-history endpoints. Settlement creation has no promised durable key because the source request table supports only receipts/adjustments; uncertain results must be reconciled before a new create.
-Settlement overlap/closure, late-adjustment period membership, overcollection limits and receipt correction/reversal are **TBD**. Do not silently choose a period algorithm or enable unresolved exceptions. Explicit entry selection does not establish those policies; approved membership rules remain a rollout gate for affected reconciliation cases.
+Receivable = assigned base + adjustments; collected = receipts − full reversals; outstanding = receivable − collected. Do not clamp negative balances or multiply joined receipts/entries. No edit/delete financial-history endpoints. Settlement creation has no promised durable key because the source request table supports only receipts/adjustments; uncertain results must be reconciled before a new create.
+The historical financial TBDs below are superseded by approved [DEC-07](../finance-policy-proposal.md). Settlement overlap/closure, late-adjustment period membership, overcollection limits and receipt correction/reversal follow that exact package. Do not silently choose a period algorithm or enable unresolved exceptions. Explicit entry selection does not establish those policies; approved membership rules remain a rollout gate for affected reconciliation cases.
 
 ### 7.6 AI recommendations — V1.0
 
@@ -223,10 +227,10 @@ Target ≥95% within 5 seconds; at 10 seconds show retry/manual fallback, not an
 `POST /delivery-quotes` body: `{"restaurant_id":"10","pickup_point_id":"3"}`. Success is 200:
 
 ```json
-{"data":{"quote_artifact":"opaque-server-authenticated-quote-A","schema_version":1,"source":"survey","restaurant_id":"10","policy_version":4,"pickup_point_version":1,"survey_version":2,"destination":{"pickup_point_id":"3","pickup_point_name":"Example VJU gate","text":"Example VJU gate","latitude":"21.000000","longitude":"105.500000"},"distance_m":450,"delivery_fee_vnd":"5000","issued_at":"2026-10-16T03:00:00.000Z","expires_at":null,"matched_tier":null}}
+{"data":{"quote_artifact":"opaque-server-authenticated-quote-A","schema_version":1,"source":"survey","restaurant_id":"10","policy_version":4,"pickup_point_version":1,"survey_version":2,"destination":{"pickup_point_id":"3","pickup_point_name":"Example VJU gate","text":"Example VJU gate","latitude":"21.000000","longitude":"105.500000"},"distance_m":450,"delivery_fee_vnd":"5000","issued_at":"2026-10-16T03:00:00.000Z","expires_at":"2026-10-16T03:15:00.000Z","matched_tier":null}}
 ```
 
-The artifact is an opaque **server-authenticated** representation binding all quote fields, destination and configuration versions; clients return it unchanged. Its encoding/authentication algorithm is **TBD**, not necessarily JWT, and is not a provider token. The parsed object is `DeliveryQuote`; the stored `delivery_quote_snapshot` contains its explanation fields without the opaque artifact. Survey expiry may be null; every new order still checks current versions, eligibility and surveyed values. Route quotes must expire; TTL and route-distance normalization are TBD.
+The artifact is an opaque **server-authenticated** representation binding all quote fields, destination and configuration versions; clients return it unchanged. DEC-05 selects a random256bit opaque artifact, SHA256 hash lookup in backend DB and15minute expiry; it is not a provider token. The parsed object is `DeliveryQuote`; the stored `delivery_quote_snapshot` contains its explanation fields without the opaque artifact. New survey quotes always expire after15minutes; every future order must still check current versions, eligibility and surveyed values. Historical null expiry is not a new-quote policy. Route quotes must expire; TTL and route-distance normalization are TBD.
 
 ### 8.2 Exact create-order request
 
@@ -269,7 +273,7 @@ This fixture changes unit price 45000→48000 and delivery 5000→8000; quantity
         "quote_artifact":"opaque-server-authenticated-quote-B","schema_version":1,"source":"survey",
         "restaurant_id":"10","policy_version":5,"pickup_point_version":1,"survey_version":3,
         "destination":{"pickup_point_id":"3","pickup_point_name":"Example VJU gate","text":"Example VJU gate","latitude":"21.000000","longitude":"105.500000"},
-        "distance_m":450,"delivery_fee_vnd":"8000","issued_at":"2026-10-16T03:01:00.000Z","expires_at":null,"matched_tier":null
+        "distance_m":450,"delivery_fee_vnd":"8000","issued_at":"2026-10-16T03:01:00.000Z","expires_at":"2026-10-16T03:16:00.000Z","matched_tier":null
       }
     }
   }
@@ -290,7 +294,7 @@ Return every requested item with accepted/current unit prices and current line t
   "recipient":{"name":"Example Student","phone":"example-phone"},
   "destination":{"pickup_point_id":"3","pickup_point_name":"Example VJU gate","text":"Example VJU gate","latitude":"21.000000","longitude":"105.500000"},
   "distance_m":450,"subtotal_vnd":"90000","delivery_fee_vnd":"5000","total_vnd":"95000",
-  "delivery_quote_snapshot":{"schema_version":1,"source":"survey","restaurant_id":"10","policy_version":4,"pickup_point_version":1,"survey_version":2,"destination":{"pickup_point_id":"3","pickup_point_name":"Example VJU gate","text":"Example VJU gate","latitude":"21.000000","longitude":"105.500000"},"distance_m":450,"delivery_fee_vnd":"5000","issued_at":"2026-10-16T03:00:00.000Z","expires_at":null,"matched_tier":null},
+  "delivery_quote_snapshot":{"schema_version":1,"source":"survey","restaurant_id":"10","policy_version":4,"pickup_point_version":1,"survey_version":2,"destination":{"pickup_point_id":"3","pickup_point_name":"Example VJU gate","text":"Example VJU gate","latitude":"21.000000","longitude":"105.500000"},"distance_m":450,"delivery_fee_vnd":"5000","issued_at":"2026-10-16T03:00:00.000Z","expires_at":"2026-10-16T03:15:00.000Z","matched_tier":null},
   "payment":{"order_id":"2048","method":"cash","status":"unpaid","confirmed_by":null,"confirmed_at":null,"refunded_by":null,"refunded_at":null,"version":1,"updated_at":"2026-10-16T03:00:00.000Z"},
   "history":[{"from_status":null,"to_status":"pending","order_version":1,"reason":null,"created_at":"2026-10-16T03:00:00.000Z"}],
   "created_at":"2026-10-16T03:00:00.000Z","updated_at":"2026-10-16T03:00:00.000Z","completed_at":null
@@ -329,26 +333,26 @@ UI obtains confirmation before DELETE and reports the actual returned outcome. H
 
 ## 11. Versioned contracts and unresolved extensions
 
-Routes below remain schema-gated targets. QR/refund is required V0.6, finance reports V0.7, random/reorder V1.1 and route delivery V1.2. Finalize each owning decision before enabling its contract in OpenAPI; table placement does not defer a V1.0 requirement.
+QR/refund rows below are enabled by approved DEC-06/P20; exact schemas and protected projections are in [payment OpenAPI](payments.openapi.json). Other rows remain schema-gated targets: finance reports V0.7, random/reorder V1.1 and route delivery V1.2. Finalize their owning decisions before enabling them; table placement does not defer a V1.0 requirement.
 
 | Purpose/trace | Method/path | Permission | Input | Success | Failure/UI | Effects | Retry |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Route quotes; US04 | POST `/delivery-quotes` extension | S | `restaurant_id` plus free address/map-pin destination instead of pickup point; exact union/geocoding DTO TBD | 200 `One<DeliveryQuote>` source route, nonnull expiry/matched tier | 422 outside range/coverage; 503 provider → retry/valid fixed point | Route calculation before transaction; no order | R |
 | Route policy; US12 | PUT `/owner/restaurants/{restaurant_id}/delivery-policy` extension | O | expected version, route limit and fee tiers; mode/union DTO TBD | 200 policy DTO TBD | 422 overlap/gap/invalid range → fix | Versioned policy; `[min,max)`, final max inclusive | V |
-| Configure QR; US14 | PUT `/owner/restaurants/{restaurant_id}/qr-settings` | O | `qr_reference,expected_version`; representation/security TBD | 200 QR settings DTO TBD | 422 invalid QR reference | Restaurant-provided payment reference only | V |
-| Read QR for own order; US06 | GET `/orders/{order_id}/payment-instructions` | Owning S or O | Path ID | 200 instructions DTO TBD | 422 QR disabled/unconfigured | No payment status effect | R |
-| Confirm transfer; US14 | POST `/orders/{order_id}/payment/confirm` extension | O | Evidence requirements TBD | 200 `One<Payment>` | 409 state; no student self-confirm | Record verified receipt; terminal cancelled/rejected order becomes refund_pending, never reopens | N |
-| Record direct refund; BR14 | POST `/orders/{order_id}/payment/confirm-refund` | O | Evidence/reason DTO TBD | 200 `One<Payment>` refunded | 409 not refund_pending | Restaurant refunds externally; record actor/time/history | N; refunded repeat no-op |
+| Configure QR; US14 | PUT `/owner/restaurants/{restaurant_id}/qr-settings` | O | `Idempotency-Key`, `QrWrite` | 200 `QrSettings` | 409 version;422 invalid image/payee | Immutable owner proposal; MFA Admin review required | K/V |
+| Read QR for own order; US06 | GET `/orders/{order_id}/payment-instructions` | Owning S, O or MFA A | Path ID | 200 `Instructions` | 422 no QR snapshot;404 foreign | Immutable payee/amount/reference, current transfer guard; no-store | R |
+| Confirm transfer; US14 | POST `/orders/{order_id}/payment/confirm` extension | O | `Idempotency-Key`, `QrConfirm` | 200 `One<Payment>` | 409 transaction/key/version;422 proof | Verified receipt and full obligation when required, never reopens | K; same bank event no effect |
+| Record direct refund; BR14 | POST `/orders/{order_id}/payment/confirm-refund` | O | `Idempotency-Key`, `RefundConfirm` | 200 current `One<Payment>` | 409 changed fact/key;422 partial/missing proof | One full direct refund; other obligations/retained allocation remain independent | K; same effective fact no-op |
 | Completed-order report; US15/17 | GET `/restaurants/{restaurant_id}/commission-report` | O or A | `from,to` based on completed_at | 200 report DTO TBD | 422 invalid period | Read backend dish revenue/commission, never current-rate reconstruction | R |
 | Random eligible dish; US09 | POST `/recommendations/random` | S | Eligibility/budget/destination DTO TBD | 200 selection DTO TBD | 422 no eligible result | No order; same real-data validation as AI | R; selection may differ |
 
-Paid QR cancellation/rejection records `refund_pending` in the same order transition transaction. Late verified QR receipt on a cancelled/rejected order records confirmation and refund obligation together; only owner records `refund_pending→refunded`. Other refund transitions and exceptional cash refunds remain TBD. Scanning QR or “I transferred” never marks paid; there is no payment-gateway webhook assumed.
+Paid QR cancellation/rejection records `refund_pending` in the same order transition transaction. Late verified QR receipt on a cancelled/rejected order records confirmation and refund obligation together; only owner records `refund_pending→refunded`. Other QR obligations and exclusion of exceptional cash refunds follow approved DEC-06 [policy](../payments-policy.md). Scanning QR or “I transferred” never marks paid; there is no payment-gateway webhook assumed.
 Reorder (US10) builds a new client intent from history, refreshes current catalog/quote and calls the existing order endpoint with new consent/key; a convenience reorder endpoint/DTO is TBD. Support (US18) is V0.7/V1.0 required with an authorized order link; finalized P25 workflow/endpoints follow account security and DEC-08. Reviews/favorites (US19–20), audit lookup and media schemas are finalized in P25/P13; category provisioning/taxonomy is finalized explicitly in P13, without deriving production values from mockups; audit **writing** is already mandatory in V1.0. Do not create extra APIs solely because controls appear in HTML.
 
 ## 12. OpenAPI handoff and implementation gates
 
 The companion [V0.1 OpenAPI](openapi.yaml) supplies the accepted auth/profile machine contract (JSON syntax, valid YAML 1.2). Public catalog and later groups must extend it in their own enabling prompts. For each accepted group: every enabled path, request/response schema, conditional field, enum, format, error code, security scheme, header, pagination rule and example must match this Markdown. The V0.1 HTTP/SMTP suites validate actual exchanges and schema examples/references with Ajv; client SDK generation is not claimed. Markdown remains the business explanation; OpenAPI must not override requirements or silently resolve a TBD.
-Before enabling each group, resolve its remaining TBDs and update both documents in one reviewed change: quote artifact protection and any TTL; point provisioning; AI budget/preference meaning; selected AI/map/media providers; V0.6 QR evidence/representation and financial exception/period policies. Do not choose providers or auth/session mechanisms from mockup data.
+Before enabling each group, resolve its remaining TBDs and update both documents in one reviewed change: quote artifact protection and any TTL; point provisioning; AI budget/preference meaning; selected AI/map/media providers; V0.6 approved QR evidence/representation and unresolved financial period policies. Do not choose providers or auth/session mechanisms from mockup data.
 Required implementation verification: shared JSON schema/examples; exact integer/rate/half-up arithmetic; changed-price/fee reconfirmation; concurrent same-key same/different content; response-loss recovery; accept/cancel race; cross-account/nested-resource access; repeated completed/payment with no duplicate effects; rollback on failed audit/base commission; competing settlement assignment; financial retry deduplication; history-preserving deletion; AI/map failure with manual surveyed ordering intact.
 These are acceptance requirements, not claims that backend tests have run. For later groups: settle the relevant TBDs, extend/validate OpenAPI, then implement frontend and backend against the same enabled schemas and examples.
 
@@ -361,3 +365,43 @@ Add `RESTAURANT_LIMIT_REACHED`, `APPLICATION_STATE_CONFLICT`, `TERMS_VERSION_CON
 ## 13. Approved MFA wire contract — October 19, 2026
 
 See [cutover handoff](../auth-discovery-cutover.md) for DEC-01/02 and retained-data gates. Admin login returns `One<{mfa_required:true,challenge_id:string,expires_in:300}>` without access/CSRF cookies. Challenge IDs are random 256-bit base64url tokens; only their hashes are stored. POST `/auth/admin/mfa/verify` takes `challenge_id` and exactly one of `code` (six digits) or `recovery_code` (32 lowercase hex characters). TOTP success returns `One<User>` and MFA-assured cookies. Invalid/expired/exhausted proof returns 401 `MFA_INVALID`; malformed input returns 422. Recovery success returns `One<{re_enrollment_required:true}>`, revokes prior assurance and grants no session. CLI re-enrollment is required. Origin/JSON validation and no-store apply throughout. No website enrollment, privilege promotion or anonymous recovery endpoint is introduced.
+
+## V0.3 onboarding and future order projection amendment
+
+[Approved onboarding DTOs/routes](../onboarding-v03-contract.md) and [P07 OpenAPI design](onboarding.openapi.json) supersede onboarding TBDs. Order projection in §4/§8.4 is the buyer projection; owner projection must never include buyer account ID/username/email, and withholds recipient name/phone/identifying notes until food-ready/waiting-delivery is recorded by the current owner. Do not return hidden fields as masked values. Food-ready retains accepted status with its own actor/time/versioned milestone; it does not create commission. Future anti-evasion recovery needs its own reviewed claim/receivable model; current completed-only adjustment contracts are unchanged.
+
+## V0.4 setup extension
+
+[Approved setup contract](../restaurant-setup-v04-contract.md) defines P11 management/readiness and approved DEC-05/P13/DEC-04 handoffs. These semantics supersede direct owner survey activation and unconfirmed commission writes when those groups are enabled. P11 does not enable ordering.
+
+## V0.5 checkout account binding
+
+Browser checkout sends `X-Account-Id` with its authenticated account scope. SessionGuard rejects a supplied header that differs from the current cookie account with403 `ACCOUNT_CHANGED` before mutation. This supplements server ownership checks and protects stale UI during cookie/account changes; it grants no authority. Non-browser clients may omit it. Checkout retains uncertain payload/key in account-scoped sessionStorage across reload/relogin in the same tab, hides private views on account change, and never auto-submits on login or reload. Definitively rejected price/quote/422 intents may be explicitly discarded; unknown outcomes must be recovered with the original intent/key.
+
+## V0.5 food-ready and cash fulfillment
+
+`POST /orders/{order_id}/food-ready` accepts exactly `{}` from the current owner while accepted. It appends one actor/time/order-version milestone, increments order version, and audits atomically without changing fulfillment or creating commission. An authorized recorded-milestone repeat returns current state without another event. Owner projection includes nullable `food_ready:{ready_at,order_version}`; recipient is omitted until this fact exists. No buyer account identifiers are exposed. Buyer projection always includes their accepted recipient and omits commission rate. Owner UI asks for food-ready before starting delivery; backend preserves the documented accepted→delivering edge without treating delivery itself as contact consent.
+
+Cash receipt stores optional protected evidence_reference in append-only payment history. Completion and one base commission commit atomically, including when unpaid; receipt has no fulfillment or platform-collection effect. Local synthetic fulfillment acceptance is tracked separately from retained-data adoption.
+
+## V0.5 polling and durable history
+
+Order/payment versions remain independent on every read/command. Active detail and owner/history lists have one query owner per scope, ~5s visible/online polling, bounded30s backoff and abort/stale-generation guards. Terminal fulfillment stops detail polling; unpaid payment is queried separately until paid. History uses authenticated scope/filter/sort-bound timestamp/ID cursors and immutable snapshots. Successful request keys have no short TTL cleanup; retained-history lifetime applies. [Local verification](../cash-ordering-local-verification.md) distinguishes process/MySQL/browser proof from retained adoption.
+
+Incomplete pre-V0.5 historical aggregates may expose `payment:null`; UI must label missing receipt records explicitly, never infer unpaid/paid or fabricate history. New V0.5 creation still guarantees exactly one unpaid payment row. Cash confirmation rejects an absent historical payment record; retained adoption must resolve any required preservation mapping separately. Ineligible dish errors identify only requested affected IDs; unavailable current delivery returns restaurant/point IDs with `current_delivery_quote:null` and no fabricated totals.
+
+## V0.6 approved payment contract
+
+DEC-06 is approved October20. [Payment schemas](payments.openapi.json) and [policy](../payments-policy.md) finalize QR settings/instructions/confirm/refund and scoped verification/evidence/claim/dispute extensions. Section11 QR schemas are enabled by [P20](../progress/P20.md); [P21](../progress/P21.md) owns connected UI evidence. General support/suspension and publication remain DEC-08/12.
+
+## V0.7 approved DEC-07 extension — October21
+
+[DEC-07.2026-10-21.v1](../finance-policy-proposal.md) is explicitly approved and owns monthly membership/finalization, next-period adjustment booking, full append-only receipt reversal/replacement, signed account credit and collection caps, supporting-reference access, exact report fields/cutoffs, recovery and Vietnamese finance addendum. It supersedes the DEC-07 financial TBDs above only. Existing partner terms/consent hashes remain immutable; real publication/adoption is separate. FIN-03/04/05 implementation evidence follows P22→P23→P24; DEC-08 controls remain gated at P25.
+
+[Enabled V0.7 finance OpenAPI](finance.openapi.json) defines closed adjustment/settlement/receipt/reversal requests and exact owner/Admin/report projections. GET `/reports/commissions` requires restaurant and whole-month `from,to` (maximum120months), default20/max100 rows, signed filter-bound cursor and `as_of`; account summary appears once outside period rows. Finance lists are ascending numeric ID with default20/max100; `restaurant_id` is required for entries/settlements. No arbitrary cross-restaurant export.
+
+P24 report rows/details also return integer `entry_count` so a nonempty net-zero period is distinguishable from no facts. The UI derives open-month/late-statement/overdue-collectible labels from returned cutoff/boundaries and amounts; no settlement status column is introduced.
+
+[Approved DEC-08](../account-support-policy-proposal.md) governs P25 restricted sessions, user availability, support, privacy/holds and bounded audit query. Suspended accounts receive no ordinary capabilities; only explicitly allowlisted obligations routes with fresh restricted sessions and transactional authorization. No new Admin/fulfillment/payment authority. Enabled P25 schemas and implementation evidence are separate.
+
+[Enabled P25 OpenAPI](administration.openapi.json) and [focused contract](../account-support-v07-contract.md) define account availability, restricted sessions, compromised-credential recovery, support/holds/erasure/reveal and audit queries. These refine the target user/support groups above without changing fulfillment/payment authority.

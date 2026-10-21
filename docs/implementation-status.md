@@ -1,6 +1,32 @@
 # Implementation and Evidence Status
 
+## Accepted P25 account/support/audit — October21,2026
+
+[Approved DEC-08](account-support-policy-proposal.md) and [P25 self-review/evidence](progress/P25.md) accept isolated synthetic account suspension/restricted obligations, compromised-password recovery, six-state scoped support, protected holds/retention and bounded redacted audit. Backend lint/49unit/8HTTP/build/Prisma,18real-MySQL cases,14P25 SQL denials,12legacy restricted-runtime cases and forward upgrade preservation PASS. Frontend lint/build/cart6/orders10/finance3 and actual Chrome response-loss/account-switch/foreign-ID/self-suspension/recovery/keyboard/five-width checks PASS; selected screenshots visually inspected. [Reproduction and adoption boundary](account-support-local-verification.md).
+
+P22–P25 have sequential local acceptance records. Retained3307 adoption, production publication, remote CI and independent review NOT RUN. The temporary key vault refuses non-test DBs; actual services/key custody/backup expiration and duty staffing remain DEC-10/11/12. No real funds/messages/partner consent or V1.0 readiness claimed. P26/DEC-09 remains the next separate roadmap gate.
+
+## Accepted P22–P24 finance — October21,2026
+
+Explicitly approved [DEC-07](finance-policy-proposal.md) and sequential [P22](progress/P22.md)→[P23](progress/P23.md)→[P24](progress/P24.md) now accept isolated synthetic ledger/monthly statements/manual receipts/full reversal-replacement and connected exact owner/Admin reports. Backend lint/47unit/7HTTP/build/17MySQL, restricted-runtime12case, forward-base preservation, net-zero count follow-up, frontend lint/build/3finance+6cart+10orders and final Chrome recovery/scope/negative-credit/five-width/native-dialog checks passed. [Commands/evidence/adoption boundary](finance-local-verification.md). Source inspection, automated checks and real browser observation are distinguished in P23/P24.
+
+[P25](progress/P25.md) now accepts approved DEC-08 account availability/support/privacy/retention/audit reads for local synthetic scope; the newer evidence below supersedes the previous unresolved gate. No separate production/version-release review is inferred. Retained3307 migration, real partner/consent/funds, production and remote CI NOT RUN; no automatic collection/payout or external message.
+
+## P22 DEC-07 decision checkpoint — October21,2026
+
+[Concrete policy package](finance-policy-proposal.md) explicitly approved by the user October21; [P22 handoff](progress/P22.md) records source inspection and decision boundary. Existing monthly deadlines/signed credit/no-overcollection remain approved; membership/finalization, reversal/replacement, evidence and report semantics are approved. P22 accepted after explicit user approval and policy checks; Subsequent P23/P24 implementation/evidence is recorded below. DEC-08 is a separate P25 gate. This P22 decision checkpoint itself made no runtime/schema/migration/retained-data changes or application-test claim.
+
 Historical baseline inspection: October 18, 2026. The October 19 scoped update below supersedes affected source/status claims. Source and working-tree contents changed externally during this documentation task; this final snapshot replaces older summary claims. No application, migration, account or database action was performed by the documentation rewrite. Reinspect before implementing a prompt.
+
+## Accepted V0.2 — October 19, 2026
+
+**V0.2 is ACCEPTED** by [P04→P05→P06 self-review](progress/V0.2.md), following accepted V0.1. Five existing public catalog routes now have enabled OpenAPI schemas/examples/query/errors and real MySQL HTTP privacy/filter/cursor evidence. Public homepage/menu preserve real API data independent of auth failure, with missing/broken images and complete retry/404 states; header uses current capabilities.
+
+`/cart` now persists non-sensitive one-restaurant intent, exact estimated dish subtotals and accepted prices; quantity limits, explicit cross-restaurant consent, reload/login/logout/account continuity, storage failure and current-catalog/price confirmation are implemented. Auth rechecks on focus clear private account views while preserving anonymous login forms. That V0.2 delivery introduced no server cart, order/quote mutation, recipient or recovery key. V0.5 separately adds cash checkout and private recovery; see its acceptance records below.
+
+Backend lint/build, 26 unit tests, 6 HTTP E2E and 4 real-MySQL 9.2.0 integration groups PASS. Frontend lint/build, 6 cart unit tests, smoke and connected Chrome PASS, including homepage/menu/cart at 360/390/768/1024/1440 px, dialog keyboard/focus, lower controls clear of navigation, storage corruption/denial, price change during login, expired session/account switch and zero order requests. Cart and dialog screenshots were visually inspected. Exact commands, fingerprints and local artifacts: [P06](progress/P06.md). New cart unit tests are configured in frontend CI; remote CI and full accessibility audit remain NOT RUN.
+
+Only a dedicated disposable MySQL 9.2.0 container was written; retained data/configuration were untouched. No migration/dependency upgrade/deployment or production acceptance. Browser SMTP/password-corpus replacements remain test boundaries. Earlier source/status descriptions below are historical where superseded here.
 
 ## Accepted V0.1 — October 19, 2026
 
@@ -82,3 +108,86 @@ Private local backup/evidence: `/private/tmp/hlf-post-expansion-20261019/restore
 Historical scoped verification reused installed dependencies: Prisma CLI/client generation reported 7.10.1 and installed MariaDB driver 3.5.4, while lockfiles pin Prisma 7.10.0 and driver 3.4.5. No clean `npm ci` or remote CI run was performed; that earlier local run was not lockfile-reproducible. The follow-up below supersedes local dependency/test evidence; remote CI remains **NOT RUN**. The driver is now an explicit pinned backend dependency for the migration utilities.
 
 The historical local slice left broad runtime grants. The [later authorized follow-up](auth-followup.md) switches local runtime to a fresh restricted identity and separates operator credentials; original users/grants remain preserved. Production configuration remains **NOT RUN**.
+
+## October 19 V0.3 local synthetic implementation
+
+[Sequential P07→P10 acceptance](progress/V0.3.md) supersedes onboarding-absent claims in the historical baseline. Current source has approved Vietnamese versioned terms, private MinIO evidence/retention, applicant submit/read/history, current MFA Admin review and atomic setup-required creation, authenticated selected-user manual consent/create and forward storage/grants. Buyer rights and one-restaurant cap remain.
+
+Automated: lint/build/Prisma,27 unit,6 HTTP E2E,5 real MySQL9.2.0/MinIO integration groups, fresh restricted-runtime HTTP/SQL denials, empty/upgrade preservation and6 cart unit tests PASS. Browser: fixture smoke, V0.2 regression and P08–P10 real submit/replay/MFA/review/manual confirmation/create at five widths PASS. Evidence, exact commands and source fingerprint are linked from the acceptance record; self-review only.
+
+No retained accounts/DB migration or real terms publication performed. Production object storage/scheduler/backup adoption and remote CI NOT RUN. Food-ready contact filtering and anti-evasion recoveries remain future contracted work, not current order functionality. No V1.0 readiness/release claim.
+
+## V0.4 P11 scoped implementation — October 19, 2026
+
+[P11](progress/P11.md) accepted locally: connected owner settings/Admin activation, weekly hours, readiness checklist and restricted-runtime audit/rollback/race evidence. Full V0.4 readiness waits for P12–P14; no retained-data or production adoption.
+
+[P12](progress/P12.md) accepted October20 locally: verified surveys/opaque expiring quotes, real MySQL races/OpenAPI/restricted runtime and connected Chrome evidence. Production survey data/provider adoption remains unconfigured.
+
+[P13](progress/P13.md) accepted October20 locally: owned menu/category management, sanitized separate dish media and history-preserving deletion, with MySQL/MinIO/restricted-runtime/browser evidence. Full sell readiness remains P14.
+
+## V0.4 accepted local setup — October20,2026
+
+[P14](progress/P14.md) and [V0.4 self-review](progress/V0.4.md) complete P11→P14: approved surveys/expiring quotes, owned menu/sanitized media, exact negotiated-rate consent and complete readiness. Backend36unit/6HTTP E2E/9MySQL integration groups/5restricted-runtime groups, frontend lint/build/cart and all connected Chrome journeys PASS. Upgrade preserves old menu/survey/rate/order snapshots without inventing verification/consent. [Local commands](setup-local-verification.md). Only isolated synthetic test databases were migrated; retained/production adoption and ordering/QR/commercial launch remain unaccepted.
+
+## October 20 local homepage and onboarding follow-up
+
+The separately approved [local demo adoption](local-demo-adoption.md) applied the seven missing V0.3/V0.4 migrations and runtime grants to backed-up local `hlf_dev_flow`, preserving every original row. A distinct labeled synthetic restaurant/four dishes now appear in connected discovery, including the new homepage dish section. Live terms now returns200; terms/history failures are independent and no longer render false empty history. This changes local adoption status only; historical V0.3/V0.4 evidence remains dated and production/real-partner adoption remains unaccepted.
+
+## Accepted V0.5 — October20,2026 local synthetic scope
+
+[V0.5 acceptance](progress/V0.5.md) closes [P15](progress/P15.md)→[P16](progress/P16.md)→[P17](progress/P17.md)→[P18](progress/P18.md) sequentially by Codex self-review. Implemented cash aggregate/snapshots/durable keys, account-scoped uncertain checkout, explicit price/quote consent, food-ready contact gating, owner fulfillment and buyer pending cancellation, independent cash receipt, atomic completed/base commission, history and safe polling with separate order/payment versions. Unknown incomplete legacy payment facts are not fabricated.
+
+Final backend lint40unit/6HTTP/12real-MySQL integration groups/7restricted-runtime groups/build/Prisma PASS. Two independent backend processes prove key/state/payment/catalog race invariants. Frontend lint/build/6cart+7order tests and actual Chrome checkout/fulfillment/tracking plus all existing auth/catalog/cart/onboarding/settings/delivery/dishes/setup regressions PASS. Five widths360/390/768/1024/1440, keyboard/dialog and native offline/hidden/late-response evidence recorded. [Commands and artifacts](cash-ordering-local-verification.md).
+
+Only isolated test_* databases on MySQL9.2.0:43316 and local MinIO43317 were used. V0.5 forward upgrade preserves original synthetic legacy columns/rows and deployed SQL checksums. Retained development3307/V0.4 sample remains unchanged: V0.5 adoption NOT RUN, requires its own explicit authorization and verified backup/restore. Remote CI and independent/human review NOT RUN; production/real partner/survey/consent, QR/refunds/AI/release remain unaccepted. [Migration gate](data/migration-plan.md#6-v05-ordering-adoption-is-separate).
+
+## V0.6 P19 policy gate — October20
+
+[P19](progress/P19.md) accepted after explicit operator approval and policy consistency checks. DEC-06 exact states/guards/DTOs/notices finalized; P20/P21 implementation acceptance remains NOT RUN. Retained migration unauthorized.
+
+[P20 backend](progress/P20.md) accepted for local synthetic scope: verified QR config/snapshots/receipt/full refunds/scoped disputes/private evidence; actual MySQL/process races and restricted runtime PASS. P21/browser acceptance remains NOT RUN.
+
+## Accepted V0.6 — October20,2026
+
+[V0.6](progress/V0.6.md) accepts sequential P19→P20→P21 for local synthetic QR/direct full-refund scope. Backend44unit/6HTTP/13MySQL groups/8restricted groups, forward preservation/checksums, frontend lint/build/cart6/orders10, Chrome cash+QR/response-loss/reload/account/FileReader guard and cash tracking/history/five widths PASS. Source/commands/artifacts and self-review limits are in the version record. Retained3307 was not accessed/migrated; no real partner/bank/consent/refund/production acceptance. DEC-08 general support and DEC-10/11/12 production/publication gates remain.
+
+## System review defect fixes — October 20, 2026
+
+Scoped follow-up to the V0.1–V0.6 system review; existing acceptance sections above are historical, not new results. Codex self-review only; no independent/user review is inferred.
+
+- Onboarding upload compensation now queries authoritative metadata by the generated immutable object key. It removes only a confirmed unpersisted object; metadata/read uncertainty preserves storage for reference-aware cleanup. Storage operations stay outside retried transactions.
+- Explicit QR refresh now retrieves payment as well as instructions/disputes, with order/account scope, aborts and monotonic payment-version checks across refresh/mutations/Admin lookup. Account/restaurant-prop changes remount page state.
+- POST /orders now emits Idempotency-Replayed:false with201 and true with200, preserving first-create Location, bodies, authorization and durable keys. MySQL assertions still require one order and one set of history/audit effects.
+
+Reproduction/coverage details: [onboarding compensation](onboarding-local-verification.md#system-review-compensation-regression), [payment refresh](payments-local-verification.md#system-review-refresh-regression), [order header](cash-ordering-local-verification.md#system-review-order-replay-header-regression).
+
+Newly executed final evidence (October20 local synthetic run; root commands, serialized compilation/browser ports):
+
+| Exact command | Final result |
+| --- | --- |
+| npm --prefix backend run lint | PASS, 0 warnings |
+| npm --prefix backend test | 44/44 PASS, 0 fail |
+| npm --prefix backend run test:e2e | 7/7 PASS, 0 fail; Prisma mocked |
+| npm --prefix backend run build | PASS |
+| npm --prefix backend run test:integration | 16/16 PASS, 0 fail: 13 top-level groups + 3 upload fault subtests, actual MySQL9.2.0/private MinIO |
+| npm --prefix frontend run lint | PASS, 0 warnings |
+| npm --prefix frontend run build | PASS |
+| npm --prefix frontend run test:cart | 6/6 PASS, 0 fail |
+| npm --prefix frontend run test:orders | 10/10 PASS, 0 fail |
+| npm --prefix frontend run test:onboarding | PASS, 1 Chrome journey |
+| npm --prefix frontend run test:checkout | PASS, 1 Chrome journey |
+| npm --prefix frontend run test:payments | PASS, 1 full Chrome journey including independent-owner/Admin refresh and held stale refresh |
+| PAYMENT_ASYNC_ONLY=true npm --prefix frontend run test:payments | PASS, 1 FileReader/account-switch Chrome journey |
+| git diff --check | PASS |
+
+Fresh test_fixes_* databases only, MySQL43316/MinIO43317; no retained3307 access/reset/adoption, applied-migration edit, schema migration, external messages or real financial movements. Browser cases are real Chrome against synthetic local HTTP/MySQL/storage; outbound SMTP/password-corpus use the existing harness boundary. Screenshots include five widths and the Admin receipt/refund refresh view; source inspection and visual inspection are not independent acceptance.
+
+Temporary run artifacts: /private/tmp/hlf-review-fixes/ (results.jsonl, databases.txt, run.py/final-run.py/payment-last.py, backend-unit.log, backend-e2e-final.log, mysql-integration-final.log, frontend-*-last.log, chrome-onboarding.log, chrome-checkout.log, chrome-payments-last.log, chrome-paymentasync-last.log and screenshots-*). Final payment screenshots are in screenshots-payments-last. These paths are temporary, not durable production evidence.
+
+Earlier failed attempts remain in that directory: HTTP6/7 due to the new mock missing adminFactor (fixed); Chrome payment stopped once before restaurant options loaded (harness now waits for its real option), once because a new private test bucket was uninitialized (explicitly created before retry), and once because equal-version payment props unnecessarily restarted/aborted the instructions read (dependency changed to payment.version, then full Chrome rerun passed). No failed assertion was removed to obtain the final results. Final affected-document local links/anchors and <500-line checks PASS.
+
+No remaining defect was established in this scoped final run. NOT RUN: remote CI, independent/human review, production/retained adoption, load testing, non-Chrome browsers and full manual accessibility audit. Production storage/backup/hosting remain NOT CONFIGURED under DEC-10/11/12. This fix does not establish commercial or production readiness.
+
+## P23 accepted finance backend — October21
+
+[P23](progress/P23.md) accepts local synthetic approved DEC-07 ledger/settlements/receipts/full reversals/replacements and scoped exact report API. Forward migration,47unit/7HTTP/17integration/12restricted cases, two backend processes and old-column/base preservation passed; see exact logs and limits. P24 UI/browser and DEC-08/P25 remain separate. No retained3307 migration, real funds or production action.

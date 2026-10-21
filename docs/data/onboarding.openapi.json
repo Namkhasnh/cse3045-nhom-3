@@ -1,0 +1,3040 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Hoa Lac Food V0.3 onboarding API",
+    "version": "0.3.0",
+    "description": "Enabled local synthetic onboarding; production publication/storage not authorized."
+  },
+  "servers": [
+    {
+      "url": "/api/v1"
+    }
+  ],
+  "paths": {
+    "/partnership-terms/current": {
+      "get": {
+        "operationId": "onboarding_get__partnership-terms_current",
+        "summary": "GET /partnership-terms/current",
+        "responses": {
+          "200": {
+            "description": "Authorized result or replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingTermsEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Session required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authority/CSRF/MFA denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Absent or private resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "State/version/terms/ownership/key conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid closed DTO or consent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed JSON/Origin/content type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Atomic failure; no partial mutation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "description": "Local synthetic V0.3 only. Immutable published Vietnamese terms; no partner data."
+      }
+    },
+    "/partnership-terms/{version}": {
+      "get": {
+        "operationId": "onboarding_get__partnership-terms_version",
+        "summary": "GET /partnership-terms/{version}",
+        "responses": {
+          "200": {
+            "description": "Authorized result or replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingTermsEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Session required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authority/CSRF/MFA denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Absent or private resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "State/version/terms/ownership/key conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid closed DTO or consent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed JSON/Origin/content type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Atomic failure; no partial mutation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "parameters": [
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            }
+          }
+        ],
+        "description": "Local synthetic V0.3 only. Immutable published Vietnamese terms; no partner data."
+      }
+    },
+    "/onboarding-evidence": {
+      "post": {
+        "operationId": "onboarding_post__onboarding-evidence",
+        "summary": "POST /onboarding-evidence",
+        "responses": {
+          "200": {
+            "description": "Authorized result or replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingEvidenceEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Session required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authority/CSRF/MFA denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Absent or private resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "State/version/terms/ownership/key conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid closed DTO or consent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "New resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingEvidenceEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed JSON/Origin/content type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Atomic failure; no partial mutation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AccessCookie": [],
+            "CsrfHeader": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApplicantEvidenceUpload"
+              }
+            }
+          }
+        },
+        "description": "Local synthetic V0.3 only. Current account scope; private resources concealed as404."
+      }
+    },
+    "/onboarding-evidence/{id}": {
+      "get": {
+        "operationId": "onboarding_get__onboarding-evidence_id",
+        "summary": "GET /onboarding-evidence/{id}",
+        "responses": {
+          "200": {
+            "description": "Authorized result or replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingEvidenceContentEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Session required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authority/CSRF/MFA denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Absent or private resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "State/version/terms/ownership/key conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid closed DTO or consent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed JSON/Origin/content type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Atomic failure; no partial mutation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AccessCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]*$",
+              "maxLength": 19
+            }
+          }
+        ],
+        "description": "Local synthetic V0.3 only. Current account scope; private resources concealed as404."
+      }
+    },
+    "/restaurant-applications": {
+      "post": {
+        "operationId": "onboarding_post__restaurant-applications",
+        "summary": "POST /restaurant-applications",
+        "responses": {
+          "200": {
+            "description": "Authorized result or replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicantApplicationEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Session required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authority/CSRF/MFA denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Absent or private resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "State/version/terms/ownership/key conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid closed DTO or consent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "New resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicantApplicationEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed JSON/Origin/content type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Atomic failure; no partial mutation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AccessCookie": [],
+            "CsrfHeader": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApplicationSubmit"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[!-~]+$"
+            }
+          }
+        ],
+        "description": "Local synthetic V0.3 only. Current account scope; private resources concealed as404."
+      },
+      "get": {
+        "operationId": "onboarding_get__restaurant-applications",
+        "summary": "GET /restaurant-applications",
+        "responses": {
+          "200": {
+            "description": "Authorized result or replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicantApplicationList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Session required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authority/CSRF/MFA denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Absent or private resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "State/version/terms/ownership/key conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid closed DTO or consent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed JSON/Origin/content type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Atomic failure; no partial mutation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AccessCookie": []
+          }
+        ],
+        "description": "Local synthetic V0.3 only. Current account scope; private resources concealed as404.",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]*$",
+              "maxLength": 19
+            }
+          }
+        ]
+      }
+    },
+    "/restaurant-applications/{id}": {
+      "get": {
+        "operationId": "onboarding_get__restaurant-applications_id",
+        "summary": "GET /restaurant-applications/{id}",
+        "responses": {
+          "200": {
+            "description": "Authorized result or replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicantApplicationEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Session required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authority/CSRF/MFA denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Absent or private resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "State/version/terms/ownership/key conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid closed DTO or consent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed JSON/Origin/content type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Atomic failure; no partial mutation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AccessCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]*$",
+              "maxLength": 19
+            }
+          }
+        ],
+        "description": "Local synthetic V0.3 only. Current account scope; private resources concealed as404."
+      }
+    },
+    "/restaurant-applications/{id}/confirm": {
+      "post": {
+        "operationId": "onboarding_post__restaurant-applications_id_confirm",
+        "summary": "POST /restaurant-applications/{id}/confirm",
+        "responses": {
+          "200": {
+            "description": "Authorized result or replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicantApplicationEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Session required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authority/CSRF/MFA denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Absent or private resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "State/version/terms/ownership/key conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid closed DTO or consent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed JSON/Origin/content type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Atomic failure; no partial mutation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AccessCookie": [],
+            "CsrfHeader": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManualConfirmation"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]*$",
+              "maxLength": 19
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[!-~]+$"
+            }
+          }
+        ],
+        "description": "Local synthetic V0.3 only. Current account scope; private resources concealed as404."
+      }
+    },
+    "/admin/restaurant-applications": {
+      "get": {
+        "operationId": "onboarding_get__admin_restaurant-applications",
+        "summary": "GET /admin/restaurant-applications",
+        "responses": {
+          "200": {
+            "description": "Authorized result or replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminApplicationList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Session required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authority/CSRF/MFA denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Absent or private resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "State/version/terms/ownership/key conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid closed DTO or consent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed JSON/Origin/content type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Atomic failure; no partial mutation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AccessCookie": []
+          }
+        ],
+        "description": "Local synthetic V0.3 only. Sole current Admin with MFA required.",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]*$",
+              "maxLength": 19
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "enum": [
+                "awaiting_confirmation",
+                "submitted",
+                "approved",
+                "rejected"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "/admin/restaurant-applications/{id}": {
+      "get": {
+        "operationId": "onboarding_get__admin_restaurant-applications_id",
+        "summary": "GET /admin/restaurant-applications/{id}",
+        "responses": {
+          "200": {
+            "description": "Authorized result or replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminApplicationEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Session required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authority/CSRF/MFA denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Absent or private resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "State/version/terms/ownership/key conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid closed DTO or consent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed JSON/Origin/content type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Atomic failure; no partial mutation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AccessCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]*$",
+              "maxLength": 19
+            }
+          }
+        ],
+        "description": "Local synthetic V0.3 only. Sole current Admin with MFA required."
+      }
+    },
+    "/admin/restaurant-applications/{id}/review": {
+      "post": {
+        "operationId": "onboarding_post__admin_restaurant-applications_id_review",
+        "summary": "POST /admin/restaurant-applications/{id}/review",
+        "responses": {
+          "200": {
+            "description": "Authorized result or replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminApplicationEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Session required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authority/CSRF/MFA denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Absent or private resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "State/version/terms/ownership/key conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid closed DTO or consent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed JSON/Origin/content type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Atomic failure; no partial mutation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AccessCookie": [],
+            "CsrfHeader": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApplicationReview"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]*$",
+              "maxLength": 19
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[!-~]+$"
+            }
+          }
+        ],
+        "description": "Local synthetic V0.3 only. Sole current Admin with MFA required."
+      }
+    },
+    "/admin/onboarding-users": {
+      "get": {
+        "operationId": "onboarding_get__admin_onboarding-users",
+        "summary": "GET /admin/onboarding-users",
+        "responses": {
+          "200": {
+            "description": "Authorized result or replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingEligibleUsers"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Session required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authority/CSRF/MFA denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Absent or private resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "State/version/terms/ownership/key conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid closed DTO or consent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed JSON/Origin/content type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Atomic failure; no partial mutation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AccessCookie": []
+          }
+        ],
+        "description": "Local synthetic V0.3 only. Sole current Admin with MFA required.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9._-]{2,31}$"
+            }
+          }
+        ]
+      }
+    },
+    "/admin/restaurant-invitations": {
+      "post": {
+        "operationId": "onboarding_post__admin_restaurant-invitations",
+        "summary": "POST /admin/restaurant-invitations",
+        "responses": {
+          "200": {
+            "description": "Authorized result or replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminApplicationEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Session required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authority/CSRF/MFA denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Absent or private resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "State/version/terms/ownership/key conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid closed DTO or consent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "New resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminApplicationEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed JSON/Origin/content type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Atomic failure; no partial mutation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AccessCookie": [],
+            "CsrfHeader": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManualInvitation"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[!-~]+$"
+            }
+          }
+        ],
+        "description": "Local synthetic V0.3 only. Sole current Admin with MFA required."
+      }
+    },
+    "/admin/restaurants": {
+      "post": {
+        "operationId": "onboarding_post__admin_restaurants",
+        "summary": "POST /admin/restaurants",
+        "responses": {
+          "200": {
+            "description": "Authorized result or replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManualRestaurantResultEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Session required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authority/CSRF/MFA denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Absent or private resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "State/version/terms/ownership/key conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid closed DTO or consent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "New resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManualRestaurantResultEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed JSON/Origin/content type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Atomic failure; no partial mutation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AccessCookie": [],
+            "CsrfHeader": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManualCreate"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[!-~]+$"
+            }
+          }
+        ],
+        "description": "Local synthetic V0.3 only. Sole current Admin with MFA required."
+      }
+    },
+    "/admin/onboarding-evidence": {
+      "post": {
+        "operationId": "onboarding_post__admin_onboarding-evidence",
+        "summary": "POST /onboarding-evidence",
+        "responses": {
+          "200": {
+            "description": "Authorized result or replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingEvidenceEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Session required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authority/CSRF/MFA denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Absent or private resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "State/version/terms/ownership/key conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid closed DTO or consent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "New resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingEvidenceEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed JSON/Origin/content type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Atomic failure; no partial mutation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AccessCookie": [],
+            "CsrfHeader": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EvidenceUpload"
+              }
+            }
+          }
+        },
+        "description": "Local synthetic V0.3 only. Sole current Admin with MFA required."
+      }
+    },
+    "/admin/onboarding-evidence/{id}": {
+      "get": {
+        "operationId": "onboarding_get__admin_onboarding-evidence_id",
+        "summary": "GET /onboarding-evidence/{id}",
+        "responses": {
+          "200": {
+            "description": "Authorized result or replay",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingEvidenceContentEnvelope"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Session required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authority/CSRF/MFA denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Absent or private resource",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "State/version/terms/ownership/key conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid closed DTO or consent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dependency unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed JSON/Origin/content type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Atomic failure; no partial mutation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AccessCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]*$",
+              "maxLength": 19
+            }
+          }
+        ],
+        "description": "Local synthetic V0.3 only. Sole current Admin with MFA required."
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ApplicationSubmit": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "restaurant_name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "address": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "contact_name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "contact_phone": {
+            "type": "string",
+            "pattern": "^\\+?[0-9]{9,15}$"
+          },
+          "front_image_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$",
+            "maxLength": 19
+          },
+          "business_document_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$",
+            "maxLength": 19
+          },
+          "terms_version": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "terms_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "consent": {
+            "const": true
+          }
+        },
+        "required": [
+          "restaurant_name",
+          "address",
+          "contact_name",
+          "contact_phone",
+          "front_image_id",
+          "business_document_id",
+          "terms_version",
+          "terms_hash",
+          "consent"
+        ],
+        "examples": [
+          {
+            "restaurant_name": "Synthetic example",
+            "address": "Synthetic example",
+            "contact_name": "Synthetic example",
+            "contact_phone": "0900000000",
+            "front_image_id": "1",
+            "business_document_id": "1",
+            "terms_version": "2026-10-19.v1",
+            "terms_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "consent": true
+          }
+        ]
+      },
+      "ManualInvitation": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "applicant_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$",
+            "maxLength": 19
+          },
+          "restaurant_name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "address": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "contact_name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "contact_phone": {
+            "type": "string",
+            "pattern": "^\\+?[0-9]{9,15}$"
+          },
+          "front_image_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$",
+            "maxLength": 19
+          },
+          "business_document_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$",
+            "maxLength": 19
+          },
+          "terms_version": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "terms_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "applicant_id",
+          "restaurant_name",
+          "address",
+          "contact_name",
+          "contact_phone",
+          "front_image_id",
+          "business_document_id",
+          "terms_version",
+          "terms_hash"
+        ],
+        "examples": [
+          {
+            "restaurant_name": "Synthetic example",
+            "address": "Synthetic example",
+            "contact_name": "Synthetic example",
+            "contact_phone": "0900000000",
+            "front_image_id": "1",
+            "business_document_id": "1",
+            "terms_version": "2026-10-19.v1",
+            "terms_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "applicant_id": "2"
+          }
+        ]
+      },
+      "ManualConfirmation": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "terms_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "consent": {
+            "const": true
+          }
+        },
+        "required": [
+          "expected_version",
+          "terms_hash",
+          "consent"
+        ],
+        "examples": [
+          {
+            "expected_version": 1,
+            "terms_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "consent": true
+          }
+        ]
+      },
+      "ManualCreate": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "application_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$",
+            "maxLength": 19
+          },
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          }
+        },
+        "required": [
+          "application_id",
+          "expected_version"
+        ],
+        "examples": [
+          {
+            "application_id": "1",
+            "expected_version": 2
+          }
+        ]
+      },
+      "EvidenceUpload": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "enum": [
+              "front_image",
+              "business_document"
+            ]
+          },
+          "mime_type": {
+            "enum": [
+              "image/jpeg",
+              "image/png",
+              "application/pdf"
+            ]
+          },
+          "content_base64": {
+            "type": "string",
+            "minLength": 4,
+            "maxLength": 6990508
+          },
+          "applicant_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$",
+            "maxLength": 19
+          }
+        },
+        "required": [
+          "kind",
+          "mime_type",
+          "content_base64",
+          "applicant_id"
+        ]
+      },
+      "ApplicationReview": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "expected_version": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "decision": {
+                "const": "approved"
+              }
+            },
+            "required": [
+              "expected_version",
+              "decision"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "expected_version": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "decision": {
+                "const": "rejected"
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              }
+            },
+            "required": [
+              "expected_version",
+              "decision",
+              "reason"
+            ]
+          }
+        ],
+        "examples": [
+          {
+            "expected_version": 1,
+            "decision": "approved"
+          },
+          {
+            "expected_version": 1,
+            "decision": "rejected",
+            "reason": "Synthetic reason"
+          }
+        ]
+      },
+      "OpeningPayload": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "restaurant_name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "address": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "contact_name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "contact_phone": {
+            "type": "string",
+            "pattern": "^\\+?[0-9]{9,15}$"
+          },
+          "front_image_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$",
+            "maxLength": 19
+          },
+          "business_document_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$",
+            "maxLength": 19
+          },
+          "terms_version": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "terms_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "consent": {
+            "const": true
+          }
+        },
+        "required": [
+          "restaurant_name",
+          "address",
+          "contact_name",
+          "contact_phone",
+          "front_image_id",
+          "business_document_id",
+          "terms_version",
+          "terms_hash"
+        ]
+      },
+      "OnboardingTerms": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "version": {
+            "type": "string"
+          },
+          "hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "content": {
+            "type": "string"
+          },
+          "published_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "effective_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "version",
+          "hash",
+          "content",
+          "published_at",
+          "effective_at"
+        ]
+      },
+      "OnboardingEvidence": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$",
+            "maxLength": 19
+          },
+          "kind": {
+            "enum": [
+              "front_image",
+              "business_document"
+            ]
+          },
+          "mime_type": {
+            "enum": [
+              "image/jpeg",
+              "image/png",
+              "application/pdf"
+            ]
+          },
+          "size_bytes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5242880
+          },
+          "hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "mime_type",
+          "size_bytes",
+          "hash"
+        ]
+      },
+      "OnboardingEvidenceContent": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$",
+            "maxLength": 19
+          },
+          "mime_type": {
+            "enum": [
+              "image/jpeg",
+              "image/png",
+              "application/pdf"
+            ]
+          },
+          "content_base64": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "mime_type",
+          "content_base64"
+        ]
+      },
+      "ApplicantApplication": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$",
+            "maxLength": 19
+          },
+          "kind": {
+            "enum": [
+              "application",
+              "manual"
+            ]
+          },
+          "status": {
+            "enum": [
+              "awaiting_confirmation",
+              "submitted",
+              "approved",
+              "rejected"
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "payload": {
+            "$ref": "#/components/schemas/OpeningPayload"
+          },
+          "terms_version": {
+            "type": "string"
+          },
+          "terms_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "consent_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "restaurant_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[1-9][0-9]*$",
+                "maxLength": 19
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "review": {
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "decision": {
+                    "enum": [
+                      "approved",
+                      "rejected"
+                    ]
+                  },
+                  "reason": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "created_at": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                },
+                "required": [
+                  "decision",
+                  "reason",
+                  "created_at"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "status",
+          "version",
+          "payload",
+          "terms_version",
+          "terms_hash",
+          "consent_at",
+          "created_at",
+          "restaurant_id",
+          "review"
+        ]
+      },
+      "AdminApplication": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$",
+            "maxLength": 19
+          },
+          "kind": {
+            "enum": [
+              "application",
+              "manual"
+            ]
+          },
+          "status": {
+            "enum": [
+              "awaiting_confirmation",
+              "submitted",
+              "approved",
+              "rejected"
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "payload": {
+            "$ref": "#/components/schemas/OpeningPayload"
+          },
+          "terms_version": {
+            "type": "string"
+          },
+          "terms_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "consent_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "restaurant_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[1-9][0-9]*$",
+                "maxLength": 19
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "review": {
+            "anyOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "decision": {
+                    "enum": [
+                      "approved",
+                      "rejected"
+                    ]
+                  },
+                  "reason": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "created_at": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                },
+                "required": [
+                  "decision",
+                  "reason",
+                  "created_at"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "applicant_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$",
+            "maxLength": 19
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "status",
+          "version",
+          "payload",
+          "terms_version",
+          "terms_hash",
+          "consent_at",
+          "created_at",
+          "restaurant_id",
+          "review",
+          "applicant_id"
+        ]
+      },
+      "ManualRestaurantResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$",
+            "maxLength": 19
+          },
+          "application_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$",
+            "maxLength": 19
+          },
+          "readiness": {
+            "const": "setup_required"
+          },
+          "is_active": {
+            "const": false
+          },
+          "is_accepting_orders": {
+            "const": false
+          }
+        },
+        "required": [
+          "id",
+          "application_id",
+          "readiness",
+          "is_active",
+          "is_accepting_orders"
+        ]
+      },
+      "OnboardingEligibleUser": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$",
+            "maxLength": 19
+          },
+          "display_name": {
+            "type": "string"
+          },
+          "login_identifier": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "display_name",
+          "login_identifier"
+        ]
+      },
+      "OnboardingPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[1-9][0-9]*$",
+                "maxLength": 19
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "has_more",
+          "next_cursor"
+        ]
+      },
+      "OnboardingTermsEnvelope": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/OnboardingTerms"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "OnboardingEvidenceEnvelope": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/OnboardingEvidence"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "OnboardingEvidenceContentEnvelope": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/OnboardingEvidenceContent"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "ApplicantApplicationEnvelope": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ApplicantApplication"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "AdminApplicationEnvelope": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/AdminApplication"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "ManualRestaurantResultEnvelope": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ManualRestaurantResult"
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "ApplicantApplicationList": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ApplicantApplication"
+            }
+          },
+          "page": {
+            "$ref": "#/components/schemas/OnboardingPage"
+          }
+        },
+        "required": [
+          "data",
+          "page"
+        ]
+      },
+      "AdminApplicationList": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminApplication"
+            }
+          },
+          "page": {
+            "$ref": "#/components/schemas/OnboardingPage"
+          }
+        },
+        "required": [
+          "data",
+          "page"
+        ]
+      },
+      "OnboardingEligibleUsers": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OnboardingEligibleUser"
+            }
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "Error": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "code",
+              "message",
+              "field_errors",
+              "details",
+              "request_id",
+              "retryable"
+            ],
+            "properties": {
+              "code": {
+                "enum": [
+                  "MALFORMED_REQUEST",
+                  "AUTH_REQUIRED",
+                  "TOKEN_INVALID",
+                  "ACCOUNT_INACTIVE",
+                  "FORBIDDEN",
+                  "CSRF_FAILED",
+                  "VALIDATION_ERROR",
+                  "VERSION_CONFLICT",
+                  "ACCOUNT_TAKEN",
+                  "INVALID_CREDENTIALS",
+                  "EMAIL_CODE_INVALID",
+                  "MFA_INVALID",
+                  "RATE_LIMITED",
+                  "PASSWORD_CHECK_UNAVAILABLE",
+                  "EMAIL_UNAVAILABLE",
+                  "EMAIL_NOT_CONFIGURED",
+                  "INTERNAL_ERROR",
+                  "TEMPORARILY_UNAVAILABLE",
+                  "NOT_FOUND",
+                  "RESTAURANT_LIMIT_REACHED",
+                  "APPLICATION_PENDING",
+                  "APPLICATION_STATE_CONFLICT",
+                  "TERMS_VERSION_CONFLICT",
+                  "IDEMPOTENCY_KEY_REUSED",
+                  "PAYLOAD_TOO_LARGE"
+                ]
+              },
+              "message": {
+                "type": "string"
+              },
+              "field_errors": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "path",
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "path": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "details": {
+                "type": "object"
+              },
+              "request_id": {
+                "type": "string"
+              },
+              "retryable": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "examples": [
+          {
+            "error": {
+              "code": "EMAIL_CODE_INVALID",
+              "message": "Invalid or expired verification code.",
+              "field_errors": [],
+              "details": {},
+              "request_id": "synthetic-request",
+              "retryable": false
+            }
+          }
+        ]
+      },
+      "ApplicantEvidenceUpload": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "enum": [
+              "front_image",
+              "business_document"
+            ]
+          },
+          "mime_type": {
+            "enum": [
+              "image/jpeg",
+              "image/png",
+              "application/pdf"
+            ]
+          },
+          "content_base64": {
+            "type": "string",
+            "minLength": 4,
+            "maxLength": 6990508
+          }
+        },
+        "required": [
+          "kind",
+          "mime_type",
+          "content_base64"
+        ]
+      }
+    },
+    "securitySchemes": {
+      "AccessCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "__Host-hlf_access",
+        "description": "15-minute signed JWT; current account/auth_version/ownership checked each request; Admin requires MFA assurance."
+      },
+      "CsrfHeader": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-CSRF-Token",
+        "description": "Must equal __Host-hlf_csrf cookie and its HMAC/jti binding to the current access session."
+      }
+    }
+  }
+}

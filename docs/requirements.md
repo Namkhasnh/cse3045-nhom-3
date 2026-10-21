@@ -208,7 +208,7 @@ stateDiagram-v2
 | BR23 | Each order has at most one base commission entry. Adjustments are separate entries with a mandatory reason; history is never overwritten. |
 | BR24 | Changing a restaurant's rate affects only future orders. |
 | BR25 | A commission entry belongs to at most one settlement; all entries in a settlement belong to the same restaurant. |
-| BR26 | Receivable = base + adjustments; collected = sum of recorded receipts; outstanding = receivable − collected. |
+| BR26 | Receivable = base + adjustments; collected = recorded receipts − full receipt reversals; outstanding = receivable − collected. Keep signed restaurant credit and enforce DEC-07 period/account collection caps. |
 | BR27 | Collection is **manual**: admin records receipts. No automatic splitting or collection. |
 
 ### 6.6 Recommendation and Reorder
@@ -331,3 +331,17 @@ Superseded on October 18, 2026: FR01 role selection and Owner/Admin requests; §
 | [docs/deployment.md](deployment.md) | Sections 1–2, 5–7 |
 
 Version ownership: [roadmap](roadmap.md). Policy gates: [decisions](decisions.md). Full implementation prompts: [prompt index](prompts/README.md).
+
+## Approved October 19 onboarding/order privacy amendment
+
+DEC-03 and [V0.3 contract](onboarding-v03-contract.md) approve evidence/consent/manual rules and commercial clauses. Owner APIs must omit buyer account ID/username/email always; omit recipient name/phone and identifying notes until an explicit owner-recorded food-ready/waiting-delivery milestone. Acceptance alone does not disclose contact. Food-ready is not delivering/completed and creates no commission. Anti-evasion complaints require two-party verification/appeal and a separate recovery receivable; never reopen terminal orders or charge from a claim alone. These controls are not V0.3 evidence. [Implementation status](implementation-status.md) tracks V0.5 order privacy separately from future anti-evasion/finance work.
+
+## V0.6 approved payment contract
+
+DEC-06 approved October20: static verified QR/order snapshots; full per-transfer direct refunds within24h; no partial or exceptional cash refunds; private evidence90days with dispute holds. Exact guards, exceptions and approved Vietnamese notices: [payment policy](payments-policy.md).
+
+## V0.7 approved DEC-07 extension — October21
+
+[DEC-07.2026-10-21.v1](finance-policy-proposal.md) is explicitly approved and owns monthly membership/finalization, next-period adjustment booking, full append-only receipt reversal/replacement, signed account credit and collection caps, supporting-reference access, exact report fields/cutoffs, recovery and Vietnamese finance addendum. It supersedes the DEC-07 financial TBDs above only. Existing partner terms/consent hashes remain immutable; real publication/adoption is separate. FIN-03/04/05 implementation evidence follows P22→P23→P24; DEC-08 controls remain gated at P25.
+
+US18/25/26, FR12, NFR07 and AC17 are refined by [approved DEC-08](account-support-policy-proposal.md): restricted obligations sessions after suspension; six-state support and elapsed targets; bounded audited private reads; indefinite pseudonymous business history with separately erasable personal payloads/holds. This explicitly refines contact-snapshot lifetime without changing immutable money/business facts. Synthetic implementation only; production gates remain separate.
