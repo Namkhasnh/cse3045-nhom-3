@@ -41,7 +41,11 @@
     "demo:local": "npm run build && node scripts/local-demo.mjs",
     "payments:cleanup:local": "npm run build && node dist/maintenance-payments-local.js",
     "privacy:cleanup:local": "npm run build && node dist/maintenance-privacy-local.js",
-    "test:administration-permissions": "npm run test:compile && node test/administration-permissions.mjs"
+    "test:administration-permissions": "npm run test:compile && node test/administration-permissions.mjs",
+    "test:ai-evaluation": "npm run build && node scripts/evaluate-ai.mjs",
+    "test:ai-permissions": "npm run test:compile && node test/recommendations-permissions.mjs",
+    "ai:cleanup": "npm run build && node dist/maintenance-ai.js",
+    "test:ai-evaluation-unit": "node --test test/ai-evaluation-summary.test.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1152.0",

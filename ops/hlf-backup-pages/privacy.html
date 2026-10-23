@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Chính sách quyền riêng tư của công cụ backup cá nhân HLF Backup: quyền Google Drive, mã hóa, lưu trữ và thu hồi quyền.">
+<meta name="referrer" content="no-referrer"><title>Quyền riêng tư — HLF Backup</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip" href="#content">Đến nội dung chính</a>
+<header><a href="./">HLF Backup</a><nav aria-label="Điều hướng"><a href="privacy.html" aria-current="page">Quyền riêng tư</a><a href="https://github.com/Namkhasnh/hlf-backup-info/issues">Liên hệ</a></nav></header>
+<main id="content">
+<p class="eyebrow">Cập nhật ngày 23/10/2026</p><h1>Quyền riêng tư</h1>
+<p>HLF Backup là công cụ cá nhân do Nguyễn Nam Khánh vận hành để lưu và kiểm tra bản sao lưu mã hóa trên tài khoản Google Drive của mình. Chính sách này dành riêng cho công cụ backup; không thay thế chính sách của website đặt món hoặc của Google.</p>
+<h2>1. Dữ liệu và quyền truy cập</h2>
+<p>Công cụ yêu cầu quyền Google Drive <code>drive.file</code>, dùng để tạo, tải lên, tải xuống và quản lý file, thư mục mà ứng dụng được cấp quyền truy cập. Công cụ xử lý nội dung file và metadata liên quan, như tên, kích thước và mã định danh, nhằm truyền và kiểm tra file. Công cụ không yêu cầu quyền đọc toàn bộ Drive, Gmail hoặc Google Photos.</p>
+<p>Người vận hành cấp quyền qua Google OAuth. Thông tin cấp quyền cần cho kết nối được lưu trong cấu hình rclone trên máy đã được người vận hành cấu hình; không đưa vào trang web công khai này.</p>
+<h2>2. Mục đích sử dụng</h2>
+<p>Dữ liệu Google Drive chỉ được sử dụng để lưu, lấy lại và kiểm tra backup. Công cụ không sử dụng dữ liệu đó cho quảng cáo, huấn luyện mô hình AI hoặc bán dữ liệu. Giai đoạn hiện tại chỉ thử nghiệm một file giả lập, chưa sao lưu database thật hoặc vận hành lịch tự động bằng cấu hình này.</p>
+<h2>3. Mã hóa và nơi lưu</h2>
+<p>File thử được mã hóa trên máy người vận hành trước khi gửi đến Google Drive. Khóa giải mã được giữ riêng và không tải lên cùng backup. Người vận hành chịu trách nhiệm bảo vệ khóa, cấu hình cấp quyền và các thiết bị liên quan.</p>
+<p>Google là nhà cung cấp nơi lưu file; hoạt động của Google tuân theo <a href="https://policies.google.com/privacy">Chính sách quyền riêng tư của Google</a>. Mã hóa không che toàn bộ metadata mà nhà cung cấp cần để lưu và truyền file.</p>
+<h2>4. Chia sẻ và bên thứ ba</h2>
+<p>Quy trình backup không chủ động công khai hay chia sẻ file backup với người khác. Công cụ dùng rclone để truyền file đến Google Drive. Thay đổi quyền chia sẻ hoặc mục đích sử dụng ngoài quy trình này cần được người vận hành xem xét riêng.</p>
+<p>Trang thông tin này được lưu trên GitHub Pages, không có biểu mẫu đăng nhập, mã phân tích truy cập hay công cụ quảng cáo do HLF Backup cài đặt. GitHub có thể xử lý dữ liệu kết nối phục vụ hosting theo <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">Chính sách quyền riêng tư của GitHub</a>.</p>
+<h2>5. Lưu giữ, xóa và thu hồi quyền</h2>
+<p>File giả lập hiện được giữ để kiểm tra recovery; chưa bật job tự động xóa. Chính sách giữ bản ngày, tuần cho dữ liệu vận hành chưa được triển khai và nghiệm thu. Người vận hành quản lý file thuộc ứng dụng và có thể thu hồi quyền tại <a href="https://myaccount.google.com/connections">trang kết nối của tài khoản Google</a>.</p>
+<p>Thu hồi quyền không tự xóa file đã lưu. Việc xóa backup không thay thế nghĩa vụ giữ lịch sử nghiệp vụ nếu sau này có dữ liệu thật. Trước khi đưa dữ liệu thật vào backup hoặc thay đổi quyền, mục đích, phạm vi người dùng, người vận hành cần xem xét và cập nhật chính sách.</p>
+<h2>6. Liên hệ</h2>
+<p>Liên hệ Nguyễn Nam Khánh qua <a href="https://github.com/Namkhasnh/hlf-backup-info/issues">repository hỗ trợ HLF Backup</a> hoặc thông tin hỗ trợ trên màn hình đồng ý Google. Không gửi secrets, khóa, token, file backup hoặc dữ liệu cá nhân qua issue công khai.</p>
+<p><a href="./">Trở về trang giới thiệu</a></p>
+</main>
+<footer><p>HLF Backup · Chính sách cho công cụ backup cá nhân.</p></footer>
+</body></html>

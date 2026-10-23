@@ -4,6 +4,7 @@ import {RestaurantSettingsRepository} from './settings.repository.js';
 import {openAt,ready,hoursInput,type Checklist} from './settings-policy.js';
 @Injectable()
 export class RestaurantSettings {
+ setupQueue(...a:Parameters<RestaurantSettingsRepository['setupQueue']>){return this.repository.setupQueue(...a);}
  constructor(private readonly repository:RestaurantSettingsRepository){}
  hours(...a:Parameters<RestaurantSettingsRepository['hours']>){return this.repository.hours(...a);}
  list(c:TransactionContext,after?:bigint){return this.repository.list(c,after);}

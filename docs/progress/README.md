@@ -62,3 +62,7 @@ V0.6: [P19 QR/refund decision](P19.md); implementation acceptance remains separa
 - V0.7: [P22 approved DEC-07](P22.md)→[P23 finance backend](P23.md)→[P24 connected reports/reconciliation](P24.md) accepted for local synthetic scope October21. [Approved DEC-08](../account-support-policy-proposal.md) and [P25](P25.md) now also accepted for local synthetic scope; no separate production/version-release review is inferred.
 
 - Finance verification/adoption boundary: [actual commands and limitations](../finance-local-verification.md). Retained migration and production/publication remain separate.
+
+- V0.8: [P26 accepted decision](P26.md); [P27 backend](P27.md)/[P28 UI](P28.md) accepted for local synthetic scope with deterministic and100case real Gemini evidence; [version/adoption boundary](V0.8.md) remains separate from retained/production adoption.
+
+- V0.9: [P29 partial DEC-10/11 approval/local preparation](P29.md), [P30](P30.md), [P31](P31.md), [P32 draft pilot](P32.md), [P33](P33.md) and [version status](V0.9.md). Requested downstream records are preparation/dependency tracking only; local independent synthetic recovery tooling has run, no dependent staging/pilot acceptance.

@@ -1,0 +1,19 @@
+import {id,money,object,invalid} from '../../common/http/input.js';
+import {HttpException} from '@nestjs/common';
+export const PROMPT_VERSION='recommendation-v1';
+export const REASONS=['Phù hợp nhóm món bạn chọn và ngân sách gồm phí giao.','Trong ngân sách gồm phí giao.'] as const;
+export const unavailable=():never=>{throw new HttpException({code:'AI_UNAVAILABLE'},503);};
+export const timeout=():never=>{throw new HttpException({code:'AI_TIMEOUT'},504);};
+export type Intent={point:bigint;budget:bigint;categories:string[]};
+export function intent(raw:unknown):Intent {const b=object(raw,['pickup_point_id','budget_vnd','preferences']),p=object(b.preferences,['category_ids']);const budget=money(b.budget_vnd);if(budget<1n||budget>1000000n||!Array.isArray(p.category_ids)||p.category_ids.length>3)return invalid();const categories=p.category_ids.map(id);if(new Set(categories).size!==categories.length)return invalid();return {point:BigInt(id(b.pickup_point_id)),budget,categories};}
+// Only fixed vocabulary survives. No substring fragments, numbers, catalog prose or arbitrary names.
+const WORDS=new Set('cơm bún phở mì miến bánh cháo xôi gà bò heo lợn cá tôm trứng đậu rau chay canh thịt nướng luộc chiên xào hấp kho nước khô cuốn sốt salad súp hải sản'.split(' '));
+export function safeLabel(value:string):string {const tokens=value.normalize('NFC').toLocaleLowerCase('vi').split(/[^\p{L}\p{M}]+/u);return [...new Set(tokens.filter(t=>WORDS.has(t)))].slice(0,8).join(' ');}
+export type Candidate={id:bigint;restaurant_id:bigint;name:string;restaurant_name:string;category_id:bigint;category_name:string;price_vnd:bigint;image_reference:string|null;fee:bigint};
+export type Projection={dish_id:string;name:string;category:string;preferred:boolean};
+export function ranked(rows:Candidate[],i:Intent):Candidate[]{return rows.filter(r=>r.price_vnd>=0n&&r.fee>=0n&&r.price_vnd+r.fee<=i.budget&&safeLabel(r.name)).sort((a,b)=>{const preference=Number(i.categories.includes(b.category_id.toString()))-Number(i.categories.includes(a.category_id.toString()));if(preference)return preference;const d=a.price_vnd+a.fee-b.price_vnd-b.fee;return d<0n?-1:d>0n?1:a.id<b.id?-1:a.id>b.id?1:0;}).slice(0,30);}
+export function project(rows:Candidate[],i:Intent):Projection[]{return rows.map((r,n)=>({dish_id:'c'+n,name:safeLabel(r.name),category:safeLabel(r.category_name),preferred:i.categories.includes(r.category_id.toString())}));}
+export function output(raw:string,projection:Projection[]):{dish_id:string;reason:string}[]{if(Buffer.byteLength(raw)>4096)return unavailable();let v:unknown;try{v=JSON.parse(raw);}catch{return unavailable();}if(!v||typeof v!=='object'||Array.isArray(v)||Object.keys(v).join(',')!=='suggestions')return unavailable();const s=(v as {suggestions:unknown}).suggestions;if(!Array.isArray(s)||s.length>3)return unavailable();const seen=new Set<string>();return s.map(x=>{if(!x||typeof x!=='object'||Array.isArray(x)||Object.keys(x).sort().join(',')!=='dish_id,reason')return unavailable();const r=x as {dish_id:string;reason:string};const c=projection.find(c=>c.dish_id===r.dish_id);if(!c||seen.has(r.dish_id)||!(REASONS as readonly string[]).includes(r.reason)||r.reason===REASONS[0]&&!c.preferred)return unavailable();seen.add(r.dish_id);return r;});}
+export type Limits={rpm:number;tpm:number;rpd:number};
+export function configuration():Limits {if(process.env.AI_ENABLED!=='true'||process.env.AI_FREE_TIER_VERIFIED!=='true'||!process.env.GEMINI_API_KEY||process.env.AI_MODEL!=='gemini-3.5-flash-lite')return unavailable();const read=(k:string)=>{const v=process.env[k];if(!v||! /^[1-9][0-9]{0,8}$/.test(v))return unavailable();return Number(v);};return {rpm:Math.min(100,read('AI_PROJECT_RPM')),tpm:read('AI_PROJECT_TPM'),rpd:Math.min(100,read('AI_PROJECT_RPD'))};}
+export function dayKey(at=new Date()){return new Intl.DateTimeFormat('en-CA',{timeZone:'America/Los_Angeles',year:'numeric',month:'2-digit',day:'2-digit'}).format(at);}

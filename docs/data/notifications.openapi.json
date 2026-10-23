@@ -1,0 +1,670 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "In-site onboarding notifications",
+    "version": "2026-10-22"
+  },
+  "servers": [
+    {
+      "url": "/api/v1"
+    }
+  ],
+  "paths": {
+    "/notifications": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Successful scoped operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data",
+                    "page"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Notification"
+                      }
+                    },
+                    "page": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "has_more",
+                        "next_cursor"
+                      ],
+                      "properties": {
+                        "has_more": {
+                          "type": "boolean"
+                        },
+                        "next_cursor": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "pattern": "^[1-9][0-9]{0,18}$"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Session invalid"
+          },
+          "403": {
+            "description": "Current authority or CSRF denied"
+          },
+          "404": {
+            "description": "Resource outside scope"
+          },
+          "422": {
+            "description": "Closed input validation failed"
+          }
+        },
+        "parameters": [
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "name": "unread",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "/notifications/summary": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Successful scoped operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Summary"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Session invalid"
+          },
+          "403": {
+            "description": "Current authority or CSRF denied"
+          },
+          "404": {
+            "description": "Resource outside scope"
+          },
+          "422": {
+            "description": "Closed input validation failed"
+          }
+        }
+      }
+    },
+    "/notifications/tasks": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Successful scoped operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data",
+                    "page"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Task"
+                      }
+                    },
+                    "page": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "has_more",
+                        "next_cursor"
+                      ],
+                      "properties": {
+                        "has_more": {
+                          "type": "boolean"
+                        },
+                        "next_cursor": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "pattern": "^[1-9][0-9]{0,18}$"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Session invalid"
+          },
+          "403": {
+            "description": "Current authority or CSRF denied"
+          },
+          "404": {
+            "description": "Resource outside scope"
+          },
+          "422": {
+            "description": "Closed input validation failed"
+          }
+        },
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "applications",
+                "delivery",
+                "restaurants"
+              ]
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          }
+        ]
+      }
+    },
+    "/notifications/setup/{restaurant_id}": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Successful scoped operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Guide"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Session invalid"
+          },
+          "403": {
+            "description": "Current authority or CSRF denied"
+          },
+          "404": {
+            "description": "Resource outside scope"
+          },
+          "422": {
+            "description": "Closed input validation failed"
+          }
+        },
+        "parameters": [
+          {
+            "name": "restaurant_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          }
+        ]
+      }
+    },
+    "/notifications/{id}": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Successful scoped operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Notification"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Session invalid"
+          },
+          "403": {
+            "description": "Current authority or CSRF denied"
+          },
+          "404": {
+            "description": "Resource outside scope"
+          },
+          "422": {
+            "description": "Closed input validation failed"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          }
+        ]
+      }
+    },
+    "/notifications/{id}/read": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Successful scoped operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Notification"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Session invalid"
+          },
+          "403": {
+            "description": "Current authority or CSRF denied"
+          },
+          "404": {
+            "description": "Resource outside scope"
+          },
+          "422": {
+            "description": "Closed input validation failed"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          }
+        ]
+      }
+    },
+    "/notifications/read-all": {
+      "post": {
+        "responses": {
+          "200": {
+            "description": "Successful scoped operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Summary"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Session invalid"
+          },
+          "403": {
+            "description": "Current authority or CSRF denied"
+          },
+          "404": {
+            "description": "Resource outside scope"
+          },
+          "422": {
+            "description": "Closed input validation failed"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "ids"
+                ],
+                "properties": {
+                  "ids": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 100,
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[1-9][0-9]{0,18}$"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Notification": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "type",
+          "title",
+          "body",
+          "href",
+          "restaurant_id",
+          "source_id",
+          "source_version",
+          "created_at",
+          "read_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "type": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "href": {
+            "type": "string",
+            "pattern": "^/"
+          },
+          "restaurant_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[1-9][0-9]{0,18}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[1-9][0-9]{0,18}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source_version": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "read_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "current_context": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "restaurant_id",
+              "status",
+              "description",
+              "href"
+            ],
+            "properties": {
+              "restaurant_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "status": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "href": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "Summary": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "unread_count"
+        ],
+        "properties": {
+          "unread_count": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      },
+      "Step": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "key",
+          "title",
+          "complete",
+          "status",
+          "href",
+          "description",
+          "assignee"
+        ],
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "complete": {
+            "type": "boolean"
+          },
+          "status": {
+            "enum": [
+              "Hoàn tất",
+              "Cần bạn làm",
+              "Chờ Admin",
+              "Chờ chủ quán"
+            ]
+          },
+          "href": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "assignee": {
+            "enum": [
+              "owner",
+              "admin"
+            ]
+          }
+        }
+      },
+      "Guide": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "restaurant_id",
+          "name",
+          "version",
+          "public_visible",
+          "orderable",
+          "is_open",
+          "steps"
+        ],
+        "properties": {
+          "restaurant_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "name": {
+            "type": "string"
+          },
+          "version": {
+            "type": "integer"
+          },
+          "public_visible": {
+            "type": "boolean"
+          },
+          "orderable": {
+            "type": "boolean"
+          },
+          "is_open": {
+            "type": "boolean"
+          },
+          "steps": {
+            "type": "array",
+            "minItems": 7,
+            "maxItems": 7,
+            "items": {
+              "$ref": "#/components/schemas/Step"
+            }
+          }
+        }
+      },
+      "Task": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "title",
+          "description",
+          "href"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "href": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

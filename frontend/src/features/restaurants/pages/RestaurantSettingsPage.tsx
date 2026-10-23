@@ -1,9 +1,10 @@
+import type {ReactNode} from 'react'
 import {useEffect,useRef,useState} from 'react'
 import {settingsApi,type Settings,type Hours} from '../api/settings.api'
 import {requestMessage} from '../../../shared/api/request'
 import {Input} from '../../../shared/ui/Input'
 
-export function RestaurantSettingsPage(){
+export function RestaurantSettingsPage({renderSetup}:{renderSetup?:(id:string,version:number)=>ReactNode}){
  const [data,setData]=useState<Settings|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[notice,setNotice]=useState('')
  const errorRef=useRef<HTMLParagraphElement>(null)
  useEffect(()=>{if(error)errorRef.current?.focus()},[error])
@@ -17,10 +18,10 @@ export function RestaurantSettingsPage(){
  }
  return <section className="settings-page"><h1>Thiết lập quán</h1>{error&&<p ref={errorRef} tabIndex={-1} role="alert">{error}</p>}<button onClick={load} disabled={busy}>Tải lại thiết lập</button>{notice&&<p role="status">{notice}</p>}{!data?<p role="status">Đang tải thiết lập…</p>:<>
  <h2>{data.name}</h2><p>{data.readiness==='ready'?'Đã đủ cấu hình':'Cần hoàn thiện cấu hình'} · {data.is_active?'Đã được kích hoạt':'Chờ Admin kích hoạt'}</p>
- <ul>{Object.entries(data.checklist).map(([key,value])=><li key={key}>{({profile:'Hồ sơ',hours:'Giờ mở cửa',menu:'Thực đơn',delivery:'Giao hàng đã duyệt',commission:'Hoa hồng đã đồng ý'} as Record<string,string>)[key]}: {value?'Đã đủ':'Còn thiếu'}</li>)}</ul>
- <ProfileForm key={'profile'+data.id} initial={data} busy={busy} save={body=>save(body,'hồ sơ quán')}/>
- <HoursForm key={'hours'+data.id} initial={data.hours} busy={busy} save={hours=>save({hours},'giờ mở cửa')}/>
- <button disabled={busy||(!data.is_accepting_orders&&(data.readiness!=='ready'||!data.is_active))} onClick={()=>void save({is_accepting_orders:!data.is_accepting_orders},'trạng thái nhận đơn')}>{data.is_accepting_orders?'Tạm ngừng nhận đơn':'Bật nhận đơn'}</button>
+ {renderSetup?.(data.id,data.version)}
+ <div id="profile"/><ProfileForm key={'profile'+data.id} initial={data} busy={busy} save={body=>save(body,'hồ sơ quán')}/>
+ <div id="hours"/><HoursForm key={'hours'+data.id} initial={data.hours} busy={busy} save={hours=>save({hours},'giờ mở cửa')}/>
+ <button id="accepting" disabled={busy||(!data.is_accepting_orders&&(data.readiness!=='ready'||!data.is_active))} onClick={()=>void save({is_accepting_orders:!data.is_accepting_orders},'trạng thái nhận đơn')}>{data.is_accepting_orders?'Tạm ngừng nhận đơn':'Bật nhận đơn'}</button>
  </>}</section>
 }
 

@@ -1,3 +1,4 @@
+import {NotificationsService,openingInstructions} from '../modules/notifications/public.js';
 import {PrivacyService} from '../modules/privacy/public.js';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
@@ -11,7 +12,7 @@ import { AuditService } from '../modules/audit/audit.service.js';
 @Injectable()
 export class OnboardingWorkflow {
  constructor(private readonly runner:TransactionRunner,private readonly accounts:OnboardingAccounts,private readonly restaurants:RestaurantOpening,
-  private readonly onboarding:OnboardingService,private readonly storage:PrivateStorage,private readonly audit:AuditService,private readonly privacy:PrivacyService) {}
+  private readonly onboarding:OnboardingService,private readonly storage:PrivateStorage,private readonly audit:AuditService,private readonly privacy:PrivacyService,private readonly notifications:NotificationsService) {}
 
  async submit(actor:bigint,body:unknown,key:unknown) {
   const input=applicationInput(body);const k=requestKey(key),hash=digest(canonical(input));
@@ -25,6 +26,8 @@ export class OnboardingWorkflow {
    await this.validInput(c,actor,input);
    const row=await this.onboarding.create(c,actor,input);
    await this.audit.record(c,{actorId:actor,action:'application.submitted',targetType:'application',targetId:row.id,changes:{terms_version:input.terms_version}});
+   await this.notifications.account(c,actor,'application.submitted:'+row.id,{type:'application.submitted',source_id:row.id,source_version:row.version,title:'Đã nhận hồ sơ mở quán',body:'Hồ sơ đang chờ Admin xét duyệt. Bạn có thể xem kết quả và lịch sử trong hồ sơ mở quán.',href:'/open-restaurant?application_id='+row.id});
+   await this.notifications.admin(c,'application.submitted:'+row.id,{type:'application.submitted',source_id:row.id,source_version:row.version,title:'Có hồ sơ mở quán cần duyệt',body:'Kiểm tra tài liệu và điều khoản của hồ sơ #'+row.id+'. Duyệt hồ sơ tạo quán cần thiết lập, chưa cho phép bán.',href:'/admin/applications?application_id='+row.id});
    const data=applicationDto({...row,review:null});await this.onboarding.finish(c,actor,'application.submit',k,data);return {data,replay:false};
   });
  }
@@ -92,6 +95,8 @@ export class OnboardingWorkflow {
      restaurantId=(await this.restaurants.create(c,row.applicant_id,row.payload as unknown as ApplicationInput)).id;
     }
     await this.onboarding.review(c,row.id,actor,decision,reason,restaurantId);
+    await this.notifications.account(c,row.applicant_id,'application.reviewed:'+row.id,{type:'application.'+decision,source_id:row.id,source_version:row.version+1,...(restaurantId?{restaurant_id:restaurantId}:{}),title:decision==='approved'?'Quán đã được duyệt — hoàn tất các bước để mở bán':'Hồ sơ mở quán đã bị từ chối',body:decision==='approved'?openingInstructions:'Lý do: '+reason+'. Xem hồ sơ để kiểm tra trước khi gửi hồ sơ mới.',href:'/open-restaurant?application_id='+row.id});
+    if(restaurantId)await this.notifications.admin(c,'restaurant.created:'+restaurantId,{type:'restaurant.created',restaurant_id:restaurantId,title:'Quán mới cần hoàn tất thiết lập',body:'Hồ sơ #'+row.id+' đã duyệt. Chủ quán cần thiết lập hồ sơ, giờ, món và đề xuất phí giao; Admin cần duyệt giao hàng, đề xuất hoa hồng và kích hoạt quán.',href:'/admin/restaurants?restaurant_id='+restaurantId});
     await this.audit.record(c,{actorId:actor,action:'application.reviewed',targetType:'application',targetId:row.id,changes:{decision,restaurant_id:restaurantId?.toString()??null}});
    }else if(row.review?.reason!==reason)return conflict('APPLICATION_STATE_CONFLICT');
    const data=applicationDto((await this.onboarding.application(row.id,c))!,true);await this.onboarding.finish(c,actor,'application.review',k,data);return data;
@@ -115,6 +120,7 @@ export class OnboardingWorkflow {
     front_image_id:input.front_image_id,business_document_id:input.business_document_id,terms_version:input.terms_version,terms_hash:input.terms_hash};
    const row=await this.onboarding.propose(c,actor,applicant,payload);
    await this.audit.record(c,{actorId:actor,action:'application.proposed',targetType:'application',targetId:row.id,changes:{terms_version:input.terms_version}});
+   await this.notifications.account(c,applicant,'application.invited:'+row.id,{type:'application.invited',source_id:row.id,source_version:row.version,title:'Bạn có lời mời mở quán cần xác nhận',body:'Admin đã chuẩn bị lời mời. Hãy kiểm tra thông tin và tự đọc, đồng ý điều khoản để Admin có thể tạo quán.',href:'/open-restaurant?application_id='+row.id});
    const data=applicationDto({...row,review:null},true);await this.onboarding.finish(c,actor,'application.propose',k,data);return {data,replay:false};
   });
  }
@@ -131,6 +137,8 @@ export class OnboardingWorkflow {
    if(row.status==='awaiting_confirmation') {
     if(row.version!==input.expected_version)return conflict('VERSION_CONFLICT');await this.eligible(c,actor);
     await this.validInput(c,actor,row.payload as unknown as ApplicationInput,false);await this.onboarding.confirm(c,row.id);
+    await this.notifications.admin(c,'application.confirmed:'+row.id,{type:'application.confirmed',source_id:row.id,source_version:row.version+1,title:'Lời mời đã được xác nhận — cần tạo quán',body:'Người được mời đã đồng ý điều khoản của hồ sơ #'+row.id+'. Kiểm tra và hoàn tất tạo quán.',href:'/admin/applications?application_id='+row.id});
+    await this.notifications.account(c,actor,'application.confirmed:'+row.id,{type:'application.confirmed',source_id:row.id,title:'Đã xác nhận lời mời mở quán',body:'Chờ Admin hoàn tất tạo quán. Việc xác nhận chưa tự cho phép bán hàng.',href:'/open-restaurant?application_id='+row.id});
     await this.audit.record(c,{actorId:actor,action:'application.confirmed',targetType:'application',targetId:row.id,changes:{terms_version:row.terms_version}});
    }else if(!row.consent_at)return conflict('APPLICATION_STATE_CONFLICT');
    const data=applicationDto((await this.onboarding.application(row.id,c))!);await this.onboarding.finish(c,actor,'application.confirm',k,data);return data;
@@ -152,6 +160,8 @@ export class OnboardingWorkflow {
     await this.validInput(c,row.applicant_id,row.payload as unknown as ApplicationInput,false);
     const restaurant=await this.restaurants.create(c,row.applicant_id,row.payload as unknown as ApplicationInput);
     await this.onboarding.review(c,row.id,actor,'approved',null,restaurant.id);
+    await this.notifications.account(c,row.applicant_id,'restaurant.created:'+restaurant.id,{type:'restaurant.created',restaurant_id:restaurant.id,source_id:row.id,title:'Quán đã được tạo — hoàn tất các bước để mở bán',body:openingInstructions,href:'/owner'});
+    await this.notifications.admin(c,'restaurant.created:'+restaurant.id,{type:'restaurant.created',restaurant_id:restaurant.id,title:'Quán mới cần hoàn tất thiết lập',body:'Quán đã tạo. Theo dõi checklist và xử lý phí giao, thỏa thuận hoa hồng, kích hoạt quán.',href:'/admin/restaurants?restaurant_id='+restaurant.id});
     await this.audit.record(c,{actorId:actor,action:'application.reviewed',targetType:'application',targetId:row.id,changes:{decision:'approved',restaurant_id:restaurant.id.toString()}});replay=false;
    }
    const result=(await this.onboarding.application(row.id,c))!;

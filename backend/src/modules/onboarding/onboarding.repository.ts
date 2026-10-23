@@ -5,6 +5,7 @@ import type { ApplicationInput } from './contract.js';
 @Injectable()
 export class OnboardingRepository {
  constructor(private readonly prisma:PrismaService) {}
+ inboxApplications(c:TransactionContext,applicant?:bigint,after?:bigint,pending=false){return c.db.restaurantApplication.findMany({where:{...(applicant?{applicant_id:applicant}:{}),...(after?{id:{lt:after}}:{}),...(pending?{status:{in:['submitted','awaiting_confirmation']}}:{})},orderBy:{id:'desc'},take:21,select:{id:true,kind:true,status:true,restaurant_id:true,version:true}});}
  accountApplications(c:TransactionContext,applicant:bigint){return c.db.restaurantApplication.findMany({where:{applicant_id:applicant},select:{id:true,status:true}});}
  async hasObject(key:string) {return Boolean(await this.prisma.onboardingEvidence.findUnique({where:{object_key:key}}));}
  async cleanupCandidates() {

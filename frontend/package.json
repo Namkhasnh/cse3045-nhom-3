@@ -24,7 +24,8 @@
     "test:payments": "node scripts/browser-payments.mjs",
     "test:finance": "node scripts/browser-finance.mjs",
     "test:finance-unit": "node --test test/finance.test.mjs",
-    "test:administration": "node scripts/browser-administration.mjs"
+    "test:administration": "node scripts/browser-administration.mjs",
+    "test:recommendations": "node scripts/browser-recommendations.mjs"
   },
   "dependencies": {
     "@fontsource/be-vietnam-pro": "5.3.0",

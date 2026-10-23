@@ -298,7 +298,7 @@ stateDiagram-v2
 | Quán delivers itself; no driver accounts | Assumed, fixed |
 | Maximum one restaurant per account; exactly one responsible manager per restaurant | Decided October 18, 2026 |
 | One order = one restaurant | Assumed, fixed |
-| AI/LLM provider | **TBD** |
+| AI/LLM provider | Google Gemini free, `gemini-3.5-flash-lite`; [approved DEC-09](ai-v08-contract.md) |
 | Map/location provider | **TBD** |
 | Server hosting and infrastructure configuration | **TBD** |
 | NFR thresholds | Proposed acceptance targets; measure before release |
@@ -345,3 +345,13 @@ DEC-06 approved October20: static verified QR/order snapshots; full per-transfer
 [DEC-07.2026-10-21.v1](finance-policy-proposal.md) is explicitly approved and owns monthly membership/finalization, next-period adjustment booking, full append-only receipt reversal/replacement, signed account credit and collection caps, supporting-reference access, exact report fields/cutoffs, recovery and Vietnamese finance addendum. It supersedes the DEC-07 financial TBDs above only. Existing partner terms/consent hashes remain immutable; real publication/adoption is separate. FIN-03/04/05 implementation evidence follows P22→P23→P24; DEC-08 controls remain gated at P25.
 
 US18/25/26, FR12, NFR07 and AC17 are refined by [approved DEC-08](account-support-policy-proposal.md): restricted obligations sessions after suspension; six-state support and elapsed targets; bounded audited private reads; indefinite pseudonymous business history with separately erasable personal payloads/holds. This explicitly refines contact-snapshot lifetime without changing immutable money/business facts. Synthetic implementation only; production gates remain separate.
+
+## Onboarding notifications extension — approved October 22, 2026
+
+US27 / FR13 / AC18: authenticated applicants, current managers and the sole MFA Admin receive durable in-site notifications for application submission/review/manual invitation/confirmation/creation, delivery proposal/review, commission proposal/acceptance, readiness transitions and restaurant activation. Approval guidance lists every setup requirement, responsible actor and actionable link. A bell shows unread count/recent messages; a mailbox supports pagination, unread filtering, detail and explicit read/read-loaded actions. Reading never consents, activates or submits a business command.
+
+Current setup guidance is distinct from immutable event content and separates public visibility (active+ready) from orderability (also accepting+open). Admin has paginated current tasks. Existing partners/applicants receive one explicitly current-state summary, never fabricated historical events. No email/chat/browser push or order/finance notifications are added. [Notification contract](notifications-contract.md) owns interfaces, storage and evidence boundaries.
+
+## Approved V0.8 clarification — October22
+
+[DEC-09](ai-v08-contract.md) owns delivery-inclusive one-portion budget1–1000000 VND, category-only soft preferences, free-tier provider content-use disclosure, USD0/no billing escalation and bounded operational/evaluation controls. No application conversation/training storage; Google free-tier content improvement/human review is explicitly accepted for minimized non-personal catalog data. Manual ordering remains independent.

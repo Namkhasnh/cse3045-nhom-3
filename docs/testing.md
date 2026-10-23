@@ -329,3 +329,11 @@ PAY-01/02, RACE-01, AUTH-02, DATA-01, HIST-01 and UI-01/02: [P20](progress/P20.m
 P25/DEC-08 requires USER-01/SUPPORT-01/AUDIT-01/AUTH-02/ADMIN-02: revoked old sessions versus restricted fresh sessions, suspension/write races, owner/buyer nested denial, six-state deadlines/reply/retry, audit redaction/access rollback/cursors, holds versus cleanup, separated personal data and restore tombstones. Synthetic and production evidence must remain distinct.
 
 P25 enabled HTTP schemas and exact synthetic commands are in [account/support verification](account-support-local-verification.md) and [progress](progress/P25.md). Its runtime/Chrome checks distinguish restored DB metadata from production backup guarantees; code generation and HTTP mocks are not erasure/race proof.
+
+## Onboarding notification cases
+
+NOTIFY-01 covers real MySQL9.2.0 scoped inbox/read-loaded races, bootstrap deduplication, transactional event rollback and retries. NOTIFY-02 covers applicant/owner/Admin browser transitions, actionable guidance, private sessions, loading/empty/error, keyboard,360px and desktop. See [contract](notifications-contract.md) and [verification](notifications-verification.md); source inspection is not browser evidence.
+
+## V0.8 AI evidence
+
+[Approved DEC-09](ai-v08-contract.md) resolves AI-04 budget/quantity/preferences and AI-02 free-tier disclosure/minimization. [Verification](ai-local-verification.md) owns policy/gateway unit tests, closed OpenAPI HTTP contracts, real MySQL9.2 quota/lease/revalidation/two-process/restricted-runtime checks and real Chrome five-width failure/manual-checkout checks. `test:ai-evaluation` is a separate100case resumable synthetic Gemini live comparison; mock safety/Chrome results do not establish quality or PERF-02. Missing key/project quota remains NOT CONFIGURED, live evaluation NOT RUN.

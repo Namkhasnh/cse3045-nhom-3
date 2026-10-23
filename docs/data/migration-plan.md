@@ -40,3 +40,15 @@ The October20 V0.5 implementation authorizes disposable MySQL9.2.0 tests only. M
 ## V0.6 adoption remains separate
 
 P20 forward QR/refund migrations are rehearsed only on new disposable `test_*` MySQL9.2.0 targets. Retained local DB lacks V0.5; this task authorizes neither V0.5 nor V0.6 adoption there. A future explicitly authorized task must verify backup/restore, rehearse the complete chain, preserve unknown historical QR/payment facts and review grants before retained deployment. No reset, destructive push or applied-SQL rewrite.
+
+## October 21 explicit local auth repair adoption
+
+The user subsequently authorized backup/restore verification and deployment of all eight outstanding migrations to `hlf_dev_flow` on loopback3307 to repair login's missing `accounts.credentials_blocked` column. The [auth repair evidence](../auth-followup.md#october-21-local-login-repair) supersedes the local schema status in the two historical sections above: all 26 migrations are now applied with reviewed runtime grants. Backup restoration, complete-chain rehearsal, applied checksums and preservation of all original 38 tables/158 rows were verified before/after deployment. No old receipt, consent, support, private payload or compromised-credential fact was invented. Existing business journeys, retained plaintext conversion, privacy maintenance and production release remain separate from this schema/auth verification.
+
+## October 22 local notification extension
+
+The explicit notification implementation request adds `20261022000000_notifications` without changing original business rows. [Verification](../notifications-verification.md) records local backup/restore, checksum and forward rehearsal,57 preserved original business tables/173 rows, restricted INSERT/UPDATE(read_at) grants and legitimate first-access summaries. Logical mailbox references deliberately avoid implicit account FK lock inversion; there is no historical-event backfill or retained reset. Production release remains separate.
+
+## V0.8 AI metadata adoption
+
+`20261022010000_recommendations` creates metadata-only admission/counter/lease tables and singleton id1; applies no updates to original business rows. Initial full-chain rehearsal and restricted grants were tested on disposable MySQL9.2.0. [Verification](../ai-local-verification.md) separates source inspection, migration execution and live-provider evidence. Subsequent explicit local adoption authorization applied this single migration and narrow metadata grants after verified backup/restore; [receipt](../ai-local-adoption-review.md) records unchanged58 original tables/173 rows and27 prior checksums. Real100call quota was carried forward; backend restarted. Production adoption remains unauthorized/unperformed; example configuration is disabled by default.

@@ -4,6 +4,7 @@ import type {Hours} from './settings-policy.js';
 import {conflict} from '../../common/http/input.js';
 @Injectable()
 export class RestaurantSettingsRepository {
+ setupQueue(c:TransactionContext,after?:bigint){return c.db.restaurants.findMany({where:{OR:[{readiness:'setup_required'},{is_active:false},{is_accepting_orders:false}],...(after?{id:{lt:after}}:{})},orderBy:{id:'desc'},take:21,select:{id:true,name:true,readiness:true,is_active:true,is_accepting_orders:true}});}
  async list(c:TransactionContext,after?:bigint){return c.db.restaurants.findMany({where:after?{id:{gt:after}}:{},orderBy:{id:'asc'},take:21,select:{id:true,name:true,readiness:true,is_active:true,version:true}});}
  async owned(c:TransactionContext,actor:bigint){return c.db.restaurants.findUnique({where:{owner_id:actor}});}
  async lock(c:TransactionContext,id:bigint,actor:bigint,admin=false){

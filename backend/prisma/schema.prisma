@@ -970,3 +970,52 @@ model OrderPrivatePayload {
  deleted_at DateTime? @db.DateTime(3)
  @@map("order_private_payloads")
 }
+
+// Logical mailbox reference, checked by authenticated workflows; no FK locks on
+// accounts after business locks. Accounts are retained and never hard-deleted.
+model Notification {
+  id BigInt @id @default(autoincrement())
+  recipient_key String @db.VarChar(40)
+  event_key String @db.VarChar(160)
+  type String @db.VarChar(64)
+  title String @db.VarChar(255)
+  body String @db.Text
+  href String @db.VarChar(255)
+  restaurant_id BigInt?
+  source_id BigInt?
+  source_version Int? @db.UnsignedInt
+  created_at DateTime @default(now()) @db.DateTime(3)
+  read_at DateTime? @db.DateTime(3)
+  @@unique([recipient_key,event_key],map:"notification_event_unique")
+  @@index([recipient_key,id],map:"notification_inbox")
+  @@index([recipient_key,read_at,id],map:"notification_unread")
+  @@map("notifications")
+}
+
+// DEC-09 metadata only; no runtime prompt/output persistence.
+model AiAdmission {
+ id Int @id @db.TinyInt
+ @@map("ai_admission")
+}
+model AiCounter {
+ subject String @db.VarChar(80)
+ window_key String @db.VarChar(32)
+ used_count Int @default(0) @db.UnsignedInt
+ updated_at DateTime @default(now()) @db.DateTime(3)
+ @@id([subject,window_key])
+ @@index([updated_at],map:"ai_counter_cleanup")
+ @@map("ai_counters")
+}
+model AiLease {
+ id String @id @db.Char(36)
+ expires_at DateTime @db.DateTime(3)
+ created_at DateTime @default(now()) @db.DateTime(3)
+ finished_at DateTime? @db.DateTime(3)
+ outcome String? @db.VarChar(16)
+ latency_ms Int? @db.UnsignedInt
+ input_tokens Int? @db.UnsignedInt
+ output_tokens Int? @db.UnsignedInt
+ @@index([expires_at],map:"ai_lease_expiry")
+ @@index([created_at],map:"ai_lease_cleanup")
+ @@map("ai_leases")
+}

@@ -4,6 +4,7 @@ import { OnboardingRepository } from './onboarding.repository.js';
 @Injectable()
 export class OnboardingService {
  constructor(private readonly repository:OnboardingRepository) {}
+ inboxApplications(...a:Parameters<OnboardingRepository['inboxApplications']>){return this.repository.inboxApplications(...a);}
  accountApplications(...args:Parameters<OnboardingRepository['accountApplications']>){return this.repository.accountApplications(...args);}
  propose(...args:Parameters<OnboardingRepository['propose']>) {return this.repository.propose(...args);}
  confirm(...args:Parameters<OnboardingRepository['confirm']>) {return this.repository.confirm(...args);}

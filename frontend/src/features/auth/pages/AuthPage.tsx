@@ -130,7 +130,7 @@ export function AuthPage({ mode, onLogin, onNavigate }: {
           onChange={event => setDisplayName(event.target.value)} maxLength={200} required />}
         <Input id="username" error={fieldErrors['username']} label="Tên đăng nhập" autoComplete="username" value={username}
           onChange={event => setUsername(event.target.value)} minLength={3} maxLength={32} required
-          pattern="[A-Za-z0-9][A-Za-z0-9._-]{2,31}"
+          pattern="[A-Za-z0-9][A-Za-z0-9._\-]{2,31}"
           title="3–32 ký tự ASCII: chữ, số, dấu chấm, gạch dưới hoặc gạch ngang; không dùng email" />
         {register && <p className="form-help">Dùng tên đăng nhập 3–32 ký tự, không dùng email.</p>}
         {register && <Input id="email" error={fieldErrors['email']} label="Email" type="email" autoComplete="email" value={email}

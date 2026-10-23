@@ -42,7 +42,7 @@ export class ApiExceptionFilter implements ExceptionFilter {
       response.setHeader('Retry-After', String(object.retry_after));
     }
     const fieldErrors = Array.isArray(object.field_errors) ? object.field_errors as FieldError[] : [];
-    const code = (status < 500 || (status === 503 && ['PASSWORD_CHECK_UNAVAILABLE', 'EMAIL_UNAVAILABLE', 'EMAIL_NOT_CONFIGURED'].includes(object.code as string))) &&
+    const code = (status < 500 || (status === 503 && ['PASSWORD_CHECK_UNAVAILABLE', 'EMAIL_UNAVAILABLE', 'EMAIL_NOT_CONFIGURED', 'AI_UNAVAILABLE'].includes(object.code as string))) &&
       typeof object.code === 'string'
       ? object.code : codes[status] ?? 'INTERNAL_ERROR';
     const message = status === 400 ? 'Malformed request.'
@@ -80,7 +80,7 @@ export function configureApiHttp(app: INestApplication): void {
   app.useGlobalInterceptors(new ApiEnvelopeInterceptor());
   app.useGlobalFilters(new ApiExceptionFilter());
   app.use((request: { method: string; originalUrl: string; headers: Record<string, string | undefined> }, response: { status(code: number): { json(body: unknown): void }; setHeader(name: string, value: string): void }, next: () => void) => {
-    if (/^\/api\/v1\/(support(?:\/|$)|privacy(?:\/|$)|orders(?:\/|$)|auth(?:\/|$)|profile(?:\/|$)|restaurant-applications(?:\/|$)|onboarding-evidence(?:\/|$)|delivery-quotes(?:\/|$)|owner(?:\/|$)|admin(?:\/|$))/.test(request.originalUrl)) response.setHeader('Cache-Control', 'no-store');
+    if (/^\/api\/v1\/(ai\/recommendations(?:[/?]|$)|notifications(?:[/?]|$)|support(?:\/|$)|privacy(?:\/|$)|orders(?:\/|$)|auth(?:\/|$)|profile(?:\/|$)|restaurant-applications(?:\/|$)|onboarding-evidence(?:\/|$)|delivery-quotes(?:\/|$)|owner(?:\/|$)|admin(?:\/|$))/.test(request.originalUrl)) response.setHeader('Cache-Control', 'no-store');
     if (/^\/api\/v1\/(commission-entries|commission-adjustments|settlements|reports)(?:[/?]|$)/.test(request.originalUrl)) response.setHeader('Cache-Control','no-store');
     if (/^\/api\/v1\/restaurants\/[1-9][0-9]*\/commission-policy/.test(request.originalUrl)) response.setHeader('Cache-Control','no-store');
     if (['GET', 'HEAD', 'OPTIONS'].includes(request.method)) return next();

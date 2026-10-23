@@ -458,3 +458,15 @@ Approved [DEC-07](../finance-policy-proposal.md) drives `/owner/finance` and sol
 ## V0.7 account, support and audit
 
 [P25 contract](../account-support-v07-contract.md) connects buyer support/privacy in the student shell and manager/Admin pages in their distinct shells. Restricted navigation displays only obligations; pending acceptance/configuration remains unavailable. Native confirmation dialogs show concrete targets; actor-bound saved intents survive reload/account changes and stale private replies are discarded. Audit reuses the original “Admin: Nhật ký hành động” reference pattern while removing fictional contacts/rates/raw evidence and using bounded filters. No asset or identity change.
+
+## Onboarding notification interface
+
+[Notifications](../notifications-contract.md) add one session-scoped bell, unread badge, disclosure preview, explicit mailbox/read-loaded controls, current setup checklist and paginated Admin tasks. Keep cream/orange/Be Vietnam Pro and distinct shells. App composes checklist slots into onboarding/restaurant features. Reading never implies consent; show separate current visibility/orderability and waiting actor.
+
+## V0.8 recommendation implementation
+
+[Approved DEC-09](../ai-v08-contract.md): `/recommendations` accepts one-portion delivery-inclusive budget and up to3 existing category preferences; no free text. Show provider-use notice before explicit submission, current backend estimates, existing cart-switch consent and fresh quote/checkout. A five-item buyer navigation includes AI; manual ordering remains available during AI failure. [Verification](../ai-local-verification.md) records connected Chrome evidence and missing live-provider acceptance.
+
+## Scoped MVP ordering UX follow-up
+
+Manager/Admin navigation marks matching routes with `aria-current=page`, treating `/admin/reports` as the finance alias. Owner order pagination includes “Về đơn mới nhất”; fixed pickup snapshot name/text display once when identical. [Three-role verification](../mvp-ordering-verification.md) records actual Chrome mobile/desktop/keyboard/dialog/native-submit evidence and accessibility limits; no theme/permission policy change.

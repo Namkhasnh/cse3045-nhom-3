@@ -7,6 +7,10 @@ import type {Rate} from './policy.js';
 @Injectable()
 export class DeliveryRepository {
  constructor(private readonly db:PrismaService){}
+ recommendationPoint(c:TransactionContext,id:bigint){return c.db.pickup_points.findUnique({where:{id}});}
+
+ async pendingSetup(c:TransactionContext,r:bigint,location:string){const p=await c.db.deliveryProposal.findFirst({where:{restaurant_id:r,status:'submitted'},orderBy:{id:'desc'}});if(!p||p.location_hash!==location)return false;const policy=await c.db.delivery_policies.findUnique({where:{restaurant_id:r}});if((policy?.version??0)!==p.policy_version)return false;const rates=p.payload as unknown as Rate[],points=await c.db.pickup_points.findMany({where:{id:{in:rates.map(x=>BigInt(x.pickup_point_id))}}});return rates.every(x=>points.some(p=>p.id===BigInt(x.pickup_point_id)&&p.is_active&&p.version===x.point_version));}
+ pendingQueue(c:TransactionContext,after?:bigint){return c.db.deliveryProposal.findMany({where:{status:'submitted',...(after?{id:{lt:after}}:{})},orderBy:{id:'desc'},take:21});}
  async pointIds(c:TransactionContext,ids:bigint[]){return (await c.db.restaurant_pickup_rates.findMany({where:{restaurant_id:{in:ids}},select:{pickup_point_id:true}})).map(x=>x.pickup_point_id);}
  async points(c:TransactionContext|undefined,admin=false,after?:bigint){return (c?.db??this.db).pickup_points.findMany({where:{...(!admin?{is_active:true}:{}),...(after?{id:{gt:after}}:{})},orderBy:{id:'asc'},take:101});}
  async lockPoints(c:TransactionContext,ids:bigint[]){for(const id of [...new Set(ids)].sort((a,b)=>a<b?-1:1))await c.db.$queryRaw`SELECT id FROM pickup_points WHERE id=${id} FOR UPDATE`;return c.db.pickup_points.findMany({where:{id:{in:ids}}});}

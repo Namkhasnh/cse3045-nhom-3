@@ -1,0 +1,447 @@
+{
+  "result": "PASS",
+  "synthetic": true,
+  "started_at": "2026-10-22T03:17:09.490Z",
+  "source_head": "39b7ea50362472ad31bb4b6e9c60c44f5c1d7f54",
+  "migration_sha256": {
+    "20261016000000_foundation_accounts_audit": "6e730d66eefaed1707a8cad2b84455d1647c03f99c00399a857fd0cdd91897f6",
+    "20261017000000_account_version": "8d9fe17fc10273fb9f4dad57012ab240a03ea949b752a8787750d0eaeb2addab",
+    "20261017000001_auth_login_limits": "d67b1ecdda4b0794cc65dcbe3cfa5867fb97b3adf8e64cd92fc2448658dfd83a",
+    "20261017000002_email_role_requests": "f8537154924739cc3f1d6c8882764316cc967bc61b36474598018cc8ef91158a",
+    "20261017000003_dev_order_flow": "43cb84eed66f9fda84fab83c0d6f680fa4e743ed9a8eaadd6b7cc805a1024de2",
+    "20261017000004_order_payment_history": "7365ecc5bd48d5dc0aeb3ab2ea88869d5c91c64a676e1c9586094331241c2e5c",
+    "20261018000000_restaurants": "d39c15fb2803119b3f121674de2b7feb6552357953e28f38e3e5d8581952bda8",
+    "20261018010000_dishes": "38f18ece827b7e6595a0fe2b7b96aa79cb6b96d1f382dd425b63352249a74643",
+    "20261019000000_capabilities_mfa_readiness": "ffaef1f82e615626644d9a7292b81b4db0190f07a910568c560e332ccc2a2706",
+    "20261019010000_mfa_limits": "8e7addc8d48d72b7e6686ff402420d9a3b180e3d70bca4c79c46a032787e663b",
+    "20261019020000_operator_requests": "0c0712a874302972ac88b18c0cae5b8041fbab4a9a18528104dd3fac1ce9e1d2",
+    "20261019030000_onboarding": "5851ede3f2b795606f69b46ad288d651c0f4a831d4fe6fd6a40d7109b1aafab9",
+    "20261019031000_evidence_cleanup": "7fd7ad89ab4123a08a0bc469cec519e6b552cb04b1de80d35d8b7320625043d4",
+    "20261019040000_delivery_setup": "521b76b95ece23f78039770bcb96607dc89d81bdd6583622ad75bf7131cac9c8",
+    "20261020000000_delivery_location_revision": "76bca0d21aa7220fe36bf5643e55b1e3bf5c84ed960bd5bcd65bd4a280694951",
+    "20261020010000_dish_media": "ec57fee096a5ceb76fb97dfcf37ee36f163a01037d7b00d5c20ad1d39f17d1e5",
+    "20261020011000_media_reference_scope": "bfba30ef704ca8e332b156e3cf2fdc9dda638026771fa44c513808a0b7b5af15",
+    "20261020020000_commission_agreements": "f3e3070d01f984270155df1b3d8b6c78feb30f9b2c86ece3f2dc86ecef790dd9",
+    "20261020030000_cash_orders": "356df1977aedb63c698ab1ee6a3d6eeb9d635e6f129728bbe96cebd5c08a3d84",
+    "20261020040000_cash_fulfillment": "991ec2b3b23c1b727671cc33fbda2d4f72a135a64c9b19807487ae7c10861605",
+    "20261020050000_qr_payments": "7d64fb7d6d9cfe21a67dcf94c2657b5c1c865b5dbeb89b160470e02d98209b51",
+    "20261020051000_payment_reference_scope": "cf757c031b580d98eeb48084fa5a0dc4cd813e0396eb93084a38c4103c006907",
+    "20261021000000_finance_ledger": "f6e1ab691543ddf030f32550042e7ae3c9396d2d6fb5b0ddb82463956f38d7ae",
+    "20261021010000_account_support": "0be90137391682394dac2b72aef3a5a0b07573095cc6a475bf1ef1b7c197bb2a",
+    "20261021011000_compromised_credentials": "a6e8a2dfb4bd861c58079a2c4f66104e2d3ac9b67cb82567d7060ca0a2ef0689",
+    "20261021012000_support_resolution_slot": "b8a50831fe47fd686df5af1117ce9f00a2af6d6388fb0fa566faec29840945ad",
+    "20261022000000_notifications": "47117e3b41a5fcd19159e14f580c860519abc56f94e46a8658ececec1cd297dc",
+    "20261022010000_recommendations": "8494e687402d128cac66f95c9a3598d8b9fe885e7cf2f133f8c41358d8cc305f"
+  },
+  "scope": "LOCAL PREPARATION; not P30 staging acceptance or operational RPO/RTO",
+  "mysql": {
+    "version": "9.2.0",
+    "log_bin": "1",
+    "sync_binlog": "1",
+    "flush_commit": "1"
+  },
+  "empty-bootstrap": "PASS",
+  "empty-forward": "PASS",
+  "legacy-upgrade": "PASS",
+  "restore": {
+    "result": "PASS",
+    "tables": 62,
+    "rows": 43,
+    "encrypted_sha256": "8fb3c6a5c28052ab9a6b079b0e1221b256e93a24983fce7ea6491c0a0fa1edbd",
+    "manifest": {
+      "_prisma_migrations": {
+        "count": 28,
+        "data": "aeac57eb15a8d994a865d0941233458368e92f3bdd006074d80e949514755f82",
+        "schema": "41e2571492b6ef0bb2c0b339edbad7a6a22d11cf737486cd6131cc7c96462734"
+      },
+      "account_availability_events": {
+        "count": 0,
+        "data": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema": "b909a955b0f9a5e4af554bd960f9b8becb0fb707d0879d25d6c17a41e9a7a5a2"
+      },
+      "account_role_requests": {
+        "count": 1,
+        "data": "807e9e641574945bedf4ffb7f58cd1b309fa88bdb1cd75b880aca66e9f72fb3d",
+        "schema": "97bf455a16e8a7e7695d0def5680f20d8775865acdc69cef40b5a51ae5f447d7"
+      },
+      "accounts": {
+        "count": 1,
+        "data": "fbc9abda5823ec5e6773f40e9f25e63a5529b09f42baf4fea80c32fc7c3d21ac",
+        "schema": "64b97c8a0391af64c6db90ab1cea44a35adee2278bf9b9f0049bf1f9caf2412f"
+      },
+      "admin_authority": {
+        "count": 0,
+        "data": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema": "d9e7b318708828428fed07fbd1f010f81fe687c6afffe8af0eb2336b741ef349"
+      },
+      "admin_challenges": {
+        "count": 0,
+        "data": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema": "2682387c3f52a7e09d9f50f64e38e2b3bc459919461a7bb0fb5ec6b9a6e60dc0"
+      },
+      "admin_factors": {
+        "count": 0,
+        "data": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema": "0275cdafa895a7a23c25f65b123a89bf947134016fe4919d9704aaad7726df5b"
+      },
+      "admin_mfa_limits": {
+        "count": 0,
+        "data": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema": "da53337d4b2fb377468c9a0439b71e3b74fb04edc14999ae3f30d07f70451e2a"
+      },
+      "admin_operator_requests": {
+        "count": 0,
+        "data": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema": "416727eca93d9219487b2721b273df1f2bbeebb3b83969b239970ffc74d2bcdd"
+      },
+      "admin_recovery_codes": {
+        "count": 0,
+        "data": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema": "ba5770361c88ce53fac5917037751f6d3d9dbd9fee27812e9e2d8981e6711f06"
+      },
+      "ai_admission": {
+        "count": 1,
+        "data": "2382d8ae2c7ad46b1e01f82007505427d4485cb5b825bcd9a73bb9c85996a807",
+        "schema": "872f2312015775f25785d68889cacd907c58f2f9bc9b612e62a40db260e7d14c"
+      },
+      "ai_counters": {
+        "count": 0,
+        "data": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema": "9b186da69bb1b57a4ad47cb43f5d3a85b14828c1335a514119449fbab50bf5da"
+      },
+      "ai_leases": {
+        "count": 0,
+        "data": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema": "5ef26a0a11d3ea242cfcae54228f179bc88dbd4aaa762c647b17b643e47024ac"
+      },
+      "application_reviews": {
+        "count": 0,
+        "data": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema": "27b152a3f482bccdb28ea2553f9854aa6741488b81cd34c2acb1fd95cfff3941"
+      },
+      "audit_logs": {
+        "count": 0,
+        "data": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema": "0476c95051123cc5ccad7042d87648c816283cf6485f9ca28355ae93ab720ae2"
+      },
+      "auth_login_limits": {
+        "count": 0,
+        "data": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema": "331fc604306d608c816141683938b4f59a873f4149dd4970fc55f5076bacb2b7"
+      },
+      "commission_acceptances": {
+        "count": 0,
+        "data": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema": "68f3c3dc8113a7a96484d772791826ba331a20ca5772ae965cdc3e12e1c8308d"
+      },
+      "commission_entries": {
+        "count": 1,
+        "data": "9c248d31e3432447284391be66f41378271515c5f946b076815b143ee2a904c8",
+        "schema": "5339a8659993c37a782710bc716df59cf928e619435a867c320fccafc8cdb832"
+      },
+      "commission_policies": {
+        "count": 1,
+        "data": "e43dde4183feb5f266e183a906e6c550e073ef7c489a898bbe9803268ed4666b",
+        "schema": "b997cb17381eab3916d793c33acf9b242c88c8a26f85c099603c6b9ad1d9374e"
+      },
+      "commission_proposals": {
+        "count": 0,
+        "data": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema": "e6773977f5412c00895107164fde71b922d65fef84d82ab8160633588b628777"
+      },
+      "data_holds": {
+        "count": 0,
+        "data": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema": "f31fda2a6f522d6e28a769bc5a1f965099390d9e48f17e5fc9962395d6cf2bf0"
+      },
+      "delivery_policies": {
+        "count": 1,
+        "data": "67a0d25eb06c8b01a976290ef2fdb978b31d82a80b9d038202cebabbd4f2cdf5",
+        "schema": "a81a0569601634469a4721087cbf1d3d2fcc9c8619f6b275a2aca3aba9e2c2ac"
+      },
+      "delivery_proposals": {
+        "count": 0,
+        "data": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema": "dc790aa6f96cab547a20a0766dbaabc66ea98c4ad5aabcae1ee83459f15bafd4"
+      },
+      "delivery_quotes": {
+        "count": 0,
+        "data": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema": "8cd3d1b941781e6879b61638fd137f0fcd4882da308218de1e79bf3b0eca6b65"
+      },
+      "delivery_reviews": {
+        "count": 0,
+        "data": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema": "30ca1a3abfdf6afccfd12a21ff2a38a21733f841fc3b9295a5701ad6e375d60b"
+      },
+      "dish_categories": {
+        "count": 1,
+        "data": "76cd82b88fd47eff65cc2e3a2a4241d7ec4f47a396a0d68b72aa5b73bfbdbc52",
+        "schema": "439f7740845311e2de551490b5056877a2af83f22b6d7e4d860f13673946bd33"
+      },
+      "dish_media": {
+        "count": 0,
+        "data": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema": "9273270929bc85925cbbe6ba584dd78a60b3fb598400cab7f2bad51a7207f39a"
+      },
+      "dishes": {
+        "count": 1,
+        "data": "33c5bd6af37900c5e977692b1b0417b6b03f944bd73389af002dce01fbdf9eb3",
+        "schema": "7ba10f6e6b588a4f7de2889de40a1290be91fc330de7c2f27a227914052f7bf0"
+      },
+      "erasure_requests": {
+        "count": 0,
+        "data": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema": "b76746e555d35581b084f196000ae57bb1361e1e9b4129e9c7d78755798c9500"
+      },
+      "financial_requests": {
+        "count": 0,
+        "data": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema": "5c81cff092de7eff2dfe42cc3dd8ef19704313bdb32647021329c2029a7eb138"
+      },
+      "notifications": {
+        "count": 0,
+        "data": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema": "feadb8a2841af1cdb2acfbfbc02fcd01b71278597caa02b9f6167e1e96236bb1"
+      },
+      "onboarding_evidence": {
+        "count": 0,
+        "data": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema": "44ab7a7e7b2d8b9df8251549fa0efa5099228d99243fad3e0e8f4fbb4912aa21"
+      },
+      "onboarding_requests": {
+        "count": 0,
+        "data": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema": "c20a0f6797a77dd3e53ddd93810fef4e1c04c422cc432fa39d0c4905c9c9ff98"
+      },
+      "order_food_ready": {
+        "count": 0,
+        "data": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema": "fcdfd85d5c8646a01a65e98057ac657609911fceb8756397054125ce6100eb95"
+      },
+      "order_items": {
+        "count": 1,
+        "data": "178efb7898dd219103d7f5309c8ede6f6649b83ba83bdd3dbdba22c16bab600d",
+        "schema": "8b3984ba296e7abdb369a6c19cdec1bcabcaa038a540efb9ec0af85575c60263"
+      },
+      "order_payment_history": {
+        "count": 0,
+        "data": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema": "f6a9552888957ac9851ba9399af2eb85189007c8a2e98823e4777933e974a12f"
+      },
+      "order_payments": {
+        "count": 0,
+        "data": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema": "59c48f9199a8b784756ccd5b222b44397d682712e3e16997c9dc05a37cefc2aa"
+      },
+      "order_private_payloads": {
+        "count": 0,
+        "data": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema": "7a13b4a84435164de41225b04c65d8075f859d30fed00244848bfe96495d76f8"
+      },
+      "order_requests": {
+        "count": 0,
+        "data": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema": "6f69d53d8293f07878de05011b5ab3f00f50466237009f586f5b3686ffb5030e"
+      },
+      "order_status_history": {
+        "count": 0,
+        "data": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema": "967e2020a98de7b4ae1faf814588058fe9f0a8c2c794e0d77299a16ba14e26de"
+      },
+      "orders": {
+        "count": 1,
+        "data": "5c489c8611643635c4505210f175efeb00df494ce6c3005140101f85c5b88b5b",
+        "schema": "9405c6cac4cb7cded0d1de9a85447ad18fe40b8ce6dfc515684798c39f01889e"
+      },
+      "partnership_terms_versions": {
+        "count": 1,
+        "data": "00b4f02dd52ff6720148198d42f1c197424a30a9ce77f2d492d4e89457a31772",
+        "schema": "8e778b650c15058effc86daf99db3171921863be7df114874bc9de190b1ca0a8"
+      },
+      "payment_claims": {
+        "count": 0,
+        "data": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema": "130ecc6b593a9f3e6b92d77b3a381c468247162b4535b9079aea06e61c79a384"
+      },
+      "payment_disputes": {
+        "count": 0,
+        "data": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema": "6e27cfc70626a35459f0cc708f003aeb34a7e92f6480c4876caadbe9b4d7beef"
+      },
+      "payment_images": {
+        "count": 0,
+        "data": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema": "9b59ae0734bb4e48fc12687fba23753ce13f8016138fb1e017d26a610b4cfade"
+      },
+      "payment_instructions": {
+        "count": 0,
+        "data": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema": "5ce989e6f87e7c20c3d5067e192ef8429a31dd618768441572b4b8f8ddf8964a"
+      },
+      "payment_qr_config": {
+        "count": 0,
+        "data": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema": "163e25edd43bac00c50b9432a8d00b6db3d8d3206241b2cc9de2f1aca9696104"
+      },
+      "payment_qr_proposals": {
+        "count": 0,
+        "data": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema": "1cb17723607a9056f6798a8f904fb3853a9863a3fe460c1c284976a48c2d4bfc"
+      },
+      "payment_receipts": {
+        "count": 0,
+        "data": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema": "f64a0a6ed09f3534d81a55ddcf81e2cfcca1c3e13e137c30a373ae81810ec81c"
+      },
+      "payment_refunds": {
+        "count": 0,
+        "data": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema": "453e681ec710d85807f60513081e3cba083aa1a9892e86a83dcbe4e0959db52f"
+      },
+      "pickup_points": {
+        "count": 1,
+        "data": "cb5b1f010eeb8bff9a3a53bebd0681eb76d1e42c5b5dcdcccbf25df0acd1e5e1",
+        "schema": "a54fb009a898557a967b0e3bccc186955429c3c74df239313fb65e46641dbfeb"
+      },
+      "restaurant_applications": {
+        "count": 0,
+        "data": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema": "2793394a7d912a20333082317f5bf8c33e34932be5c268455ef184c29abe82f2"
+      },
+      "restaurant_hours": {
+        "count": 0,
+        "data": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema": "7e6cee69a04a3ebb208f3397ea1640aa2790199bc4c678ee7d30d30e3895282e"
+      },
+      "restaurant_pickup_rates": {
+        "count": 1,
+        "data": "baa23b6fc5d2e2b08c1503f20ef0861d6e434e3fcf998254b8b89eb71f1970bd",
+        "schema": "2c3838004df95967149b5062725d8664e6f4a57b8fcf3fd2b426cfd873ffd054"
+      },
+      "restaurants": {
+        "count": 1,
+        "data": "2b6109680b9dfd22bad1997880dd160ba59175a04ed98bde63f22a68d7a34cb9",
+        "schema": "4f24c5a5abc6d2edb43897d66d2bac5716438da47d9594b994b5b221617de63e"
+      },
+      "settlement_receipt_reversals": {
+        "count": 0,
+        "data": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema": "55a33329e162c4fb2e766eac5812dfe2c2c20b4981ef411bce9e72f1f6d8404d"
+      },
+      "settlement_receipts": {
+        "count": 0,
+        "data": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema": "4c49acd316d41acf811946a22dba78dce77fbc3e172b0d8e1a3d5d581462351d"
+      },
+      "settlements": {
+        "count": 1,
+        "data": "3ec7ae9d85c59fb8f9f40741a4d43d41e1c4f4b5535b80c0a3b8f0a4d204703b",
+        "schema": "e1623940832fbca6a323eef6b4ddab42dbeff735b2ba7f9eb4a21dfa94318d70"
+      },
+      "setup_requests": {
+        "count": 0,
+        "data": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema": "89f9608a7c24c4ee35f2c3f9184d9e63a4444a4d6234842aef9a89067529a210"
+      },
+      "support_events": {
+        "count": 0,
+        "data": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema": "ea726a50e388226d61a562c2f85828c1d0d6755db8f06a5521141facae532442"
+      },
+      "support_messages": {
+        "count": 0,
+        "data": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema": "4d4382a729f4f357e0ab4e1cf00cd69c2b90b764da43b12d0158f7572c7870fb"
+      },
+      "support_requests": {
+        "count": 0,
+        "data": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "schema": "280c5ea077936677678d0a7960305f156a75b6d1aac6b78541b616716ae1565f"
+      }
+    },
+    "erased_key_excluded": true,
+    "held_key_preserved": true,
+    "media_bytes_preserved": true,
+    "synthetic_quota_preserved": "100",
+    "synthetic_money_snapshot_invariants": "PASS",
+    "local_simulated_gap_ms": 271,
+    "local_archive_restore_validation_ms": 1114,
+    "limitations": "No offsite transport, binlog replay, running app replay/login/new order, scheduled backup, real vault/media integration or operational RPO/RTO proof"
+  },
+  "elapsed_ms": 19501,
+  "protected_run_directory": "/private/tmp/hlf-recovery-synthetic-CXz65b",
+  "commands": {
+    "node --test ops/recovery/archive.test.mjs": "PASS 5 groups",
+    "backend/node_modules/.bin/eslint --config backend/eslint.config.mjs ops/recovery/*.mjs": "PASS",
+    "sh -n ops/inspect-vps.sh": "PASS",
+    "node ops/recovery/rehearse.mjs": "PASS local-only"
+  },
+  "public_readonly_observations": {
+    "https_login": {
+      "status": 200,
+      "curl_tls_verify_result": 0
+    },
+    "http_login": {
+      "status": 200,
+      "redirect_url": ""
+    },
+    "https_public_restaurants": {
+      "status": 404,
+      "curl_tls_verify_result": 0
+    },
+    "body_retained": false,
+    "origin_tls_or_vps_capacity_verified": false,
+    "initial_sandbox_dns": "failed; authorized network retry succeeded"
+  },
+  "ssh": {
+    "usable_sv26_profile_established": false,
+    "remote_connection_attempted": false,
+    "user_reports_open_terminal_connection": true,
+    "terminal_ui_access": "denied by computer-use app safety restriction; not bypassed"
+  },
+  "user_screenshot_observation": {
+    "source": "user-supplied terminal screenshot; not independent current inventory",
+    "root_usage_percent": "77.6",
+    "root_total_reported": "18.33GB",
+    "memory_usage_percent": "20",
+    "swap_usage_percent": "0",
+    "restart_required_banner": true,
+    "os_patch_or_restart_performed": false,
+    "assessment_status": "EXCLUDED: user subsequently confirmed screenshot was from wrong SSH target"
+  },
+  "decisions": {
+    "hosting": "existing VPS preferred; no new paid provisioning/billing",
+    "ai_paid_ceiling_usd": "0",
+    "real_ai_calls_in_this_work": 0,
+    "retained_db_access": false,
+    "approved_synthetic_recovery": {
+      "rpo_minutes": 15,
+      "rto_hours": 4,
+      "daily_copies": 14,
+      "weekly_copies": 8,
+      "monthly_drill": true,
+      "full_plus_binlog": true,
+      "encryption": true
+    },
+    "operator": "user self-identifies as Admin; offsite destination/key and offline-copy custody still unresolved",
+    "offsite_destination": "NOT CONFIGURED: user explicitly answered none available"
+  },
+  "tool_sha256": {
+    "ops/inspect-vps.sh": "c03a98feb42b7a3418573a87a7bce8d682ee8a4237a7440478f0a211efa1993e",
+    "ops/recovery/archive.mjs": "4b4fa4fb63b40f451aa97f75d8d512e77b9f193924884e1014a3f05c4685bd85",
+    "ops/recovery/archive.test.mjs": "a39457dabab6d713c04c1a802df511e5259458d59552b841759c40466bed5e6c",
+    "ops/recovery/rehearse.mjs": "4aadc4241b8060c3df4524c186c5d92137cef96c9b74af8d99eee66ebb7d7887"
+  },
+  "prior_source_fingerprints_unchanged": true,
+  "limitations": [
+    "Independent local P29 preparation; P29 and P30 not accepted",
+    "No scheduled/full-incremental/offsite backup or operational RPO/RTO evidence",
+    "No current SSH/server SQL inventory",
+    "No application request replay/login/MFA/new order restore journey",
+    "Synthetic media/key fixtures only; not real vault/storage/erasure integration",
+    "Most request/history/receipt tables empty; not live/race/replay evidence",
+    "No provider call/counter mutation; V0.8 evidence reused only in prior scope"
+  ],
+  "corrected_user_vps_inventory": "docs/evidence/p29-vps-user-inventory.json"
+}

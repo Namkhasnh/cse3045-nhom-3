@@ -27,8 +27,10 @@ export function useOnboarding(admin = false) {
       }).catch(error => {
         if (current()) setTermsError(errorMessage(error))
       }).finally(() => { if (current()) setTermsLoading(false) }),
-      onboardingApi.list(admin, undefined, abort.signal).then(page => {
+      onboardingApi.list(admin, undefined, abort.signal).then(async page => {
         if (current()) { setItems(page.data); setCursor(page.page.next_cursor); setListLoaded(true) }
+        const target=new URLSearchParams(window.location.search).get('application_id')
+        if(target&&/^[1-9][0-9]*$/.test(target)&&!page.data.some(i=>i.id===target)){const item=await onboardingApi.detail(target,admin,abort.signal);if(current())setItems([item,...page.data])}
       }).catch(error => {
         if (current()) {
           setListError(errorMessage(error))

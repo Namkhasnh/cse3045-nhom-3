@@ -36,6 +36,7 @@ Preserve existing `.env`; copy backend/.env.example only if no configured file e
 | MIGRATION_DATABASE_URL, DB_OPERATOR_URL | Private operator storage; command-scoped migration/configuration only, never HTTP runtime environment |
 | PORT | Backend defaults 3000 |
 | JWT_SIGNING_KEY, CSRF_HMAC_KEY | Distinct backend-only 32-byte hex secrets |
+| ADMIN_MFA_ENCRYPTION_KEY or ADMIN_MFA_ENCRYPTION_KEY_FILE | Original separate 32-byte hex MFA key; alternatively a protected file outside the repository containing only that key. Direct value takes precedence; a missing/unreadable/invalid key fails closed. Preserve the enrolled key across backend restarts. |
 | JWT_ISSUER, JWT_AUDIENCE, JWT_KEY_ID, optional JWT_PREVIOUS_KEYS | Current access-token validation/rotation; API §2 |
 | PUBLIC_ORIGIN | Exact browser origin; unsafe requests verify Origin; production same-origin HTTPS |
 | SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, SMTP_FROM | Backend email; dedicated verified sender; current code supports TLS 465 or STARTTLS 587 |

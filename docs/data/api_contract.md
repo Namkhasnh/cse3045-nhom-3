@@ -211,13 +211,13 @@ The historical financial TBDs below are superseded by approved [DEC-07](../finan
 
 | Purpose/trace | Method/path | Permission | Input | Success | Failure/UI | Effects | Retry |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Suggest eligible dishes; US08/BR28–31 | POST `/ai/recommendations` | S | Required `pickup_point_id,budget_vnd,preferences`; preferences plain-text string (limit TBD) | 200 `RecommendationResult` below; empty suggestions permitted | 422 destination/budget; 503 AI unavailable; 504 AI timeout → manual browsing/retry | Backend candidate validation only; no order/chat storage | R; suggestions can change |
+| Suggest eligible dishes; US08/BR28–31 | POST `/ai/recommendations` | S | Required `pickup_point_id,budget_vnd,preferences`; preferences `{category_ids:string[]}`, max3 unique existing IDs | 200 `RecommendationResult` below; empty suggestions permitted | 422 destination/budget; 503 AI unavailable; 504 AI timeout → manual browsing/retry | Backend candidate validation only; no order/chat storage | R; suggestions can change |
 
 ```json
 {"data":{"suggestions":[{"dish_id":"101","restaurant_id":"10","quantity":1,"unit_price_vnd":"45000","delivery_fee_vnd":"5000","estimated_total_vnd":"50000","reason":"Matches the supplied preferences."}],"generated_at":"2026-10-16T03:00:00.000Z"}}
 ```
 
-Budget meaning (dish-only versus delivery-inclusive), preference schema/limits and provider are **TBD** before finalizing this DTO in OpenAPI; `estimated_total_vnd` always displays dish + delivery and is not consent or a quote artifact. Do not silently choose the budget filtering rule. Never pass names, phones, detailed addresses or identifying destination coordinates to AI. Backend sends minimal eligible candidate data/coarse pickup context, validates returned IDs and rechecks availability/deliverability. AI supplies no authoritative price/fee and cannot create orders.
+[Approved DEC-09](../ai-v08-contract.md) fixes one portion, delivery-inclusive budget1–1000000, category-only preferences and Gemini free. Its closed schema and display fields supersede the draft example; `estimated_total_vnd` always displays dish + delivery and is not consent or a quote artifact. Do not silently choose the budget filtering rule. Never pass names, phones, detailed addresses or identifying destination coordinates to AI. Backend sends minimal eligible candidate data/coarse pickup context, validates returned IDs and rechecks availability/deliverability. AI supplies no authoritative price/fee and cannot create orders.
 Target ≥95% within 5 seconds; at 10 seconds show retry/manual fallback, not an absolute guaranteed latency. Selecting a suggestion follows the normal cart, fresh quote and checkout contract.
 
 ## 8. Exact checkout, quote and conflict contracts
@@ -405,3 +405,7 @@ P24 report rows/details also return integer `entry_count` so a nonempty net-zero
 [Approved DEC-08](../account-support-policy-proposal.md) governs P25 restricted sessions, user availability, support, privacy/holds and bounded audit query. Suspended accounts receive no ordinary capabilities; only explicitly allowlisted obligations routes with fresh restricted sessions and transactional authorization. No new Admin/fulfillment/payment authority. Enabled P25 schemas and implementation evidence are separate.
 
 [Enabled P25 OpenAPI](administration.openapi.json) and [focused contract](../account-support-v07-contract.md) define account availability, restricted sessions, compromised-credential recovery, support/holds/erasure/reveal and audit queries. These refine the target user/support groups above without changing fulfillment/payment authority.
+
+## Onboarding notification extension
+
+US27/FR13/AC18 adds authenticated `/notifications` inbox/summary/detail/read/read-all/setup/tasks interfaces. [Focused contract](../notifications-contract.md) owns closed inputs, bounded pagination, current authority checks, logical mailboxes and loaded-ID read semantics. Reading never performs a business action.

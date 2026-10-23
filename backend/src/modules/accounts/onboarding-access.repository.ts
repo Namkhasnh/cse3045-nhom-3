@@ -4,6 +4,8 @@ import type { TransactionContext } from '../../common/transactions/transaction-r
 @Injectable()
 export class OnboardingAccessRepository {
  constructor(private readonly prisma:PrismaService) {}
+ async recommendationAccess(c:TransactionContext,actor:bigint,expected?:number){await this.lock(c,actor,actor,false);const account=await this.obligations(c,actor);await this.buyer(c,actor);if(expected!==undefined&&account.authVersion!==expected)throw new ForbiddenException({code:'ACCOUNT_CHANGED'});}
+
  async buyer(c:TransactionContext,actor:bigint){const authority=await c.db.adminAuthority.findUnique({where:{id:1}});if(authority?.accountId===actor)throw new ForbiddenException();}
  async isAdmin(c:TransactionContext,actor:bigint){const a=await c.db.adminAuthority.findUnique({where:{id:1}}),factor=await c.db.adminFactor.findUnique({where:{accountId:actor}});return a?.accountId===actor&&Boolean(factor?.enrolledAt);}
  async eligibleUsers(q:string) {return this.prisma.account.findMany({where:{loginIdentifier:q,isActive:true,email:{not:null},emailVerifiedAt:{not:null},restaurants:{none:{}},adminAuthority:{is:null}},select:{id:true,displayName:true,loginIdentifier:true},take:20});}

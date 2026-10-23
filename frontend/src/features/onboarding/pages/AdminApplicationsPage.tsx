@@ -1,3 +1,4 @@
+import type {ReactNode} from 'react'
 import { ManualPartnerPanel,ManualCreateControls } from './ManualPartnerPanel'
 import { useState } from 'react'
 import { ApplicationCard } from './ApplicationsPage'
@@ -15,8 +16,8 @@ function ReviewControls({item,onChange,adminId}:{item:Application;onChange:()=>P
  if(item.kind!=='application'||item.status!=='submitted')return null
  return <div className="onboarding-form"><label>Lý do từ chối<textarea maxLength={1000} value={reason} disabled={busy||Boolean(intent)} onChange={e=>setReason(e.target.value)}/></label>{error&&<p role="alert">{error}</p>}<div className="onboarding-actions">{intent?<button disabled={busy} onClick={()=>void act()}>Khôi phục quyết định đã gửi</button>:<><button disabled={busy} onClick={()=>void act('approved')}>Duyệt và tạo quán cần thiết lập</button><button disabled={busy||!reason.trim()} onClick={()=>void act('rejected')}>Từ chối hồ sơ</button></>}</div></div>
 }
-export function AdminApplicationsPage({adminId}:{adminId:string}) {
+export function AdminApplicationsPage({adminId,renderSetup}:{adminId:string;renderSetup?:(id:string)=>ReactNode}) {
  const state=useOnboarding(true)
  return <div className="onboarding-page"><h1>Xét duyệt hồ sơ mở quán</h1><p>Duyệt chỉ tạo quán cần thiết lập, chưa cho phép bán. Tài liệu hồ sơ là riêng tư.</p><button onClick={()=>void state.reload()}>Tải lại danh sách</button>{state.loading&&<p role="status">Đang tải hồ sơ…</p>}{state.error&&<p role="alert">{state.error}</p>}{state.listLoaded&&!state.listLoading&&!state.listError&&!state.items.length&&<p>Chưa có hồ sơ.</p>}{state.terms&&<ManualPartnerPanel terms={state.terms} adminId={adminId} onChange={state.reload}/>}
- {state.items.map(item=><section key={item.id}><ApplicationCard item={item} admin/><ReviewControls item={item} adminId={adminId} onChange={state.reload}/><ManualCreateControls item={item} adminId={adminId} onChange={state.reload}/></section>)}{state.cursor&&<button disabled={state.loading} onClick={()=>void state.more()}>Tải thêm hồ sơ</button>}</div>
+ {state.items.map(item=><section key={item.id}><ApplicationCard item={item} admin renderSetup={renderSetup}/><ReviewControls item={item} adminId={adminId} onChange={state.reload}/><ManualCreateControls item={item} adminId={adminId} onChange={state.reload}/></section>)}{state.cursor&&<button disabled={state.loading} onClick={()=>void state.more()}>Tải thêm hồ sơ</button>}</div>
 }

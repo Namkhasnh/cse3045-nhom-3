@@ -32,6 +32,7 @@ Requirements govern behavior; architecture boundaries, database storage and API 
 | How should screens look and behave? | UI §§1–13, [design coordination](ui/design-skills.md), [original HTML](ui/Hoa%20Lac%20Food%20Ordering%20Platform.html) |
 | How are the scoped UI/UX defect fixes reproduced? | [UI/UX fix verification](uiux-fixes-local-verification.md) |
 | What is implemented or tested? | [Implementation/evidence](implementation-status.md), [historical fixture report](ui/student-discovery-verification.md), [legacy verification archive](history/legacy-verification.md), [documentation checks](documentation-verification.md) |
+| How is the authorized Mac DB copy prepared for a new VPS Docker server? | [Encrypted copy handoff](mac-to-vps-database-copy.md); remote import remains separate from complete deployment |
 | How do we launch/recover/respond to incidents? | [Release checklist](release-checklist.md), deployment §§5–13, testing §§11–13 |
 
 New focused documents above are owned by their linked parent specification; do not create competing policy copies. [V0.2 OpenAPI](data/openapi.yaml) covers auth/profile and five public catalog operations with schema/example/HTTP/MySQL checks; [V0.3 onboarding schemas](data/onboarding.openapi.json) and enabled routes extend it with private applications/evidence/review/manual consent. The retained `ui_convertion.md` filename and original packaged HTML are intentional.
@@ -72,3 +73,17 @@ Examples: `$run-roadmap Run P04`; `$run-roadmap Complete V0.2`; `$implement-feat
 V0.6: [V0.6 payment policy](payments-policy.md) and [P19 decision](progress/P19.md); implementation acceptance remains separate.
 
 [V0.6](progress/V0.6.md) is ACCEPTED for local synthetic QR/full direct refunds after [P19](progress/P19.md)→[P20](progress/P20.md)→[P21](progress/P21.md). Retained V0.5/V0.6 adoption and commercial release remain separate and unauthorized.
+
+Onboarding notifications: [contract](notifications-contract.md) and [verification](notifications-verification.md) own in-site inbox, current setup guidance, Admin tasks and their scoped evidence.
+
+V0.8: [approved DEC-09](ai-v08-contract.md), [verification/setup](ai-local-verification.md), [P26](progress/P26.md) → [P27](progress/P27.md) → [P28](progress/P28.md), [current acceptance](progress/V0.8.md). Local synthetic P27/P28 acceptance combines deterministic backend/Chrome evidence and the recorded100case actual Gemini rubric; retained adoption remains separate.
+
+[AI local adoption review/receipt](ai-local-adoption-review.md) records explicit user authorization, verified backup/restore, completed single metadata migration/narrow grants, preserved58 original tables/173 rows and backend restart. Current100call allowance is preserved; production remains separate.
+
+V0.9: [P29 infrastructure/recovery proposal](infrastructure-recovery-proposal.md), [decision evidence](progress/P29.md) and [P29–P33 status](progress/V0.9.md). Existing VPS preference and synthetic recovery design are approved; remaining access/services/offsite/custody keep DEC-10/11/P29 blocked. [Executed local tooling](recovery-local-preparation.md) is not P30 acceptance. No paid provisioning, new retained migration, real pilot or production action authorized.
+
+[Retained Mac backup verification](mac-backup-verification.md) records the explicitly selected local source, age-encrypted full SQL restore, exact one-file Drive approval and verified read-back. This is one recovery point, not automated backup or V0.9 acceptance.
+
+[Scoped MVP ordering/three-role UX verification](mvp-ordering-verification.md) records current buyer/manager/Admin journeys, fixes, automated/Chrome evidence and the boundary from V0.9 operational acceptance.
+
+[Next staging handoff](staging-next-step.md) records current VPS resource evidence, proposed isolated caps, prepared Linux artifacts and remaining remote-access/origin/service gates. No VPS deployment or release approval implied.

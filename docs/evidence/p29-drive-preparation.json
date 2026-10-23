@@ -1,0 +1,49 @@
+{
+  "source": "User-reported interactive rclone setup and storage-only command output; no agent access to tokens/config or Drive files",
+  "date": "2026-10-22",
+  "remote_name": "hlfdrive",
+  "scope_entered_by_user": "drive.file",
+  "oauth_callback": "User reported Success / All done. Please go back to rclone.",
+  "storage_command": "rclone about hlfdrive:",
+  "reported_storage": {
+    "Total": "15 GiB",
+    "Used": "12.679 MiB",
+    "Free": "14.987 GiB",
+    "Trashed": "0 B",
+    "Other": "624.018 KiB"
+  },
+  "local_oauth_and_storage": "PASS user-reported",
+  "encrypted_fixture_roundtrip": {
+    "status": "PASS user-reported",
+    "reported_date_vietnam": "2026-10-23",
+    "confirmation": "PASS: file khoi phuc trung ban goc",
+    "procedure": "Local synthetic probe -> age encryption -> rclone copyto Drive -> rclone copyto download -> age decryption -> cmp original/restored",
+    "remote_namespace": "hlfdrive:HLF-Backup-Synthetic/<unique-local-directory>/probe.txt.age",
+    "evidence_boundary": "User terminal result, not agent-observed execution; no database restore or scheduler proof",
+    "private_key_upload": false,
+    "database_transfer": false
+  },
+  "retention_capacity_for_real_backup": "NOT VERIFIED; needs actual full/binlog/media change-rate measurements",
+  "private_key_and_offline_copy_custody": "User reports private key saved securely; independent offline copy/location and recovery from that copy not confirmed",
+  "oauth_lifecycle": "In production screenshot plus post-publication reconnect/about PASS by user report; unattended refresh/revocation handling/alerts still NOT VERIFIED",
+  "credential_replacement": "User was advised to replace exposed client secret; replacement not independently verified; no secret retained in repository",
+  "vps_install_transfer_scheduler": "NOT RUN",
+  "real_database_or_private_payload_transfer": false,
+  "billing_or_gemini_changes": false,
+  "acceptance": "P29/P30 not accepted; local encrypted-file roundtrip only, no offsite database/binlog recovery or operational RPO/RTO proof",
+  "local_age_key": "User confirmed generated on local Mac for synthetic trial; age version and offline copy not supplied",
+  "oauth_publishing_status": {
+    "value": "In production",
+    "source": "User-supplied Audience screenshot on2026-10-23; External; Branding changes saved banner visible",
+    "agent_changed_google_console": false,
+    "scope_verification_or_domain_ownership_attestation": false
+  },
+  "post_publication_reauthorization": {
+    "date_vietnam": "2026-10-23",
+    "source": "User reported OAuth Success followed by about ok",
+    "remote": "hlfdrive",
+    "status": "PASS user-reported interactive reconnect and storage access",
+    "current_storage_numbers": "not supplied for this recheck; earlier14.987GiB remains historical",
+    "unattended_refresh": "NOT VERIFIED"
+  }
+}

@@ -4,7 +4,7 @@ Synthetic isolated acceptance only; [setup contract](restaurant-setup-v04-contra
 
 ## Environment
 
-Use `backend/test/onboarding.compose.yml` under its separate `hlf-v04-test` compose project. It pins Oracle MySQL9.2.0 and the existing approved MinIO image digest, exposes only loopback43316/43317 and uses its own named volumes. Existing development MySQL3307 was not modified. Synthetic credentials below belong only to this disposable compose fixture.
+Use `backend/test/onboarding.compose.yml` under its separate `hlf-v04-test` compose project. It pins Oracle MySQL9.2.0 and builds the same MinIO2025-09-07 release from official source with a fixed commit/archive checksum and builder digest; see [storage setup](onboarding-local-verification.md). It exposes only loopback43316/43317 and uses its own named volumes. Existing development MySQL3307 was not modified. Synthetic credentials below belong only to this disposable compose fixture.
 
 ```sh
 docker compose -f backend/test/onboarding.compose.yml -p hlf-v04-test up -d

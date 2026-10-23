@@ -1,3 +1,4 @@
+import {NotificationBell} from '../../features/notifications'
 import type { ReactNode } from 'react'
 import { Icon } from '../../shared/ui/Icon'
 
@@ -19,6 +20,7 @@ export function StudentLayout({ children, path = '/', preview = false, accountNa
         <a href="/" className="brand" aria-label="Hòa Lạc Food — Trang chủ"><span className="brand-mark"><Icon name="bowl" /></span><span>Hòa Lạc <span className="text-brand">Food</span></span></a>
         <nav className="header-actions" aria-label="Tài khoản và quản lý">
           {sessionPending ? <span className="session-pending" role="status">Đang kiểm tra tài khoản…</span> : accountName ? <>
+            <NotificationBell/>
             {management ? <a className="header-link" href={management.href}>{management.label}</a> : <a className="header-link" href="/open-restaurant">Mở quán</a>}
             <a className="button button--neutral account-link" href="/account"><Icon name="user" /><span>{accountName}</span></a>
           </> : <>
@@ -36,6 +38,7 @@ export function StudentLayout({ children, path = '/', preview = false, accountNa
       <div className="page-container nav-items">
         <a href={preview ? '/preview' : '/'} aria-current={path === '/' || path === '/preview' ? 'page' : undefined}><Icon name="home" /><span>Trang chủ</span></a>
         <a href="/cart" aria-current={path === '/cart' ? 'page' : undefined}><Icon name="bag" /><span>Giỏ hàng{cartCount > 0 ? ` (${cartCount})` : ''}</span></a>
+        <a href="/recommendations" aria-current={path === '/recommendations' ? 'page' : undefined}><Icon name="bowl"/><span>Gợi ý món</span></a>
         <a href="/orders" aria-current={path.startsWith('/orders') ? 'page' : undefined}><Icon name="orders"/><span>Đơn hàng</span></a>
         <a href={accountName ? '/account' : authLink('/login')} aria-current={path === '/account' ? 'page' : undefined}><Icon name="user" /><span>{accountName ? 'Tài khoản' : 'Đăng nhập'}</span></a>
       </div>

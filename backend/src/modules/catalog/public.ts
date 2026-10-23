@@ -11,6 +11,9 @@ function page<T extends { id: bigint; name: string; price_vnd?: bigint }, R>(row
 @Injectable()
 export class CatalogService {
   constructor(private readonly repository: CatalogRepository) {}
+  recommendationRows(...args:Parameters<CatalogRepository['recommendationRows']>){return this.repository.recommendationRows(...args);}
+  recommendationCategories(...args:Parameters<CatalogRepository['recommendationCategories']>){return this.repository.recommendationCategories(...args);}
+
   private async restaurantDtos(rows: RestaurantRow[]) {
     const hours = rows.length ? await this.repository.hours(rows.map(r => r.id)) : [];
     return rows.map(r => ({ id: r.id.toString(), name: r.name, address: r.address,

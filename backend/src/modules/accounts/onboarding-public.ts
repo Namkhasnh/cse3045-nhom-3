@@ -4,6 +4,8 @@ import { OnboardingAccessRepository } from './onboarding-access.repository.js';
 @Injectable()
 export class OnboardingAccounts {
  constructor(private readonly repository:OnboardingAccessRepository) {}
+ recommendationAccess(...args:Parameters<OnboardingAccessRepository['recommendationAccess']>){return this.repository.recommendationAccess(...args);}
+
  buyer(c:TransactionContext,actor:bigint){return this.repository.buyer(c,actor);}
  isAdmin(c:TransactionContext,actor:bigint){return this.repository.isAdmin(c,actor);}
  eligible(c:TransactionContext,id:bigint) {return this.repository.eligible(c,id);}

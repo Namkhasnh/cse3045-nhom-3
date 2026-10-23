@@ -1,15 +1,16 @@
+import type {ReactNode} from 'react'
 import { useEffect,useRef,useState } from 'react'
 import { onboardingApi,errorMessage,type Fields,type Terms,type Application,OnboardingError } from '../api/onboarding.api'
 import { TermsPanel } from '../components/TermsPanel'
 import { ManualConfirmation } from './ManualConfirmation'
 import { useOnboarding } from '../hooks/use-onboarding'
-const labels:Record<string,string>={awaiting_confirmation:'Chờ bạn xác nhận',submitted:'Chờ xét duyệt',approved:'Đã duyệt · Cần thiết lập',rejected:'Đã từ chối'}
+const labels:Record<string,string>={awaiting_confirmation:'Chờ bạn xác nhận',submitted:'Chờ xét duyệt',approved:'Đã duyệt · Xem điều kiện mở bán hiện tại',rejected:'Đã từ chối'}
 
-export function ApplicationCard({item,admin=false}:{item:Application;admin?:boolean}) {
+export function ApplicationCard({item,admin=false,renderSetup}:{item:Application;admin?:boolean;renderSetup?:(id:string)=>ReactNode}) {
  const [error,setError]=useState('')
  const open=async(id:string)=>{setError('');try{const file=await onboardingApi.evidence(id,admin);const bytes=Uint8Array.from(atob(file.content_base64),c=>c.charCodeAt(0));const url=URL.createObjectURL(new Blob([bytes],{type:file.mime_type}));const link=document.createElement('a');link.href=url;link.download=file.mime_type==='application/pdf'?'tai-lieu.pdf':'tai-lieu.'+(file.mime_type==='image/png'?'png':'jpg');link.click();setTimeout(()=>URL.revokeObjectURL(url),30000)}catch(e){setError(errorMessage(e))}}
  return <article className="onboarding-card"><h2>Hồ sơ #{item.id} · {item.payload.restaurant_name}</h2><p role="status">{labels[item.status]??item.status}</p><dl><dt>Địa chỉ</dt><dd>{item.payload.address}</dd><dt>Liên hệ quán</dt><dd>{item.payload.contact_name} · {item.payload.contact_phone}</dd><dt>Điều khoản</dt><dd>{item.terms_version}</dd><dt>Đã đồng ý</dt><dd>{item.consent_at?new Date(item.consent_at).toLocaleString('vi-VN'):'Chưa xác nhận'}</dd></dl>
- {item.review?.reason&&<p>Lý do từ chối: {item.review.reason}</p>}{item.restaurant_id&&<p>Mã quán: {item.restaurant_id}. Chưa đủ điều kiện bán. <a href="/owner">Quản lý quán</a></p>}
+ {item.review?.reason&&<p>Lý do từ chối: {item.review.reason}</p>}{item.restaurant_id&&<div><p>Mã quán: {item.restaurant_id}. <a href={admin?'/admin/restaurants?restaurant_id='+item.restaurant_id:'/owner'}>Quản lý quán</a></p>{renderSetup?.(item.restaurant_id)}</div>}
  <div className="onboarding-actions"><button type="button" onClick={()=>void open(item.payload.front_image_id)}>Tải ảnh mặt tiền</button><button type="button" onClick={()=>void open(item.payload.business_document_id)}>Tải giấy kinh doanh</button></div>{error&&<p role="alert">{error}</p>}</article>
 }
 export function OpeningForm({terms,onSubmit,applicantId,draftOwner,blocked=false}:{terms:Terms;draftOwner:string;onSubmit:(body:Fields & {consent:true},key:string)=>Promise<void>;applicantId?:string;blocked?:boolean}) {
@@ -37,10 +38,10 @@ export function OpeningForm({terms,onSubmit,applicantId,draftOwner,blocked=false
  {error&&<p role="alert" className="form-error">{error}{error.startsWith('Phiên đăng nhập')&&<> <a href="/login?returnTo=/open-restaurant">Đăng nhập lại</a></>}</p>}{uncertain&&<p>Yêu cầu đang được giữ nguyên để khôi phục kết quả. Tải lại trang sẽ cần kiểm tra lịch sử trước khi nộp mới.</p>}
  <button className="button button--primary" disabled={busy||blocked||(!uncertain&&!consent)} type="submit">{busy?'Đang gửi…':uncertain?'Thử lại đúng yêu cầu':applicantId?'Gửi lời mời xác nhận':'Gửi hồ sơ'}</button></form>
 }
-export function ApplicationsPage({canApply,userId}:{canApply:boolean;userId:string}) {
+export function ApplicationsPage({canApply,userId,renderSetup}:{canApply:boolean;userId:string;renderSetup?:(id:string)=>ReactNode}) {
  const state=useOnboarding(),[notice,setNotice]=useState('')
  const pending=state.items.some(i=>['submitted','awaiting_confirmation'].includes(i.status))
  return <div className="onboarding-page"><h1>Đăng ký mở quán</h1><p>Duyệt hồ sơ chưa cho phép bán hàng. Mỗi tài khoản quản lý tối đa một quán.</p>{state.termsError&&<p role="alert">Chưa tải được điều khoản. {state.termsError}</p>}{state.listError&&<p role="alert">Chưa tải được lịch sử hồ sơ. {state.listError}</p>}{state.loading&&<p role="status">Đang tải hồ sơ và điều khoản…</p>}{notice&&<p role="status">{notice}</p>}
  {state.terms&&<><TermsPanel terms={state.terms}/>{canApply&&!pending&&state.listLoaded?<OpeningForm blocked={state.loading||Boolean(state.listError)||Boolean(state.termsError)} draftOwner={userId} terms={state.terms} onSubmit={async(body,key)=>{await onboardingApi.submit(body,key);setNotice('Đã gửi hồ sơ. Chưa có quyền quản lý hoặc nhận đơn.');await state.reload()}}/>:<p>{!state.listLoaded?'Cần tải được lịch sử trước khi gửi hồ sơ mới.':pending?'Bạn có hồ sơ đang chờ xử lý.':'Tài khoản không đủ điều kiện mở thêm quán.'}</p>}</>}
- <button type="button" disabled={state.loading} onClick={()=>void state.reload()}>Tải lại hồ sơ và điều khoản</button><h2>Lịch sử hồ sơ</h2>{state.listLoaded&&!state.listLoading&&!state.listError&&!state.items.length&&<p>Bạn chưa có hồ sơ.</p>}{state.items.map(i=><section key={i.id}><ApplicationCard item={i}/>{i.kind==='manual'&&i.status==='awaiting_confirmation'&&<ManualConfirmation item={i} userId={userId} onChange={state.reload}/>}</section>)}{state.cursor&&<button disabled={state.loading} onClick={()=>void state.more()}>Tải thêm hồ sơ</button>}</div>
+ <button type="button" disabled={state.loading} onClick={()=>void state.reload()}>Tải lại hồ sơ và điều khoản</button><h2>Lịch sử hồ sơ</h2>{state.listLoaded&&!state.listLoading&&!state.listError&&!state.items.length&&<p>Bạn chưa có hồ sơ.</p>}{state.items.map(i=><section key={i.id}><ApplicationCard item={i} renderSetup={renderSetup}/>{i.kind==='manual'&&i.status==='awaiting_confirmation'&&<ManualConfirmation item={i} userId={userId} onChange={state.reload}/>}</section>)}{state.cursor&&<button disabled={state.loading} onClick={()=>void state.more()}>Tải thêm hồ sơ</button>}</div>
 }

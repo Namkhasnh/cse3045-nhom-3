@@ -70,7 +70,7 @@ jobs:
 
   mysql-integration:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     defaults:
       run:
         working-directory: backend
@@ -114,7 +114,8 @@ jobs:
         run: npm ci
       - name: Start private synthetic object storage
         run: |
-          docker run -d --name hlf-ci-minio -p 127.0.0.1:9000:9000 -e MINIO_ROOT_USER=synthetic-ci -e MINIO_ROOT_PASSWORD=synthetic-ci-storage-only minio/minio@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e server /data
+          docker build -t hlf-test-minio:2025-09-07 test/minio
+          docker run -d --name hlf-ci-minio -p 127.0.0.1:9000:9000 -e MINIO_ROOT_USER=synthetic-ci -e MINIO_ROOT_PASSWORD=synthetic-ci-storage-only hlf-test-minio:2025-09-07 server /data
           node --input-type=module -e 'for(let i=0;i<30;i++){try{if((await fetch("http://127.0.0.1:9000/minio/health/ready")).ok)process.exit(0)}catch{}await new Promise(r=>setTimeout(r,1000))}process.exit(1)'
       - name: Real MySQL auth/catalog/onboarding and private storage integration
         run: npm run test:integration

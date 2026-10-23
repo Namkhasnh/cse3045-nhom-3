@@ -11,6 +11,7 @@ async function request<T>(path:string,method='GET',body?:object,key?:string,sign
  return payload?.page?payload:payload.data
 }
 export const onboardingApi={
+ detail:(id:string,admin=false,signal?:AbortSignal)=>request<Application>((admin?'/admin':'')+'/restaurant-applications/'+id,'GET',undefined,undefined,signal),
  users:(q:string)=>request<{id:string;display_name:string;login_identifier:string}[]>('/admin/onboarding-users?q='+encodeURIComponent(q)),
  propose:(body:Fields & {applicant_id:string},key:string)=>request<Application>('/admin/restaurant-invitations','POST',body,key),
  confirm:(id:string,body:{expected_version:number;terms_hash:string;consent:true},key:string)=>request<Application>(`/restaurant-applications/${id}/confirm`,'POST',body,key),

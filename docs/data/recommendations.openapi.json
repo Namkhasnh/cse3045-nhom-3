@@ -1,0 +1,219 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "V0.8 Recommendations",
+    "version": "DEC-09.2026-10-22.v1"
+  },
+  "servers": [
+    {
+      "url": "/api/v1"
+    }
+  ],
+  "paths": {
+    "/ai/recommendations": {
+      "post": {
+        "summary": "Delivery-inclusive one-portion suggestions from current eligible catalog",
+        "security": [
+          {
+            "accessCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AiRequest"
+              },
+              "example": {
+                "pickup_point_id": "3",
+                "budget_vnd": "50000",
+                "preferences": {
+                  "category_ids": [
+                    "1"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Current validated results; empty allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/AiResult"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "AUTH_REQUIRED"
+          },
+          "403": {
+            "description": "Account/capability/CSRF denial"
+          },
+          "422": {
+            "description": "VALIDATION_ERROR or DESTINATION_NOT_SERVICEABLE"
+          },
+          "429": {
+            "description": "RATE_LIMITED with Retry-After"
+          },
+          "503": {
+            "description": "AI_UNAVAILABLE"
+          },
+          "504": {
+            "description": "AI_TIMEOUT"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "accessCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "__Host-hlf_access"
+      }
+    },
+    "schemas": {
+      "AiRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "pickup_point_id",
+          "budget_vnd",
+          "preferences"
+        ],
+        "properties": {
+          "pickup_point_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "budget_vnd": {
+            "type": "string",
+            "pattern": "^(?:[1-9][0-9]{0,5}|1000000)$",
+            "description": "1–1000000 inclusive integer VND; one portion plus verified delivery fee."
+          },
+          "preferences": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "category_ids"
+            ],
+            "properties": {
+              "category_ids": {
+                "type": "array",
+                "maxItems": 3,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[1-9][0-9]{0,18}$"
+                }
+              }
+            }
+          }
+        }
+      },
+      "AiResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "suggestions",
+          "generated_at"
+        ],
+        "properties": {
+          "suggestions": {
+            "type": "array",
+            "maxItems": 3,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "dish_id",
+                "restaurant_id",
+                "dish_name",
+                "restaurant_name",
+                "image_reference",
+                "quantity",
+                "unit_price_vnd",
+                "delivery_fee_vnd",
+                "estimated_total_vnd",
+                "reason"
+              ],
+              "properties": {
+                "dish_id": {
+                  "type": "string",
+                  "pattern": "^[1-9][0-9]{0,18}$"
+                },
+                "restaurant_id": {
+                  "type": "string",
+                  "pattern": "^[1-9][0-9]{0,18}$"
+                },
+                "dish_name": {
+                  "type": "string"
+                },
+                "restaurant_name": {
+                  "type": "string"
+                },
+                "image_reference": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "quantity": {
+                  "const": 1
+                },
+                "unit_price_vnd": {
+                  "type": "string",
+                  "pattern": "^(0|[1-9][0-9]{0,18})$"
+                },
+                "delivery_fee_vnd": {
+                  "type": "string",
+                  "pattern": "^(0|[1-9][0-9]{0,18})$"
+                },
+                "estimated_total_vnd": {
+                  "type": "string",
+                  "pattern": "^(0|[1-9][0-9]{0,18})$"
+                },
+                "reason": {
+                  "type": "string",
+                  "enum": [
+                    "Phù hợp nhóm món bạn chọn và ngân sách gồm phí giao.",
+                    "Trong ngân sách gồm phí giao."
+                  ]
+                }
+              }
+            }
+          },
+          "generated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  }
+}

@@ -4,7 +4,7 @@ Authority: [V0.3 contract](onboarding-v03-contract.md). Never use these fixtures
 
 ## Services and explicit configuration
 
-`docker compose -f backend/test/onboarding.compose.yml up -d` creates isolated persistent test volumes on loopback43316/43317. It must not replace an existing listener; choose another port explicitly if needed. MySQL9.2.0 and MinIO2025-09-07 image digest are pinned. The actual task used separate equivalent containers named `hlf-v03-mysql-20261019` / `hlf-v03-minio-20261019`; no existing service was stopped.
+`docker compose -f backend/test/onboarding.compose.yml up -d` creates isolated persistent test volumes on loopback43316/43317. It must not replace an existing listener; choose another port explicitly if needed. MySQL9.2.0 is pinned. MinIO2025-09-07 is built using [the test Dockerfile](../backend/test/minio/Dockerfile), which pins the official source commit/archive SHA256 and Go builder image digest. No upstream MinIO container pull is required. The original task used separate equivalent containers named `hlf-v03-mysql-20261019` / `hlf-v03-minio-20261019`; no existing service was stopped.
 
 Synthetic configuration (values are intentionally non-production):
 
@@ -50,3 +50,20 @@ MySQL/MinIO HTTP tests validate response envelopes against OpenAPI, durable rows
 ## System-review compensation regression
 
 The ONBOARD-01 real MySQL/MinIO group now injects three upload failures: a real metadata/audit commit followed by lost acknowledgement; an audit failure rolling the transaction back; and rollback followed by failed authoritative metadata verification. Assertions cover live metadata/audit plus authorized object reads after commit, absence of rows/audit and safe object removal after rollback, and preservation when metadata cannot be checked. Compensation queries the generated immutable object key through the owning repository; storage remains outside retried transactions. Unknown outcomes defer to reference-aware cleanup. Newly executed results are recorded separately in [implementation status](implementation-status.md#system-review-defect-fixes--october-20-2026).
+
+## CI MinIO image repair — October21,2026
+
+The supplied GitHub Actions failure stopped at Docker Hub image pull (exit125), before integration/P25 restricted checks. Direct verification also found no manifest for the same digest or release tag on Quay; the official binary archive checksum endpoint returned410. An existing local cached image did not prove clean-runner availability.
+
+CI and Compose now build the same [official release source](https://github.com/minio/minio/tree/07c3a429bfed433e49018cb0f78a52145d4bedeb) instead of pulling the unavailable MinIO image. The Dockerfile verifies the source archive SHA256, pins the Go builder's multi-platform digest, uses the release's readonly Go modules/checksums and cross-compiles a static binary for the target architecture. The runtime includes CA certificates, temporary directory and AGPL license. No third-party MinIO mirror or replacement S3 implementation is introduced. The integration job allows30minutes for a cold source build; all existing assertions remain enabled.
+
+Local verification (Codex self-review, Node24.21.0, MySQL9.2.0):
+
+- `docker build --platform linux/amd64 -t hlf-test-minio:2025-09-07 backend/test/minio`: PASS; `/private/tmp/hlf-minio-ci-build-final.log`. First uncached build also passed (`hlf-minio-ci-build.log`); the final build adds the runtime temporary directory.
+- `docker run --rm --platform linux/amd64 hlf-test-minio:2025-09-07 --version`: PASS correct release/commit and linux/amd64. The separate synthetic container on loopback43318 passed the CI-equivalent readiness probe. AMD64 runs under local Docker emulation, not a hosted GitHub runner.
+- `npm --prefix backend run test:compile`: PASS; `/private/tmp/hlf-minio-ci-compile.log`.
+- `node test/integration/run.mjs` from backend after compilation: PASS18/18; `/private/tmp/hlf-minio-ci-integration.log`.
+- `node test/administration-permissions.mjs` from backend: PASS P25 HTTP/MySQL and14 SQL denials; `/private/tmp/hlf-minio-ci-restricted.log`.
+- Compose config, CI/Compose YAML parse, extracted CI shell syntax, documentation links/line bounds and `git diff --check`: PASS.
+
+The two CI test steps used new `test_ci_minio_20261021_a` on synthetic MySQL43316 and distinct new buckets on the new storage container. Existing storage43317 and retained MySQL3307 were untouched. The temporary verification container was stopped with its synthetic contents preserved. Hosted CI rerun NOT RUN; the supplied remote failure is not a pass. No commit/push, deployment or application behavior change is included in this repair.

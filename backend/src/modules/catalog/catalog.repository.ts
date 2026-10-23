@@ -39,6 +39,9 @@ function boundary(q: CatalogQuery, column: Prisma.Sql, idColumn: Prisma.Sql) {
 @Injectable()
 export class CatalogRepository {
   constructor(private readonly prisma: PrismaService) {}
+  recommendationCategories(c:import('../../common/transactions/transaction-runner.js').TransactionContext,ids:bigint[]) {return c.db.dish_categories.findMany({where:{id:{in:ids}},select:{id:true}});}
+  async recommendationRows(c:import('../../common/transactions/transaction-runner.js').TransactionContext,after:bigint,only:bigint[]=[]){const rows=await c.db.$queryRaw<Array<{id:bigint;restaurant_id:bigint;name:string;restaurant_name:string;category_id:bigint;category_name:string;price_vnd:bigint;image_reference:string|null;owner_id:bigint;address:string;latitude:Prisma.Decimal|null;longitude:Prisma.Decimal|null;location_version:number}>>(Prisma.sql`SELECT d.id,d.restaurant_id,d.name,r.name AS restaurant_name,d.category_id,cat.name AS category_name,d.price_vnd,d.image_reference,r.owner_id,r.address,r.latitude,r.longitude,r.location_version FROM dishes d JOIN restaurants r ON r.id=d.restaurant_id JOIN dish_categories cat ON cat.id=d.category_id WHERE ${published} AND r.is_accepting_orders=TRUE AND ${openSql()} AND d.is_visible=TRUE AND d.is_available=TRUE AND d.id>${after} AND ${only.length?Prisma.sql`d.id IN (${Prisma.join(only)})`:Prisma.sql`TRUE`} ORDER BY d.id LIMIT 200`);return rows.map(r=>({...r,location_version:Number(r.location_version)}));}
+
   restaurants(q: CatalogQuery, onlyId?: string) {
     const conditions = [published];
     if (onlyId) conditions.push(Prisma.sql`r.id=${BigInt(onlyId)}`);

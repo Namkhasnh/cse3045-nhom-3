@@ -1,3 +1,6 @@
+import {RecommendationsModule} from './http/recommendations/recommendations.module.js';
+import {NotificationsModule} from './http/notifications/notifications.module.js';
+import {NotificationsDomainModule} from './modules/notifications/notifications.module.js';
 import {AdministrationModule} from './http/administration/administration.module.js';
 import {OrdersModule} from './http/orders/orders.module.js';
 import { Module } from '@nestjs/common';
@@ -12,5 +15,5 @@ import {DeliveryModule} from './http/delivery/delivery.module.js';
 import {RestaurantSettingsModule} from './http/restaurant-settings/settings.module.js';
 import { AuthModule } from './http/auth/auth.module.js';
 
-@Module({ imports: [AdministrationModule,OrdersModule,ConfigModule.forRoot({ isGlobal: true }), PrismaModule, TransactionModule, AuthModule, CatalogModule, OnboardingModule, RestaurantSettingsModule, DeliveryModule, DishesModule, CommissionPolicyModule] })
+@Module({ imports: [RecommendationsModule,NotificationsDomainModule,NotificationsModule,AdministrationModule,OrdersModule,ConfigModule.forRoot({ isGlobal: true }), PrismaModule, TransactionModule, AuthModule, CatalogModule, OnboardingModule, RestaurantSettingsModule, DeliveryModule, DishesModule, CommissionPolicyModule] })
 export class AppModule {}

@@ -118,3 +118,12 @@ GRANT INSERT ON {{database}}.order_private_payloads TO {{runtime}};
 -- business snapshot rewrite, audit/event/key deletion. Retention CLI uses a separate
 -- synthetic operator identity, never a website-controlled database credential.
 GRANT UPDATE (credentials_blocked,recovery_code_hash,recovery_expires_at,recovery_sent_at,recovery_attempts) ON {{database}}.accounts TO {{runtime}};
+
+-- In-site messages: append immutable content, only recipient read state is mutable.
+GRANT INSERT ON {{database}}.notifications TO {{runtime}};
+GRANT UPDATE (read_at) ON {{database}}.notifications TO {{runtime}};
+
+-- DEC-09 bounded admission metadata, no order/payment write rights added.
+GRANT UPDATE (id) ON {{database}}.ai_admission TO {{runtime}};
+GRANT INSERT, UPDATE, DELETE ON {{database}}.ai_counters TO {{runtime}};
+GRANT INSERT, UPDATE, DELETE ON {{database}}.ai_leases TO {{runtime}};

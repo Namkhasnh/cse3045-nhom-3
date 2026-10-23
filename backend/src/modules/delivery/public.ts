@@ -11,7 +11,12 @@ export const pointDto=(p:{id:bigint;name:string;latitude:{toFixed(n:number):stri
 export const proposalDto=(p:{id:bigint;restaurant_id:bigint;policy_version:number;payload:unknown;status:string;version:number;created_at:Date;review?:{decision:string;note:string;created_at:Date}|null})=>({id:p.id.toString(),restaurant_id:p.restaurant_id.toString(),policy_version:p.policy_version,pickup_rates:p.payload,status:p.status,version:p.version,created_at:p.created_at.toISOString(),review:p.review?{decision:p.review.decision,note:p.review.note,created_at:p.review.created_at.toISOString()}:null});
 @Injectable()
 export class DeliveryService {
+ pendingSetup(...a:Parameters<DeliveryRepository['pendingSetup']>){return this.repo.pendingSetup(...a);}
+ pendingQueue(...a:Parameters<DeliveryRepository['pendingQueue']>){return this.repo.pendingQueue(...a);}
  constructor(private readonly repo:DeliveryRepository){}
+ recommendationPoint(...args:Parameters<DeliveryRepository['recommendationPoint']>){return this.repo.recommendationPoint(...args);}
+ async recommendationFee(c:TransactionContext,r:bigint,point:bigint,location:string){const p=await this.repo.recommendationPoint(c,point),policy=await this.repo.policy(c,r),rate=policy?.restaurant_pickup_rates.find(x=>x.pickup_point_id===point);if(!p?.is_active||!rate?.is_enabled||rate.approved_proposal_id===null||rate.verified_location_hash!==location||rate.verified_point_version!==p.version)return null;return rate.delivery_fee_vnd;}
+
  async reservePoints(c:TransactionContext,restaurants:bigint[],extra:bigint[]=[]){return this.repo.lockPoints(c,[...await this.repo.pointIds(c,restaurants),...extra]);}
  points(...a:Parameters<DeliveryRepository['points']>){return this.repo.points(...a);}
  policy(...a:Parameters<DeliveryRepository['policy']>){return this.repo.policy(...a);}

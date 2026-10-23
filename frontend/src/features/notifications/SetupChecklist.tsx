@@ -1,0 +1,9 @@
+import {useEffect,useState} from 'react'
+import {requestMessage} from '../../shared/api/request'
+import {notificationsApi,type Guide} from './api'
+import {useNotifications} from './context'
+export function SetupChecklist({restaurantId,version}:{restaurantId:string;version?:number}){
+ const {actor}=useNotifications(),[guide,setGuide]=useState<Guide|null>(null),[error,setError]=useState(''),[attempt,setAttempt]=useState(0)
+ useEffect(()=>{if(!actor)return;const c=new AbortController();notificationsApi.guide(actor,restaurantId,c.signal).then(g=>{if(!c.signal.aborted){setGuide(g);setError('')}}).catch(e=>{if(!c.signal.aborted)setError(requestMessage(e))});return()=>c.abort()},[actor,restaurantId,version,attempt])
+ return <section className="setup-guide" aria-label="Điều kiện mở bán"><h2>Việc cần làm để mở bán</h2><p>Duyệt hồ sơ tạo quyền quản lý quán. Hoàn tất cấu hình, kích hoạt và bật nhận đơn là các bước tiếp theo.</p>{error&&<p role="alert">Không tải được trạng thái hiện tại. {error}</p>}<button onClick={()=>setAttempt(v=>v+1)}>Cập nhật điều kiện mở bán</button>{!guide&&!error&&<p role="status">Đang tải điều kiện…</p>}{guide&&<><p>{guide.name}: <strong>{guide.public_visible?'Đã đủ điều kiện hiện trên trang chủ':'Chưa đủ điều kiện hiện trên trang chủ'}</strong>. {guide.orderable?'Hiện có thể nhận đơn.':guide.public_visible&&!guide.is_open?'Hiện ngoài giờ mở cửa; kiểm tra cả trạng thái nhận đơn.':'Nhận đơn cần đủ cấu hình, đã kích hoạt, bật nhận đơn và trong giờ mở cửa.'}</p>{error&&<p>Dữ liệu dưới đây từ lần tải thành công trước; hãy cập nhật trước khi thao tác.</p>}<ol>{guide.steps.map(s=><li key={s.key}><div><strong>{s.title}</strong><span className={s.complete?'setup-status setup-status--done':'setup-status'}>{s.status}</span></div><p>{s.description}</p>{!s.complete&&<a href={s.href}>Xem bước: {s.title}</a>}</li>)}</ol></>}</section>
+}

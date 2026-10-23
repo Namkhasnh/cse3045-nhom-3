@@ -94,7 +94,7 @@ try {
  await fill('#mfa-code',code);await submit();await waitText('Admin kiểm thử');await navigate('/admin/applications');await waitText('Xét duyệt hồ sơ mở quán');
  const latest=await evaluate("Array.from(document.querySelectorAll('.onboarding-card')).find(el=>el.innerText.includes('Quán đăng ký trình duyệt')).parentElement.querySelector('.onboarding-actions button')?.textContent");
  assert(Boolean(latest),'Admin review card missing');
- await evaluate("(()=>{const section=Array.from(document.querySelectorAll('.onboarding-card')).find(el=>el.innerText.includes('Quán đăng ký trình duyệt')).parentElement;Array.from(section.querySelectorAll('button')).find(b=>b.textContent==='Duyệt và tạo quán cần thiết lập').click()})()");await waitText('Đã duyệt · Cần thiết lập');await snapshot('onboarding-admin-approved-360');
+ await evaluate("(()=>{const section=Array.from(document.querySelectorAll('.onboarding-card')).find(el=>el.innerText.includes('Quán đăng ký trình duyệt')).parentElement;Array.from(section.querySelectorAll('button')).find(b=>b.textContent==='Duyệt và tạo quán cần thiết lập').click()})()");await waitText('Đã duyệt · Xem điều kiện mở bán hiện tại');await waitText('Việc cần làm để mở bán');await until(()=>evaluate("document.querySelectorAll('.setup-guide li').length>=7"),'Approval missing setup guidance');await snapshot('onboarding-admin-approved-360');
  assert(await evaluate('document.documentElement.scrollWidth<=innerWidth'),'Admin onboarding overflow');
 
  stage='manual';
