@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { DishImage } from '../components/DishImage'
 import { Button } from '../../../shared/ui/Button'
 import { Input } from '../../../shared/ui/Input'
 import { ListState } from '../../../shared/ui/ListState'
@@ -7,7 +8,9 @@ import { catalogApi, CatalogError, type Dish, type Restaurant, type Category } f
 import { useCatalog } from '../hooks/use-catalog'
 import type { RestaurantFilterValues } from '../types'
 const defaults: RestaurantFilterValues = { query: '', category: 'all', priceRange: 'all' }
-export function RestaurantMenuPage({ restaurantId }: { restaurantId: string }) {
+export function RestaurantMenuPage({ restaurantId, onAddDish, cartSummary }: { restaurantId: string;
+  onAddDish?: (restaurant: Restaurant, dish: Dish) => void; cartSummary?: { count: number; subtotal: string }
+}) {
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null)
   const [status, setStatus] = useState<'loading' | 'ready' | 'error' | 'missing'>('loading')
   const [attempt, setAttempt] = useState(0)
@@ -31,6 +34,7 @@ export function RestaurantMenuPage({ restaurantId }: { restaurantId: string }) {
     <a href="/">← Khám phá quán</a><h1 id="menu-title">{restaurant.name}</h1>
     <p>{restaurant.address}</p><p>{restaurant.is_open ? restaurant.is_accepting_orders ? 'Đang nhận đơn' : 'Tạm ngưng nhận đơn' : 'Đã đóng cửa'}</p>
     <p>Chưa xác định phí giao</p>
+    {cartSummary && cartSummary.count > 0 && <a className="button button--primary cart-menu-link" href="/cart">Xem giỏ · {cartSummary.count} phần · {formatVnd(cartSummary.subtotal)} (ước tính)</a>}
     <div className="restaurant-filters">
       <Input id="dish-search" label="Tìm từ đầu tên món" type="search" value={filters.query} onChange={e => setFilters({ ...filters, query: e.target.value })} />
       <label htmlFor="menu-category">Danh mục</label><select id="menu-category" className="input" value={filters.category} onChange={e => setFilters({ ...filters, category: e.target.value })}>
@@ -44,8 +48,10 @@ export function RestaurantMenuPage({ restaurantId }: { restaurantId: string }) {
     {catalog.status === 'loading' ? <p role="status">Đang tải menu…</p> : catalog.status === 'error' ? <ListState error title="Chưa tải được menu" action="Thử lại" onAction={catalog.retry}>Kiểm tra kết nối và thử lại.</ListState> :
       catalog.data.length === 0 ? <ListState title={filtered ? 'Chưa tìm thấy món phù hợp' : 'Quán chưa có món công khai'}>Bạn có thể đổi bộ lọc hoặc quay lại sau.</ListState> :
       <div className="restaurant-grid">{catalog.data.map(dish => <article className="restaurant-card menu-dish" key={dish.id}>
+        <DishImage key={dish.image_reference} name={dish.name} source={dish.image_reference} />
         <div className="restaurant-card-content"><h2>{dish.name}</h2><p>{dish.description}</p>
           <p className="restaurant-price">{formatVnd(dish.price_vnd)}</p><p>{dish.is_available ? 'Còn món' : 'Tạm hết món'}</p>
+          {onAddDish && <Button disabled={!restaurant.is_active || !restaurant.is_open || !restaurant.is_accepting_orders || !dish.is_available} onClick={() => onAddDish(restaurant, dish)}>Thêm vào giỏ<span className="sr-only"> {dish.name}</span></Button>}
         </div></article>)}</div>}
     {catalog.moreError && <p role="alert">Chưa tải được trang tiếp theo. Hãy thử lại.</p>}
     {catalog.hasMore && <Button disabled={catalog.loadingMore} onClick={catalog.loadMore}>{catalog.loadingMore ? 'Đang tải…' : 'Tải thêm món'}</Button>}

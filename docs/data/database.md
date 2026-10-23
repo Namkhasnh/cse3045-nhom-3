@@ -18,7 +18,7 @@
 | Menu / `dishes` | `dish_categories`, `dishes` | V1.0: current catalog; visibility and availability are independent |
 | Delivery / `delivery` | `pickup_points`, `delivery_policies`, `restaurant_pickup_rates`, `delivery_fee_tiers` | V1.0 surveyed points; fee tiers/free locations after V1.0 |
 | Orders / `orders` | `orders`, `order_items`, `order_status_history`, `order_requests` | V1.0, including durable history and snapshots |
-| Payments / `payments` | `order_payments`, `payment_status_history`, `restaurant_qr_settings` | V0.5 cash; V0.6 QR/refund, all required by V1.0 |
+| Payments / `payments` | `order_payments`, `payment_status_history`, `payment_qr_config`/`payment_qr_proposals` | V0.5 cash; V0.6 QR/refund, all required by V1.0 |
 | Commission / `commissions` | `commission_policies`, `commission_entries`, `settlements`, `settlement_receipts`, `financial_requests` | V0.7/V1.0 manual reconciliation, approved dashboards and reports |
 | Audit / `audit` | `audit_logs` | V1.0; transactional business audit |
 
@@ -37,7 +37,8 @@ erDiagram
     pickup_points ||--o{ restaurant_pickup_rates : receives_at
     delivery_policies ||--o{ delivery_fee_tiers : prices
     restaurants ||--o| commission_policies : sets_rate
-    restaurants ||--o| restaurant_qr_settings : accepts_qr
+    restaurants ||--o| payment_qr_config : current_qr
+    restaurants ||--o{ payment_qr_proposals : verifies_qr
     accounts ||--o{ orders : student
     restaurants ||--o{ orders : fulfills
     pickup_points o|--o{ orders : optional_origin_reference
@@ -172,7 +173,7 @@ Hours are a proposed structured representation of required opening hours. Multip
 
 V1.0 requires an enabled surveyed restaurant/point pair; missing pair means no confirmable quote. After V1.0, BE checks route range, tier non-overlap and `[min,max)` boundaries, with the final maximum included (BR07–BR10). Missing coverage fails closed. All delivery edits bump policy version under the restaurant lock; pickup-point edits lock affected restaurants in ascending ID order before the point and bump point version.
 
-A delivery quote is not a payment transaction. Proposed storage uses a server-authenticated quote artifact, verified by BE, then an immutable order snapshot; no quote table or provider cache is required. It binds restaurant, destination/point version, policy/survey version, distance, fee and issuance/expiry. After V1.0, route quotes must expire; TTL, map provider and normalization of provider distance to whole metres are **TBD**, to be settled before enabling route ordering. External route calls occur before DB transactions.
+A delivery quote is not a payment transaction. Approved DEC-05 uses a random opaque artifact with SHA-256 hash lookup in delivery_quotes, verified by BE before a future immutable order snapshot. Fixed-point quotes expire after15minutes; no map/provider cache is involved. It binds restaurant, destination/point version, policy/survey version, distance, fee and issuance/expiry. After V1.0, route quotes must expire; TTL, map provider and normalization of provider distance to whole metres are **TBD**, to be settled before enabling route ordering. External route calls occur before DB transactions.
 
 ### 4.3. Orders, items, history and durable idempotency
 
@@ -233,7 +234,7 @@ Hash input includes restaurant ID, normalized/sorted dish IDs and quantities, ac
 
 Payment state lives in **`order_payments`**, not in `orders` and not in a platform payment-gateway ledger. The payments module alone writes it. `order_id` is both PK and FK, so DB allows at most one payment row; order creation ensures exactly one. History records every effective transition, initial unpaid, actor and evidence reference atomically. It is separate from commission collection receipts.
 
-`order_payments` — common: `created_at`, `updated_at`, `version`; no `id`. `payment_status_history` — common: `id`, `created_at` only. `restaurant_qr_settings` — common: `created_at`, `updated_at`, `version`; no `id`, required V0.6/V1.0.
+`order_payments` — common: `created_at`, `updated_at`, `version`; no `id`. `payment_status_history` — common: `id`, `created_at` only. `payment_qr_config` holds the current approved proposal pointer/config version; immutable proposal payee/image fields, review state and actor/time live in `payment_qr_proposals`. Actual V0.6 physical tables are listed below; no old QR rows are invented.
 
 | Table.column | Type | Null | Default | Meaning / keys |
 | --- | --- | --- | --- | --- |
@@ -251,12 +252,12 @@ Payment state lives in **`order_payments`**, not in `orders` and not in a platfo
 | payment_status_history.actor_id | ID | N | — | FK → accounts.id; includes student for initial unpaid event |
 | payment_status_history.reason | VARCHAR(1000) | Y | NULL | Explanation, including cancelled/rejected order or late receipt |
 | payment_status_history.evidence_reference | VARCHAR(2048) | Y | NULL | Optional protected reference, not proof supplied solely by a student |
-| restaurant_qr_settings.restaurant_id | ID | N | — | PK, FK → restaurants.id |
-| restaurant_qr_settings.qr_reference | VARCHAR(2048) | N | — | Restaurant-provided QR reference; representation/validation **TBD** before QR rollout |
+| payment_qr_config.restaurant_id | ID | N | — | PK/FK restaurant; active_id and version coordinate new-order selection |
+| payment_qr_proposals.qr_image_id | ID | N | — | FK to same-restaurant protected payment_images; immutable payee fields and explicit owner submission |
 
 DB CHECKs pair each confirmer/refunder ID with its timestamp; require confirmation fields for paid/refund_pending/refunded and refund fields iff refunded. BE validates legal changes and verifies the actor's current ownership. Cash receipt confirmation changes unpaid → paid. No payment state is a prerequisite for completed; marking paid never completes an order or creates platform commission receipts.
 
-For the architectural QR extension: cancellation/rejection of an already-paid transfer changes paid → refund_pending in the same transaction; late confirmation on a cancelled/rejected order changes unpaid → refund_pending while recording confirmation fields/evidence. Restaurant-recorded completion changes refund_pending → refunded. Repeated effective confirmation/refund is a no-op after authorization. QR evidence requirements, other permitted refund transitions and exceptional cash refunds are **TBD**; do not silently enable extra transitions or automatic refunds.
+For the architectural QR extension: cancellation/rejection of an already-paid transfer changes paid → refund_pending in the same transaction; late confirmation on a cancelled/rejected order changes unpaid → refund_pending while recording confirmation fields/evidence. Restaurant-recorded completion changes refund_pending → refunded. Repeated effective confirmation/refund is a no-op after authorization. QR evidence, per-transfer refund transitions and exclusion of exceptional cash refunds follow approved DEC-06 in [payment policy](../payments-policy.md).
 
 V0.6 requires independent retained receipt-confirmation and refund-obligation/progress facts/history, while the status projection stays unpaid/paid/refund_pending/refunded. [Payment policy](../payments-policy.md) and DEC-06 govern exact evidence, QR representation, partial/exceptional refunds and protected bank fields before P20 schemas. No paid/cancel/refund combination may overwrite receipt history or reopen fulfillment.
 
@@ -337,11 +338,11 @@ Immutable after creation: order restaurant/student links; recipient name/phone; 
 
 Old orders display these fields, never current dish prices/names, pickup-point labels, account contact details or delivery/rate settings. Live joins are for authorization/navigation, not reconstructing historical prices. Restaurant name/address are not required order snapshots by the sources; if displayed from the live profile, do not label them historical. A later historical restaurant-label requirement needs an explicit schema change.
 
-Money is integer VND throughout. Use BigInt/Prisma Decimal or exact decimal arithmetic, never JS floating-point multiplication for money/rates. RATE has eight fractional digits; reject extra precision instead of silently rounding the configured rate. Its technical maximum is `9999.99999999`; the permitted business maximum is **TBD** (do not infer an agreed 100% cap). Validate overflow before writes against signed BIGINT limits and Prisma integer limits for quantities/metres/versions; reject unsupported values.
+Money is integer VND throughout. Use BigInt/Prisma Decimal or exact decimal arithmetic, never JS floating-point multiplication for money/rates. RATE has eight fractional digits; reject extra precision instead of silently rounding the configured rate. Its technical maximum is `9999.99999999`; the approved partner range is `0.03000000`–`0.05000000`, with business cap `0.05000000` (DEC-04 October19). No default rate; explicit partner agreement is required, and changes apply only to new orders after renewed consent. Validate overflow before writes against signed BIGINT limits and Prisma integer limits for quantities/metres/versions; reject unsupported values.
 
 Let `S = subtotal_vnd ≥ 0`, `R = rate × 100000000` as an exact integer. Base commission is `(S × R + 50000000) div 100000000`, using arbitrary-precision integers and integer division. This implements half-up once per order; never round each line's commission. Examples: 105 VND × 10% = 10.5 → 11 VND; 104 × 10% = 10.4 → 10 VND. Delivery fee is excluded. Adjustments are already integer VND and may be negative; no separate percentage rounding is implied.
 
-`subtotal = Σ line_total`; `total = subtotal + delivery_fee`. DB checks per-row equations; **BE** computes the cross-row sum and commission from locked snapshots. Commission arises on completed even if payment is unpaid; rejected/cancelled orders have no base. `receivable = Σ(base + adjustments)`, `collected = Σ(receipts)`, `outstanding = receivable − collected`. Aggregate entries and receipts separately before joining settlements to avoid multiplying amounts. Do not clamp negative balances or invent paid-off statuses. Overcollection limits, receipt correction/reversal procedure, settlement overlap/closure and treatment of late adjustments are **TBD**; do not overwrite history to resolve them.
+`subtotal = Σ line_total`; `total = subtotal + delivery_fee`. DB checks per-row equations; **BE** computes the cross-row sum and commission from locked snapshots. Commission arises on completed even if payment is unpaid; rejected/cancelled orders have no base. `receivable = Σ(base + adjustments)`, `collected = Σ(receipts) − Σ(full reversals)`, `outstanding = receivable − collected`. Aggregate entries and receipts separately before joining settlements to avoid multiplying amounts. Do not clamp negative balances or invent paid-off statuses. [Approved DEC-07](../finance-policy-proposal.md) owns collection caps, full reversals/replacements, unique finalized months and later adjustment booking; original history remains immutable.
 
 ## 7. Integrity: explicit enforcement allocation
 
@@ -388,11 +389,11 @@ Create PK/UQ indexes from the dictionary plus the following named-column indexes
 | order_status_history / payment_status_history | UQ `(order_id, order_version)` / `(order_id, payment_version)` | Ordered timeline and duplicate event defense |
 | order_requests / financial_requests | UQ `(actor_id, operation, idempotency_key)` plus result UQs | Retry arbitration and durable result lookup |
 | commission_entries | UQ base_order_id; `(order_id, restaurant_id)`; `(settlement_id, restaurant_id)`; `(restaurant_id, settlement_id, created_at, id)` | Base uniqueness; composite FKs; unassigned-period selection |
-| settlements | `(restaurant_id, period_start_at, period_end_at, id)` | Restaurant reconciliation periods; intentionally nonunique |
+| settlements | `(restaurant_id, period_start_at, period_end_at, id)` | Restaurant reconciliation periods; V0.7 unique `(restaurant_id,period_start_at)` plus whole-month CHECK |
 | settlement_receipts | `(settlement_id, received_at, id)` | Collection sums and receipt timeline |
 | audit_logs | `(target_type, target_id, created_at, id)`; `(actor_id, created_at, id)` | Object and actor traceability |
 
-Substring searches such as `%term%` are not accelerated by ordinary name indexes; start with bounded queries and measure before selecting a search extension. Use stable keyset pagination with timestamp/ID tie-breakers. Define monthly boundaries in local business time; store/query half-open UTC intervals. Completed-order reports use completed_at; settlement totals use assigned entries. Period membership rules for late adjustments remain **TBD**, rather than silently substituting order creation time.
+Substring searches such as `%term%` are not accelerated by ordinary name indexes; start with bounded queries and measure before selecting a search extension. Use stable keyset pagination with timestamp/ID tie-breakers. Define monthly boundaries in local business time; store/query half-open UTC intervals. Completed-order reports use completed_at; settlement totals use assigned entries. Late adjustments follow approved DEC-07 booking months, never order creation time.
 
 ## 10. Transaction and concurrency recipes
 
@@ -425,3 +426,59 @@ This document specifies guarantees to implement and verify; it does not claim th
 ### 11.1 Commercial migration gate
 
 [Forward migration plan](migration-plan.md) is mandatory for P01/P10: explicit primary Admin selection, legacy multi-ownership resolution, preserved role-request history, expand/backfill/validate/constrain/cutover and empty/upgrade MySQL 9.2.0 evidence. This documentation revision changes no schema, applied migration or retained data. Any previously applied nonunique-owner schema/migration remains immutable evidence; add a reviewed forward constraint only after actual conflicts are resolved.
+
+### V0.3 approved onboarding extension
+
+[Onboarding contract](../onboarding-v03-contract.md) owns finalized terms/evidence/application/review/request tables and limits. Forward SQL adds generated unique pending-applicant guard, immutable version/hash FK, owner/result uniqueness and retryable evidence-deletion metadata. V0.3 does not migrate or rewrite retained consent. Anti-evasion recoveries require a separate future receivable model; completed-only commission adjustments remain unchanged.
+
+Onboarding reads the singleton authority with `FOR SHARE` after the account/request prefix; it never mutates authority. MySQL9.2 requires extra write/LOCK TABLES privileges for `FOR UPDATE`; shared authority locking preserves the read-only runtime grant while blocking concurrent replacement. Mutated account/application/evidence/restaurant rows retain exclusive locks.
+
+## 12. V0.4 setup storage extension
+
+[Approved setup contract](../restaurant-setup-v04-contract.md) and [focused OpenAPI](setup.openapi.json) own enabled P11–P14 DTOs and verification. These forward migrations preserve original rows and never backfill survey verification or partner consent.
+
+| Owner / structure | Added guarantees |
+| --- | --- |
+| Restaurants: location_version | Monotonic location revision; changing then reverting address/coordinates cannot revive old surveys. Readiness derives complete profile/validated hours/menu/survey/agreed rate; changes bump restaurant version and never auto-enable accepting. |
+| Delivery: delivery_proposals/reviews | Immutable proposed row set/location hash/captured point versions/base policy; status/version mutable, one append-only review with actor/note/time per proposal. |
+| Delivery: verified pickup rates | Nullable verified_location_hash/verified_point_version/approved_proposal_id bundle; legacy nulls remain unverified. Exact existing distance/fee caps preserved. |
+| Delivery: delivery_quotes | SHA256 token PK, restaurant FK, immutable explanation JSON and15minute expiry; no recipient/account contact payload. Token256bits, raw artifact not persisted. |
+| Infrastructure: setup_requests | Actor+operation+case-sensitive key PK, canonical SHA256 intent and durable result; commits atomically with configuration/audit/consent. No successful result or intent overwrite through workflows. |
+| Dishes: category version/media_asset_id | Admin-owned shared category create/rename; existing exact price/description caps. Composite FK binds image asset to same restaurant; order item FK still guards deletion. |
+| Media: dish_media | Restaurant/uploader/object key/hash/MIME/size/dimensions; immutable identity, claim/deleted lifecycle. Private separate bucket; only sanitized attached visible published assets served publicly. Cleanup claims under restaurant lock and rechecks references; external deletes after transaction, retryable. |
+| Commissions: proposals/acceptances | Immutable specific rate/terms version+hash/agreement text+hash; one pending proposal per restaurant via generated unique guard. Accepted/superseded status/version only mutable; acceptance actor/time append-only. Composite terms/hash and restaurant/acceptance FKs. New proposal CHECK3–5%; no default. |
+| Commissions: accepted_proposal_id | Existing legacy rates remain unchanged/unconsented. Only policy linked to matching current-owner consent qualifies. New agreed rate applies to future orders; old snapshots/ledger are never rewritten. |
+
+TransactionRunner uses READ COMMITTED with up to3whole-transaction deadlock/lock-timeout attempts. Account/request/authority/restaurant prefix and point-before-commission order remain mandatory; point changes reserve the union of affected points first. No storage calls inside retries. Ambiguous media metadata commit checks object tracking before compensation; unavailable DB leaves the object for guarded cleanup rather than deleting a possibly committed asset.
+
+## V0.5 physical schema handoff
+
+The enabled cash implementation retains legacy physical names `order_payment_history` and `commission_entries` (base-only in V0.5); it does not rename applied history. P15 adds item restaurant discriminators/composite FKs from existing relationships and case-sensitive request keys. P17 adds nullable reason/evidence_reference to payment history and append-only `order_food_ready(order_id PK/FK, actor_id FK, ready_at, order_version)`, with RESTRICT FKs. An order has zero/one food-ready event; actor is the current owner, status remains accepted and order.version increases. No old food-ready/receipt facts are backfilled. Runtime may INSERT milestone/history/base but cannot UPDATE/DELETE them or order snapshots. V0.7 ledger expansion remains decision-gated; no settlements/adjustments are enabled by V0.5.
+
+## V0.6 approved payment contract
+
+DEC-06 physical extension owns QR proposals/current pointer, immutable instructions, verified receipts, one full refund obligation per receipt, claims, disputes and private image metadata. Payment projection remains separate from facts/fulfillment. Receipt identity spans QR versions; amounts use BIGINT. [Approved policy](../payments-policy.md) owns states, retention and lock-coordinated cleanup; forward SQL only, no retained adoption.
+
+### V0.6 physical storage and maintenance
+
+`payment_instructions` has one immutable snapshot per new QR order; `payment_receipts` uniquely identifies each bank event across QR versions; `payment_refunds` has one full obligation per receipt and unique refund transaction identity. `payment_claims` never confirms money; `payment_disputes` retains scoped review facts. `payment_images` retains object/hash/mime/actor/binding and deletion markers. Composite FKs enforce same restaurant/order for configuration, instructions, proofs, receipts, refunds and disputes; CHECKs reject invalid states/zero receipts and inconsistent refund completion metadata.
+
+Forward migrations `20261020050000_qr_payments` and `20261020051000_payment_reference_scope` preserve every existing row/column. Runtime cannot alter snapshots/receipt amounts/identities or delete history. Protected storage namespaces bind database identity and restaurant; cleanup refuses imported/out-of-namespace keys and never interprets them as its orphans. Cleanup is a guarded local maintenance CLI, not an unkeyed HTTP money command. [P20 evidence](../progress/P20.md), [isolated verification](../payments-local-verification.md).
+
+## V0.7 approved DEC-07 extension — October21
+
+[DEC-07.2026-10-21.v1](../finance-policy-proposal.md) is explicitly approved and owns monthly membership/finalization, next-period adjustment booking, full append-only receipt reversal/replacement, signed account credit and collection caps, supporting-reference access, exact report fields/cutoffs, recovery and Vietnamese finance addendum. It supersedes the DEC-07 financial TBDs above only. Existing partner terms/consent hashes remain immutable; real publication/adoption is separate. FIN-03/04/05 implementation evidence follows P22→P23→P24; DEC-08 controls remain gated at P25.
+
+P23 physical extension: `20261021000000_finance_ledger` preserves old base IDs/amounts/actors/times, derives only base-order/month links from known completion facts, replaces order uniqueness with nullable unique base-order guard and same-restaurant composite FKs. New `settlements`, `settlement_receipts`, `settlement_receipt_reversals`, `financial_requests` store immutable decisions/facts, correction links and successful intent results. No old receipts or partner consents are inferred. Under the restaurant exclusive lock, immutable settlements use `FOR SHARE` (runtime cannot UPDATE settlements), followed by entry locks where assignment changes. Only assignment columns and initial-null result links receive narrow UPDATE grants. Orders public service supplies completed snapshots/revenue; commissions repository owns finance tables.
+
+[Approved DEC-08](../account-support-policy-proposal.md) refines §8: indefinite non-contact facts/keys/audit; separately encrypted private snapshots expire24calendar months after obligations end; support bodies90days after close; verified profile erasure30days after obligations/holds end. Hold release adds90days grace. No automatic deletion of business facts or retained plaintext migration. Support/privacy rows lock after account/request/authority/restaurant/order/payment groups; holds and cleanup use the same owning-resource locks. Synthetic implementation evidence is separate.
+
+P25 forward storage/locks/privileged retention and key-restore boundaries follow the [approved focused contract](../account-support-v07-contract.md). Runtime cannot edit business/contact snapshots or message/event history, delete keys or run retention; the local synthetic operator identity is separate. Old plaintext is preserved and never represented as erased by masking.
+
+## Onboarding notification storage
+
+The approved [notification contract](../notifications-contract.md) adds `notifications` via forward migration `20261022000000_notifications`. Logical recipients avoid account FK lock inversion; source workflow context validates recipient ownership. Unique mailbox/event key prevents duplicates; payload is immutable, only read_at changes. No historical backfill or automatic purge.
+
+## V0.8 AI metadata
+
+[DEC-09](../ai-v08-contract.md) adds ai_admission singleton, ai_counters and ai_leases via forward migration20261022010000_recommendations. No prompt/output/contact storage or business-history changes. Account lock precedes singleton admission lock; no network calls in transactions. Atomic counter reservations and30s durable leases bound multiple instances; failed/uncertain calls consume quota. Startup/hourly/admission cleanup removes7day-old metadata with1000row bounds; offline cleanup resumes at startup. Runtime has narrow admission UPDATE(id), metadata INSERT/UPDATE/DELETE, no new business write privileges. [Evidence](../ai-local-verification.md) uses disposable MySQL9.2 only; subsequent explicitly authorized local metadata adoption is recorded in the [review/receipt](../ai-local-adoption-review.md), with original58 tables/173 rows unchanged and real quota carried forward.

@@ -1,0 +1,2285 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Approved DEC-07 finance contract",
+    "version": "0.7.0"
+  },
+  "servers": [
+    {
+      "url": "/api/v1"
+    }
+  ],
+  "paths": {
+    "/commission-entries": {
+      "get": {
+        "operationId": "finance_get__commission-entries",
+        "tags": [
+          "V0.7 finance"
+        ],
+        "description": "Approved DEC-07.2026-10-21.v1. Current owner reads own restaurant; sole MFA Admin writes. Append-only facts and signed exact balances. Lists ascending numeric ID; report rows ascending month. Statement create category C requires unique-month/entry-set recovery before another create. Supporting evidence is Admin-only; all writes commit required audit/result atomically.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Account-Id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "as_of",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "restaurant_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "order_id",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "settlement_id",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "kind",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "assigned",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "period_start_at",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "AccessCookie": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "200": {
+            "description": "Authorized exact committed result; keyed replay200, create201; no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/FinanceEntry"
+                      }
+                    },
+                    "page": {
+                      "$ref": "#/components/schemas/FinancePage"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "page"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/commission-adjustments": {
+      "post": {
+        "operationId": "finance_post__commission-adjustments",
+        "tags": [
+          "V0.7 finance"
+        ],
+        "description": "Approved DEC-07.2026-10-21.v1. Current owner reads own restaurant; sole MFA Admin writes. Append-only facts and signed exact balances. Lists ascending numeric ID; report rows ascending month. Statement create category C requires unique-month/entry-set recovery before another create. Supporting evidence is Admin-only; all writes commit required audit/result atomically.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Account-Id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          }
+        ],
+        "security": [
+          {
+            "AccessCookie": [],
+            "CsrfHeader": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "200": {
+            "description": "Authorized exact committed result; keyed replay200, create201; no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/FinanceEntry"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Authorized exact committed result; keyed replay200, create201; no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/FinanceEntry"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FinanceAdjustmentCreate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/settlements": {
+      "get": {
+        "operationId": "finance_get__settlements",
+        "tags": [
+          "V0.7 finance"
+        ],
+        "description": "Approved DEC-07.2026-10-21.v1. Current owner reads own restaurant; sole MFA Admin writes. Append-only facts and signed exact balances. Lists ascending numeric ID; report rows ascending month. Statement create category C requires unique-month/entry-set recovery before another create. Supporting evidence is Admin-only; all writes commit required audit/result atomically.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Account-Id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "as_of",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "restaurant_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "period_start_at",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "AccessCookie": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "200": {
+            "description": "Authorized exact committed result; keyed replay200, create201; no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/FinanceSettlement"
+                      }
+                    },
+                    "page": {
+                      "$ref": "#/components/schemas/FinancePage"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "page"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "finance_post__settlements",
+        "tags": [
+          "V0.7 finance"
+        ],
+        "description": "Approved DEC-07.2026-10-21.v1. Current owner reads own restaurant; sole MFA Admin writes. Append-only facts and signed exact balances. Lists ascending numeric ID; report rows ascending month. Statement create category C requires unique-month/entry-set recovery before another create. Supporting evidence is Admin-only; all writes commit required audit/result atomically.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Account-Id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          }
+        ],
+        "security": [
+          {
+            "AccessCookie": [],
+            "CsrfHeader": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "201": {
+            "description": "Authorized exact committed result; keyed replay200, create201; no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/FinanceSettlementCreated"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FinanceSettlementCreate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/settlements/{id}": {
+      "get": {
+        "operationId": "finance_get__settlements_id",
+        "tags": [
+          "V0.7 finance"
+        ],
+        "description": "Approved DEC-07.2026-10-21.v1. Current owner reads own restaurant; sole MFA Admin writes. Append-only facts and signed exact balances. Lists ascending numeric ID; report rows ascending month. Statement create category C requires unique-month/entry-set recovery before another create. Supporting evidence is Admin-only; all writes commit required audit/result atomically.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Account-Id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          }
+        ],
+        "security": [
+          {
+            "AccessCookie": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "200": {
+            "description": "Authorized exact committed result; keyed replay200, create201; no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/FinanceDetail"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/settlements/{id}/receipts": {
+      "get": {
+        "operationId": "finance_get__settlements_id_receipts",
+        "tags": [
+          "V0.7 finance"
+        ],
+        "description": "Approved DEC-07.2026-10-21.v1. Current owner reads own restaurant; sole MFA Admin writes. Append-only facts and signed exact balances. Lists ascending numeric ID; report rows ascending month. Statement create category C requires unique-month/entry-set recovery before another create. Supporting evidence is Admin-only; all writes commit required audit/result atomically.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Account-Id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "as_of",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "AccessCookie": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "200": {
+            "description": "Authorized exact committed result; keyed replay200, create201; no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/FinanceReceiptHistory"
+                      }
+                    },
+                    "page": {
+                      "$ref": "#/components/schemas/FinancePage"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "page"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "finance_post__settlements_id_receipts",
+        "tags": [
+          "V0.7 finance"
+        ],
+        "description": "Approved DEC-07.2026-10-21.v1. Current owner reads own restaurant; sole MFA Admin writes. Append-only facts and signed exact balances. Lists ascending numeric ID; report rows ascending month. Statement create category C requires unique-month/entry-set recovery before another create. Supporting evidence is Admin-only; all writes commit required audit/result atomically.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Account-Id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          }
+        ],
+        "security": [
+          {
+            "AccessCookie": [],
+            "CsrfHeader": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "200": {
+            "description": "Authorized exact committed result; keyed replay200, create201; no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/FinanceReceipt"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Authorized exact committed result; keyed replay200, create201; no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/FinanceReceipt"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FinanceReceiptCreate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/settlements/{id}/receipts/{receipt_id}/reversals": {
+      "post": {
+        "operationId": "finance_post__settlements_id_receipts_receipt_id_reversals",
+        "tags": [
+          "V0.7 finance"
+        ],
+        "description": "Approved DEC-07.2026-10-21.v1. Current owner reads own restaurant; sole MFA Admin writes. Append-only facts and signed exact balances. Lists ascending numeric ID; report rows ascending month. Statement create category C requires unique-month/entry-set recovery before another create. Supporting evidence is Admin-only; all writes commit required audit/result atomically.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "in": "path",
+            "name": "receipt_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Account-Id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          }
+        ],
+        "security": [
+          {
+            "AccessCookie": [],
+            "CsrfHeader": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "200": {
+            "description": "Authorized exact committed result; keyed replay200, create201; no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/FinanceReversal"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Authorized exact committed result; keyed replay200, create201; no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/FinanceReversal"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FinanceReversalCreate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reports/commissions": {
+      "get": {
+        "operationId": "finance_get__reports_commissions",
+        "tags": [
+          "V0.7 finance"
+        ],
+        "description": "Approved DEC-07.2026-10-21.v1. Current owner reads own restaurant; sole MFA Admin writes. Append-only facts and signed exact balances. Lists ascending numeric ID; report rows ascending month. Statement create category C requires unique-month/entry-set recovery before another create. Supporting evidence is Admin-only; all writes commit required audit/result atomically.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Account-Id",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "as_of",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "restaurant_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "from",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "to",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "AccessCookie": []
+          }
+        ],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "200": {
+            "description": "Authorized exact committed result; keyed replay200, create201; no-store.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/FinanceReportRow"
+                      }
+                    },
+                    "page": {
+                      "$ref": "#/components/schemas/FinancePage"
+                    },
+                    "summary": {
+                      "$ref": "#/components/schemas/FinanceSummary"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "page",
+                    "summary"
+                  ]
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "AccessCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "__Host-hlf_access",
+        "description": "15-minute signed JWT; current account/auth_version/ownership checked each request; Admin requires MFA assurance."
+      },
+      "CsrfHeader": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-CSRF-Token",
+        "description": "Must equal __Host-hlf_csrf cookie and its HMAC/jti binding to the current access session."
+      }
+    },
+    "parameters": {
+      "Origin": {
+        "name": "Origin",
+        "in": "header",
+        "required": true,
+        "description": "Must exactly equal configured PUBLIC_ORIGIN, including scheme/host/port. Unsafe requests require application/json.",
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "schemas": {
+      "FinanceAdjustmentCreate": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "order_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "amount_vnd": {
+            "type": "string",
+            "pattern": "^-?[1-9][0-9]{0,18}$"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "evidence_reference": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$"
+          },
+          "corrects_entry_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          }
+        },
+        "required": [
+          "order_id",
+          "amount_vnd",
+          "reason",
+          "evidence_reference"
+        ]
+      },
+      "FinanceSettlementCreate": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "restaurant_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "period_start_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "period_end_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "entry_ids": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          }
+        },
+        "required": [
+          "restaurant_id",
+          "period_start_at",
+          "period_end_at",
+          "entry_ids"
+        ]
+      },
+      "FinanceReceiptCreate": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "amount_vnd": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "received_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "method": {
+            "enum": [
+              "cash",
+              "bank_transfer"
+            ]
+          },
+          "reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "evidence_reference": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$"
+          },
+          "note": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "replaces_receipt_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          }
+        },
+        "required": [
+          "amount_vnd",
+          "received_at",
+          "method",
+          "reference",
+          "evidence_reference"
+        ]
+      },
+      "FinanceReversalCreate": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "evidence_reference": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$"
+          }
+        },
+        "required": [
+          "reason",
+          "evidence_reference"
+        ]
+      },
+      "FinanceEntry": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "restaurant_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "order_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "kind": {
+            "enum": [
+              "base",
+              "adjustment"
+            ]
+          },
+          "amount_vnd": {
+            "type": "string",
+            "pattern": "^(0|-?[1-9][0-9]*)$"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "corrects_entry_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[1-9][0-9]{0,18}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "booking_month": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "settlement_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[1-9][0-9]{0,18}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "actor_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "policy_version": {
+            "anyOf": [
+              {
+                "const": "DEC-07.2026-10-21.v1"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "evidence_reference": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "restaurant_id",
+          "order_id",
+          "kind",
+          "amount_vnd",
+          "reason",
+          "corrects_entry_id",
+          "booking_month",
+          "settlement_id",
+          "created_at",
+          "actor_id",
+          "policy_version"
+        ]
+      },
+      "FinanceSettlement": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "restaurant_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "period_start_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "period_end_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "created_by": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "policy_version": {
+            "const": "DEC-07.2026-10-21.v1"
+          }
+        },
+        "required": [
+          "id",
+          "restaurant_id",
+          "period_start_at",
+          "period_end_at",
+          "created_by",
+          "created_at",
+          "policy_version"
+        ]
+      },
+      "FinanceSettlementCreated": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "restaurant_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "period_start_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "period_end_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "created_by": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "policy_version": {
+            "const": "DEC-07.2026-10-21.v1"
+          },
+          "entry_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "restaurant_id",
+          "period_start_at",
+          "period_end_at",
+          "created_by",
+          "created_at",
+          "policy_version",
+          "entry_ids"
+        ]
+      },
+      "FinanceSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "account_receivable_vnd": {
+            "type": "string",
+            "pattern": "^(0|-?[1-9][0-9]*)$"
+          },
+          "account_collected_vnd": {
+            "type": "string",
+            "pattern": "^(0|-?[1-9][0-9]*)$"
+          },
+          "account_outstanding_vnd": {
+            "type": "string",
+            "pattern": "^(0|-?[1-9][0-9]*)$"
+          }
+        },
+        "required": [
+          "account_receivable_vnd",
+          "account_collected_vnd",
+          "account_outstanding_vnd"
+        ]
+      },
+      "FinanceDetail": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "restaurant_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "period_start_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "period_end_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "created_by": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "policy_version": {
+            "const": "DEC-07.2026-10-21.v1"
+          },
+          "entry_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          "base_vnd": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]*)$"
+          },
+          "adjustment_vnd": {
+            "type": "string",
+            "pattern": "^(0|-?[1-9][0-9]*)$"
+          },
+          "receivable_vnd": {
+            "type": "string",
+            "pattern": "^(0|-?[1-9][0-9]*)$"
+          },
+          "collected_vnd": {
+            "type": "string",
+            "pattern": "^(0|-?[1-9][0-9]*)$"
+          },
+          "outstanding_vnd": {
+            "type": "string",
+            "pattern": "^(0|-?[1-9][0-9]*)$"
+          },
+          "account_receivable_vnd": {
+            "type": "string",
+            "pattern": "^(0|-?[1-9][0-9]*)$"
+          },
+          "account_collected_vnd": {
+            "type": "string",
+            "pattern": "^(0|-?[1-9][0-9]*)$"
+          },
+          "account_outstanding_vnd": {
+            "type": "string",
+            "pattern": "^(0|-?[1-9][0-9]*)$"
+          },
+          "collectible_vnd": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]*)$"
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "entry_count": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "id",
+          "restaurant_id",
+          "period_start_at",
+          "period_end_at",
+          "created_by",
+          "created_at",
+          "policy_version",
+          "entry_ids",
+          "base_vnd",
+          "adjustment_vnd",
+          "receivable_vnd",
+          "collected_vnd",
+          "outstanding_vnd",
+          "account_receivable_vnd",
+          "account_collected_vnd",
+          "account_outstanding_vnd",
+          "collectible_vnd",
+          "as_of",
+          "entry_count"
+        ]
+      },
+      "FinanceReversal": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "receipt_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "amount_vnd": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]*)$"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "recorded_by": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "evidence_reference": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$"
+          }
+        },
+        "required": [
+          "id",
+          "receipt_id",
+          "amount_vnd",
+          "reason",
+          "recorded_by",
+          "created_at"
+        ]
+      },
+      "FinanceReceipt": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "settlement_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "amount_vnd": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]*)$"
+          },
+          "received_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "recorded_by": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "method": {
+            "enum": [
+              "cash",
+              "bank_transfer"
+            ]
+          },
+          "reference": {
+            "type": "string"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "replaces_receipt_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[1-9][0-9]{0,18}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "evidence_reference": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$"
+          }
+        },
+        "required": [
+          "id",
+          "settlement_id",
+          "amount_vnd",
+          "received_at",
+          "created_at",
+          "recorded_by",
+          "method",
+          "reference",
+          "note",
+          "replaces_receipt_id"
+        ]
+      },
+      "FinanceReceiptHistory": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "settlement_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "amount_vnd": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]*)$"
+          },
+          "received_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "recorded_by": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "method": {
+            "enum": [
+              "cash",
+              "bank_transfer"
+            ]
+          },
+          "reference": {
+            "type": "string"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "replaces_receipt_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[1-9][0-9]{0,18}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "evidence_reference": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$"
+          },
+          "reversal": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FinanceReversal"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "settlement_id",
+          "amount_vnd",
+          "received_at",
+          "created_at",
+          "recorded_by",
+          "method",
+          "reference",
+          "note",
+          "replaces_receipt_id",
+          "reversal"
+        ]
+      },
+      "FinanceReportRow": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "policy_version": {
+            "const": "DEC-07.2026-10-21.v1"
+          },
+          "timezone": {
+            "const": "Asia/Ho_Chi_Minh"
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "restaurant_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "current_restaurant_name": {
+            "type": "string"
+          },
+          "period_start_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "period_end_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "settlement_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[1-9][0-9]{0,18}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "base_vnd": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]*)$"
+          },
+          "adjustment_vnd": {
+            "type": "string",
+            "pattern": "^(0|-?[1-9][0-9]*)$"
+          },
+          "receivable_vnd": {
+            "type": "string",
+            "pattern": "^(0|-?[1-9][0-9]*)$"
+          },
+          "collected_vnd": {
+            "type": "string",
+            "pattern": "^(0|-?[1-9][0-9]*)$"
+          },
+          "outstanding_vnd": {
+            "type": "string",
+            "pattern": "^(0|-?[1-9][0-9]*)$"
+          },
+          "completed_order_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "dish_revenue_vnd": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]*)$"
+          },
+          "delivery_fee_vnd": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]*)$"
+          },
+          "order_total_vnd": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]*)$"
+          },
+          "gross_receipts_vnd": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]*)$"
+          },
+          "receipt_reversals_vnd": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]*)$"
+          },
+          "net_recorded_collection_vnd": {
+            "type": "string",
+            "pattern": "^(0|-?[1-9][0-9]*)$"
+          },
+          "collectible_vnd": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]*)$"
+          },
+          "entry_count": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "policy_version",
+          "timezone",
+          "as_of",
+          "restaurant_id",
+          "current_restaurant_name",
+          "period_start_at",
+          "period_end_at",
+          "settlement_id",
+          "base_vnd",
+          "adjustment_vnd",
+          "receivable_vnd",
+          "collected_vnd",
+          "outstanding_vnd",
+          "completed_order_count",
+          "dish_revenue_vnd",
+          "delivery_fee_vnd",
+          "order_total_vnd",
+          "gross_receipts_vnd",
+          "receipt_reversals_vnd",
+          "net_recorded_collection_vnd",
+          "collectible_vnd",
+          "entry_count"
+        ]
+      },
+      "FinancePage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "has_more",
+          "next_cursor",
+          "as_of"
+        ]
+      },
+      "Error": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "code",
+              "message",
+              "field_errors",
+              "details",
+              "request_id",
+              "retryable"
+            ],
+            "properties": {
+              "code": {
+                "enum": [
+                  "MALFORMED_REQUEST",
+                  "AUTH_REQUIRED",
+                  "TOKEN_INVALID",
+                  "ACCOUNT_INACTIVE",
+                  "FORBIDDEN",
+                  "CSRF_FAILED",
+                  "VALIDATION_ERROR",
+                  "VERSION_CONFLICT",
+                  "ACCOUNT_TAKEN",
+                  "INVALID_CREDENTIALS",
+                  "EMAIL_CODE_INVALID",
+                  "MFA_INVALID",
+                  "RATE_LIMITED",
+                  "PASSWORD_CHECK_UNAVAILABLE",
+                  "EMAIL_UNAVAILABLE",
+                  "EMAIL_NOT_CONFIGURED",
+                  "INTERNAL_ERROR",
+                  "TEMPORARILY_UNAVAILABLE",
+                  "NOT_FOUND",
+                  "RESTAURANT_LIMIT_REACHED",
+                  "APPLICATION_PENDING",
+                  "APPLICATION_STATE_CONFLICT",
+                  "TERMS_VERSION_CONFLICT",
+                  "IDEMPOTENCY_KEY_REUSED",
+                  "PAYLOAD_TOO_LARGE",
+                  "ENTRY_ALREADY_ASSIGNED",
+                  "PERIOD_ALREADY_FINALIZED",
+                  "ELIGIBLE_ENTRIES_CHANGED",
+                  "COLLECTION_EXCEEDS_OUTSTANDING",
+                  "RECEIPT_ALREADY_REVERSED",
+                  "COLLECTION_REFERENCE_REUSED",
+                  "ACCOUNT_CHANGED"
+                ]
+              },
+              "message": {
+                "type": "string"
+              },
+              "field_errors": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "path",
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "path": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "details": {
+                "type": "object"
+              },
+              "request_id": {
+                "type": "string"
+              },
+              "retryable": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "examples": [
+          {
+            "error": {
+              "code": "EMAIL_CODE_INVALID",
+              "message": "Invalid or expired verification code.",
+              "field_errors": [],
+              "details": {},
+              "request_id": "synthetic-request",
+              "retryable": false
+            }
+          }
+        ]
+      }
+    },
+    "responses": {
+      "Error400": {
+        "description": "Safe error envelope; see API Markdown §§2/4/7.1 and enabled errors in Error schema.",
+        "headers": {
+          "Cache-Control": {
+            "description": "Never cache auth/profile responses.",
+            "schema": {
+              "enum": [
+                "no-store"
+              ]
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error401": {
+        "description": "Safe error envelope; see API Markdown §§2/4/7.1 and enabled errors in Error schema.",
+        "headers": {
+          "Cache-Control": {
+            "description": "Never cache auth/profile responses.",
+            "schema": {
+              "enum": [
+                "no-store"
+              ]
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error403": {
+        "description": "Safe error envelope; see API Markdown §§2/4/7.1 and enabled errors in Error schema.",
+        "headers": {
+          "Cache-Control": {
+            "description": "Never cache auth/profile responses.",
+            "schema": {
+              "enum": [
+                "no-store"
+              ]
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error409": {
+        "description": "Safe error envelope; see API Markdown §§2/4/7.1 and enabled errors in Error schema.",
+        "headers": {
+          "Cache-Control": {
+            "description": "Never cache auth/profile responses.",
+            "schema": {
+              "enum": [
+                "no-store"
+              ]
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error422": {
+        "description": "Safe error envelope; see API Markdown §§2/4/7.1 and enabled errors in Error schema.",
+        "headers": {
+          "Cache-Control": {
+            "description": "Never cache auth/profile responses.",
+            "schema": {
+              "enum": [
+                "no-store"
+              ]
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error429": {
+        "description": "Safe error envelope; see API Markdown §§2/4/7.1 and enabled errors in Error schema.",
+        "headers": {
+          "Cache-Control": {
+            "description": "Never cache auth/profile responses.",
+            "schema": {
+              "enum": [
+                "no-store"
+              ]
+            }
+          },
+          "Retry-After": {
+            "description": "Positive seconds remaining in the applicable rate window.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 900
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error500": {
+        "description": "Safe error envelope; see API Markdown §§2/4/7.1 and enabled errors in Error schema.",
+        "headers": {
+          "Cache-Control": {
+            "description": "Never cache auth/profile responses.",
+            "schema": {
+              "enum": [
+                "no-store"
+              ]
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error503": {
+        "description": "Safe error envelope; see API Markdown §§2/4/7.1 and enabled errors in Error schema.",
+        "headers": {
+          "Cache-Control": {
+            "description": "Never cache auth/profile responses.",
+            "schema": {
+              "enum": [
+                "no-store"
+              ]
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error404": {
+        "description": "Hidden, unpublished, inactive-parent or missing resource.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    }
+  }
+}

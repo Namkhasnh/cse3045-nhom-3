@@ -314,6 +314,8 @@ pending → cancelled  (student who owns the order)
 - Cart totals are estimates and must be labeled accordingly; final totals are determined by the backend. Created orders use snapshots of dish name/price, pickup information, fee, distance, and the finalized rate.
 - BIGINT IDs travel through REST as strings. Preserve monetary representations exactly according to the contract, especially money strings in quotes/snapshots; do not coerce all IDs/money to JavaScript `Number` or serialize `BigInt` directly to JSON. Database rates are fractions, e.g. `0.10000000` = 10%; percentage forms must convert precisely at the contract boundary.
 - Use Vietnamese locale and timezone `Asia/Ho_Chi_Minh` for displayed dates/times; do not manually convert UTC by adding a fixed number of hours.
+V0.2 implements a non-sensitive local guest draft and explicit price acceptance; it keeps that draft on logout/account change. V0.5 adds separate authenticated cash checkout and account-scoped recovery; guest storage remains non-sensitive. See [frontend boundaries](../../frontend/README.md#guest-cart-boundary) for persistence, catalog revalidation and browser evidence.
+
 ### 9.3. Duplicate Submission, Concurrency, and Polling
 - One order-creation intent uses one stable idempotency key. Rerenders, retries after disconnection, or retries after a missing response must not generate a new key for the same intent.
 - When the client does not know whether an order was created, show a verification/recovery state according to the backend contract; do not immediately invite the user to place another order.
@@ -368,6 +370,7 @@ Do not copy example bank/account details into real QR generation. Unapproved com
 | Order not eligible | Explain reason: unavailable dish, restaurant closed/not accepting, outside range, fee unknown |
 | AI error/slow response | Retry plus manual selection; do not block ordering |
 | Missing/broken image | Correct-ratio fallback and appropriate name/alt; card layout remains intact |
+Shared `Input` accepts an inline `error`: connect it to the control through `aria-describedby` and `aria-invalid`; focus the first invalid field on failed validation. Keep setup drafts scoped to their form when another form saves. Checkout keeps its submitted controls and pointer target stable through pending/success; owner order selection reveals a named detail region and supports returning to the list. [Scoped reproduction](../uiux-fixes-local-verification.md) records the implemented fixes and evidence limits.
 ### 11.2. Vietnamese Product Copy
 Keep the product tone friendly and action-oriented, for example: “Hôm nay ăn gì nhỉ?”, “Thêm vào giỏ”, “Chọn điểm nhận”, “Chưa xác định được phí giao”. Buttons should name the action explicitly; avoid generic “OK” for important decisions. Dashboards use direct, concise wording.
 Do not expose stack traces, raw enum names, or raw error codes to students. A safe support reference code may be shown when needed. Do not turn mock copy into real data or show success before the server confirms the action.
@@ -429,3 +432,41 @@ Report changes, verification steps, and all intentional differences from the HTM
 **Completion condition:** the interface follows the approved direction recorded in this guide, behaves according to business rules within the assigned scope, and is structured so future pages can reuse the same design system. A visually similar copy with non-functional buttons, incorrect states, or fake data presented as real is not considered complete.
 
 Version acceptance follows [roadmap](../roadmap.md); new journeys must cover PUBLIC-01, GUEST-01, AUTH-04, ADMIN-01/02 and ONBOARD-01–03 alongside UI-02.
+
+## V0.3 onboarding and order privacy amendment
+
+Opening screens display immutable terms/version, explicit consent, private required evidence, own review history and setup-required approval. [Approved contract](../onboarding-v03-contract.md) owns limits. Owner order UI withholds recipient contact until “Đã xong món – chờ giao”; accepting alone reveals nothing. Backend projection must enforce this. The action does not mark delivering/completed. Never render buyer account identifiers/email. [P17](../progress/P17.md) implements this projection/milestone for local synthetic scope; [V0.5 verification](../cash-ordering-local-verification.md) owns reproducible browser evidence.
+
+## V0.4 connected setup
+
+Owner /owner, /owner/menu, /owner/delivery and /owner/commission manage the one current restaurant. Admin /admin/restaurants, /admin/categories, /admin/delivery and /admin/commissions provide only approved configuration/review powers. Manager/Admin mobile navigation wraps; generic ConfirmDialog adds an optional context-specific cancel label while preserving cart behavior. Pending durable commands freeze their original payload/key, expose explicit recovery and clear obsolete errors after success. Quote expiry and unknown fee are distinct from a known zero. Ready never auto-enables accepting; Admin activation and owner consent/switch remain separate. [Setup contract](../restaurant-setup-v04-contract.md) owns exact semantics, caps and states.
+
+## Local discovery follow-up
+
+The connected homepage adds “Khám phá món ăn” using public dishes independently of the existing restaurant filters. Compact dish rows reuse DishImage, prices and menu navigation; no fixture fallback or checkout action is added. Terms/history reads have independent error states, a successful-read-only empty history and one refresh control. Background failures preserve drafts and disable unsafe submission. A development-only notice identifies explicitly authorized local synthetic data; sample names/descriptions also remain labeled. See [local adoption](../local-demo-adoption.md).
+
+Homepage dish cards identify the seller with “Quán bán: …”, linking to that dish’s restaurant. The public dish projection supplies the current restaurant name; retain available/sold-out text without inventing ratings or remaining quantities.
+
+## V0.6 approved payment contract
+
+Approved DEC-06 notices, independent receipt/refund panels, static QR manual amount/reference entry and scoped disputes follow [payment policy](../payments-policy.md). QR claim never reports transfer success; private recovery and independent version guards remain mandatory.
+
+## V0.7 finance interface
+
+Approved [DEC-07](../finance-policy-proposal.md) drives `/owner/finance` and sole-MFA-Admin `/admin/settlements` (`/admin/reports` alias); rate-consent pages stay separate. Reuse approved cards/buttons/native dialogs and a labeled keyboard-focusable table scroller at360px. Current owner reads own signed account/period balances and immutable facts; Admin previews and confirms whole-month finalization, adjustment, verified manual receipt and full reversal/replacement. Show open months, missing/late statements and overdue collectible debt as derived date/amount labels, never a settlement enum. Display entry count so a net-zero period is distinct from no facts. Unknown creates reconcile unique month+original entry set first; keyed intents preserve original actor/restaurant/body/key across reload, and storage failure blocks sending. Held prior-account replies are dropped. [Reproduction and boundaries](../finance-local-verification.md).
+
+## V0.7 account, support and audit
+
+[P25 contract](../account-support-v07-contract.md) connects buyer support/privacy in the student shell and manager/Admin pages in their distinct shells. Restricted navigation displays only obligations; pending acceptance/configuration remains unavailable. Native confirmation dialogs show concrete targets; actor-bound saved intents survive reload/account changes and stale private replies are discarded. Audit reuses the original “Admin: Nhật ký hành động” reference pattern while removing fictional contacts/rates/raw evidence and using bounded filters. No asset or identity change.
+
+## Onboarding notification interface
+
+[Notifications](../notifications-contract.md) add one session-scoped bell, unread badge, disclosure preview, explicit mailbox/read-loaded controls, current setup checklist and paginated Admin tasks. Keep cream/orange/Be Vietnam Pro and distinct shells. App composes checklist slots into onboarding/restaurant features. Reading never implies consent; show separate current visibility/orderability and waiting actor.
+
+## V0.8 recommendation implementation
+
+[Approved DEC-09](../ai-v08-contract.md): `/recommendations` accepts one-portion delivery-inclusive budget and up to3 existing category preferences; no free text. Show provider-use notice before explicit submission, current backend estimates, existing cart-switch consent and fresh quote/checkout. A five-item buyer navigation includes AI; manual ordering remains available during AI failure. [Verification](../ai-local-verification.md) records connected Chrome evidence and missing live-provider acceptance.
+
+## Scoped MVP ordering UX follow-up
+
+Manager/Admin navigation marks matching routes with `aria-current=page`, treating `/admin/reports` as the finance alias. Owner order pagination includes “Về đơn mới nhất”; fixed pickup snapshot name/text display once when identical. [Three-role verification](../mvp-ordering-verification.md) records actual Chrome mobile/desktop/keyboard/dialog/native-submit evidence and accessibility limits; no theme/permission policy change.

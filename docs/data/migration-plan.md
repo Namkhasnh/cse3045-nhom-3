@@ -28,3 +28,27 @@ Require DEC-01: primary Admin ID explicitly selected by the operator, intended h
 Apply reviewed migrations to empty and upgraded disposable fixtures on MySQL 9.2.0. Include multiple legacy Admins (must stop for selection), multi-restaurant legacy ownership (must stop for mapping), accounts referenced by history, pending old requests, audit failure, duplicate-owner races and retry/restart boundaries. Assert retained IDs/snapshots/counts/totals and session revocation, plus refusal to proceed on invalid inventory.
 
 Never reset, force-push schema, run demo seeds on retained/shared data, fabricate missing snapshots or delete evidence to pass migration. If restore becomes necessary, reconcile orders/direct restaurant receipts/manual commission receipts and durable keys after the recovery point before resuming writes. DEC-11 governs gap handling; an old app rollback never undoes database facts.
+
+## 5. Explicit local sample exception — October 20, 2026
+
+The user explicitly approved backed-up forward adoption and labeled synthetic sample additions on the existing local `hlf_dev_flow` database. [Local adoption evidence](../local-demo-adoption.md) records restore proof, unchanged original rows, restricted grants and fixture boundaries. This named exception does not permit seeds on other retained/shared/production targets, fabrication of existing partners’ consent, or changes to legacy ownership/authority.
+
+## 6. V0.5 ordering adoption is separate
+
+The October20 V0.5 implementation authorizes disposable MySQL9.2.0 tests only. Migrations `20261020030000_cash_orders` and `20261020040000_cash_fulfillment` were not applied to retained local data. The V0.4 sample exception above does not authorize this upgrade. A future adoption needs explicit authorization, a new backup/restore verification for that exact retained database, checksummed forward rehearsal/inventory and preservation mapping for inconsistent legacy relationships or missing facts. Item restaurant discriminators are derived from retained order links; conflicting dish links must stop migration rather than be rewritten/deleted. No food-ready, receipt or consent facts are backfilled. Incomplete legacy payment projections remain explicitly unknown. [V0.5 commands and boundary](../cash-ordering-local-verification.md).
+
+## V0.6 adoption remains separate
+
+P20 forward QR/refund migrations are rehearsed only on new disposable `test_*` MySQL9.2.0 targets. Retained local DB lacks V0.5; this task authorizes neither V0.5 nor V0.6 adoption there. A future explicitly authorized task must verify backup/restore, rehearse the complete chain, preserve unknown historical QR/payment facts and review grants before retained deployment. No reset, destructive push or applied-SQL rewrite.
+
+## October 21 explicit local auth repair adoption
+
+The user subsequently authorized backup/restore verification and deployment of all eight outstanding migrations to `hlf_dev_flow` on loopback3307 to repair login's missing `accounts.credentials_blocked` column. The [auth repair evidence](../auth-followup.md#october-21-local-login-repair) supersedes the local schema status in the two historical sections above: all 26 migrations are now applied with reviewed runtime grants. Backup restoration, complete-chain rehearsal, applied checksums and preservation of all original 38 tables/158 rows were verified before/after deployment. No old receipt, consent, support, private payload or compromised-credential fact was invented. Existing business journeys, retained plaintext conversion, privacy maintenance and production release remain separate from this schema/auth verification.
+
+## October 22 local notification extension
+
+The explicit notification implementation request adds `20261022000000_notifications` without changing original business rows. [Verification](../notifications-verification.md) records local backup/restore, checksum and forward rehearsal,57 preserved original business tables/173 rows, restricted INSERT/UPDATE(read_at) grants and legitimate first-access summaries. Logical mailbox references deliberately avoid implicit account FK lock inversion; there is no historical-event backfill or retained reset. Production release remains separate.
+
+## V0.8 AI metadata adoption
+
+`20261022010000_recommendations` creates metadata-only admission/counter/lease tables and singleton id1; applies no updates to original business rows. Initial full-chain rehearsal and restricted grants were tested on disposable MySQL9.2.0. [Verification](../ai-local-verification.md) separates source inspection, migration execution and live-provider evidence. Subsequent explicit local adoption authorization applied this single migration and narrow metadata grants after verified backup/restore; [receipt](../ai-local-adoption-review.md) records unchanged58 original tables/173 rows and27 prior checksums. Real100call quota was carried forward; backend restarted. Production adoption remains unauthorized/unperformed; example configuration is disabled by default.

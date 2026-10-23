@@ -3,3 +3,5 @@ export type { User } from './api/auth.api'
 export { AuthPage } from './pages/AuthPage'
 export { ProfilePage } from './pages/ProfilePage'
 export { safeReturnPath } from './return-path'
+
+export {CredentialRecoveryPage} from './pages/CredentialRecoveryPage'

@@ -10,5 +10,5 @@ class CatalogController {
   @Get('dishes/:id') dish(@Param('id') id: string) { return this.catalog.dish(id); }
   @Get('dish-categories') categories(@Query() query: Record<string, unknown>) { return this.catalog.categories(query); }
 }
-@Module({ controllers: [CatalogController], providers: [CatalogRepository, CatalogService] })
+@Module({ controllers: [CatalogController], providers: [CatalogRepository, CatalogService], exports:[CatalogService] })
 export class CatalogModule {}

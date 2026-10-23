@@ -1,0 +1,8 @@
+-- Forward hardening only: enforce the same restaurant/order on nested payment references.
+ALTER TABLE payment_images ADD UNIQUE KEY payment_image_restaurant_key(id,restaurant_id), ADD UNIQUE KEY payment_image_order_key(id,order_id);
+ALTER TABLE payment_qr_proposals ADD UNIQUE KEY payment_qr_restaurant_key(id,restaurant_id), ADD CONSTRAINT payment_qr_image_scope_fk FOREIGN KEY(qr_image_id,restaurant_id) REFERENCES payment_images(id,restaurant_id);
+ALTER TABLE payment_qr_config ADD CONSTRAINT payment_config_scope_fk FOREIGN KEY(active_id,restaurant_id) REFERENCES payment_qr_proposals(id,restaurant_id);
+ALTER TABLE payment_instructions ADD CONSTRAINT payment_instruction_proposal_scope_fk FOREIGN KEY(proposal_id,restaurant_id) REFERENCES payment_qr_proposals(id,restaurant_id), ADD CONSTRAINT payment_instruction_image_scope_fk FOREIGN KEY(qr_image_id,restaurant_id) REFERENCES payment_images(id,restaurant_id);
+ALTER TABLE payment_receipts ADD UNIQUE KEY payment_receipt_order_key(id,order_id), ADD CONSTRAINT payment_receipt_image_scope_fk FOREIGN KEY(evidence_id,order_id) REFERENCES payment_images(id,order_id);
+ALTER TABLE payment_refunds ADD UNIQUE KEY payment_refund_order_key(id,order_id), ADD CONSTRAINT payment_refund_receipt_scope_fk FOREIGN KEY(receipt_id,order_id) REFERENCES payment_receipts(id,order_id), ADD CONSTRAINT payment_refund_image_scope_fk FOREIGN KEY(evidence_id,order_id) REFERENCES payment_images(id,order_id);
+ALTER TABLE payment_disputes ADD CONSTRAINT payment_dispute_receipt_scope_fk FOREIGN KEY(receipt_id,order_id) REFERENCES payment_receipts(id,order_id), ADD CONSTRAINT payment_dispute_refund_scope_fk FOREIGN KEY(refund_id,order_id) REFERENCES payment_refunds(id,order_id);

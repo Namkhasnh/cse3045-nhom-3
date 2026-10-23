@@ -1,4 +1,5 @@
 import { createCipheriv, createDecipheriv, createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
 export function base32(bytes: Buffer): string {
   let bits = 0, value = 0, output = '';
@@ -28,7 +29,11 @@ export function matchingStep(secret: string, proof: string, lastStep: bigint, no
   return null;
 }
 function key(): Buffer {
-  const value = process.env.ADMIN_MFA_ENCRYPTION_KEY;
+  let value = process.env.ADMIN_MFA_ENCRYPTION_KEY;
+  if (value === undefined && process.env.ADMIN_MFA_ENCRYPTION_KEY_FILE) {
+    try { value = readFileSync(process.env.ADMIN_MFA_ENCRYPTION_KEY_FILE, 'utf8').trim(); }
+    catch { throw new Error('Cannot read ADMIN_MFA_ENCRYPTION_KEY_FILE'); }
+  }
   if (!value || !/^[a-fA-F0-9]{64}$/.test(value)) throw new Error('ADMIN_MFA_ENCRYPTION_KEY must be a separate 32-byte hex key');
   if ([process.env.JWT_SIGNING_KEY, process.env.CSRF_HMAC_KEY].includes(value)) throw new Error('MFA encryption key must be separate');
   return Buffer.from(value, 'hex');

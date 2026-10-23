@@ -48,11 +48,13 @@ export function ProfilePage({ user, onUpdate, onLogout }: {
     {notice && <p className="form-notice" role="status">{notice}</p>}
     <form className="auth-form" onSubmit={submit}>
       <Input id="profile-name" label="Họ và tên" value={displayName} onChange={event => setDisplayName(event.target.value)}
-        autoComplete="name" maxLength={200} required />
+        autoComplete="name" maxLength={200} required disabled={!user.is_active} />
       <Input id="profile-phone" label="Số điện thoại" value={phone} onChange={event => setPhone(event.target.value)}
-        autoComplete="tel" maxLength={16} />
-      <Button type="submit" disabled={busy}>Lưu thay đổi</Button>
+        autoComplete="tel" maxLength={16} disabled={!user.is_active} />
+      <Button type="submit" disabled={busy||!user.is_active}>Lưu thay đổi</Button>
     </form>
+    {!user.is_active&&<p role="alert">Tài khoản đang đình chỉ; chỉ xử lý nghĩa vụ cũ.</p>}
+    <p><a href={user.capabilities.includes('admin')?'/admin/support':'/support'}>Hỗ trợ theo đơn</a>{!user.capabilities.includes('admin')&&<> · <a href="/privacy">Ẩn thông tin cá nhân</a></>}</p>
     <Button variant="neutral" onClick={logout} disabled={busy}>Đăng xuất</Button>
   </section>
 }

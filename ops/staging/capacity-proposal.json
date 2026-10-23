@@ -1,0 +1,38 @@
+{
+  "status": "PROPOSAL_ONLY_NOT_INSTALLED",
+  "purpose": "Separate synthetic staging on existing VPS; never change running V0.1",
+  "source": "User-reported October23 VPS snapshot; no collection time supplied",
+  "available_memory_mib_snapshot": 1596,
+  "root_available_kib_snapshot": 11786236,
+  "proposed_memory_caps_mib": {
+    "mysql": 384,
+    "backend": 384,
+    "object_storage": 128,
+    "web_proxy": 64
+  },
+  "proposed_total_cap_mib": 960,
+  "proposed_host_reserve_mib": 384,
+  "minimum_available_for_this_proposal_mib": 1344,
+  "proposed_project": "hlf-staging",
+  "isolation": "New DB container/volume, separate object namespace and identities; no retained Mac/VPS database copy",
+  "proposed_host_bindings": [
+    "127.0.0.1:14300",
+    "127.0.0.1:14443"
+  ],
+  "bindings_available": "Absent from user-reported October23 listener snapshot; recheck immediately before binding",
+  "public_origin_https": "Private candidate https://localhost:14443 via SSH tunnel; NOT DEPLOYED; certificate trust and actual tunnel pending",
+  "mysql_version": "9.2.0",
+  "candidate_toolchain": "Node24.22.0/npm11.19.1 Linux amd64; candidate build verification required, no host upgrade/downgrade",
+  "disk_required": "Pending measured image/artifact sizes plus DB/media growth and recovery space",
+  "limits": "Initial synthetic staging caps only; not measured workload capacity, 50-user NFR acceptance, operational RPO/RTO, or pilot/production approval",
+  "measured_candidate_artifacts": {
+    "backend_archive_bytes": 212270592,
+    "backend_unpacked_image_bytes": 212250489,
+    "frontend_compressed_bytes": 549373
+  },
+  "local_startup_probe": "PASS384MiB MySQL/256MiB backend limits; Linux backend emulated on Mac and local MySQL; not target-VPS load/capacity proof",
+  "reason_for_backend_cap": "Local Linux startup observed197.8MiB under256MiB;384MiB proposed for more headroom, still not a load guarantee",
+  "compose_availability": "User-reported Docker Compose5.6.0 available on VPS; project/volume collision preflight still required",
+  "access_choice": "User selected private SSH tunnel first on2026-10-23",
+  "private_web_image": "hlf-staging-private-web:20261023 Linux/amd64 built locally; not transferred"
+}

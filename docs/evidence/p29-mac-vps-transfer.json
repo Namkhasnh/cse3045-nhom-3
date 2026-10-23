@@ -1,0 +1,90 @@
+{
+  "date": "2026-10-23",
+  "authorization": "User explicitly selected transferring all existing Mac hlf_dev_flow data to a new Docker DB on existing VPS; not overwrite cse3045 or release approval",
+  "source_backup": {
+    "result": "PASS",
+    "source": "Mac 127.0.0.1:3307/hlf_dev_flow",
+    "started_at": "2026-10-23T09:58:21.698Z",
+    "scope": "Authorized retained Mac full SQL backup and isolated restore only; not operational recovery acceptance",
+    "mysql": {
+      "version": "9.2.0",
+      "log_bin": "1",
+      "binlog_format": "ROW"
+    },
+    "backup_started_at": "2026-10-23T09:58:21.913Z",
+    "backup_completed_at": "2026-10-23T09:58:29.631Z",
+    "remote": "NOT UPLOADED: local-only verification",
+    "proposed_remote": "hlfdrive:HLF-Backup-Mac/full-d1fd9214-e335-4d71-8b59-353478036ec5/database.json.gz.age",
+    "ciphertext_bytes": 60187,
+    "ciphertext_sha256": "2715d14e21ad88de712f71768bcdfa5ab2de6ed8b1e9e8641a5ea6715d53c00d",
+    "tables": 62,
+    "rows": 203,
+    "migrations": 28,
+    "binlog_coordinate": {
+      "file": "binlog.000003",
+      "position": "358425"
+    },
+    "restore_validation_ms": 1149,
+    "exact_schema_and_all_row_hashes": "PASS",
+    "source_unchanged": "PASS",
+    "private_key_uploaded": false,
+    "offline_key_verification": "NOT RUN: user deferred",
+    "scheduler": "NOT CONFIGURED",
+    "media_and_external_vault": "NOT INCLUDED",
+    "limits": "One retained Mac SQL recovery point; no binlog shipping/replay, app startup, independent key custody, erasure/quota reconciliation, automatic scheduling or operational RPO/RTO. Never start a restored application/AI before current journal/counter reconciliation.",
+    "finished_at": "2026-10-23T09:58:29.900Z"
+  },
+  "local_import_probe": {
+    "result": "PASS",
+    "scope": "Local transfer rehearsal",
+    "source": "hlf_dev_flow",
+    "container": "hlf-transfer-probe-c77a01c0-b723-421c-83ee-00f31392bccf",
+    "volume": "hlf_transfer_probe_c77a01c0-b723-421c-83ee-00f31392bccf",
+    "application_started": false,
+    "mysql": "9.2.0",
+    "tables": 62,
+    "rows": 203,
+    "migrations": 28,
+    "exact_schema_and_all_row_hashes": "PASS",
+    "source_snapshot_at": "2026-10-23T09:58:21.913Z",
+    "host_binding": "127.0.0.1:53740",
+    "state_directory": "/private/tmp/hlf-db-transfer-CL3je1/hlf-db-transfer/.probe-state-c77a01c0-b723-421c-83ee-00f31392bccf",
+    "limits": "Point-in-time SQL only. No media, external encryption keys, SMTP, scheduled backup, app startup, fresh writes synchronization, or release acceptance. Source/v0.1 unchanged.",
+    "finished_at": "2026-10-23T10:02:08.922Z"
+  },
+  "negative_checks": {
+    "wrong_key": "REFUSED before Docker mutation",
+    "corrupt_ciphertext": "REFUSED before Docker mutation"
+  },
+  "archive": {
+    "private_path": "/private/tmp/hlf-db-transfer-CL3je1/hlf-db-transfer.tar.gz",
+    "bytes": 1319860,
+    "sha256": "b5bcb9c636b9f48f8743f212b90e028d505a19a32a21a78bb4bea024ea4e97f4",
+    "key_in_archive": false,
+    "plaintext_sql_in_archive": false,
+    "original_age_identity_in_archive": false,
+    "original_backend_env_in_archive": false
+  },
+  "paste_script": {
+    "private_path": "/private/tmp/hlf-db-transfer-CL3je1/paste-vps.sh",
+    "bytes": 1783776,
+    "sha256": "1d68de4ccc99d12980f7d63ab629c81a3dbe691fd59272ec100d77e23ab580fc"
+  },
+  "importer_source_sha256": "6e950d932bb876acaee8042ada83724f840206c37a45719d9cfe4ed582f0ae10",
+  "target": {
+    "container": "hlf-mac-copy-mysql",
+    "volume": "hlf_mac_copy_data",
+    "database": "hlf_dev_flow",
+    "host_binding": "127.0.0.1:13307",
+    "mysql": "9.2.0",
+    "memory_cap_mib": 384,
+    "existing_target_names": "REFUSE; no overwrite",
+    "root_password": "Generated on target into mode0600 state file; not logged"
+  },
+  "verification": "Local retained restore PASS; negative ciphertext/key refusal PASS; Node syntax/ESLint and shell syntax PASS. Transfer uses base64 clipboard into user-authenticated SSH, separate hidden-key prompt; actual VPS paste/terminal flow NOT RUN. Pure JS MariaDB dependencies copied from locked local install; no npm installation on VPS.",
+  "remote_transfer": "NOT RUN",
+  "remote_import": "NOT RUN",
+  "application_started": false,
+  "scheduler": "NOT CONFIGURED",
+  "limits": "Snapshot SQL only; newer Mac writes, media, app encryption vault/runtime grants/SMTP/secrets/recovery and cutover not included. No public listener or existing DB/service changes."
+}

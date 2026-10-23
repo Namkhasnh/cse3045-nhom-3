@@ -1,0 +1,65 @@
+{
+  "result": "PASS",
+  "source": "Mac 127.0.0.1:3307/hlf_dev_flow",
+  "started_at": "2026-10-23T06:48:20.647Z",
+  "scope": "Authorized retained Mac full SQL backup and isolated restore only; not operational recovery acceptance",
+  "mysql": {
+    "version": "9.2.0",
+    "log_bin": "1",
+    "binlog_format": "ROW"
+  },
+  "backup_started_at": "2026-10-23T06:48:20.829Z",
+  "backup_completed_at": "2026-10-23T06:48:28.708Z",
+  "remote": "hlfdrive:HLF-Backup-Mac/full-baac28f2-d2e7-49ff-8550-925401200c8b/database.json.gz.age",
+  "proposed_remote": "hlfdrive:HLF-Backup-Mac/full-baac28f2-d2e7-49ff-8550-925401200c8b/database.json.gz.age",
+  "ciphertext_bytes": 60188,
+  "ciphertext_sha256": "7b2a6a4ac2cd0302917a579fa4cd54617efb1a5385c887157bbfa3272eb1a163",
+  "tables": 62,
+  "rows": 203,
+  "migrations": 28,
+  "binlog_coordinate": {
+    "file": "binlog.000003",
+    "position": "358425"
+  },
+  "restore_validation_ms": 998,
+  "exact_schema_and_all_row_hashes": "PASS",
+  "source_unchanged": "PASS",
+  "private_key_uploaded": false,
+  "offline_key_verification": "NOT RUN: user deferred",
+  "scheduler": "NOT CONFIGURED",
+  "media_and_external_vault": "NOT INCLUDED",
+  "limits": "One retained Mac SQL recovery point; no binlog shipping/replay, app startup, independent key custody, erasure/quota reconciliation, automatic scheduling or operational RPO/RTO. Never start a restored application/AI before current journal/counter reconciliation.",
+  "finished_at": "2026-10-23T06:48:28.998Z",
+  "offsite": {
+    "result": "PASS",
+    "remote": "hlfdrive:HLF-Backup-Mac/full-baac28f2-d2e7-49ff-8550-925401200c8b/database.json.gz.age",
+    "started_at": "2026-10-23T06:50:59.334Z",
+    "verified_at": "2026-10-23T06:51:12.554Z",
+    "ciphertext_sha256": "7b2a6a4ac2cd0302917a579fa4cd54617efb1a5385c887157bbfa3272eb1a163",
+    "decrypt_and_manifest": "PASS",
+    "restore_basis": "Ciphertext exactly matches the archive already restored and fully compared on disposable MySQL9.2.0",
+    "limits": "Single SQL snapshot, no automatic scheduler/binlog shipping/media/offline custody or operational RPO/RTO acceptance"
+  },
+  "source_selection": "User explicitly chose protecting Mac DB first; no VPS upgrade or database merge authorized",
+  "source_sha256": {
+    "ops/recovery/backup-mac.mjs": "e6f037ba541b1c75b8a2b49c7e680343d27fd72cdae6d668c20aa74b76027c45",
+    "ops/recovery/upload-verified-mac.mjs": "2d4ca934e4517f19563665421b3ab9b0874ec534a39f03f9aefaebd700414907"
+  },
+  "checks": {
+    "node_syntax": "PASS",
+    "ops_eslint": "PASS",
+    "actual_mysql_restore": "PASS; full schema/all-row hashes on disposable9.2.0",
+    "review": "Codex self-review only",
+    "application_suites": "NOT RUN: isolated ops tooling only",
+    "documentation": "PASS510local paths/anchors;109Markdown files below500lines;15prior fingerprints unchanged;git diff --check PASS",
+    "cleanup": "PASS subsequent docker inventory found no hlf-mac-restore containers"
+  },
+  "automatic_vps_backup": "NOT CONFIGURED",
+  "offsite_authorization": {
+    "decision": "User explicitly approved the exact age ciphertext upload/read-back",
+    "payload": "60188-byte age ciphertext;62tables/203rows/28migrations; no private key/plaintext upload",
+    "destination": "hlfdrive:HLF-Backup-Mac/full-baac28f2-d2e7-49ff-8550-925401200c8b/database.json.gz.age",
+    "initial_automatic_review": "Rejected source-only authorization; combined command did not execute. Local-only backup passed, then exact payload/destination approval obtained and uploader succeeded."
+  },
+  "v09": "BLOCKED / NOT ACCEPTED"
+}

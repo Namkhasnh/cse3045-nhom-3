@@ -6,41 +6,43 @@ No checkbox below is accepted by the documentation rewrite. Some reusable code e
 
 Use [short requests](docs/prompts/quick-start.md) to execute/resume work and [progress records](docs/progress/README.md) for evidence. The workflow convention alone accepts no prompt; completed gates below link actual acceptance evidence.
 
+V0.5 cash ordering is [accepted for local synthetic scope](docs/progress/V0.5.md). Retained adoption and commercial release remain separate. [V0.6 QR/refunds](docs/progress/V0.6.md) is also accepted for local synthetic scope after P19→P20→P21.
+
 ## Ordered acceptance checklist
 
 - [x] **V0.1 / [P01](docs/prompts/v0.1.md#p01) — Identity data transition.** [Accepted](docs/progress/P01.md), October 19: preserved-data migration, explicit mapping, unique ownership/singleton and expansion-window compatibility.
 - [x] **V0.1 / [P02](docs/prompts/v0.1.md#p02) — Ordinary signup, login and email.** [Accepted after P01](docs/progress/P02.md): ordinary identity, SMTP/browser expiry/resend/logout, safe return and auth/profile OpenAPI.
 - [x] **V0.1 / [P03](docs/prompts/v0.1.md#p03) — Sole Admin MFA and recovery.** [Accepted after P02](docs/progress/P03.md): 18 CLI cases, MySQL MFA/recovery races, restricted runtime/provision and approved local config. [V0.1 acceptance](docs/progress/V0.1.md), Codex self-review.
-- [ ] **V0.2 / [P04](docs/prompts/v0.2.md#p04) — Public catalog API.** Record acceptance/evidence under roadmap rules.
-- [ ] **V0.2 / [P05](docs/prompts/v0.2.md#p05) — Homepage, restaurant page and header.** Record acceptance/evidence under roadmap rules.
-- [ ] **V0.2 / [P06](docs/prompts/v0.2.md#p06) — Guest cart and login return.** Record acceptance/evidence under roadmap rules.
-- [ ] **V0.3 / [P07](docs/prompts/v0.3.md#p07) — Approve onboarding policy and contract.** Record acceptance/evidence under roadmap rules.
-- [ ] **V0.3 / [P08](docs/prompts/v0.3.md#p08) — Applicant experience.** Record acceptance/evidence under roadmap rules.
-- [ ] **V0.3 / [P09](docs/prompts/v0.3.md#p09) — Atomic review and restaurant creation.** Record acceptance/evidence under roadmap rules.
-- [ ] **V0.3 / [P10](docs/prompts/v0.3.md#p10) — Manual partner creation and legacy compatibility.** Record acceptance/evidence under roadmap rules.
-- [ ] **V0.4 / [P11](docs/prompts/v0.4.md#p11) — Restaurant profile, hours and readiness.** Record acceptance/evidence under roadmap rules.
-- [ ] **V0.4 / [P12](docs/prompts/v0.4.md#p12) — VJU points, surveys and delivery quotes.** Record acceptance/evidence under roadmap rules.
-- [ ] **V0.4 / [P13](docs/prompts/v0.4.md#p13) — Dish CRUD and images.** Record acceptance/evidence under roadmap rules.
-- [ ] **V0.4 / [P14](docs/prompts/v0.4.md#p14) — Commission configuration and exact money.** Record acceptance/evidence under roadmap rules.
-- [ ] **V0.5 / [P15](docs/prompts/v0.5.md#p15) — Order backend, snapshots and idempotency.** Record acceptance/evidence under roadmap rules.
-- [ ] **V0.5 / [P16](docs/prompts/v0.5.md#p16) — Checkout and uncertain-result recovery.** Record acceptance/evidence under roadmap rules.
-- [ ] **V0.5 / [P17](docs/prompts/v0.5.md#p17) — Fulfillment and cash confirmation.** Record acceptance/evidence under roadmap rules.
-- [ ] **V0.5 / [P18](docs/prompts/v0.5.md#p18) — Tracking, history and concurrency acceptance.** Record acceptance/evidence under roadmap rules.
-- [ ] **V0.6 / [P19](docs/prompts/v0.6.md#p19) — Approve QR and refund policy.** Record acceptance/evidence under roadmap rules.
-- [ ] **V0.6 / [P20](docs/prompts/v0.6.md#p20) — Payment configuration and lifecycle backend.** Record acceptance/evidence under roadmap rules.
-- [ ] **V0.6 / [P21](docs/prompts/v0.6.md#p21) — QR, confirmation and refund interface.** Record acceptance/evidence under roadmap rules.
-- [ ] **V0.7 / [P22](docs/prompts/v0.7.md#p22) — Approve reconciliation policy.** Record acceptance/evidence under roadmap rules.
-- [ ] **V0.7 / [P23](docs/prompts/v0.7.md#p23) — Commission ledger, settlements and receipts.** Record acceptance/evidence under roadmap rules.
-- [ ] **V0.7 / [P24](docs/prompts/v0.7.md#p24) — Reconciliation UI and reports.** Record acceptance/evidence under roadmap rules.
-- [ ] **V0.7 / [P25](docs/prompts/v0.7.md#p25) — Users, partners, support and audit lookup.** Record acceptance/evidence under roadmap rules.
-- [ ] **V0.8 / [P26](docs/prompts/v0.8.md#p26) — Approve AI provider, privacy and budget.** Record acceptance/evidence under roadmap rules.
-- [ ] **V0.8 / [P27](docs/prompts/v0.8.md#p27) — Grounded recommendation backend.** Record acceptance/evidence under roadmap rules.
-- [ ] **V0.8 / [P28](docs/prompts/v0.8.md#p28) — Recommendation UI and failure acceptance.** Record acceptance/evidence under roadmap rules.
-- [ ] **V0.9 / [P29](docs/prompts/v0.9.md#p29) — Approve infrastructure and services.** Record acceptance/evidence under roadmap rules.
-- [ ] **V0.9 / [P30](docs/prompts/v0.9.md#p30) — CI/CD, forward migration and restore.** Record acceptance/evidence under roadmap rules.
-- [ ] **V0.9 / [P31](docs/prompts/v0.9.md#p31) — Whole-system acceptance.** Record acceptance/evidence under roadmap rules.
-- [ ] **V0.9 / [P32](docs/prompts/v0.9.md#p32) — VJU partner pilot.** Record acceptance/evidence under roadmap rules.
-- [ ] **V0.9 / [P33](docs/prompts/v0.9.md#p33) — Pilot fixes and acceptance.** Record acceptance/evidence under roadmap rules.
+- [x] **V0.2 / [P04](docs/prompts/v0.2.md#p04) — Public catalog API.** Accepted: [P04 evidence](docs/progress/P04.md).
+- [x] **V0.2 / [P05](docs/prompts/v0.2.md#p05) — Homepage, restaurant page and header.** Accepted: [P05 evidence](docs/progress/P05.md).
+- [x] **V0.2 / [P06](docs/prompts/v0.2.md#p06) — Guest cart and login return.** Accepted: [P06 evidence](docs/progress/P06.md); [V0.2 review](docs/progress/V0.2.md).
+- [x] **V0.3 / [P07](docs/prompts/v0.3.md#p07) — Approve onboarding policy and contract.** Record acceptance/evidence under roadmap rules.
+- [x] **V0.3 / [P08](docs/prompts/v0.3.md#p08) — Applicant experience.** Record acceptance/evidence under roadmap rules.
+- [x] **V0.3 / [P09](docs/prompts/v0.3.md#p09) — Atomic review and restaurant creation.** Record acceptance/evidence under roadmap rules.
+- [x] **V0.3 / [P10](docs/prompts/v0.3.md#p10) — Manual partner creation and legacy compatibility.** Record acceptance/evidence under roadmap rules.
+- [x] **V0.4 / [P11](docs/prompts/v0.4.md#p11) — Restaurant profile, hours and readiness.** [Accepted locally](docs/progress/P11.md).
+- [x] **V0.4 / [P12](docs/prompts/v0.4.md#p12) — VJU points, surveys and delivery quotes.** [Accepted locally](docs/progress/P12.md).
+- [x] **V0.4 / [P13](docs/prompts/v0.4.md#p13) — Dish CRUD and images.** [Accepted locally](docs/progress/P13.md).
+- [x] **V0.4 / [P14](docs/prompts/v0.4.md#p14) — Commission configuration and exact money.** [Accepted locally](docs/progress/P14.md). [V0.4 review](docs/progress/V0.4.md).
+- [x] **V0.5 / [P15](docs/prompts/v0.5.md#p15) — Order backend, snapshots and idempotency.** [Accepted locally](docs/progress/P15.md), synthetic scope only.
+- [x] **V0.5 / [P16](docs/prompts/v0.5.md#p16) — Checkout and uncertain-result recovery.** [Accepted locally](docs/progress/P16.md), synthetic scope only.
+- [x] **V0.5 / [P17](docs/prompts/v0.5.md#p17) — Fulfillment and cash confirmation.** [Accepted locally](docs/progress/P17.md), synthetic scope only.
+- [x] **V0.5 / [P18](docs/prompts/v0.5.md#p18) — Tracking, history and concurrency acceptance.** [Accepted locally](docs/progress/P18.md), synthetic scope only.
+- [x] **V0.6 / [P19](docs/prompts/v0.6.md#p19) — Approve QR and refund policy.** [Accepted decision](docs/progress/P19.md), explicit operator approval October20; local synthetic scope.
+- [x] **V0.6 / [P20](docs/prompts/v0.6.md#p20) — Payment configuration and lifecycle backend.** [Accepted locally](docs/progress/P20.md), synthetic MySQL/MinIO/restricted-runtime only.
+- [x] **V0.6 / [P21](docs/prompts/v0.6.md#p21) — QR, confirmation and refund interface.** [Accepted locally](docs/progress/P21.md); [V0.6 review](docs/progress/V0.6.md), explicit synthetic boundary.
+- [x] **V0.7 / [P22](docs/prompts/v0.7.md#p22) — Approve reconciliation policy.** [DEC-07 approved package](docs/finance-policy-proposal.md), explicit user approval October21 and [accepted P22 handoff](docs/progress/P22.md); implementation acceptance separate.
+- [x] **V0.7 / [P23](docs/prompts/v0.7.md#p23) — Commission ledger, settlements and receipts.** [Accepted local synthetic P23](docs/progress/P23.md); real MySQL/restricted-runtime/two-process/upgrade evidence, retained adoption separate.
+- [x] **V0.7 / [P24](docs/prompts/v0.7.md#p24) — Reconciliation UI and reports.** [Accepted local synthetic P24](docs/progress/P24.md); exact reports, real Chrome recovery/scope/credit/keyboard/five-width evidence. DEC-08/P25 remains separate.
+- [x] **V0.7 / [P25](docs/prompts/v0.7.md#p25) — Users, partners, support and audit lookup.** [Accepted local synthetic P25](docs/progress/P25.md), approved DEC-08; scoped obligations/support/privacy/audit, real MySQL/restricted SQL/Chrome evidence. Retained adoption and production separate.
+- [x] **V0.8 / [P26](docs/prompts/v0.8.md#p26) — Approve AI provider, privacy and budget.** [Accepted approved DEC-09](docs/progress/P26.md), Gemini free/zero paid spend, guided preferences/inclusive budget and bounded limits.
+- [x] **V0.8 / [P27](docs/prompts/v0.8.md#p27) — Grounded recommendation backend.** [Accepted local synthetic backend/live evidence](docs/progress/P27.md);100case actual Gemini rubric passed; approved local metadata adoption/restart complete, production separate.
+- [x] **V0.8 / [P28](docs/prompts/v0.8.md#p28) — Recommendation UI and failure acceptance.** [Accepted local synthetic UI/fallback](docs/progress/P28.md), real Chrome plus separate100case live evaluation and approved local metadata adoption; production separate.
+- [ ] **V0.9 / [P29](docs/prompts/v0.9.md#p29) — Approve infrastructure and services.** [Actual record](docs/progress/P29.md): BLOCKED DEC-10/11 remaining service/SQL/origin/access/custody; corrected user OS/resource/runtime and mysql:9.2.0 container/nginx/Docker status recorded, SQL9.2.0/InnoDB/ROW/binlogON/sync1/flush1 confirmed by user metadata; backup sizing/recovery still pending; user selected existing Google Drive, local OAuth/storage query PASS by user report (14.987GiB free), synthetic encrypted-file roundtrip PASS by user report October23, OAuth notices published on separate GitHub Pages and OAuth In production per user screenshot, post-publication reconnect/about PASS by user report; offline key recovery/retention sizing/unattended refresh remain open; existing VPS and synthetic recovery design approved, local SQL/encrypted-restore tooling PASS, not full P29 acceptance.
+- [ ] **V0.9 / [P30](docs/prompts/v0.9.md#p30) — CI/CD, forward migration and restore.** [Actual record](docs/progress/P30.md): BLOCKED by P29; independent local migration/full encrypted restore PASS, dependent staging execution NOT RUN.
+- [ ] **V0.9 / [P31](docs/prompts/v0.9.md#p31) — Whole-system acceptance.** [Actual record](docs/progress/P31.md): BLOCKED by P30; preparation only, execution NOT RUN.
+- [ ] **V0.9 / [P32](docs/prompts/v0.9.md#p32) — VJU partner pilot.** [Actual record](docs/progress/P32.md): BLOCKED by P31 and concrete pilot authorization; staffed/capped draft refined, real execution NOT RUN.
+- [ ] **V0.9 / [P33](docs/prompts/v0.9.md#p33) — Pilot fixes and acceptance.** [Actual record](docs/progress/P33.md): BLOCKED by P32; preparation only, execution NOT RUN.
 - [ ] **V1.0 / [P34](docs/prompts/v1.0.md#p34) — Product, policy and operations launch review.** Record acceptance/evidence under roadmap rules.
 - [ ] **V1.0 / [P35](docs/prompts/v1.0.md#p35) — Approved controlled production release.** Record acceptance/evidence under roadmap rules.
 - [ ] **V1.0 / [P36](docs/prompts/v1.0.md#p36) — Post-release checks and incident drill.** Record acceptance/evidence under roadmap rules.
@@ -50,3 +52,27 @@ Use [short requests](docs/prompts/quick-start.md) to execute/resume work and [pr
 P01–P03 replace the former role-request/multi-owner design; old completed-foundation checkboxes are not new identity acceptance. P07/P19/P22/P26/P29/P34 are policy/operational gates and must obtain the missing decisions before dependent actions. P32 real pilot traffic and P35 production release require explicit authorization for the concrete plan/candidate.
 
 V1.0 includes direct QR/refunds, finance reports, support/audit lookup and history/recovery. V1.1 holds reorder/favorites/reviews/random; V1.2 holds free addresses/route fees and regional expansion. Drivers/custody/splitting, multiple restaurants per manager and additional Admins remain excluded. See [decisions](docs/decisions.md) and [launch checklist](docs/release-checklist.md).
+
+October23 connection-file evidence: user-run masked probe in confirmed hlf-backend working directory reports **127.0.0.1:3306/cse3045**, sourced from `.env` after process DATABASE_URL was unavailable. This narrows the VPS attribution gap but does not prove the running process loaded that file. Mac configuration remains separate **127.0.0.1:3307/hlf_dev_flow**; do not switch, merge, migrate or export either retained database. Existing5table/0.19MiB VPS metadata is not the accepted local V0.8 schema. Credentials were not printed or retained; no remote mutation or backup enabled. P29 remains BLOCKED; P30–P33/V0.9 unaccepted. See the current sanitized VPS inventory for details.
+
+October23 VPS backup-tool check: user `command -v` reports **rclone: NOT CONFIGURED; age: NOT CONFIGURED** in the current SSH user PATH. No exhaustive disk inventory implied. Installing tools, transferring OAuth credentials or enabling a scheduler on the retained VPS remains outside current authorization; none performed. Local Mac encrypted-file roundtrip remains separate and does not prove VPS unattended backup. P29/DEC-10/11 remain BLOCKED; P30–P33/V0.9 remain unaccepted.
+
+October23 independent local offsite database drill: **PASS** agent-executed `node ops/recovery/rehearse.mjs --drive-synthetic` ([receipt](docs/evidence/p29-drive-database-drill.json)). New disposable MySQL9.2.0 empty/legacy migration chain; only214884-byte encrypted synthetic archive uploaded to existing Drive, downloaded with identical SHA256, then restored62tables/43rows with exact schema/data/migration/money checks, erased-key exclusion, held-key/media preservation and synthetic counter100. Upload/read-back12.934s, full run35.338s, local simulated gap13.296s, decrypt/SQL/validation0.934s; **not operational RPO/RTO**. New opt-in mode has fixed synthetic namespace/no retained input, leaves ciphertext only (ephemeral private key never uploaded), and preserves all three existing containers. Ops syntax/lint/5crypto test groups PASS; application suites NOT RUN for ops-only change. VPS tools still NOT CONFIGURED; unattended/full+binlog retention/offline-custody/staging/app-replay gates remain open. No VPS, retained DB, real Gemini counter, billing or pilot changes. P29–P33/V0.9 remain unaccepted.
+
+October23 scoped recovery continuation: [binlog drill](docs/recovery-binlog-verification.md) / [receipt](docs/evidence/p29-binlog-recovery-drill.json) PASS for local synthetic MySQL9.2.0 full+two-binlog offsite read-back/replay and failure guards. User's offline age copy verification NOT RUN (user action pending); verifier tooling tested with disposable keys only. VPS automated backup NOT CONFIGURED; P29–P33/V0.9 remain BLOCKED / NOT ACCEPTED; no checkbox changed.
+
+October23 user deferral: offline-copy attempt reported `OFFLINE_COPY_NOT_READABLE`; user then requested skipping the USB step. Actual offline-key recovery remains **NOT RUN — deferred at user request**, not PASS or an acceptance waiver. No further USB action requested. Automatic VPS backup remains **NOT CONFIGURED**; V0.9 **BLOCKED / NOT ACCEPTED**. Existing synthetic binlog PASS evidence is unchanged.
+
+October23 renewed V0.9 completion request: first unfinished gate remains P29. [Current continuation table](docs/progress/V0.9.md#current-continuation--october-23-2026) separates verified Drive/full/binlog preparation from unresolved intended retained source (Mac current features versus VPS old5table database), remote authentication, unattended jobs, custody/services/staging and pilot inputs. Source question pending; no retained export/merge/migration, VPS mutation or dependent P30–P33 acceptance inferred. USB remains deferred.
+
+October23 authorized retained Mac protection: user selected `hlf_dev_flow` first; source9.2.0/62InnoDB tables verified. **PASS** local age-encrypted full SQL backup and isolated9.2.0 restore62tables/203rows/28migration checksums, exact canonical schema/all-row fingerprints and source unchanged at recorded checks. Automatic review initially rejected source-only Drive authorization; rejected command did not run. After local-only restore, user explicitly approved the exact60,188byte ciphertext and Drive destination; approved uploader/read-back/SHA256/decrypt/manifest **PASS**. [Procedure](docs/mac-backup-verification.md), [sanitized receipt](docs/evidence/p29-mac-backup.json). Private key/plaintext SQL never uploaded; new labelled restore container removed; no source/VPS migration, data write, Gemini call or app startup. USB remains deferred/NOT RUN. Automatic Mac/VPS backup, continuous binlog shipping, media/vault/journal/app recovery and operational RPO/RTO remain incomplete; P29/P30/V0.9 BLOCKED / NOT ACCEPTED. Future uploads/scheduling not inferred from this single-file approval.
+
+October23 manual Mac backup workflow: user requested end-of-session/pre-change backup without keeping Mac awake continuously and confirmed Google Drive destination. `node ops/recovery/backup-to-drive.mjs` now performs local-only encrypted full backup/isolated9.2.0 restore before restricted ciphertext upload/read-back. Actual full pipeline **PASS**; [procedure](docs/mac-backup-verification.md), [receipt](docs/evidence/p29-mac-manual-backup.json). Only the existing age key path is remembered privately; key content is not copied/uploaded. No scheduler/background job/deletion/VPS change. Shut down only after the manual run finishes successfully. SQL-only/manual recovery is distinct from operational15minRPO; V0.9 remains BLOCKED / NOT ACCEPTED.
+
+October23 user-scoped MVP ordering/UX: [verified local result](docs/mvp-ordering-verification.md) / [receipt](docs/evidence/mvp-ordering-verification.json). Buyer/manager/Admin Chrome journeys PASS; owner newest-page return/current sidebar/pickup-text fixes and harness repairs verified. Blocked P29–P33, staging/pilot and V1.0 release are not checked off.
+
+October23 remote continuation: [staging handoff](docs/staging-next-step.md) makes the next P29 access/sizing input concrete. Agent SSH remains unauthenticated; no live VPS change or downstream acceptance.
+
+October23 Linux candidate preparation: [staging handoff](docs/staging-next-step.md)/[receipt](docs/evidence/p29-linux-candidate.json) build/native/startup checks PASS. Current VPS resource snapshot incorporated; candidate artifacts remain local. No staging deploy/P29–P33 check-off; SSH/origin/services/operational recovery still gate acceptance.
+
+October23 scoped Mac-to-VPS DB copy: user authorized all `hlf_dev_flow` data into a NEW Docker server; backup/importer rehearsal PASS62tables/203rows/28migrations. [Encrypted user-run handoff](docs/mac-to-vps-database-copy.md) prepared; actual VPS import NOT RUN, scheduler NOT CONFIGURED, no milestone checkbox changed.

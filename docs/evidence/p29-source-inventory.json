@@ -1,0 +1,32 @@
+{
+  "recorded_at_utc": "2026-10-22T01:30:57.980410+00:00",
+  "head": "39b7ea50362472ad31bb4b6e9c60c44f5c1d7f54",
+  "scope": "P29 read-only source/decision preparation; no fresh DB invariant, application, provider or browser run",
+  "node": "24.21.0",
+  "npm": "11.19.0",
+  "ci_mysql_image": "mysql:9.2.0",
+  "ci_node": "24.x",
+  "source_sha256": {
+    ".github/workflows/ci.yml": "e2b70e7ed007f302aa953287ccd98d087685d2ba1a493db0d32edcccc48d33ea",
+    "backend/package.json": "ee4ebf0e76b7bf5cc246a9284b09ddfe7988170824581586a16901dfdd5c6fa1",
+    "backend/package-lock.json": "4b56abbd80690f818f6258a31e7705a42bc04db7befe918aafe586e8bdaf994d",
+    "frontend/package.json": "8f064e0b99c1990d35417cda12430d70ce1d2eb2beca84ca443a48023505ca9d",
+    "frontend/package-lock.json": "cd3a87853693fe7ba9e7c2a45da76c7e0f02e0c848807ac91331e51cb8385ce8",
+    "backend/prisma7.config.ts": "0898da9333f79e43b58e182d13f80ebf606765336fc6d5bf3415a30a922f3cf8",
+    "backend/prisma/schema.prisma": "6b26c9008223a8b3f1d72835246ebe1527a42a14a72feab1fd64ce507ee5c077",
+    "backend/src/main.ts": "0da1096c30f07a6e44a39e51cb20f9c594ea85a642ca1e7090bcbd4809b3a4f6",
+    "backend/src/integrations/storage/private-storage.ts": "4ef12b1cc3c4e784abb3fc88b8e6b6e05cf2a4512506a132407200fbcd43228a",
+    "backend/src/integrations/storage/dish-storage.ts": "e62a9096e6c318be84c810886520f2bd76253fcac856c4bbfeca667970e58553",
+    "backend/src/integrations/storage/personal-vault.ts": "461a630d4395bd03d032d7a1e721665800a5664969d34091f371a77a885083e1",
+    "backend/src/modules/accounts/email-verification.service.ts": "68a6411560817422fed2b9f898b4e19b3fc5e25134ce69ffd0a23b38ae8337bf",
+    "backend/prisma/migrations/20261022010000_recommendations/migration.sql": "8494e687402d128cac66f95c9a3598d8b9fe885e7cf2f133f8c41358d8cc305f",
+    "docs/evidence/ai-v08-local-adoption.json": "f4b7c8af32c46f1bda9c95790c87d3dd4c41e2dd97c459237cdf9ad2cb3d20cd",
+    "docs/evidence/ai-v08-live-metadata.json": "242c00a2755645905176db8c9d1c3c41e19c0c29ee7b4fc2eb7b6a8f0d3a528a"
+  },
+  "ai_adoption_migration_matches_durable_receipt": true,
+  "ai_live_metadata": "Existing V0.8 artifact only; no new provider call or counter mutation",
+  "docker_observation": "Read-only docker ps: mysql:9.2.0 at loopback3307 and43316, storage image ID at43317. Labels, not fresh SELECT VERSION proof.",
+  "remote_ci": "NOT RUN / no run evidence collected",
+  "staging": "NOT CONFIGURED / no target credentials accessed",
+  "operational_mutations": false
+}

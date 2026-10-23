@@ -437,3 +437,5 @@ The following are implementation-stage requirements, not test results already ob
 When adding a feature, identify the data-owning module first, place cross-module coordination in a workflow, and preserve the relevant transactions and invariants. If implementation cannot respect these boundaries, update the architectural decision before introducing a new dependency path.
 
 Commercial execution gates and P01–P36 are owned by [roadmap](roadmap.md); unresolved decisions by [register](decisions.md).
+
+V0.8 implementation refinement: [approved DEC-09](ai-v08-contract.md) selects Gemini free behind the provider-neutral AiGateway; recommendations own only quota/lease metadata, not conversations. Current catalog, delivery and accepted commission facts are supplied by public services. Network calls occur outside DB transactions. This supersedes earlier AI-provider-undecided wording only.

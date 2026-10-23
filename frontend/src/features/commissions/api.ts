@@ -1,0 +1,7 @@
+import {request,RequestError} from '../../shared/api/request'
+export type Proposal={id:string;restaurant_id:string;base_policy_version:number;rate:string;terms_version:string;terms_hash:string;agreement_hash:string;agreement_text:string;status:string;version:number;created_at:string}
+export type Policy={restaurant_id:string;version:number;active:{rate:string;version:number;proposal_id:string;accepted_at:string}|null;proposals:Proposal[]}
+export type Terms={version:string;hash:string;content:string}
+export function ratePercent(rate:string){const n=BigInt(rate.replace('.',''));const whole=n/1000000n,fraction=(n%1000000n).toString().padStart(6,'0').replace(/0+$/,'');return whole.toString()+(fraction?','+fraction:'')+'%'}
+export function percentRate(value:unknown){if(typeof value!=='string'||! /^(0|[1-9][0-9]?)([.,][0-9]{1,6})?$/.test(value))throw new RequestError(422,'VALIDATION_ERROR');const [whole,fraction='']=value.replace(',','.').split('.'),scaled=BigInt(whole)*1000000n+BigInt(fraction.padEnd(6,'0'));return (scaled/100000000n).toString()+'.'+(scaled%100000000n).toString().padStart(8,'0')}
+export const commissionsApi={policy:(id:string)=>request<Policy>(`/restaurants/${id}/commission-policy`),terms:()=>request<Terms>('/partnership-terms/current'),restaurants:async()=>{const rows:{id:string;name:string}[]=[];let cursor:string|null=null;do{const page:{data:typeof rows;page:{next_cursor:string|null}}=await request('/admin/restaurants'+(cursor?'?cursor='+cursor:''));rows.push(...page.data);cursor=page.page.next_cursor}while(cursor);return rows}}

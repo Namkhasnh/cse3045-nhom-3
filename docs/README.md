@@ -18,21 +18,28 @@ Requirements govern behavior; architecture boundaries, database storage and API 
 | Question | Read |
 | --- | --- |
 | Can visitors browse? Can a manager buy? How many restaurants/Admins? | Requirements §§2–4/7; [account security](account-security.md); API §§2/7 |
-| How do opening applications, terms and approval/manual creation work? | [Onboarding](onboarding.md), database §4.1 and migration plan |
+| How do opening applications, terms and approval/manual creation work? | [Onboarding](onboarding.md), [V0.3 contract](onboarding-v03-contract.md), [local verification](onboarding-local-verification.md), database §4.1 and migration plan |
 | What closes compatibility, login return, expired-email and DB-grant gaps? | [Scoped follow-up](auth-followup.md) |
 | How do I perform the approved auth/discovery cutover? | [Operator handoff](auth-discovery-cutover.md) |
 | Which legacy identities/data need compatibility work? | [Migration plan](data/migration-plan.md), implementation status, DEC-01 |
-| How do cash, direct QR, receipt verification and refunds interact? | [Payment policy gate](payments-policy.md), requirements BR11–14, API §9, database §4.4 |
+| How do cash, direct QR, receipt verification and refunds interact? | [Approved payment policy](payments-policy.md), [V0.6 acceptance](progress/V0.6.md), [isolated reproduction](payments-local-verification.md), API §9/database §4.4 |
+| How do I verify cash checkout/fulfillment/history safely? | [V0.5 acceptance](progress/V0.5.md), [isolated commands and adoption boundary](cash-ordering-local-verification.md) |
 | What about totals/snapshots/keys/locks/settlements? | Database §§4–11; API §§3–10; architecture §§5–7 |
+| How do finance statements, corrections, signed credit and reports work? | [Approved DEC-07](finance-policy-proposal.md), [isolated verification/adoption boundary](finance-local-verification.md), [P22](progress/P22.md)→[P23](progress/P23.md)→[P24](progress/P24.md); DEC-08/P25 remains separate |
+| How do P25 account/support/privacy/audit controls work? | [Approved DEC-08](account-support-policy-proposal.md), [P25 contract](account-support-v07-contract.md), [verification](account-support-local-verification.md) and [evidence](progress/P25.md); synthetic scope only |
+| Why does the local homepage now show sample dishes? | [Local demo adoption and recovery](local-demo-adoption.md) |
+| How is sell readiness configured? | [V0.4 setup contract](restaurant-setup-v04-contract.md), [local verification](setup-local-verification.md) |
 | How should screens look and behave? | UI §§1–13, [design coordination](ui/design-skills.md), [original HTML](ui/Hoa%20Lac%20Food%20Ordering%20Platform.html) |
+| How are the scoped UI/UX defect fixes reproduced? | [UI/UX fix verification](uiux-fixes-local-verification.md) |
 | What is implemented or tested? | [Implementation/evidence](implementation-status.md), [historical fixture report](ui/student-discovery-verification.md), [legacy verification archive](history/legacy-verification.md), [documentation checks](documentation-verification.md) |
+| How is the authorized Mac DB copy prepared for a new VPS Docker server? | [Encrypted copy handoff](mac-to-vps-database-copy.md); remote import remains separate from complete deployment |
 | How do we launch/recover/respond to incidents? | [Release checklist](release-checklist.md), deployment §§5–13, testing §§11–13 |
 
-New focused documents above are owned by their linked parent specification; do not create competing policy copies. [V0.1 OpenAPI](data/openapi.yaml) covers auth/profile with schema/example/HTTP checks; later groups extend it with their implementation. The retained `ui_convertion.md` filename and original packaged HTML are intentional.
+New focused documents above are owned by their linked parent specification; do not create competing policy copies. [V0.2 OpenAPI](data/openapi.yaml) covers auth/profile and five public catalog operations with schema/example/HTTP/MySQL checks; [V0.3 onboarding schemas](data/onboarding.openapi.json) and enabled routes extend it with private applications/evidence/review/manual consent. The retained `ui_convertion.md` filename and original packaged HTML are intentional.
 
 ## Implementation status
 
-The October 19 scoped implementation recovers migration history, expands the retained MySQL 9.2.0 schema without changing original rows, replaces role-request auth with capabilities/MFA source and connects public homepage/menu APIs. A read-only October 19 check confirms one enrolled local Admin and the approved legacy cutover; the retained restaurant remains setup-required and public discovery is empty. [Implementation status](implementation-status.md) separates actual source, automated/browser evidence, local schema expansion and remaining acceptance gaps. See the [cutover handoff](auth-discovery-cutover.md). **V0.1 is accepted** by the [October 19 criterion-by-criterion self-review](progress/V0.1.md), including CLI/SMTP/MySQL/browser and API-contract evidence. Later versions and production release remain unaccepted.
+The October 19 scoped implementation recovers migration history, expands the retained MySQL 9.2.0 schema without changing original rows, replaces role-request auth with capabilities/MFA source and connects public homepage/menu APIs. A read-only October 19 check confirms one enrolled local Admin and the approved legacy cutover; the retained restaurant remains setup-required and public discovery is empty. [Implementation status](implementation-status.md) separates actual source, automated/browser evidence, local schema expansion and remaining acceptance gaps. See the [cutover handoff](auth-discovery-cutover.md). **V0.1 is accepted** by the [October 19 criterion-by-criterion self-review](progress/V0.1.md), including CLI/SMTP/MySQL/browser and API-contract evidence. **V0.2 is also accepted** by the [P04→P05→P06 self-review](progress/V0.2.md), with public catalog contracts, five-width connected UI and persistent guest cart/login/price consent evidence. [V0.5](progress/V0.5.md) now accepts cash checkout/fulfillment/history for isolated local synthetic scope; retained adoption remains a separate gate. [V0.3](progress/V0.3.md) is accepted for local synthetic onboarding/approval/manual-create scope only; retained/production adoption remains unaccepted. [V0.4](progress/V0.4.md) is accepted for local synthetic restaurant configuration/readiness after P11–P14. [V0.5/P15–P18](progress/V0.5.md) is accepted for isolated synthetic cash ordering; later versions and commercial release remain unaccepted.
 
 ## Repository skills
 
@@ -62,3 +69,21 @@ Examples: `$run-roadmap Run P04`; `$run-roadmap Complete V0.2`; `$implement-feat
 - Validate local links/anchors, section references, paths in prompts, actual script names, P01–P36 coverage/dependencies and legacy-rule removal. Documentation-only work needs no application tests.
 - Inspect actual source/working tree before stating implementation status; preserve user work and report external changes accurately. Never put real secrets/environment values/private account/bank/recovery data in docs.
 - Report TARGET, IMPLEMENTED, NOT CONFIGURED, NOT RUN and BLOCKED distinctly. Missing required evidence prevents claiming release readiness; documentation completion is not V1.0 acceptance.
+
+V0.6: [V0.6 payment policy](payments-policy.md) and [P19 decision](progress/P19.md); implementation acceptance remains separate.
+
+[V0.6](progress/V0.6.md) is ACCEPTED for local synthetic QR/full direct refunds after [P19](progress/P19.md)→[P20](progress/P20.md)→[P21](progress/P21.md). Retained V0.5/V0.6 adoption and commercial release remain separate and unauthorized.
+
+Onboarding notifications: [contract](notifications-contract.md) and [verification](notifications-verification.md) own in-site inbox, current setup guidance, Admin tasks and their scoped evidence.
+
+V0.8: [approved DEC-09](ai-v08-contract.md), [verification/setup](ai-local-verification.md), [P26](progress/P26.md) → [P27](progress/P27.md) → [P28](progress/P28.md), [current acceptance](progress/V0.8.md). Local synthetic P27/P28 acceptance combines deterministic backend/Chrome evidence and the recorded100case actual Gemini rubric; retained adoption remains separate.
+
+[AI local adoption review/receipt](ai-local-adoption-review.md) records explicit user authorization, verified backup/restore, completed single metadata migration/narrow grants, preserved58 original tables/173 rows and backend restart. Current100call allowance is preserved; production remains separate.
+
+V0.9: [P29 infrastructure/recovery proposal](infrastructure-recovery-proposal.md), [decision evidence](progress/P29.md) and [P29–P33 status](progress/V0.9.md). Existing VPS preference and synthetic recovery design are approved; remaining access/services/offsite/custody keep DEC-10/11/P29 blocked. [Executed local tooling](recovery-local-preparation.md) is not P30 acceptance. No paid provisioning, new retained migration, real pilot or production action authorized.
+
+[Retained Mac backup verification](mac-backup-verification.md) records the explicitly selected local source, age-encrypted full SQL restore, exact one-file Drive approval and verified read-back. This is one recovery point, not automated backup or V0.9 acceptance.
+
+[Scoped MVP ordering/three-role UX verification](mvp-ordering-verification.md) records current buyer/manager/Admin journeys, fixes, automated/Chrome evidence and the boundary from V0.9 operational acceptance.
+
+[Next staging handoff](staging-next-step.md) records current VPS resource evidence, proposed isolated caps, prepared Linux artifacts and remaining remote-access/origin/service gates. No VPS deployment or release approval implied.

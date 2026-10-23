@@ -1,0 +1,136 @@
+{
+  "result": "PASS",
+  "synthetic": true,
+  "started_at": "2026-10-23T03:58:32.074Z",
+  "source_head": "39b7ea50362472ad31bb4b6e9c60c44f5c1d7f54",
+  "migration_sha256": {
+    "20261016000000_foundation_accounts_audit": "6e730d66eefaed1707a8cad2b84455d1647c03f99c00399a857fd0cdd91897f6",
+    "20261017000000_account_version": "8d9fe17fc10273fb9f4dad57012ab240a03ea949b752a8787750d0eaeb2addab",
+    "20261017000001_auth_login_limits": "d67b1ecdda4b0794cc65dcbe3cfa5867fb97b3adf8e64cd92fc2448658dfd83a",
+    "20261017000002_email_role_requests": "f8537154924739cc3f1d6c8882764316cc967bc61b36474598018cc8ef91158a",
+    "20261017000003_dev_order_flow": "43cb84eed66f9fda84fab83c0d6f680fa4e743ed9a8eaadd6b7cc805a1024de2",
+    "20261017000004_order_payment_history": "7365ecc5bd48d5dc0aeb3ab2ea88869d5c91c64a676e1c9586094331241c2e5c",
+    "20261018000000_restaurants": "d39c15fb2803119b3f121674de2b7feb6552357953e28f38e3e5d8581952bda8",
+    "20261018010000_dishes": "38f18ece827b7e6595a0fe2b7b96aa79cb6b96d1f382dd425b63352249a74643",
+    "20261019000000_capabilities_mfa_readiness": "ffaef1f82e615626644d9a7292b81b4db0190f07a910568c560e332ccc2a2706",
+    "20261019010000_mfa_limits": "8e7addc8d48d72b7e6686ff402420d9a3b180e3d70bca4c79c46a032787e663b",
+    "20261019020000_operator_requests": "0c0712a874302972ac88b18c0cae5b8041fbab4a9a18528104dd3fac1ce9e1d2",
+    "20261019030000_onboarding": "5851ede3f2b795606f69b46ad288d651c0f4a831d4fe6fd6a40d7109b1aafab9",
+    "20261019031000_evidence_cleanup": "7fd7ad89ab4123a08a0bc469cec519e6b552cb04b1de80d35d8b7320625043d4",
+    "20261019040000_delivery_setup": "521b76b95ece23f78039770bcb96607dc89d81bdd6583622ad75bf7131cac9c8",
+    "20261020000000_delivery_location_revision": "76bca0d21aa7220fe36bf5643e55b1e3bf5c84ed960bd5bcd65bd4a280694951",
+    "20261020010000_dish_media": "ec57fee096a5ceb76fb97dfcf37ee36f163a01037d7b00d5c20ad1d39f17d1e5",
+    "20261020011000_media_reference_scope": "bfba30ef704ca8e332b156e3cf2fdc9dda638026771fa44c513808a0b7b5af15",
+    "20261020020000_commission_agreements": "f3e3070d01f984270155df1b3d8b6c78feb30f9b2c86ece3f2dc86ecef790dd9",
+    "20261020030000_cash_orders": "356df1977aedb63c698ab1ee6a3d6eeb9d635e6f129728bbe96cebd5c08a3d84",
+    "20261020040000_cash_fulfillment": "991ec2b3b23c1b727671cc33fbda2d4f72a135a64c9b19807487ae7c10861605",
+    "20261020050000_qr_payments": "7d64fb7d6d9cfe21a67dcf94c2657b5c1c865b5dbeb89b160470e02d98209b51",
+    "20261020051000_payment_reference_scope": "cf757c031b580d98eeb48084fa5a0dc4cd813e0396eb93084a38c4103c006907",
+    "20261021000000_finance_ledger": "f6e1ab691543ddf030f32550042e7ae3c9396d2d6fb5b0ddb82463956f38d7ae",
+    "20261021010000_account_support": "0be90137391682394dac2b72aef3a5a0b07573095cc6a475bf1ef1b7c197bb2a",
+    "20261021011000_compromised_credentials": "a6e8a2dfb4bd861c58079a2c4f66104e2d3ac9b67cb82567d7060ca0a2ef0689",
+    "20261021012000_support_resolution_slot": "b8a50831fe47fd686df5af1117ce9f00a2af6d6388fb0fa566faec29840945ad",
+    "20261022000000_notifications": "47117e3b41a5fcd19159e14f580c860519abc56f94e46a8658ececec1cd297dc",
+    "20261022010000_recommendations": "8494e687402d128cac66f95c9a3598d8b9fe885e7cf2f133f8c41358d8cc305f"
+  },
+  "scope": "LOCAL PREPARATION; not P30 staging acceptance or operational RPO/RTO",
+  "mysql": {
+    "version": "9.2.0",
+    "log_bin": "1",
+    "sync_binlog": "1",
+    "flush_commit": "1"
+  },
+  "empty-bootstrap": "PASS",
+  "empty-forward": "PASS",
+  "legacy-upgrade": "PASS",
+  "offsite": {
+    "result": "PASS",
+    "remote": "hlfdrive:HLF-Backup-Synthetic/database-drill-847d0f97-7cff-42c8-a3c6-1dae33b6a2bc/recovery.encrypted.json",
+    "uploaded_at": "2026-10-23T03:59:00.223Z",
+    "read_back_at": "2026-10-23T03:59:05.154Z",
+    "ciphertext_bytes": 214884,
+    "ciphertext_sha256": "067ce932b0a0962a993ca923bc30c5e76b5f66a782d3f5a766426fd6afe126c8",
+    "transfer_readback_ms": 12042,
+    "limits": "Interactive local drill with in-memory ephemeral RSA key, not offline key custody, unattended VPS backup, binlog replay or operational RPO/RTO"
+  },
+  "restore": {
+    "result": "PASS",
+    "tables": 62,
+    "rows": 43,
+    "encrypted_sha256": "067ce932b0a0962a993ca923bc30c5e76b5f66a782d3f5a766426fd6afe126c8",
+    "erased_key_excluded": true,
+    "held_key_preserved": true,
+    "media_bytes_preserved": true,
+    "synthetic_quota_preserved": "100",
+    "synthetic_money_snapshot_invariants": "PASS",
+    "local_simulated_gap_ms": 12465,
+    "local_archive_restore_validation_ms": 1005,
+    "limitations": "Offsite ciphertext read-back included; no binlog replay, running app replay/login/new order, scheduled backup, real vault/media integration or operational RPO/RTO proof"
+  },
+  "binlog": {
+    "result": "PASS",
+    "offsite": {
+      "result": "PASS",
+      "remote": "hlfdrive:HLF-Backup-Synthetic/binlog-drill-a6d8a5c9-f417-46d5-bcef-9261f94724ce/full-binlog.encrypted.json",
+      "ciphertext_sha256": "dde39b0f89776b3bd68a242a25b47791d5f97d914523d1ccf9bc0fa86d035f64",
+      "transfer_readback_ms": 11750
+    },
+    "mysqlbinlog_version": "mysqlbinlog  Ver 9.5.0 for macos26.1 on arm64 (Homebrew)",
+    "start": {
+      "file": "binlog.000002",
+      "position": 399086
+    },
+    "end": {
+      "file": "binlog.000003",
+      "position": 515
+    },
+    "increments": [
+      {
+        "name": "binlog.000002",
+        "bytes": 399680,
+        "sha256": "80add164b47b3be0ee5fba7807d7fca4b6458bdaf13a904945642e0e481b05eb"
+      },
+      {
+        "name": "binlog.000003",
+        "bytes": 915,
+        "sha256": "6365b2c9bd2aa7fb012b5bfb678a8482c26238c3eb31d6437d292a7e9fd77c8f"
+      }
+    ],
+    "ciphertext_sha256": "dde39b0f89776b3bd68a242a25b47791d5f97d914523d1ccf9bc0fa86d035f64",
+    "ciphertext_bytes": 717432,
+    "elapsed_ms": 12794,
+    "rows": 2,
+    "exact_large_integer_and_decimal": "PASS",
+    "full_only_missing_increments": "PASS",
+    "committed_update_insert_delete": "PASS",
+    "rolled_back_and_after_cutoff_excluded": "PASS",
+    "missing_reordered_corrupt_chain_refused": "PASS",
+    "limits": "Local synthetic probe table and authenticated in-memory bundle; no unattended binlog shipping, concurrent DDL/writes during full backup, application intent replay, offline age custody or operational RPO/RTO proof"
+  },
+  "elapsed_ms": 47192,
+  "source_sha256": {
+    "ops/recovery/rehearse.mjs": "9ea1d21b365cbcca1e04b96d03e9a7575b62ce3f3256e03cc494f95e1c338701",
+    "ops/recovery/binlog.mjs": "9ca1d46e7e983ddab601b20b73be7a80b4f4c25bf865951a31089e0dbf841133",
+    "ops/recovery/archive.mjs": "4b4fa4fb63b40f451aa97f75d8d512e77b9f193924884e1014a3f05c4685bd85",
+    "ops/recovery/verify-offline-key.sh": "c321a6afd14ab06ade967cc170bdf4a49ac68e9f03a31f6d7171407cd2515759"
+  },
+  "checks": {
+    "ops_eslint": "PASS",
+    "node_syntax": "PASS",
+    "archive_tests": "PASS 5 groups",
+    "offline_verifier_synthetic_tests": "PASS matching copy; wrong, same and missing copy rejected",
+    "cleanup": "PASS rehearsal label-checked removal; subsequent docker inventory contains none of the new run containers (pre-existing exited hlf-recovery-mysql-20261019 preserved)",
+    "application_suites": "NOT RUN: ops-only tooling",
+    "review": "Codex self-review only",
+    "documentation": "PASS 485 local links/anchors; 108 Markdown documents under500lines; 15 prior source/evidence fingerprints unchanged; git diff --check"
+  },
+  "offline_age_copy": {
+    "status": "NOT RUN",
+    "reason": "User requested skipping USB/offline-copy verification; deferred, not passed or waived as an acceptance gate.",
+    "last_user_reported_attempt": "OFFLINE_COPY_NOT_READABLE; no successful decrypt/cmp or independent custody confirmed",
+    "source": "User-reported terminal result and explicit deferral; no private key accessed by agent"
+  },
+  "automatic_vps_backup": "NOT CONFIGURED",
+  "v09": "BLOCKED / NOT ACCEPTED",
+  "limitations": "Local synthetic full plus two-binlog offsite read-back replay; probe table is not application workflow replay. No retained DB/VPS changes, automatic jobs, offline age custody verification, operational RPO/RTO or staging/pilot acceptance. Ephemeral RSA private key never uploaded. mysqlbinlog9.5.0 client against MySQL9.2.0 server."
+}

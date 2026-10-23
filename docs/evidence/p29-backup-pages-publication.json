@@ -1,0 +1,48 @@
+{
+  "date_vietnam": "2026-10-23",
+  "scope": "User-authorized public GitHub Pages homepage/privacy notices for HLF Backup only; not V0.9 ordering deployment",
+  "authorization": "User accepted GitHub Pages proposal with: v\u1eady l\u00e0m gi\u00fap t\u00f4i \u0111i",
+  "repository": "https://github.com/Namkhasnh/hlf-backup-info",
+  "visibility": "public",
+  "branch": "main",
+  "pages_source": "main / (root)",
+  "commit": "b6be0f565ee3d35fa695aac20e25837edbf77bdd",
+  "workflow": "https://github.com/Namkhasnh/hlf-backup-info/actions/runs/39828387078",
+  "jobs": {
+    "build": "success",
+    "deploy": "success",
+    "report-build-status": "success"
+  },
+  "homepage": "https://namkhasnh.github.io/hlf-backup-info/",
+  "privacy": "https://namkhasnh.github.io/hlf-backup-info/privacy.html",
+  "authorized_domain_candidate": "namkhasnh.github.io",
+  "source_sha256": {
+    "index.html": "156110fa7592548a24a20ea7971adefae6842fe38c3d6497c72139ca58447c05",
+    "styles.css": "dfd07a0ef619a066be63f6599c50338e18f21277ba2eacb7e1499c2814865c5f",
+    "privacy.html": "552154162d77301d1545f32a4e31d70a723981d8d089081ed797566ef90aa9cb"
+  },
+  "verification": {
+    "github_files_match_local_source": true,
+    "public_files_match_local_source": true,
+    "public_http_status": {
+      "index.html": 200,
+      "privacy.html": 200,
+      "styles.css": 200
+    },
+    "curl_tls_verify_result": 0,
+    "https_enforced": "observed in Pages settings",
+    "initial_404": "during initial Pages build; resolved after deployment",
+    "browser": "Native Chrome: local homepage desktop/360px, public homepage-to-privacy link, public privacy360px, keyboard skip-link Tab/Enter observed",
+    "static_checks": "local HTML links/lang/no scripts passed"
+  },
+  "access": "GitHub connector read succeeded, write tree API403; uploaded prepared files through existing signed-in native browser; no integration permission expansion",
+  "oauth_console_changes": "NOT RUN; Google has not accepted URLs/verified domain or changed Testing status in this task",
+  "billing_changes": false,
+  "vps_changes": false,
+  "secret_or_backup_upload": false,
+  "limits": [
+    "No OAuth publishing, domain verification or token lifecycle acceptance",
+    "No retained data/operational backup/schedule or V0.9 acceptance",
+    "Full accessibility audit/non-Chrome browser NOT RUN; scoped visual/keyboard checks only"
+  ]
+}

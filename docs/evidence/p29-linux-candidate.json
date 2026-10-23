@@ -1,0 +1,159 @@
+{
+  "date_vietnam": "2026-10-23",
+  "status": "LOCAL LINUX CANDIDATE PREPARATION PASS; not staging deployment/acceptance",
+  "platform": "linux/amd64 built/probed under Docker emulation on Mac arm64",
+  "toolchain": "Node24.22.0/npm11.19.1",
+  "images": [
+    {
+      "tag": [
+        "hlf-staging-backend-runtime:20261023"
+      ],
+      "id": "sha256:bfa465744d7fcf9391076c510dd7e744f51bada9ffab40b3222256fa27646af7",
+      "platform": "linux/amd64",
+      "size_bytes": 212250489,
+      "user": "node"
+    },
+    {
+      "tag": [
+        "hlf-staging-frontend-build:20261023"
+      ],
+      "id": "sha256:9c8f8837d63809e1316ecbf2d57c6f4a645ef2320543dfb1fe23c177b6f27089",
+      "platform": "linux/amd64",
+      "size_bytes": 183028117,
+      "user": ""
+    }
+  ],
+  "artifacts": {
+    "backend-linux-amd64.tar": {
+      "bytes": 212270592,
+      "sha256": "d820964399eba65c96ec55207f81c1f85f79ffb6b66abdc92025dda7865b2308"
+    },
+    "frontend-dist.tar.gz": {
+      "bytes": 549373,
+      "sha256": "488b3ac89ee92690db69a2e813a1a787db33e3d9713368bbc83726d78a4932de"
+    }
+  },
+  "private_local_directory": "/private/tmp/hlf-linux-candidate-b2qNUN",
+  "frontend_manifest": {
+    "assets/be-vietnam-pro-latin-400-normal-PpnXBOrz.woff2": "03d1b589cff172e1a670b3573e731d3380bc326f80cf83b0d3504e3188e2e074",
+    "assets/be-vietnam-pro-latin-400-normal-bXgqVju9.woff": "c0190200223755a3c52bb47b9cf6c3604f19288599cfbbe5026904d5d439f7d7",
+    "assets/be-vietnam-pro-latin-500-normal-B6LVzGNe.woff2": "b621f77d35f777023aa11ca524462d511b4b28a813adbc0e9d15a10fc61dfe4e",
+    "assets/be-vietnam-pro-latin-500-normal-BJkVuMHw.woff": "0a905f6bc6f1120d20ad3dde690989db3149a98227026f2de47dca6aef71edab",
+    "assets/be-vietnam-pro-latin-600-normal-5IO4e7bK.woff": "f900efb46ec81e9ff6017c6868f3f47cebde34ac87da16cc587da0e0b1f4c1d4",
+    "assets/be-vietnam-pro-latin-600-normal-BZDkUTrt.woff2": "9503dec2a7c532c8331e9600bcafea287a4fd208573b8668d85ab8d8de1863c7",
+    "assets/be-vietnam-pro-latin-700-normal-C2EtzaOi.woff": "f44cc3417bd1fcbddaaec0c02d5383dfcf34a16ef1fc32f8cf179ea4a468861b",
+    "assets/be-vietnam-pro-latin-700-normal-DlW1Zbsh.woff2": "a193dd87699bd2e18ddf72dc271493ea82a23dad9f5c334d9f2a257b1e05fc30",
+    "assets/be-vietnam-pro-latin-800-normal-BpHZASpI.woff2": "7c5d0871188c09339a6eb46948420ed9b11f3d06ea3ff1c5d1cf41b06a3504e7",
+    "assets/be-vietnam-pro-latin-800-normal-Cwp5p0gU.woff": "72c0817b5e4f58e5fba018c346b3d2f02c02cd8c3d96380c63941149fbc54249",
+    "assets/be-vietnam-pro-latin-ext-400-normal-CiZNW1ec.woff2": "f7a2811e471c2973a1179ce39da3ad6bb8082381aa8d1535ccfcbc3d6d78a052",
+    "assets/be-vietnam-pro-latin-ext-400-normal-DYBYyMQr.woff": "efff7513dcb30c597007e5d55f8fe5563d0023b276b120b711fad71e0845a9d5",
+    "assets/be-vietnam-pro-latin-ext-500-normal-CK0UkkKf.woff": "efa04a80e26991987639ada83ea6eeecdebedb8012f8999ae6805fff20f9456d",
+    "assets/be-vietnam-pro-latin-ext-500-normal-h0Fp6aX0.woff2": "947d592eb7676914507ff68fc11fcf2cfdecd6ebaf0fa2af6047f66a63ea7d0f",
+    "assets/be-vietnam-pro-latin-ext-600-normal-BNd8euf0.woff2": "20cc75daeaaaa0fa8af2b616b2de2b2900f0ce14ae8e9faa47d272cedd93827f",
+    "assets/be-vietnam-pro-latin-ext-600-normal-BeUwKxhG.woff": "4143c6d457aca1bc2d395a5954b9c62ada458fc2b9395c2a63cc69a13c55db53",
+    "assets/be-vietnam-pro-latin-ext-700-normal-4Hjo2OtD.woff": "f3e8165ac1f16aa7967f7368ebc2b1189acc54abf540312ff97463ed9205af21",
+    "assets/be-vietnam-pro-latin-ext-700-normal-C8_gqRu2.woff2": "33d57e5bd840b03921568e08d2be1082d453e55f1ba55f421e41a1aa54e12601",
+    "assets/be-vietnam-pro-latin-ext-800-normal-BvOXQlBN.woff": "7f3bcf931148607df31580be1df6e535a7db2a7db085b1f94d8f6944d7344ef1",
+    "assets/be-vietnam-pro-latin-ext-800-normal-GEpNgheG.woff2": "85a2008e6d5f2381a076d36d38771957b118683d0fff3029844737aff6b96a10",
+    "assets/be-vietnam-pro-vietnamese-400-normal-BuGn0gnm.woff": "4d50c7991ca377aef28fb1fb24d4ce7ea64d69f6bd2661e7e74fb9d9fef11dc0",
+    "assets/be-vietnam-pro-vietnamese-400-normal-CRcqvyg1.woff2": "dc085e2fba3414e5c5bf1e6172f921a9f81c5859946a4ed3d63c1e470d96a9e2",
+    "assets/be-vietnam-pro-vietnamese-500-normal-CfdwVo8-.woff": "6b81283a46623b9a99bc7a1800f936549ead1f871d1dfcd803ddcd18c433a7d8",
+    "assets/be-vietnam-pro-vietnamese-500-normal-DREgrEoJ.woff2": "86341610cbe907eecf461c9159c168d5efb52bb1a33963813a08f520555d8e66",
+    "assets/be-vietnam-pro-vietnamese-600-normal-DkpCIyan.woff": "2d68010bd89add4c477e9c9c3ef29b78a68f76439309f4633c91a8674e9ba751",
+    "assets/be-vietnam-pro-vietnamese-600-normal-nyU-ZL2p.woff2": "97658c6f9a384f29a3005c3d96e2a0d1c810192cf68979071c290f5a377a9f99",
+    "assets/be-vietnam-pro-vietnamese-700-normal-By_5yT39.woff": "4fa311d11645e588ac98d0e665920fd55eb0eb624c600d9e5dd007f4b9d5159c",
+    "assets/be-vietnam-pro-vietnamese-700-normal-Csr0PCuG.woff2": "4f58af2d1c3e28a9ba14c51c82db2751d78344b75bdcb34de24a1031ebe59da6",
+    "assets/be-vietnam-pro-vietnamese-800-normal-CA0HL1e4.woff": "76527d9cbc338473529e25185372f276b3c75ab6f2c3617e1536723c6e82cdd5",
+    "assets/be-vietnam-pro-vietnamese-800-normal-D4LFh2W4.woff2": "26b241d1d5f489c8a65c1a3c4cdcdb48dd114a9ed7e0c0180182191f087cbe96",
+    "assets/index-BV6T4zwr.css": "4d7c49920e79f87929271483a4fe7d96688f4bd1c19afcc6654ef50f60d13988",
+    "assets/index-UbmXTHn3.js": "bcc59ac6f5b6ac2c2abb35df5b0991257261d71327afcc864406d5273a6ef6d7",
+    "fixtures/bread.svg": "08058822141b75db3c7e2d0e82a909b01224489518b42272f166bac35841c4d1",
+    "fixtures/noodles.svg": "68aca7acadf77d0e17c0c6d44ec9c9f4823ac337d13e1f9516e686def2690900",
+    "fixtures/rice.svg": "3613b35f3b42b0d996de85795e10e97a4058eb56544573091bb726ea8e26b6f7",
+    "index.html": "e66b59777c6e4688a2e935a34a42786847dcae65a4d234e0bef10851470054e0"
+  },
+  "build_log_sha256": {
+    "backend-runtime.log": "33cf5594f37bd164d8af8493409e412c506f28c226fe1eed7bdb342929c0e755",
+    "frontend-build.log": "a8a46b00058451067afe806e701f7eae1c30056612903cb79f44c628671f946f"
+  },
+  "source_config_sha256": {
+    "ops/staging/Dockerfile": "6fdf55c80625e11b1b560b28add22f486a4ef0cad902c4b136571034b28d44bc",
+    "ops/staging/Dockerfile.dockerignore": "bb4bff980d0d2a53be443979f55c5803b5ab4a7ac05d24a044391bd55db7e2c6",
+    "backend/package-lock.json": "4b56abbd80690f818f6258a31e7705a42bc04db7befe918aafe586e8bdaf994d",
+    "frontend/package-lock.json": "cd3a87853693fe7ba9e7c2a45da76c7e0f02e0c848807ac91331e51cb8385ce8",
+    "backend/prisma/schema.prisma": "6b26c9008223a8b3f1d72835246ebe1527a42a14a72feab1fd64ce507ee5c077",
+    "ops/staging/check-linux.mjs": "c863f5efb85b7b7f7173a652566efabeb67a7a19b7921b5e4c1532425fafaf49",
+    "ops/staging/preflight.sh": "c3738186fc377173871ae5df5119d08ea27528e90fc4ca001ead98a2d53244c1",
+    "ops/staging/capacity-proposal.json": "b143d31ca46ff2fa6fa62c53ba3e61d5aa784b091d49022a37420af8135a1617"
+  },
+  "smoke": {
+    "result": "PASS",
+    "network": "none",
+    "root_filesystem": "read-only",
+    "memory_cap_mib": 256,
+    "uid": 1000,
+    "node": "v24.22.0",
+    "platform": "linux/x64",
+    "sharp_native_png": "PASS",
+    "prisma_generated_import": "PASS",
+    "app_module_import": "PASS",
+    "env_file_absent": true,
+    "source_directory_absent": true,
+    "rss_mib": 143,
+    "limits": "Imports and1pixel PNG only; no server startup/DB/load proof"
+  },
+  "remote": {
+    "vps_mutated": false,
+    "transferred": false,
+    "ssh": "Still no authenticated agent shell",
+    "staging_approval": "NOT PROVIDED; full P29 still blocked"
+  },
+  "limits": [
+    "Frontend output is a static artifact, not a web server",
+    "No migration/provisioning/DB/runtime secret action",
+    "No production origin/HTTPS/SMTP/media/vault/alerts/scheduler setup",
+    "No real pilot or production approval",
+    "Current source working tree contains uncommitted prior work; this is a local candidate only"
+  ],
+  "frontend_secret_scan": {
+    "result": "PASS",
+    "artifact_files": 3,
+    "local_secret_values_checked": 10,
+    "limit": "Exact matches to local configured secret values only; not a complete secret audit"
+  },
+  "linux_startup_probe": {
+    "result": "PASS",
+    "started_at": "2026-10-23T09:20:47.709Z",
+    "image": "sha256:bfa465744d7fcf9391076c510dd7e744f51bada9ffab40b3222256fa27646af7",
+    "scope": "Disposable Linux amd64 startup/resource probe; not staging/persistence/security/load acceptance",
+    "mysql": "9.2.0",
+    "runtime": "Linux amd64 Node24.22.0/npm11.19.1",
+    "http": {
+      "public_catalog": 200,
+      "public_catalog_data": "empty",
+      "anonymous_me": 401,
+      "invalid_login": 401
+    },
+    "memory_caps_mib": {
+      "mysql": 384,
+      "backend": 256
+    },
+    "observed_stats": [
+      "hlf-linux-db-<run> | 233.7MiB / 384MiB | 0.55%",
+      "hlf-linux-api-<run> | 197.8MiB / 256MiB | 0.49%"
+    ],
+    "limits": "Linux backend under emulation and local MySQL, startup/three HTTP assertions only. Root DB identity and fixed synthetic auth keys exist only in disposable probe. Not restricted runtime grants, SMTP/media/vault/HTTPS/full journeys/load or operational recovery proof. No retained source or VPS touched.",
+    "finished_at": "2026-10-23T09:21:12.519Z"
+  },
+  "review": "Codex self-review only",
+  "application_suites": "NOT RUN again: application sources unchanged; prior MVP receipt remains separate",
+  "final_checks": {
+    "shell_syntax": "PASS",
+    "node_syntax": "PASS",
+    "ops_eslint": "PASS",
+    "docs_paths_anchors_and_markdown_limit": "PASS",
+    "source_config_hashes": "PASS",
+    "git_diff_check": "PASS",
+    "review": "Codex self-review only"
+  }
+}

@@ -1,0 +1,16 @@
+import {useCallback,useEffect,useRef,useState} from 'react'
+import {useOrders} from './use-orders'
+import {OrderPage,type PaymentRenderer} from './OrderPage'
+import {statusLabel,paymentStatusLabel} from './status'
+import {formatVnd} from '../../shared/lib/format'
+import {Button} from '../../shared/ui/Button'
+export function OwnerOrdersPage({restaurantId,accountId,renderPayment,restricted=false}:{restaurantId:string;accountId:string;renderPayment?:PaymentRenderer;restricted?:boolean}){
+ const [status,setStatus]=useState(''),[cursor,setCursor]=useState(''),[selected,setSelected]=useState(new URLSearchParams(location.search).get('order')??'')
+ const detail=useRef<HTMLDivElement>(null),list=useRef<HTMLDivElement>(null),opener=useRef<HTMLButtonElement|null>(null)
+ const [selection,setSelection]=useState(0)
+ const revealDetail=useCallback(()=>{detail.current?.focus();detail.current?.scrollIntoView({block:'start'})},[])
+ const query=new URLSearchParams();if(status)query.set('status',status);if(cursor)query.set('cursor',cursor);const q=useOrders(accountId,restaurantId,'?'+query),{page,error}=q
+ const listLoaded=Boolean(page)
+ useEffect(()=>{if(selected&&listLoaded)revealDetail()},[selection,selected,listLoaded,revealDetail])
+ return <section><h1>Đơn của quán</h1><label>Lọc trạng thái<select value={status} onChange={e=>{setStatus(e.target.value);setCursor('')}}><option value="">Tất cả</option>{['pending','accepted','delivering','completed','rejected','cancelled'].map(s=><option key={s} value={s}>{statusLabel(s)}</option>)}</select></label><Button variant="neutral" onClick={q.refresh}>Cập nhật danh sách đơn</Button>{error&&<p role="alert">{error}</p>}<p role="status">{q.connection==='paused'?'Danh sách tạm dừng cập nhật khi offline/ẩn trang.':q.connection==='error'?'Danh sách có thể đã cũ; sẽ thử lại.':'Danh sách tự cập nhật khoảng 5 giây khi trang hiển thị.'}</p><div className="orders-layout"><div ref={list} tabIndex={-1} aria-label="Danh sách đơn của quán">{!page&&!error&&<p role="status">Đang tải danh sách…</p>}{page&&!page.data.length&&<p>Chưa có đơn phù hợp.</p>}<ul className="order-list">{page?.data.map(o=><li key={o.id}><Button variant="neutral" aria-pressed={selected===o.id} onClick={e=>{opener.current=e.currentTarget;setSelected(o.id);setSelection(n=>n+1);history.replaceState(null,'','?order='+o.id)}}>Đơn #{o.id} · {statusLabel(o.status)} · {formatVnd(o.total_vnd)} · {paymentStatusLabel(o.payment?.status)}</Button></li>)}</ul>{page?.page.has_more&&<Button onClick={()=>{setCursor(page.page.next_cursor!)}}>Trang đơn tiếp theo</Button>}{cursor&&<Button variant="neutral" onClick={()=>setCursor('')}>Về đơn mới nhất</Button>}</div><div ref={detail} tabIndex={-1} role="region" aria-label={selected?'Chi tiết đơn #'+selected:'Chi tiết đơn'}>{selected?<><Button variant="neutral" onClick={()=>{setSelected('');history.replaceState(null,'',location.pathname);const target=opener.current?.isConnected?opener.current:list.current;target?.focus();target?.scrollIntoView({block:'center'})}}>Về danh sách đơn</Button><OrderPage key={accountId+':'+selected} id={selected} accountId={accountId} owner restricted={restricted} onLoaded={revealDetail} renderPayment={renderPayment} onChanged={q.changed}/></>:<p>Chọn đơn để xem chi tiết.</p>}</div></div></section>
+}

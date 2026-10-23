@@ -47,15 +47,15 @@ export class EmailVerificationService {
     return { host, port, from };
   }
 
-  async send(to: string, code: string) {
+  async send(to: string, code: string, purpose:'verification'|'recovery'='verification') {
     const { host, port, from } = this.assertConfigured();
     try {
       const transport = nodemailer.createTransport({ host, port, secure: port === 465,
         requireTLS: port !== 465,
         auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASSWORD },
         connectionTimeout: 10000, greetingTimeout: 10000, socketTimeout: 10000 });
-      await transport.sendMail({ from, to, subject: 'Mã xác minh Hòa Lạc Food',
-        text: `Mã xác minh tài khoản của bạn: ${code}\nMã có hiệu lực trong 10 phút. Nếu bạn không đăng ký, hãy bỏ qua email này.` });
+      await transport.sendMail({ from, to, subject: purpose==='recovery'?'Khôi phục truy cập Hòa Lạc Food':'Mã xác minh Hòa Lạc Food',
+        text: purpose==='recovery'?`Mã khôi phục truy cập: ${code}\nMã có hiệu lực trong 10 phút. Không chia sẻ mã này. Nếu bạn không yêu cầu, hãy bỏ qua email này.`:`Mã xác minh tài khoản của bạn: ${code}\nMã có hiệu lực trong 10 phút. Nếu bạn không đăng ký, hãy bỏ qua email này.` });
     } catch {
       throw new ServiceUnavailableException({ code: 'EMAIL_UNAVAILABLE', message: 'Email delivery failed.' });
     }

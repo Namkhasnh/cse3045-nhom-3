@@ -1,0 +1,15 @@
+import {useEffect,useState} from 'react'
+import {commissionsApi,ratePercent,type Policy,type Proposal} from './api'
+import {useDurableCommand} from '../../shared/hooks/useDurableCommand'
+import {requestMessage} from '../../shared/api/request'
+export function OwnerCommissionPage({actor,restaurantId}:{actor:string;restaurantId:string}){
+ const [policy,setPolicy]=useState<Policy|null>(null),[error,setError]=useState(''),[notice,setNotice]=useState('');const command=useDurableCommand(actor,'commission-confirm')
+ const load=()=>commissionsApi.policy(restaurantId).then(setPolicy)
+ useEffect(()=>{let active=true;commissionsApi.policy(restaurantId).then(p=>{if(active)setPolicy(p)}).catch(e=>{if(active)setError(requestMessage(e))});return()=>{active=false}},[restaurantId])
+ async function confirm(p:Proposal){setError('');try{await command.run(`/owner/restaurants/${restaurantId}/commission-policy/confirm`,'POST',{proposal_id:p.id,expected_version:p.version,agreement_hash:p.agreement_hash,consent:true});setNotice('Đã xác nhận mức hoa hồng. Mức này áp dụng cho các đơn tạo từ bây giờ.');await load()}catch(e){setError(requestMessage(e))}}
+ return <section className="settings-page"><h1>Thỏa thuận hoa hồng</h1>{error&&<p role="alert">{error}</p>}{notice&&<p role="status">{notice}</p>}{command.pending&&<button disabled={command.busy} onClick={()=>void command.retry().then(()=>{setError('');setNotice('Đã khôi phục xác nhận hoa hồng.');return load()}).catch(e=>setError(requestMessage(e)))}>Thử lại đúng xác nhận</button>}<button disabled={command.busy} onClick={()=>void load().catch(e=>setError(requestMessage(e)))}>Tải lại thỏa thuận</button>{!policy?<p role="status">Đang tải…</p>:<><p>Mức đang áp dụng: {policy.active?ratePercent(policy.active.rate):'Chưa có mức đã đồng ý'}</p>{!policy.active&&<p>Quán cần đồng ý mức cụ thể trước khi đủ điều kiện bán.</p>}<p>Tiền món của đơn hoàn thành là cơ sở tính hoa hồng; không gồm phí giao. Mức cũ vẫn áp dụng khi đang chờ xác nhận mức mới.</p>{!policy.proposals.length&&<p>Admin chưa gửi đề xuất hoa hồng.</p>}{policy.proposals.map(p=><Agreement key={p.id+':'+p.version} proposal={p} disabled={command.busy||Boolean(command.pending)} onConfirm={()=>void confirm(p)}/>)}</>}</section>
+}
+function Agreement({proposal:p,disabled,onConfirm}:{proposal:Proposal;disabled:boolean;onConfirm:()=>void}){
+ const [checked,setChecked]=useState(false)
+ return <article className="commission-agreement"><h2>Đề xuất #{p.id}: {ratePercent(p.rate)}</h2><p>{({proposed:'Chờ bạn xác nhận',accepted:'Đã đồng ý',superseded:'Đã được thay thế'} as Record<string,string>)[p.status]}</p><details><summary>Đọc toàn bộ thỏa thuận · {p.terms_version}</summary><pre>{p.agreement_text}</pre></details>{p.status==='proposed'&&<form onSubmit={e=>{e.preventDefault();if(checked)onConfirm()}}><fieldset disabled={disabled}><label><input name="consent" type="checkbox" checked={checked} onChange={e=>setChecked(e.target.checked)}/>Tôi đã đọc và đồng ý mức {ratePercent(p.rate)} cùng nội dung thỏa thuận này.</label><button type="submit" disabled={!checked||disabled}>Xác nhận mức {ratePercent(p.rate)}</button></fieldset></form>}</article>
+}

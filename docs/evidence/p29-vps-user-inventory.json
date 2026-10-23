@@ -1,0 +1,245 @@
+{
+  "source": "User-provided read-only SSH command output, corrected target; not agent-executed or independently attributed to public origin",
+  "reported_at_utc": "2026-10-22T03:25:14Z",
+  "reported_at_vietnam": "2026-10-22T10:25:14+07:00",
+  "supersedes": "Earlier user screenshot was from a wrong SSH target; exclude its root77.6%/memory20% observations from VPS assessment",
+  "os": "Ubuntu 24.04.4 LTS",
+  "architecture": "x86_64",
+  "logical_cpus": 2,
+  "memory_mib": {
+    "total": 1967,
+    "used": 389,
+    "free": 1180,
+    "shared": 0,
+    "buff_cache": 557,
+    "available": 1578
+  },
+  "swap_mib": {
+    "total": 2047,
+    "used": 560,
+    "free": 1487
+  },
+  "root_filesystem_kib": {
+    "total": 19221248,
+    "used": 7419444,
+    "available": 11785420,
+    "capacity_percent": 39
+  },
+  "motd": {
+    "root_usage_percent": "38.6",
+    "root_size": "18.33GB",
+    "memory_usage_percent": "13",
+    "swap_usage_percent": "27",
+    "restart_required": true,
+    "available_updates": 62,
+    "standard_security_updates": 3
+  },
+  "node": "24.22.0",
+  "npm": "11.19.1",
+  "mysql_client": "Host client absent; container client succeeded and SELECT VERSION reports9.2.0",
+  "docker_inventory": {
+    "source": "User-provided sudo docker ps -a metadata on2026-10-23; exact collection time not supplied",
+    "image_tag": "mysql:9.2.0",
+    "status": "Up 5 days",
+    "ports_reported": "127.0.0.1:3306->3306/tcp, 33060/tcp",
+    "limits": "Tag/runtime status only; no SQL VERSION, image digest, binlog/InnoDB/persistence or recovery proof. 33060/tcp is listed without host publication in supplied output.",
+    "container_name": "hlf-mysql"
+  },
+  "offsite_backup": "Earlier none-available answer superseded: user selected existing Google Drive and requested instructions; capacity/OAuth/keys/roundtrip not configured or verified",
+  "key_offline_copy_custody": "NOT CONFIGURED / not established by user identifying as Admin",
+  "limits": [
+    "No hostname-to-public-origin mapping proof",
+    "Resource snapshot does not establish V0.9 capacity/load or growth",
+    "Node/npm differ from proposed local24.21.0/11.19.0; compatibility/pin decision unresolved",
+    "No installation, Docker group/permission change, restart/update, deployment or DB mutation authorized/performed"
+  ],
+  "docker_inventory_initial_attempt": "permission denied on Docker socket; superseded by user-provided privileged read-only inventory below",
+  "systemd_services": {
+    "source": "user output order for systemctl is-active nginx caddy mysql mysqld docker",
+    "nginx": "active",
+    "caddy": "inactive",
+    "mysql": "inactive",
+    "mysqld": "inactive",
+    "docker": "active"
+  },
+  "ancestor_filter_observation": "User reported no output from ancestor=mysql:9.2.0 filter; subsequent unfiltered ps -a reports hlf-mysql with that tag. Cause unresolved; use observed name and inspect actual image ID, do not infer stopped DB or change tags.",
+  "container_inspect": {
+    "source": "User-provided allowlisted read-only docker inspect output on2026-10-23",
+    "container_name": "hlf-mysql",
+    "mounts": [
+      {
+        "type": "volume",
+        "name": "hlf_mysql_data",
+        "destination": "/var/lib/mysql",
+        "rw": true
+      }
+    ],
+    "image_id": "sha256:0596fa224cdf3b3355ce3ddbfd7ce77be27ec9e51841dfc5d2e1c8b81eea69d2",
+    "limits": "Docker local image content ID, not registry RepoDigest or SQL VERSION proof. Named volume remains within VPS failure domain; not offsite backup, restore, binlog, allocation/persistence guarantee or V0.9 capacity evidence."
+  },
+  "sql_settings_probe": {
+    "source": "User-provided successful read-only root SELECT using existing credential inside hlf-mysql on2026-10-23; exact collection time absent",
+    "status": "PASS user-reported SQL settings",
+    "mysql_version": "9.2.0",
+    "storage_engine": "InnoDB",
+    "log_bin": 1,
+    "binlog_format": "ROW",
+    "binlog_expire_logs_seconds": 2592000,
+    "binlog_expire_days": 30,
+    "sync_binlog": 1,
+    "innodb_flush_log_at_trx_commit": 1,
+    "initial_attempt": "Interactive manually supplied root password failed1045; subsequent existing in-container credential succeeded",
+    "limits": "No password/env value inspected or retained. Current settings snapshot, not backup consistency/transport/replay/race/RPO/RTO or server allocation proof."
+  },
+  "database_size_metadata": {
+    "source": "User-provided read-only information_schema.TABLES and SHOW BINARY LOGS result on2026-10-23",
+    "database": "cse3045",
+    "base_tables": 5,
+    "estimated_data_plus_index_mib": "0.19",
+    "binlogs": [
+      {
+        "name": "binlog.000001",
+        "size_bytes": 2984581,
+        "encrypted": "No"
+      },
+      {
+        "name": "binlog.000002",
+        "size_bytes": 21542,
+        "encrypted": "No"
+      }
+    ],
+    "binlog_total_bytes": 3006123,
+    "limits": "InnoDB statistics estimate, not compressed full-backup size, logical row inventory, media/private-key size or measured growth rate. Encrypted No concerns server binlog-at-rest setting, not TLS/offsite transport. No changes authorized/performed.",
+    "application_database_attribution": "PARTIAL: confirmed backend working-directory .env points to127.0.0.1:3306/cse3045; current process loaded connection still unverified. Mac config remains separate127.0.0.1:3307/hlf_dev_flow."
+  },
+  "local_connection_clarification": {
+    "source": "User clarified connection change is local on Mac; agent inspected only masked backend/.env metadata on2026-10-23",
+    "config_file": "backend/.env",
+    "host": "127.0.0.1",
+    "port": 3307,
+    "database": "hlf_dev_flow",
+    "credentials": "not printed or persisted",
+    "boundary": "File configuration only, not running-process state or new SQL inspection. No connection/config/data changed; VPS backend database mapping still unverified."
+  },
+  "ssh_access_followup": {
+    "date": "2026-10-23",
+    "source": "User supplied actual Mac SSH command and SSH_CONNECTION metadata; agent attempted same gateway route",
+    "route": "cloudflared access ssh via ssh-lab.bcse-vju.com, gateway user vlab, assigned-session selector (not retained here)",
+    "internal_server_port": 22,
+    "internal_client_ephemeral_port": 58838,
+    "agent_attempt": "BLOCKED: BatchMode=yes returned Permission denied (password) after gateway network access succeeded outside restricted network sandbox",
+    "limits": "No VPS shell obtained or remote commands executed. No password requested, credential reset, SSH profile change, installation, service/data mutation or retained backup. Continue user-run read-only checks in existing authenticated session.",
+    "latest_retry": {
+      "date": "2026-10-23",
+      "source": "Agent-executed noninteractive SSH using exact user-supplied Cloudflare gateway and assigned-session selector",
+      "result": "Permission denied (password), exit255",
+      "remote_commands_executed": false,
+      "forwarding": "NOT VERIFIED. Selector is a remote command on gateway; -N suppresses it and localhost forwarding endpoint belongs to SSH server, not automatically selected VPS.",
+      "limits": "No passwords requested or inspected, no auth reset or VPS mutation; selector value omitted from durable receipt."
+    }
+  },
+  "runtime_service_inventory": {
+    "date": "2026-10-23",
+    "source": "User-provided sudo ss -ltnp and systemctl running-services output; not agent-executed",
+    "status": "PASS user-reported listener/service metadata",
+    "backend_service": "hlf-backend.service",
+    "backend_service_state": "loaded active running",
+    "listeners": [
+      {
+        "address": "*:3000",
+        "process": "MainThread",
+        "pid": 61383
+      },
+      {
+        "address": "127.0.0.1:3306",
+        "process": "docker-proxy"
+      },
+      {
+        "address": "0.0.0.0:80 and [::]:80",
+        "process": "nginx"
+      },
+      {
+        "address": "0.0.0.0:22 and [::]:22",
+        "process": "sshd"
+      }
+    ],
+    "limits": "PID-to-service and upstream/database mapping not established. No443 listener in supplied snapshot; external HTTPS termination location unverified. No process args, environment values, user rows or secrets collected. No remote mutations."
+  },
+  "backend_systemd_metadata": {
+    "date": "2026-10-23",
+    "source": "User-provided allowlisted systemctl show output",
+    "main_pid": 61383,
+    "working_directory": "/home/student/cse3045-nhom-3/backend",
+    "user": "student",
+    "environment_files": "No EnvironmentFiles property supplied in user output; do not infer dotenv absence",
+    "listener_attribution": "MainPID matches prior port3000 MainThread PID61383",
+    "database_attribution": "NOT ESTABLISHED; masked runtime connection metadata remains to inspect",
+    "limits": "No Environment/ExecStart/unit contents or secrets collected; no service changes."
+  },
+  "vps_backend_connection_file": {
+    "date": "2026-10-23",
+    "source": "User-run allowlisted Node metadata probe in confirmed backend working directory",
+    "configuration_source": ".env file; process DATABASE_URL unavailable to probe",
+    "host": "127.0.0.1",
+    "port": 3306,
+    "database": "cse3045",
+    "credentials": "not printed or retained",
+    "limits": "On-disk configuration only, not proof that running PID loaded these values; no SQL query, application rows, file changes or restart."
+  },
+  "backup_tool_availability": {
+    "date": "2026-10-23",
+    "source": "User-run command -v rclone and command -v age in VPS SSH session",
+    "rclone": "NOT CONFIGURED: not found in current user PATH",
+    "age": "NOT CONFIGURED: not found in current user PATH",
+    "limits": "PATH lookup only, not exhaustive disk inventory. No installation/configuration, token transfer, scheduler, DB export or VPS mutation. Existing local Mac Drive roundtrip does not establish VPS upload capability."
+  },
+  "current_resource_snapshot": {
+    "source": "User-reported free -m, df -Pk /, docker ps and docker stats --no-stream on2026-10-23; collection time not supplied",
+    "memory_mib": {
+      "total": 1967,
+      "used": 371,
+      "free": 1322,
+      "shared": 0,
+      "buff_cache": 430,
+      "available": 1596
+    },
+    "swap_mib": {
+      "total": 2047,
+      "used": 573,
+      "free": 1474
+    },
+    "root_filesystem_kib": {
+      "total": 19221248,
+      "used": 7418628,
+      "available": 11786236,
+      "capacity_percent": 39
+    },
+    "container": {
+      "name": "hlf-mysql",
+      "image_tag": "mysql:9.2.0",
+      "host_publication": "127.0.0.1:3306->3306/tcp;33060/tcp has no host publication",
+      "cpu_percent": "0.06",
+      "memory_mib": "21.88",
+      "memory_limit_gib": "1.921",
+      "memory_percent": "1.11",
+      "pids": 41
+    },
+    "limits": "Idle point-in-time metadata only; no peak/load guarantee, updated listener list, agent SSH authentication or remote mutation. Existing container remains untouched."
+  },
+  "current_listener_compose_snapshot": {
+    "source": "User-provided ss -lnt and sudo -n docker compose version output on2026-10-23; exact collection time absent; not agent-executed",
+    "docker_compose_version": "5.6.0",
+    "listeners": [
+      "127.0.0.53%lo:53",
+      "0.0.0.0:22",
+      "0.0.0.0:80",
+      "127.0.0.54:53",
+      "127.0.0.1:3306",
+      "[::]:22",
+      "[::]:80",
+      "*:3000"
+    ],
+    "proposed_ports_14300_14443": "Absent from supplied listener snapshot; recheck immediately before binding",
+    "limits": "No agent SSH authentication, public HTTPS route/termination, Compose project-name/volume collision check, deployment authorization or service mutation established."
+  }
+}

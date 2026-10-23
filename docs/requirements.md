@@ -208,7 +208,7 @@ stateDiagram-v2
 | BR23 | Each order has at most one base commission entry. Adjustments are separate entries with a mandatory reason; history is never overwritten. |
 | BR24 | Changing a restaurant's rate affects only future orders. |
 | BR25 | A commission entry belongs to at most one settlement; all entries in a settlement belong to the same restaurant. |
-| BR26 | Receivable = base + adjustments; collected = sum of recorded receipts; outstanding = receivable − collected. |
+| BR26 | Receivable = base + adjustments; collected = recorded receipts − full receipt reversals; outstanding = receivable − collected. Keep signed restaurant credit and enforce DEC-07 period/account collection caps. |
 | BR27 | Collection is **manual**: admin records receipts. No automatic splitting or collection. |
 
 ### 6.6 Recommendation and Reorder
@@ -298,7 +298,7 @@ stateDiagram-v2
 | Quán delivers itself; no driver accounts | Assumed, fixed |
 | Maximum one restaurant per account; exactly one responsible manager per restaurant | Decided October 18, 2026 |
 | One order = one restaurant | Assumed, fixed |
-| AI/LLM provider | **TBD** |
+| AI/LLM provider | Google Gemini free, `gemini-3.5-flash-lite`; [approved DEC-09](ai-v08-contract.md) |
 | Map/location provider | **TBD** |
 | Server hosting and infrastructure configuration | **TBD** |
 | NFR thresholds | Proposed acceptance targets; measure before release |
@@ -331,3 +331,27 @@ Superseded on October 18, 2026: FR01 role selection and Owner/Admin requests; §
 | [docs/deployment.md](deployment.md) | Sections 1–2, 5–7 |
 
 Version ownership: [roadmap](roadmap.md). Policy gates: [decisions](decisions.md). Full implementation prompts: [prompt index](prompts/README.md).
+
+## Approved October 19 onboarding/order privacy amendment
+
+DEC-03 and [V0.3 contract](onboarding-v03-contract.md) approve evidence/consent/manual rules and commercial clauses. Owner APIs must omit buyer account ID/username/email always; omit recipient name/phone and identifying notes until an explicit owner-recorded food-ready/waiting-delivery milestone. Acceptance alone does not disclose contact. Food-ready is not delivering/completed and creates no commission. Anti-evasion complaints require two-party verification/appeal and a separate recovery receivable; never reopen terminal orders or charge from a claim alone. These controls are not V0.3 evidence. [Implementation status](implementation-status.md) tracks V0.5 order privacy separately from future anti-evasion/finance work.
+
+## V0.6 approved payment contract
+
+DEC-06 approved October20: static verified QR/order snapshots; full per-transfer direct refunds within24h; no partial or exceptional cash refunds; private evidence90days with dispute holds. Exact guards, exceptions and approved Vietnamese notices: [payment policy](payments-policy.md).
+
+## V0.7 approved DEC-07 extension — October21
+
+[DEC-07.2026-10-21.v1](finance-policy-proposal.md) is explicitly approved and owns monthly membership/finalization, next-period adjustment booking, full append-only receipt reversal/replacement, signed account credit and collection caps, supporting-reference access, exact report fields/cutoffs, recovery and Vietnamese finance addendum. It supersedes the DEC-07 financial TBDs above only. Existing partner terms/consent hashes remain immutable; real publication/adoption is separate. FIN-03/04/05 implementation evidence follows P22→P23→P24; DEC-08 controls remain gated at P25.
+
+US18/25/26, FR12, NFR07 and AC17 are refined by [approved DEC-08](account-support-policy-proposal.md): restricted obligations sessions after suspension; six-state support and elapsed targets; bounded audited private reads; indefinite pseudonymous business history with separately erasable personal payloads/holds. This explicitly refines contact-snapshot lifetime without changing immutable money/business facts. Synthetic implementation only; production gates remain separate.
+
+## Onboarding notifications extension — approved October 22, 2026
+
+US27 / FR13 / AC18: authenticated applicants, current managers and the sole MFA Admin receive durable in-site notifications for application submission/review/manual invitation/confirmation/creation, delivery proposal/review, commission proposal/acceptance, readiness transitions and restaurant activation. Approval guidance lists every setup requirement, responsible actor and actionable link. A bell shows unread count/recent messages; a mailbox supports pagination, unread filtering, detail and explicit read/read-loaded actions. Reading never consents, activates or submits a business command.
+
+Current setup guidance is distinct from immutable event content and separates public visibility (active+ready) from orderability (also accepting+open). Admin has paginated current tasks. Existing partners/applicants receive one explicitly current-state summary, never fabricated historical events. No email/chat/browser push or order/finance notifications are added. [Notification contract](notifications-contract.md) owns interfaces, storage and evidence boundaries.
+
+## Approved V0.8 clarification — October22
+
+[DEC-09](ai-v08-contract.md) owns delivery-inclusive one-portion budget1–1000000 VND, category-only soft preferences, free-tier provider content-use disclosure, USD0/no billing escalation and bounded operational/evaluation controls. No application conversation/training storage; Google free-tier content improvement/human review is explicitly accepted for minimized non-personal catalog data. Manual ordering remains independent.

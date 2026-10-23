@@ -1,0 +1,31 @@
+# Synthetic local acceptance only. No retained/production data or credentials.
+services:
+  mysql:
+    image: mysql:9.2.0
+    environment:
+      MYSQL_ROOT_PASSWORD: synthetic-v03-only
+      MYSQL_DATABASE: test_onboarding
+    ports:
+      - '127.0.0.1:43316:3306'
+    volumes:
+      - mysql-test:/var/lib/mysql
+    healthcheck:
+      test: ['CMD-SHELL', 'mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD']
+      interval: 5s
+      timeout: 5s
+      retries: 30
+  minio:
+    image: hlf-test-minio:2025-09-07
+    build: ./minio
+    pull_policy: build
+    command: ['server', '/data']
+    environment:
+      MINIO_ROOT_USER: synthetic-v03
+      MINIO_ROOT_PASSWORD: synthetic-v03-storage-only
+    ports:
+      - '127.0.0.1:43317:9000'
+    volumes:
+      - evidence-test:/data
+volumes:
+  mysql-test:
+  evidence-test:

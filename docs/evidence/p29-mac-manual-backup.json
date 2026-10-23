@@ -1,0 +1,59 @@
+{
+  "result": "PASS",
+  "source": "Mac 127.0.0.1:3307/hlf_dev_flow",
+  "started_at": "2026-10-23T07:11:12.523Z",
+  "scope": "Authorized retained Mac full SQL backup and isolated restore only; not operational recovery acceptance",
+  "mysql": {
+    "version": "9.2.0",
+    "log_bin": "1",
+    "binlog_format": "ROW"
+  },
+  "backup_started_at": "2026-10-23T07:11:12.633Z",
+  "backup_completed_at": "2026-10-23T07:11:19.095Z",
+  "remote": "hlfdrive:HLF-Backup-Mac/full-22e84058-c0f3-47cd-bc6e-db410a19ac0f/database.json.gz.age",
+  "proposed_remote": "hlfdrive:HLF-Backup-Mac/full-22e84058-c0f3-47cd-bc6e-db410a19ac0f/database.json.gz.age",
+  "ciphertext_bytes": 60187,
+  "ciphertext_sha256": "47a552afcfdbec511f7a0603c7a16d1eaef5c6038bf6f4f6c5bb9ddf0147a29a",
+  "tables": 62,
+  "rows": 203,
+  "migrations": 28,
+  "binlog_coordinate": {
+    "file": "binlog.000003",
+    "position": "358425"
+  },
+  "restore_validation_ms": 970,
+  "exact_schema_and_all_row_hashes": "PASS",
+  "source_unchanged": "PASS",
+  "private_key_uploaded": false,
+  "offline_key_verification": "NOT RUN: user deferred",
+  "scheduler": "NOT CONFIGURED",
+  "media_and_external_vault": "NOT INCLUDED",
+  "limits": "One retained Mac SQL recovery point; no binlog shipping/replay, app startup, independent key custody, erasure/quota reconciliation, automatic scheduling or operational RPO/RTO. Never start a restored application/AI before current journal/counter reconciliation.",
+  "finished_at": "2026-10-23T07:11:19.371Z",
+  "offsite": {
+    "result": "PASS",
+    "remote": "hlfdrive:HLF-Backup-Mac/full-22e84058-c0f3-47cd-bc6e-db410a19ac0f/database.json.gz.age",
+    "started_at": "2026-10-23T07:11:19.417Z",
+    "verified_at": "2026-10-23T07:11:31.957Z",
+    "ciphertext_sha256": "47a552afcfdbec511f7a0603c7a16d1eaef5c6038bf6f4f6c5bb9ddf0147a29a",
+    "decrypt_and_manifest": "PASS",
+    "restore_basis": "Ciphertext exactly matches the archive already restored and fully compared on disposable MySQL9.2.0",
+    "limits": "Single SQL snapshot, no automatic scheduler/binlog shipping/media/offline custody or operational RPO/RTO acceptance"
+  },
+  "authorization": "User requested implementing manual development backup after end-of-session/pre-change clarification; confirmed Google Drive destination. User-triggered runs only; no scheduler/VPS change.",
+  "runner_sha256": {
+    "ops/recovery/backup-to-drive.mjs": "4e72a676ae1d11ab15a53f50e60826b2dfe022306a1cecad1e9a9a9dfe83b870",
+    "ops/recovery/backup-mac.mjs": "e6f037ba541b1c75b8a2b49c7e680343d27fd72cdae6d668c20aa74b76027c45",
+    "ops/recovery/upload-verified-mac.mjs": "2d4ca934e4517f19563665421b3ab9b0874ec534a39f03f9aefaebd700414907"
+  },
+  "checks": {
+    "node_syntax": "PASS",
+    "ops_eslint": "PASS",
+    "real_manual_pipeline": "PASS local restore then ciphertext upload/read-back/decrypt",
+    "settings_file_mode": "0o600",
+    "application_suites": "NOT RUN: ops-only runner, no application behavior changed",
+    "review": "Codex self-review only"
+  },
+  "v09": "BLOCKED / NOT ACCEPTED",
+  "automatic_vps_backup": "NOT CONFIGURED"
+}

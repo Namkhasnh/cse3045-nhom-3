@@ -1,0 +1,52 @@
+{
+  "authorization": "Repository operator explicitly selected “Áp dụng trên database local hiện tại” after reviewing the prepared metadata migration and backup/restore.",
+  "scope": "Local retained metadata adoption only; no production deployment, billing change, pilot, order or account mutation.",
+  "completed_at_utc": "2026-10-21T19:36:19.573Z",
+  "migration": "20261022010000_recommendations",
+  "migration_sha256": "8494e687402d128cac66f95c9a3598d8b9fe885e7cf2f133f8c41358d8cc305f",
+  "mysql_version": "9.2.0",
+  "previous_migrations_checked": 27,
+  "applied_checksums_preserved": true,
+  "new_tables": [
+    "ai_admission",
+    "ai_counters",
+    "ai_leases"
+  ],
+  "preserved_original_tables": 58,
+  "preserved_original_rows": 173,
+  "original_schema_and_data_unchanged": true,
+  "narrow_runtime_grants_verified": true,
+  "permission_probe_rolled_back": true,
+  "admission_delete_denied": true,
+  "carried_global_quota": [
+    {
+      "window_key": "d:2026-10-21",
+      "used_count": 100
+    }
+  ],
+  "runtime": {
+    "ai_enabled": true,
+    "approved_model_configured": true,
+    "effective_rpm": 15,
+    "effective_tpm": 250000,
+    "effective_rpd": 100,
+    "global_daily_used": 100,
+    "quota_rejection_verified_without_provider_call": true,
+    "no_counter_or_lease_change": true,
+    "anonymous_ai_status": 401,
+    "private_response_no_store": true,
+    "next_quota_reset_utc": "2026-10-22T07:00:00.000Z",
+    "next_quota_reset_vietnam": "14:00 22/10/2026"
+  },
+  "backend_restarted": true,
+  "backend_pid": 42783,
+  "unchanged_frontend_pids": [
+    33100,
+    52770
+  ],
+  "public_catalog_and_both_frontends_http_200": true,
+  "browser_observation": "Actual Chrome local recommendations route redirects an anonymous visitor to login?returnTo=%2Frecommendations. No retained-user login or extra provider call was performed.",
+  "retained_authenticated_browser_journey": "NOT RUN; prior connected synthetic five-width browser evidence remains separate.",
+  "protected_backup_restore_evidence": "/private/tmp/v08-adoption-review-20261022",
+  "secrets_or_business_payloads_in_artifact": false
+}

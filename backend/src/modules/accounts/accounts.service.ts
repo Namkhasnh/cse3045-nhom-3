@@ -78,7 +78,7 @@ export class AccountsService {
         retryAfter: Math.max(1, Math.ceil((blocked.windowStart.getTime() + 900000 - now.getTime()) / 1000)) };
       const account = await db.account.findUnique({ where: { loginIdentifier } });
       const valid = account ? await verifyPassword(account.passwordHash, password).catch(() => false) : false;
-      if (!account || !valid || !account.isActive || (account.email !== null && account.emailVerifiedAt === null)) {
+      if (!account || !valid || account.credentialsBlocked || (account.email !== null && account.emailVerifiedAt === null)) {
         for (const row of records) {
           await db.authLoginLimit.update({ where: { scope_subjectHash: {
             scope: row.scope, subjectHash: row.subjectHash } }, data: {
@@ -163,6 +163,7 @@ export class AccountsService {
       if (managed.length === 0) capabilities.push('apply_for_restaurant');
       if (authority?.accountId === account.id && factor?.enrolledAt) capabilities.push('admin');
     }
+    if (!account.isActive) capabilities.push('obligations');
     return { capabilities, managed_restaurant_id: managed.length === 1 ? managed[0].id.toString() : null,
       isAdmin: authority?.accountId === account.id };
   }
@@ -193,7 +194,7 @@ export class AccountsService {
   }
 
   async logout(id: bigint, authVersion: number) {
-    const updated = await this.prisma.account.updateMany({ where: { id, isActive: true,
+    const updated = await this.prisma.account.updateMany({ where: { id,
       version: { lt: 2147483647 }, authVersion: { equals: authVersion, lt: 2147483647 } },
       data: { authVersion: { increment: 1 }, version: { increment: 1 } } });
     if (updated.count !== 1) throw new UnauthorizedException({ code: 'TOKEN_INVALID', message: 'Session is no longer valid.' });

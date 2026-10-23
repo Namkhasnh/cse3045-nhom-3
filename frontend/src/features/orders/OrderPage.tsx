@@ -1,0 +1,7 @@
+import {useEffect,type ReactNode} from 'react'
+import type {Order,Payment} from './api'
+import {useOrder} from './use-order'
+import {OrderDetail} from './OrderDetail'
+import {Button} from '../../shared/ui/Button'
+export type PaymentRenderer=(order:Order,apply:(p:Payment)=>void)=>ReactNode
+export function OrderPage({id,accountId,owner=false,restricted=false,onChanged,renderPayment,onLoaded}:{id:string;accountId:string;owner?:boolean;restricted?:boolean;renderPayment?:PaymentRenderer;onLoaded?:()=>void;onChanged?:(result?:Order|Payment)=>void}){const q=useOrder(id,accountId);const loadedOrderId=q.order?.id;useEffect(()=>{if(loadedOrderId)onLoaded?.()},[loadedOrderId,onLoaded]);return <section className="cart-page"><a href={'/support?order='+id}>Yêu cầu hỗ trợ đơn này</a>{q.error&&<p role="alert">{q.error}</p>}{q.notice&&<p role="status">{q.notice}</p>}<p role="status" className="connection-state">{q.connection==='paused'?'Đang tạm dừng cập nhật (offline hoặc trang bị ẩn).':q.connection==='error'?'Mất kết nối; dữ liệu đang hiển thị có thể đã cũ.':q.connection==='refreshing'?'Đang cập nhật…':'Đã cập nhật từ máy chủ.'}</p><Button variant="neutral" disabled={q.busy} onClick={q.refresh}>Cập nhật đơn</Button>{q.order?<OrderDetail order={q.order} owner={owner} restricted={restricted} busy={q.busy} command={async(action,body)=>{const result=await q.command(action,body);onChanged?.(result)}}/>:!q.error&&<p role="status">Đang tải đơn…</p>}{q.order&&renderPayment?.(q.order,p=>{q.acceptPayment(p);onChanged?.(p)})}</section>}

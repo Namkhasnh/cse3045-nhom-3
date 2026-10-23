@@ -1,0 +1,26 @@
+{
+  "date": "2026-10-23",
+  "scope": "LOCAL IMAGE TRANSFER ONLY; NOT A DEPLOYMENT PACKAGE",
+  "archive": "/private/tmp/hlf-staging-candidate-20261023.tar",
+  "bytes": 211875840,
+  "sha256": "9bc8f2f7372b19398d69a5b3fce75e67056b6d2fec11c17bf49940a9070dada5",
+  "files": {
+    "images.tar.gz": {
+      "sha256": "849c92bf2552ff0d1454d9c62837ce9859c6ddbe55a2537f630022a9bab5c3ec",
+      "bytes": 211860678
+    },
+    "load-images.sh": {
+      "sha256": "e00e86836ac1571aacb946751dffe8536ddec5b9984cccb3a9923a2413b3ccd7",
+      "bytes": 1247
+    },
+    "README.md": {
+      "sha256": "8b917b5b1ac6740af7d185c6583687480605dd8377a0bc56a2fb51515794875b",
+      "bytes": 1610
+    }
+  },
+  "verification": "docker image IDs/platform inspected; docker save PASS; gzip integrity PASS; shell syntax PASS; only enumerated files archived",
+  "remote_transfer": "NOT RUN",
+  "remote_import": "NOT RUN",
+  "remote_startup": "NOT RUN",
+  "pending": "Complete runtime/Compose and migration identity package, private SSH forwarding, TLS trust, media/SMTP scope, operational backup/scheduler/alerts. Existing service/data untouched."
+}

@@ -1,0 +1,30 @@
+{
+  "result": "PASS",
+  "uid": 1000,
+  "node": "v24.22.0",
+  "loopback": "127.0.0.1",
+  "spa_login": 200,
+  "unavailable_api": 502,
+  "tls_verification": true,
+  "rss_bytes": 98787328,
+  "image": {
+    "tag": "hlf-staging-private-web:20261023",
+    "id": "sha256:c8ea5b689d20bc1f3bbc815616dc9224a54196e88cc23ef7754fe404c7dd7954",
+    "platform": "linux/amd64",
+    "user": "node",
+    "size_bytes": 95044147
+  },
+  "date_vietnam": "2026-10-23",
+  "user_access_choice": "Private SSH tunnel first; no public DNS/nginx route change",
+  "host_suite": "node --test ops/staging/private-web.test.mjs PASS; verified TLS/proxy status-cookie-origin forwarding/SPA/static denial/loopback boundaries",
+  "checks": "Node/shell syntax and scoped ESLint PASS",
+  "source_sha256": {
+    "ops/staging/Dockerfile": "4a5d70d2094b2c36dfdd20fda6432b102f1dfd53eeb70cb5bb372f09e7119dac",
+    "ops/staging/Dockerfile.dockerignore": "bd0fbd542b454ae43a157f9de28212d1279137ccfbe2cef2c979775c496ca6e9",
+    "ops/staging/private-web.mjs": "2ee262ae1d9d368cf8007fc637cccd21409a080462338f7ff4fbbc363fde3740",
+    "ops/staging/private-web.test.mjs": "91b93a6e25cfc59811a751821708f2f77793028112818a7cc621b6c79695146f",
+    "ops/staging/tunnel.sh": "161982abb6089806cccd30f651ce46de5ccbfc16d879b957c3d2f29c4f88b0d1"
+  },
+  "limits": "Local emulated Linux image and synthetic TLS/HTTP only. No actual SSH tunnel, retained DB, authenticated app login, browser certificate trust, VPS deployment, DNS, nginx, SMTP, media, backup or acceptance change. No secret transfer. Prior backend/frontend artifact hashes remain tied to their earlier build inputs.",
+  "tunnel_followup": "Helper restricted to a single verified direct SSH alias; rejects supplied session-selector gateway. Actual gateway retry exit255 Permission denied (password); no remote command or forwarding proof."
+}

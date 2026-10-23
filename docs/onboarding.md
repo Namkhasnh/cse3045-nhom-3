@@ -1,66 +1,64 @@
 # Restaurant Opening Applications and Partnership
 
-Authority: [requirements](requirements.md) US23–24, FR11, AC14–15; delivery: V0.3 P07–P10. This is a target contract, not an existing role-request service. [DEC-03](decisions.md) blocks policy-dependent implementation.
+Authority: [requirements](requirements.md) US23–24, FR11, AC14–15; delivery V0.3 P07–P10. DEC-03 approved October19,2026 through explicit user decisions and implementation authorization. [Final DTO/storage contract](onboarding-v03-contract.md) and [Vietnamese terms](terms/partnership-2026-10-19.v1.txt) own exact limits/text. Acceptance is local/synthetic only, not real publication or production readiness.
 
 ## 1. Identity and eligibility
 
-An active email-verified ordinary user may apply when they manage no restaurant. Ownership includes inactive/setup-required restaurants and is capped at one by DB uniqueness. Management does not replace buyer access. Admin cannot approve a role promotion as a substitute for this workflow.
+An active email-verified ordinary user may apply when they manage no restaurant. A missing legacy email is insufficient for a new opening application: verify an email first. Sole Admin is not an eligible owner applicant. Ownership includes inactive/setup-required restaurants and is capped at one by DB uniqueness. Management preserves buyer access; no role promotion substitutes for ownership.
 
-The application captures proposed restaurant name/address/contact, applicant account reference, approved evidence fields and the accepted partnership version. Exact evidence, limits and publication/resubmission rules must be approved in P07. Account private email/phone must never enter public catalog projections automatically.
+Required: proposed restaurant name/address, contact name/phone, one front image and one business-registration document. Names≤200 Unicode code points, address≤1000, phone optional+ and9–15digits. Front JPEG/PNG; document JPEG/PNG/PDF; each≤5MiB. Actual bytes/MIME are checked server-side; no arbitrary URLs. No CCCD or bank data at onboarding. Private account email/phone is never automatically published in catalog.
 
 ## 2. Versioned partnership consent
 
-Publish immutable terms versions with identifier, content hash, Vietnamese text, publication/effective time and retained accessible copy. Store applicant ID, exact accepted version/hash and acceptance instant; do not silently update existing consent when terms change. Reacceptance requirements are DEC-03. Never use a checkbox alone without identifying and showing the terms.
+Immutable terms include version, SHA-256, exact Vietnamese UTF-8 content, publication/effective times and retained accessible copy. Store applicant, exact version/hash and consent instant. Show text/version and require explicit consent; never silently update acceptance. New submissions use current published/effective terms; pending submissions retain their agreed version. API supports retained-version reads.
 
-The partnership must specify delivery/payment responsibility, fees and effective commission, direct QR/refund obligations, support/escalation, suspension/termination and data handling. These are required topics, **not approved commercial/legal wording**. Commission values are DEC-04; refund obligations DEC-06; reconciliation DEC-07. Only the approved version may gate an actual submission.
+[Approved V1 text](terms/partnership-2026-10-19.v1.txt) identifies hoalacfood, Zalo0352689944, restaurant delivery/direct payment, per-partner3–5% commission with5% cap/no default, explicit new-rate consent for new orders, full direct refund within24h when obligation and verified receipt exist, monthly statements by3rd/payment by7th, next-period corrections and signed balances. Those commercial clauses are scoped DEC-04/06/07 approvals; full QR/proof/correction/dispute contracts remain separately gated.
 
-Manual partner creation requires the same approved agreement evidence associated with the selected user; Admin cannot silently consent on their behalf. P07 defines the permitted evidence/confirmation method. Do not invent a signature or accept a missing version.
+Manual creation uses an immutable Admin-prepared invitation. Selected active verified ordinary user must log in, inspect exact proposed fields/files and retained terms, and explicitly confirm. Admin cannot consent for the user; new ownership requires confirmed snapshot. Changes require a new approved workflow; no editable invitation or silent replacement is exposed.
 
 ## 3. Lifecycle and history
 
-Target core review states: `submitted → approved | rejected`; approval/rejection is terminal for that submission. Applicant draft is local until submitted. Rejection requires a visible reason. Resubmission, withdrawal, expiration, duplicate submission limits and treatment of newly published terms remain DEC-03 and must be specified before exposing those controls.
+Direct: `submitted → approved | rejected`. Manual: `awaiting_confirmation → submitted → approved | rejected`; only selected user confirms, only MFA Admin creates/reviews. One active pending record across both paths per account is enforced by a generated unique DB guard. Applicant drafts stay browser-session scoped until submitted. No edit, withdrawal, automatic expiry or reassignment control. Rejection requires nonblank visible reason; a new submission may follow rejection.
 
-Retain submitted content/consent and append-only review events with actor, timestamp, decision, reason and resulting restaurant ID. Applicant sees only own application/history; sole Admin sees the approved review projection. No public read route exists. Application status is separate from restaurant operating status and account availability.
+Retain immutable submitted content/consent, reviewer/actor/timestamp/decision/reason/result. Applicant sees only own records; sole MFA Admin sees protected review projection. No public read exists. Status is independent of account availability and restaurant readiness.
 
 ## 4. Atomic approval
 
-One workflow, one MySQL transaction:
+One workflow, one MySQL9.2.0 transaction:
 
-1. Verify sole Admin with MFA; identify affected applicant without trusting request ownership.
-2. Lock relevant accounts ascending, request key, singleton authority, application, then restaurant/config groups using [database §10](data/database.md#10-transaction-and-concurrency-recipes). Re-read active verified applicant, submitted status, valid consent and absence of ownership.
-3. Create the restaurant and its unique non-null ownership link; initial readiness `setup_required`, accepting false and unavailable for public sale.
-4. Record approved decision/result and append review history plus business audit in the same transaction.
-5. Commit the durable request result with restaurant ID. Failure leaves no restaurant, link or approved event. Same key/content replays; changed content conflicts. Concurrent approval/manual create cannot create a second restaurant.
+1. Authenticate current sole Admin with MFA; resolve applicant from stored application.
+2. Lock actor/applicant accounts ascending, reserve durable intent, shared-lock singleton authority, then application/evidence/restaurant groups under [database §10](data/database.md#10-transaction-and-concurrency-recipes). Recheck active verified applicant, retained consent, submitted version and no ownership.
+3. Create unique non-null owner link/restaurant with `readiness=setup_required`, `is_active=false`, `is_accepting_orders=false`.
+4. Commit review, result and allowlisted business audit together; any failure rolls back all effects.
 
-An already-approved repeat returns its existing result after current authorization, without duplicate history/audit. A conflicting rejected/approved decision returns 409, never reopens a submission. Public data may be published only after the readiness policy passes.
+Same actor/operation/key/hash replays original result. Changed content with same key409. An authorized current-state decision repeat returns existing outcome without duplicate restaurant/review/audit; conflicting terminal decision409. Concurrent paths cannot create a second restaurant. No storage call occurs inside the transaction.
 
 ## 5. Manual creation and reassignment
 
-Admin selects a valid active verified ordinary user, not an Owner-role dropdown. Check zero existing ownership while holding the user's account lock; create restaurant/link/agreement/audit/result atomically, with the same setup-required initial state. No ownerless restaurant is allowed.
+Admin selects an eligible user via bounded exact username lookup, uploads private evidence for that user and creates an immutable invitation; one-pending cap also applies. Selected user confirms via their own authenticated session. Admin create references confirmed invitation ID/version only; no replacement owner/fields/consent are accepted. The same account locks, owner uniqueness, audit/result atomicity and readiness apply.
 
-A later reassignment must verify both accounts, one-restaurant uniqueness, agreement validity and current authority under ascending locks, revoke old management access immediately and preserve historical actors/orders/audit. Whether to expose reassignment to operations and its consent requirements are finalized by P07/P10; do not invent an ownership-marketplace flow.
+Reassignment is not exposed in V0.3. Preserve every legacy account/restaurant/role-request and approved DEC-01 mapping. Never fabricate partnership consent from role requests, silently assign ownership or run retained-data cutover. P10 upgrade fixtures must prove preserved rows and zero invented consent.
 
 ## 6. Sell readiness
 
-Approval alone never opens sales. P11–P14 must establish verified public profile, hours in Asia/Ho_Chi_Minh, current owner, active status, visible available menu, verified supported VJU point/fee data and an explicit commission policy/valid agreement. Cash readiness is independent of later QR readiness; V1.0 additionally requires approved QR setup. Missing information keeps `setup_required` and accepting false. Once `ready`, every order still rechecks current active/open/accepting/catalog/delivery/rate conditions.
+Approval alone never opens sales. P11–P14 establish verified public profile, hours in Asia/Ho_Chi_Minh, current owner, active status, visible available menu, verified VJU point/fee data and agreed specific commission. Cash readiness and later QR readiness are distinct; V1.0 needs approved QR. Missing information keeps setup-required/not accepting. Every order rechecks active/open/accepting/catalog/delivery/rate conditions.
+
+Approved later-order privacy: acceptance does not reveal contact. Only explicit “Đã xong món – chờ giao” opens recipient name/phone, filtered at backend in every owner projection; always omit buyer account ID/username/email and prevent identifying notes leaking earlier. Food-ready is a separate actor/time milestone, not delivering/completed or commission accrual.
+
+Approved anti-evasion principle: false cancellation/off-platform diversion is prohibited. Buyer reports trigger two-party verification/appeal, never automatic delivery/payment proof or charging. Verified recovery needs a separate receivable design; do not reopen terminal orders or misuse completed-only adjustments. Implement these controls in later order/support/finance prompts, not claim V0.3 evidence for them.
 
 ## 7. Target storage and API handoff
 
-Accounts own identity; onboarding owns `restaurant_applications`, immutable submitted payload/terms acceptance and append-only `application_reviews`; restaurants own restaurant/ownership/readiness. Proposed `partnership_terms_versions` is append-only, keyed by immutable version and content hash. Application PK, applicant FK, status/version/times, accepted terms FK/hash/time, resulting restaurant FK and review actor FKs must be specified with approved field limits in P07/P08 before onboarding SQL.
+Onboarding owns terms, evidence metadata/retention, immutable application payload/consent, append-only review and durable request results. Accounts own eligibility/authority; restaurants own unique ownership/readiness. [Enabled OpenAPI](data/openapi.yaml) and [focused onboarding schema](data/onboarding.openapi.json) define closed requests, private projections, keyset pages, scalars, errors and replay behavior; [contract](onboarding-v03-contract.md) lists every route.
 
-Target API under `/api/v1`:
+Private MinIO via S3 adapter is authorized only for local synthetic acceptance, with durable local volume. Production storage/region/credentials/backups remain DEC-10/11. No file blobs in MySQL, public bucket or app temporary filesystem. Runtime SQL grants protect immutable terms/payload/consent identity/reviews/keys; application code protects immutable successful results.
 
-| Method/path | Access | Input/result |
-| --- | --- | --- |
-| GET `/partnership-terms/current` | Public published projection | Current approved Vietnamese terms/version/hash; unavailable if not published |
-| POST `/restaurant-applications` | Verified user owning none | Approved form + terms version/hash + explicit consent; durable `Idempotency-Key`; 201 submission, replay 200 |
-| GET `/restaurant-applications` and `/{id}` | Self | Paginated own submissions/history only |
-| GET `/admin/restaurant-applications` and `/{id}` | Sole MFA Admin | Paginated protected review projection |
-| POST `/admin/restaurant-applications/{id}/review` | Sole MFA Admin | expected version, approve/reject, reason for rejection, key; 200 decision/result |
-| POST `/admin/restaurants` | Sole MFA Admin | Eligible user + approved partner/agreement fields + key; 201 setup-required restaurant |
-
-Use standard envelopes/scalars/errors. 404 conceals another applicant; 409 `RESTAURANT_LIMIT_REACHED`, `APPLICATION_STATE_CONFLICT`, `TERMS_VERSION_CONFLICT`, `VERSION_CONFLICT` or key reuse; 422 invalid/incomplete consent; 401/403 auth/MFA. P07 finalizes schemas, query limits and canonical hashes before enabling writes. These are target endpoints; current `/admin/role-requests` is legacy and must be retired by P02/P09.
+Unreferenced uploads expire after24h. Rejected files expire90days after rejection; approved files one calendar year after explicit cooperation end. No termination UI invents end dates. Two-phase deletion marks metadata unavailable under account/application-reference protection, deletes object outside transaction, then records completion/audit; failed deletion is retryable. Preserve history/hash/deletion markers, not document copies in logs. Local-only cleanup command and setup are in [verification instructions](onboarding-local-verification.md); production scheduling/adoption remains unconfigured.
 
 ## 8. Acceptance evidence
 
-ONBOARD-01: applicant privacy, valid consent and retained review history. ONBOARD-02: two approvals, approval versus manual create and duplicate/manual requests race on MySQL 9.2.0; one restaurant/link/result and atomic rollback on audit failure. ONBOARD-03: approval shows setup state; no public sale/order until readiness. Browser checks cover buyer-to-applicant-to-manager navigation without losing buyer rights, rejected reasons, conflicts and 360 px keyboard use.
+ONBOARD-01: exact terms/hash/consent, retained versions, private files/records, rejection/resubmission/history and current-account denial. ONBOARD-02: actual MySQL9.2.0 SQL uniqueness/FKs, same/different-key approval/manual races and audit rollback. ONBOARD-03: submitted/approved setups never publicly sell and manager retains buyer rights. Browser: real form/upload/consent/retry/MFA/review/manual confirmation/create, keyboard and360px/five widths. P10: empty/upgrade fixtures preserve legacy rows; least-privilege runtime denies history tampering. See [progress](progress/README.md).
+
+## V0.7 approved DEC-07 extension — October21
+
+[DEC-07.2026-10-21.v1](finance-policy-proposal.md) is explicitly approved and owns monthly membership/finalization, next-period adjustment booking, full append-only receipt reversal/replacement, signed account credit and collection caps, supporting-reference access, exact report fields/cutoffs, recovery and Vietnamese finance addendum. It supersedes the DEC-07 financial TBDs above only. Existing partner terms/consent hashes remain immutable; real publication/adoption is separate. FIN-03/04/05 implementation evidence follows P22→P23→P24; DEC-08 controls remain gated at P25.
