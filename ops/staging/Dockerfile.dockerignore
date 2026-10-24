@@ -9,6 +9,8 @@
 !backend/prisma7.config.ts
 !backend/prisma/
 !backend/prisma/schema.prisma
+!backend/prisma/migrations/
+!backend/prisma/migrations/**
 !backend/src/
 !backend/src/**
 backend/src/generated/**

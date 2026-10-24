@@ -1,0 +1,137 @@
+{
+  "date_vietnam": "2026-10-24",
+  "scope": "Existing academic demo code update; preserve server DB/objects/vault/keys; no local data merge or remote sample cleanup",
+  "application_commit": "36e01f15676fc4ff6a9f5cd9d80a97a4ce2f7327",
+  "release_id": "20261024-36e01f1",
+  "images": {
+    "backend_image": {
+      "tag": "hlf-demo-backend:20261024-36e01f1",
+      "id": "sha256:038ee72191c650c4e069d2e186899c86426a5850f08e21f388d49caf85a8ec47"
+    },
+    "schema_image": {
+      "tag": "hlf-demo-schema:20261024-36e01f1",
+      "id": "sha256:9ca96c07ab9808e89386c8a702663abeadb9e621fa9c885b7ddad479de0a9f1d"
+    }
+  },
+  "delivery": {
+    "bytes": 492565901,
+    "ciphertext_sha256": "bb417e09e6c8572d5aa408cb136619f0eaa60c1adc292992766c244e797285b4",
+    "format": "hlf-demo-code-update-v1",
+    "local_data_included": false,
+    "local_secrets_included": false,
+    "key_in_delivery": false,
+    "destination": "Explicitly approved temporary public Cloudflare ciphertext-only download",
+    "endpoint_status": "CLOSED after user confirmed full download and matching ciphertext checksum"
+  },
+  "local_probe": {
+    "result": "PASS",
+    "mysql": "9.2.0",
+    "proof": {
+      "result": "PASS",
+      "stage": "verify",
+      "preserved_tables": 61
+    },
+    "checks": [
+      "previous 28 migrations + representative synthetic rows",
+      "Linux operator migration and all-original-row preservation",
+      "mysqldump isolated restore with exact all-table schema/row hashes",
+      "narrow runtime grant execution",
+      "already-applied migration repeat",
+      "exact Linux runtime catalog/category200 and anonymous401",
+      "changed retained row rejected"
+    ],
+    "scope": "Disposable local database only; no VPS or retained local DB touched"
+  },
+  "checks": {
+    "frontend_lint_build": "PASS",
+    "backend_lint_build": "PASS",
+    "backend_unit_tests": 60,
+    "backend_http_e2e": 9,
+    "python_routing_rollback_tests": 7,
+    "chrome_workspaces": "PASS controlled API responses at five widths",
+    "scoped_eslint_syntax_diff": "PASS"
+  },
+  "remote_inventory": {
+    "source": "User-run read-only SSH command",
+    "original_release": "87078c71-67cb-4d58-9323-037ebc2ce041",
+    "running_owned_containers": 3,
+    "finished_prior_migrations": 28,
+    "checksums_match": true
+  },
+  "remote_update": {
+    "result": "PASS",
+    "source": "User-provided systemd journal; independent public HTTPS/asset checks follow",
+    "started_at_utc": "2026-10-24T01:44:06Z",
+    "backup_started_at_utc": "2026-10-24T01:44:12Z",
+    "restore_rehearsal_started_at_utc": "2026-10-24T01:44:13Z",
+    "forward_migration_started_at_utc": "2026-10-24T01:44:24Z",
+    "completed_at_utc": "2026-10-24T01:44:27Z",
+    "data": "server DB/objects/vault/keys preserved",
+    "protected_backup": "/opt/hlf-update-20261024-36e01f1/state",
+    "service": "Deactivated successfully"
+  },
+  "public_baseline": {
+    "login": 200,
+    "restaurants": 200,
+    "restaurant_count": 2,
+    "anonymous_me": 401
+  },
+  "limitations": [
+    "Agent gateway SSH password authentication unavailable",
+    "Computer UI access to Terminal is prohibited; no bypass attempted",
+    "Scheduled backups NOT CONFIGURED",
+    "No V0.9/V1.0 release acceptance"
+  ],
+  "public_post_update": {
+    "result": "PASS",
+    "checked_at_utc": "2026-10-24T01:46:22.002Z",
+    "checks": [
+      {
+        "path": "/",
+        "status": 200
+      },
+      {
+        "path": "/login",
+        "status": 200
+      },
+      {
+        "path": "/api/v1/restaurants",
+        "status": 200,
+        "count": 2
+      },
+      {
+        "path": "/api/v1/dish-categories?public_only=true",
+        "status": 200,
+        "count": 2
+      },
+      {
+        "path": "/api/v1/auth/me",
+        "status": 401
+      }
+    ],
+    "asset_matches": [
+      {
+        "path": "frontend/assets/index-BleneitZ.css",
+        "sha256": "d7d46812b042bc766cb4d84fc08966fb547ed0ef2034b6a322ae5c1fe8588a84",
+        "bytes": 122763
+      },
+      {
+        "path": "frontend/assets/index-C7IhmQSV.js",
+        "sha256": "0a2258dc618c045e1e19b7b3976bc92859879e1ea0f2b33aabef40bef2ca6f51",
+        "bytes": 546781
+      }
+    ]
+  },
+  "browser_post_update": {
+    "result": "PASS",
+    "browser": "Native Microsoft Edge via CUA",
+    "observed": [
+      "Public homepage renders existing two server restaurants",
+      "New restaurant-detail layout renders existing real restaurant and both original menu items",
+      "Existing public dish images render from retained storage",
+      "HTTPS navigation succeeds"
+    ],
+    "authenticated_login_and_writes": "NOT RUN",
+    "mobile_viewport": "NOT RUN"
+  }
+}

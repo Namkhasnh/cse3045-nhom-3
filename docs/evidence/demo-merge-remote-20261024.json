@@ -1,0 +1,20 @@
+{
+  "result": "PASS",
+  "source": "User supplied systemd journal plus independent public HTTPS checks",
+  "run": "6bc50cd1-3cc3-4d3a-80b1-3c37ce59320a",
+  "finished_at_utc": "2026-10-24T06:19:28Z",
+  "manifest_sha256": "5081d2b2ddd582d34037dbbd6ea3b4d23566841c3b8f45696bf4655f4215b6b5",
+  "inserted_rows": 158,
+  "imported_orders": 3,
+  "server_rehearsal": "PASS",
+  "existing_ssh_history_preserved": true,
+  "demo_archived": true,
+  "public_restaurants": 1,
+  "public_pickup_points": 2,
+  "public_dishes": 2,
+  "source_image_bytes_verified": 2,
+  "temporary_transfer_closed": true,
+  "backup": "/opt/hlf-merge-6bc50cd1-3cc3-4d3a-80b1-3c37ce59320a/state",
+  "browser_observation": "Native Microsoft Edge homepage displayed imported restaurant5 and two real dishes; demo catalog absent",
+  "authenticated_mutation_test": "NOT RUN"
+}

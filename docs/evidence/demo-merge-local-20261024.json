@@ -1,0 +1,23 @@
+{
+  "result": "PASS",
+  "scope": "Fresh isolated MySQL9.2.0/MinIO; shared ancestor plus synthetic independent SSH fork; retained local and SSH unchanged",
+  "checked_at": "2026-10-24T04:54:30.073Z",
+  "imported_rows": 158,
+  "imported_orders": 3,
+  "private_payloads_verified": 3,
+  "exact_order_money_and_commission": "PASS",
+  "injected_early_and_late_rollback": "PASS",
+  "concurrent_single_commit": "PASS",
+  "repeat_no_changes": true,
+  "demo_archived": true,
+  "ssh_merge": "NOT RUN",
+  "files": {
+    "ops/merge/snapshot.mjs": "541d2037426111ce8f9243101ecff91825c28f8f59833be9da7e05f3fb654141",
+    "ops/merge/planner.mjs": "75dd138b9621d5f98a35c5ca95bb66946287ffeb753ca6194cde3d6270c3a8d6",
+    "ops/merge/apply.mjs": "1029d28020af70f08a5a8045e18addd0f66722301b623215fc5c476418d7b440",
+    "ops/merge/assets.mjs": "44d8e6371dd6c9ce81bd0cddbf64eecd6bfcc835e5a54d5ab3099d3258a720a9",
+    "ops/merge/worker.mjs": "2967f621245097fe3a473fe0022b87f4b0a4629478bbe010ae6fea53e499db24",
+    "ops/merge/probe.mjs": "4e6bbc5d7cf6fc1551c363f102a096227b067f4337e741cc694357d79594d9f7",
+    "ops/merge/run.py": "bf9cc5cf057df4faf61607f88c9c9d76e0adbd0ea8cf7e4a650ed53721984377"
+  }
+}

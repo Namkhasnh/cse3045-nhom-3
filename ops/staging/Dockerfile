@@ -14,6 +14,13 @@ RUN DATABASE_URL=mysql://build_only:unused@127.0.0.1:1/test_build npm run build
 FROM backend-build AS backend-dependencies
 RUN npm prune --omit=dev --ignore-scripts
 
+# One-shot migration tooling; never used as the application runtime.
+FROM backend-build AS schema-operator
+USER root
+RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates && rm -rf /var/lib/apt/lists/*
+RUN npm rebuild @prisma/engines && node node_modules/prisma/build/index.js -v
+COPY backend/prisma/migrations ./prisma/migrations
+
 FROM toolchain AS backend-runtime
 ENV NODE_ENV=production
 WORKDIR /app/backend

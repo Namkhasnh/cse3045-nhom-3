@@ -39,3 +39,7 @@ Rollback restores only the hash-owned nginx change and stops the release-owned n
 The first installer used Node fetch, which ignored the supplied Host header in local reproduction. The first explicit-Host remote repair still failed and restored the original route; that attempt did not capture its exact failing status. Actual disposable nginx1.24 with the packaged frontend/selected hostname and a stub API passed200/200. The final bounded-readiness repair passed on the VPS by user report; public HTTPS and browser discovery/menu checks then passed independently. This does not establish the exact cause of the intermediate failure.
 
 VPS scheduled backup remains **NOT CONFIGURED**. Manual source recovery evidence exists, but operational15minRPO/4hRTO, offline-key custody (deferred), load/pilot and V0.9/V1.0 acceptance remain separate. Academic deployment PASS does not imply release acceptance.
+
+## October24 code update
+
+[In-place update handoff](demo-update.md) owns the new code-only candidate, existing-server inventory, single storefront migration, protected pre-change recovery point, isolated restore/rehearsal and application rollback. It preserves current server DB/object/vault volumes and runtime keys; it neither imports the newer Mac DB nor repeats the original installer. Preparation is not proof of remote update completion.
