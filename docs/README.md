@@ -39,6 +39,7 @@ Requirements govern behavior; architecture boundaries, database storage and API 
 | What is implemented or tested? | [Implementation/evidence](implementation-status.md), [historical fixture report](ui/student-discovery-verification.md), [legacy verification archive](history/legacy-verification.md), [documentation checks](documentation-verification.md) |
 | How is the authorized Mac DB copy prepared for a new VPS Docker server? | [Encrypted copy handoff](mac-to-vps-database-copy.md); remote import remains separate from complete deployment |
 | How is the October24 academic MVP demo deployed? | [Demo deployment/rollback](demo-deployment.md); actual remote proof is recorded separately |
+| How are retained local/SSH forks merged without replacing SSH data? | [Demo database merge and recovery](demo-database-merge.md); private manifests and exact-clone rehearsal |
 | How do we launch/recover/respond to incidents? | [Release checklist](release-checklist.md), deployment §§5–13, testing §§11–13 |
 
 New focused documents above are owned by their linked parent specification; do not create competing policy copies. [V0.2 OpenAPI](data/openapi.yaml) covers auth/profile and five public catalog operations with schema/example/HTTP/MySQL checks; [V0.3 onboarding schemas](data/onboarding.openapi.json) and enabled routes extend it with private applications/evidence/review/manual consent. The retained `ui_convertion.md` filename and original packaged HTML are intentional.

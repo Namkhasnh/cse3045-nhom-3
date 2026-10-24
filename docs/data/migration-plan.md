@@ -52,3 +52,7 @@ The explicit notification implementation request adds `20261022000000_notificati
 ## V0.8 AI metadata adoption
 
 `20261022010000_recommendations` creates metadata-only admission/counter/lease tables and singleton id1; applies no updates to original business rows. Initial full-chain rehearsal and restricted grants were tested on disposable MySQL9.2.0. [Verification](../ai-local-verification.md) separates source inspection, migration execution and live-provider evidence. Subsequent explicit local adoption authorization applied this single migration and narrow metadata grants after verified backup/restore; [receipt](../ai-local-adoption-review.md) records unchanged58 original tables/173 rows and27 prior checksums. Real100call quota was carried forward; backend restarted. Production adoption remains unauthorized/unperformed; example configuration is disabled by default.
+
+## October 24 authorized demo fork merge
+
+The user approved target-first three-way merging of the local and SSH academic demo forks, including verified local orders/finance, with explicit demo suspension/hiding and retained history. [Operator tooling and recovery](../demo-database-merge.md) records the common-ancestor mapping, conflict gates, exact-copy rehearsal and current evidence boundary. This exception does not authorize replacing the SSH database or importing invented survey, consent or financial facts.

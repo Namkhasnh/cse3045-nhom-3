@@ -62,12 +62,18 @@ try {
  const restaurant=(await db.query("SELECT id FROM restaurants WHERE owner_id=(SELECT id FROM accounts WHERE login_identifier='browser_manager')"))[0].id;
  const proposal=(await db.query('SELECT id FROM delivery_proposals WHERE restaurant_id=? ORDER BY id DESC LIMIT 1',[restaurant]))[0].id;
  stage='admin-review';await logout();await delay(31000-(Date.now()%30000));await login('browser_operator','/admin/delivery');await waitText('Đề xuất #'+proposal);
+ // DEL-01 regression: another submission arrives while Admin keeps the list open.
+ // The preceding proposal exercised owner HTTP; clone that valid synthetic row to simulate concurrent arrival.
+ const arrived=await db.query('INSERT INTO delivery_proposals (restaurant_id,actor_id,policy_version,location_hash,payload) SELECT restaurant_id,actor_id,policy_version,location_hash,payload FROM delivery_proposals WHERE id=?',[proposal]);
+ await waitText('Đề xuất #'+arrived.insertId);
+ assert(await evaluate(`document.querySelector('.settings-page article h3').textContent.includes('Đề xuất #${arrived.insertId}')`),'Newest pending proposal must appear first without reload');
+ await snapshot('delivery-admin-live-arrival-360');
  await evaluate(`(()=>{const article=Array.from(document.querySelectorAll('article')).find(x=>x.innerText.includes('Đề xuất #${proposal}'));const t=article.querySelector('textarea');t.focus()})()`);await call('Input.insertText',{text:'Xác minh giả lập trong DB kiểm thử'});await evaluate(`(()=>{const article=Array.from(document.querySelectorAll('article')).find(x=>x.innerText.includes('Đề xuất #${proposal}'));Array.from(article.querySelectorAll('button')).find(b=>b.textContent==='Duyệt khảo sát').click()})()`);await waitText('Đã lưu dữ liệu xác minh.');
  // P12's public quote fixture; P14 later replaces this explicit fixture readiness with full API setup.
  await db.query("UPDATE restaurants SET readiness='ready',is_accepting_orders=1 WHERE id=?",[restaurant]);
  await logout();await login('browser_manager','/owner/delivery');await waitText('Đang áp dụng');await waitText('Đã xác minh');
- stage='cart-quote';await navigate('/restaurants/'+restaurant);await waitText('Cơm kiểm thử');await evaluate("Array.from(document.querySelectorAll('button')).find(b=>b.textContent.includes('Thêm')&&!b.disabled).click()");await navigate('/cart');await waitText('Chưa xác định được phí giao');await waitText('Chọn điểm nhận');
- await evaluate(`(()=>{const s=document.querySelector('.cart-summary select');s.value=Array.from(s.options).find(o=>o.textContent===${JSON.stringify(name)}).value;s.dispatchEvent(new Event('change',{bubbles:true}))})()`);await evaluate("Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Kiểm tra phí giao').click()");await waitText('Báo phí có hiệu lực 15 phút');await snapshot('p12-zero-quote-360');
+ stage='cart-quote';await navigate('/restaurants/'+restaurant);await waitText('Cơm kiểm thử');await evaluate("Array.from(document.querySelectorAll('button')).find(b=>b.textContent.includes('Thêm')&&!b.disabled).click()");await navigate('/cart');await waitText('Chưa xác định');await waitText('Chọn điểm nhận');
+ await evaluate(`(()=>{const s=document.querySelector('#cart-point');s.value=Array.from(s.options).find(o=>o.textContent===${JSON.stringify(name)}).value;s.dispatchEvent(new Event('change',{bubbles:true}))})()`);await waitText('Đã kiểm tra phí giao cho điểm nhận này.');assert(await evaluate("document.body.innerText.includes('30.000đ')"),'Cart preserves the food subtotal');await snapshot('p12-zero-quote-360');
  for(const width of [360,390,768,1024,1440]){await call('Emulation.setDeviceMetricsOverride',{width,height:900,deviceScaleFactor:1,mobile:width<768});assert(await evaluate('document.documentElement.scrollWidth<=innerWidth'),'Delivery overflow '+width);await snapshot('p12-cart-'+width);}
  assert(orderRequests.length===0,'Unexpected order');console.log('P12 real Chrome PASS Admin point → owner proposal → MFA Admin approval → zero-fee quote, unknown fee, five widths: '+screenshots);
 
