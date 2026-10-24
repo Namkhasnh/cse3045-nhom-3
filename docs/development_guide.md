@@ -73,6 +73,8 @@ npm --prefix backend run dev
 npm --prefix frontend run dev
 ```
 
+Local dev preflight refuses an already occupied `PORT` before starting another watcher. Run only one backend for a port. Watch mode uses ignored `.dev-dist`/its own build metadata; `npm --prefix backend run build` writes `dist`, so a production build does not remove the running watcher's entrypoint. Do not edit either output directory. `npm --prefix backend run test:dev-runtime` checks occupied/free loopback ports. The check is a startup preflight, not a lock against simultaneous starts.
+
 Backend default 3000, Vite default 5173 (use printed URL); Vite proxies /api to 3000. Match PUBLIC_ORIGIN exactly; localhost and 127.0.0.1 are different origins. SMTP is required for new email verification. A send failure can leave an unverified legacy account for resend; inspect actual error behavior.
 
 Current `/login`, `/register`, `/verify-email`, `/account` implement accepted V0.1 capability/MFA auth; role-request website routes are retired. Public homepage/menu source exists and P04/P05 acceptance is separate. `/preview` remains development-only labeled fixtures without auth/me. No fixture mutation counts as real success. `/` and `/todos` on the backend return 404, independently of frontend SPA routes.

@@ -337,3 +337,11 @@ NOTIFY-01 covers real MySQL9.2.0 scoped inbox/read-loaded races, bootstrap dedup
 ## V0.8 AI evidence
 
 [Approved DEC-09](ai-v08-contract.md) resolves AI-04 budget/quantity/preferences and AI-02 free-tier disclosure/minimization. [Verification](ai-local-verification.md) owns policy/gateway unit tests, closed OpenAPI HTTP contracts, real MySQL9.2 quota/lease/revalidation/two-process/restricted-runtime checks and real Chrome five-width failure/manual-checkout checks. `test:ai-evaluation` is a separate100case resumable synthetic Gemini live comparison; mock safety/Chrome results do not establish quality or PERF-02. Missing key/project quota remains NOT CONFIGURED, live evaluation NOT RUN.
+
+## Figma homepage and shared chrome
+
+`npm --prefix frontend run test:homepage` checks frontend rendering with controlled API responses across five widths, account/capability navigation, filters, sticky header, short/long footer, auth forms, notification bounds, keyboard dismissal/focus, reduced motion and zoom. [UI contract](ui/homepage-figma.md) records source and reference differences. It supplements PUBLIC-01/GUEST-01/AUTH-04/UI-02 evidence; it does not prove backend authentication, persistence or MySQL behavior.
+
+## Scoped restaurant storefront evidence
+
+[October24 storefront verification](ui/restaurant-detail-verification.md) records CAT-01/AUTH-02/CART-01/PRICE-01 coverage, exact commands, controlled-browser versus real-MySQL/MinIO/Chrome boundaries, upgrade preservation and restricted-runtime evidence. It does not establish retained migration or release acceptance.

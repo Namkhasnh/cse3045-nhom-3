@@ -66,3 +66,24 @@ test('GUEST-01 allowlists cart return and rejects external/encoded/control desti
   for(const input of ['https://evil.example','//evil.example','/\\evil.example','/login','/unknown','/%2f%2fevil.example','/cart\n','/cart/../login','/cart%00']) assert.equal(safeReturnPath(input),null,input)
  } finally { delete globalThis.window }
 })
+test('CART-UNDO restores exact accepted intent, expires and invalidates on any intervening draft action', async () => {
+ const {cartReducer}=await import('../src/features/cart/model.ts')
+ const draft=setQuantity(addDish(null,restaurant,dish),dish.id,3)
+ const original={draft,notice:'',pending:null}
+ const removed=cartReducer(original,{type:'remove',id:dish.id,now:100})
+ assert.equal(removed.draft,null)
+ assert.equal(cartReducer(removed,{type:'undo-remove',now:5099}).draft,draft)
+ assert.equal(cartReducer(removed,{type:'undo-remove',now:5100}).draft,null)
+ assert.equal(cartReducer(removed,{type:'expire-undo',now:5100}).undo,undefined)
+ for(const action of [{type:'clear'},{type:'replace',draft:null},{type:'add',restaurant,dish},{type:'accept-prices',restaurantId:restaurant.id,prices:{}}]){
+  const intervened=cartReducer(removed,action)
+  assert.equal(intervened.undo,undefined)
+  assert.equal(cartReducer(intervened,{type:'undo-remove',now:200}).draft,intervened.draft)
+ }
+ const two=addDish(draft,restaurant,{...dish,id:'2',name:dish.name})
+ const secondRemoved=cartReducer({draft:two,notice:'',pending:null},{type:'remove',id:'2',now:100})
+ assert.equal(secondRemoved.draft.items.length,1)
+ assert.equal(cartReducer(secondRemoved,{type:'undo-remove',now:200}).draft,two)
+ const changed=cartReducer(secondRemoved,{type:'quantity',id:dish.id,quantity:4})
+ assert.equal(cartReducer(changed,{type:'undo-remove',now:200}).draft.items[0].quantity,4)
+})

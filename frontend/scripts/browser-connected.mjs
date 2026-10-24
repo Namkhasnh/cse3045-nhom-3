@@ -52,23 +52,23 @@ try {
  const slowAuth=await call('Page.addScriptToEvaluateOnNewDocument',{source:`const originalFetch=window.fetch;window.fetch=(input,init)=>String(input).includes('/auth/me')?new Promise(()=>{}):originalFetch(input,init);`});
  for(const width of [360,390,768,1024,1440]) {
   await call('Emulation.setDeviceMetricsOverride',{width,height:900,deviceScaleFactor:1,mobile:width<768});
-  await navigate('/');await waitText('Quán kiểm thử VJU');await waitText('Đang kiểm tra tài khoản');
+  await navigate('/');await waitText('Quán kiểm thử VJU');assert(await evaluate("document.querySelector('.session-pending')?.textContent.includes('Đang kiểm tra tài khoản')"),'Missing session pending status');
   assert(await evaluate('document.documentElement.scrollWidth<=innerWidth'),`Homepage overflow ${width}`);await snapshot(`public-pending-${width}`);
  }
  await call('Page.removeScriptToEvaluateOnNewDocument',{identifier:slowAuth.identifier});
  await call('Network.setBlockedURLs',{urls:['*api/v1/auth/me*']});
  await navigate('/');await waitText('Quán kiểm thử VJU');await waitText('Đăng nhập');
- await until(()=>evaluate("Boolean(document.querySelector('.restaurant-card h2 a'))"),'Auth failure blocked real public data');
+ await until(()=>evaluate("Boolean(document.querySelector('.home-restaurant-card h3 a'))"),'Auth failure blocked real public data');
  await call('Network.setBlockedURLs',{urls:[]});
  await call('Emulation.setDeviceMetricsOverride',{width:360,height:800,deviceScaleFactor:1,mobile:true});
  await navigate('/');await waitText('Quán kiểm thử VJU');assert(!(await text()).includes('Dữ liệu quán là mẫu'),'Fixtures on homepage');
  assert(await evaluate('document.documentElement.scrollWidth<=innerWidth'),'Mobile horizontal overflow');await snapshot('home-360');
- await fill('#restaurant-search','Khong-co-quan');await waitText('Chưa tìm thấy quán phù hợp');
+ await fill('#hero-search','Khong-co-quan');await waitText('Chưa tìm thấy quán phù hợp');
  await evaluate("Array.from(document.querySelectorAll('button')).find(b=>b.textContent.includes('Xóa bộ lọc')).click()");await waitText('Quán kiểm thử VJU');
  await call('Network.enable');await call('Network.setBlockedURLs',{urls:['*api/v1/restaurants*']});
  await navigate('/');await waitText('Chưa tải được danh sách quán');
  await call('Network.setBlockedURLs',{urls:[]});await evaluate("Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Thử lại').click()");await waitText('Quán kiểm thử VJU');
- await click('.restaurant-card h2 a');await waitText('Cơm kiểm thử');assert((await text()).includes('Thêm vào giỏ'),'Cart action missing');await snapshot('menu-360');
+ await click('.home-restaurant-card h3 a');await waitText('Cơm kiểm thử');assert((await text()).includes('Thêm vào giỏ'),'Cart action missing');await snapshot('menu-360');
  const menuPath=await evaluate('location.pathname');
  await until(()=>evaluate(`Boolean(document.querySelector('[aria-label="Chưa có ảnh món Cơm kiểm thử"]'))`),'Broken image fallback missing');
  for(const width of [360,390,768,1024,1440]) {
@@ -141,12 +141,12 @@ try {
  for(const width of [360,390,768,1024,1440]){await call('Emulation.setDeviceMetricsOverride',{width,height:900,deviceScaleFactor:1,mobile:width<768});assert(await evaluate('document.documentElement.scrollWidth<=innerWidth'),`Cart overflow ${width}`);await snapshot(`cart-${width}`);}
  await call('Emulation.setDeviceMetricsOverride',{width:360,height:900,deviceScaleFactor:1,mobile:true});
  await evaluate("Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Xóa toàn bộ giỏ').focus()");
- assert(await evaluate("(()=>{const button=document.activeElement.getBoundingClientRect();const nav=document.querySelector('.student-nav').getBoundingClientRect();return button.bottom<=nav.top&&button.top>=0})()"),'Bottom navigation covers focused cart controls');
+ assert(await evaluate("(()=>{const button=document.activeElement.getBoundingClientRect();const header=document.querySelector('.nav-shell').getBoundingClientRect();return button.bottom<=innerHeight&&button.top>=header.bottom})()"),'Sticky header covers focused cart controls');
  await db.query("UPDATE accounts SET auth_version=auth_version+1 WHERE login_identifier='browser_manager'");
  await evaluate("window.dispatchEvent(new Event('focus'))");await waitText('Đăng nhập để đặt hàng');assert((await cartValue()).items[0].quantity===2,'Expired session lost guest cart');
  assert((await db.query('SELECT COUNT(*) AS n FROM orders'))[0].n===orderCount,'Login created an order');assert(orderRequests.length===0,'Cart/login sent an order request');
  await navigate(menuPath);await waitText('Cơm kiểm thử');
- await click('.header-actions .header-link');await waitText('Chào mừng bạn trở lại.');
+ await click('.mobile-menu-button');await click('#site-mobile-menu a[href*="/login"]');await waitText('Chào mừng bạn trở lại.');
  assert(await evaluate("new URLSearchParams(location.search).get('returnTo')")===menuPath,'Menu login link lost destination');
  stage='expired-email';
  await navigate('/verify-email?username=browser_expired&returnTo=%2Faccount%3Ftab%3Dprofile%23details');
@@ -175,7 +175,7 @@ try {
  assert(await evaluate("new URLSearchParams(location.search).get('returnTo')")==='/account?tab=profile#details','Protected redirect lost destination');
  await fill('#username','browser_manager');await fill('#password','synthetic browser passphrase');await submit();await waitText('Đăng xuất');
  assert(await evaluate('location.pathname')==='/account','Manager return failed');
- await navigate('/');await waitText('Quản lý quán');await waitText('Quán kiểm thử VJU');
+ await navigate('/');await waitText('Quán của tôi');await waitText('Quán kiểm thử VJU');
  await navigate('/account');await waitText('Đăng xuất');await evaluate("Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Đăng xuất').click()");await waitText('Chào mừng bạn trở lại.');
  for (const unsafe of ['//evil.example','/\\evil.example','/login','/unknown','/%2f%2fevil.example','/account\n']) {
   await navigate('/login?returnTo='+encodeURIComponent(unsafe));await waitText('Chào mừng bạn trở lại.');

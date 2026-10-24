@@ -1,5 +1,7 @@
 # Local development demo adoption — October 20, 2026
 
+Historical record: the [October24 user-approved cleanup](local-demo-cleanup.md) subsequently suspended these sample accounts, archived sample catalog and disabled sample pickup points on the retained Mac database. Do not rerun sample creation to undo cleanup. The original addition/verification below remains historical evidence.
+
 Authority: the user's approved local-demo implementation plan explicitly permits forward migrations and synthetic sample additions to the existing `hlf_dev_flow` database. This is a named local exception to the earlier V0.3/V0.4 disposable-only acceptance boundary, not authorization for production, real partner imports, Admin cutover or changes to existing ownership/consent.
 
 ## Behavior and data

@@ -77,7 +77,7 @@ V1.1: reorder, favorites, reviews and random selection, each with finalized cont
 | US09 | Student | Pick a random dish that satisfies ordering conditions. | Should |
 | US10 | User | View durable order history/recovery in V0.5; reorder in V1.1. | History Must; reorder Should |
 | US11 | Restaurant Owner | Create, read, update, delete dishes in own restaurant's menu. | Must |
-| US12 | Restaurant Owner | Update restaurant info, hours, order-accepting status, delivery range and fees. | Must |
+| US12 | Restaurant Owner | Update restaurant info including optional cover/introduction, hours, order-accepting status, delivery range and fees. | Must |
 | US13 | Restaurant Owner | Receive, accept or reject (with reason) orders and update progress. | Must |
 | US14 | Restaurant Owner | Configure payment QR; confirm payment after verifying the transaction. | Must |
 | US15 | Restaurant Owner | View completed orders, dish revenue and commission per period. | Must |

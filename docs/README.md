@@ -23,16 +23,21 @@ Requirements govern behavior; architecture boundaries, database storage and API 
 | How do I perform the approved auth/discovery cutover? | [Operator handoff](auth-discovery-cutover.md) |
 | Which legacy identities/data need compatibility work? | [Migration plan](data/migration-plan.md), implementation status, DEC-01 |
 | How do cash, direct QR, receipt verification and refunds interact? | [Approved payment policy](payments-policy.md), [V0.6 acceptance](progress/V0.6.md), [isolated reproduction](payments-local-verification.md), API §9/database §4.4 |
+| How do I enable ordering with existing local data? | [Retained local ordering and key custody](local-ordering-adoption.md) |
 | How do I verify cash checkout/fulfillment/history safely? | [V0.5 acceptance](progress/V0.5.md), [isolated commands and adoption boundary](cash-ordering-local-verification.md) |
 | What about totals/snapshots/keys/locks/settlements? | Database §§4–11; API §§3–10; architecture §§5–7 |
 | How do finance statements, corrections, signed credit and reports work? | [Approved DEC-07](finance-policy-proposal.md), [isolated verification/adoption boundary](finance-local-verification.md), [P22](progress/P22.md)→[P23](progress/P23.md)→[P24](progress/P24.md); DEC-08/P25 remains separate |
 | How do P25 account/support/privacy/audit controls work? | [Approved DEC-08](account-support-policy-proposal.md), [P25 contract](account-support-v07-contract.md), [verification](account-support-local-verification.md) and [evidence](progress/P25.md); synthetic scope only |
 | Why does the local homepage now show sample dishes? | [Local demo adoption and recovery](local-demo-adoption.md) |
+| How were local sample accounts/catalog/points removed from active use? | [Local demo cleanup and recovery](local-demo-cleanup.md); history retained, real selling setup still required |
 | How is sell readiness configured? | [V0.4 setup contract](restaurant-setup-v04-contract.md), [local verification](setup-local-verification.md) |
+| How do restaurant cover/introduction and the new detail page work? | [Approved Figma storefront and interfaces](ui/restaurant-detail-figma.md), [verification](ui/restaurant-detail-verification.md) |
+| How does the redesigned cart handle real fees, undo and checkout handoff? | [Cart design and verification](ui/cart-figma.md) |
 | How should screens look and behave? | UI §§1–13, [design coordination](ui/design-skills.md), [original HTML](ui/Hoa%20Lac%20Food%20Ordering%20Platform.html) |
 | How are the scoped UI/UX defect fixes reproduced? | [UI/UX fix verification](uiux-fixes-local-verification.md) |
 | What is implemented or tested? | [Implementation/evidence](implementation-status.md), [historical fixture report](ui/student-discovery-verification.md), [legacy verification archive](history/legacy-verification.md), [documentation checks](documentation-verification.md) |
 | How is the authorized Mac DB copy prepared for a new VPS Docker server? | [Encrypted copy handoff](mac-to-vps-database-copy.md); remote import remains separate from complete deployment |
+| How is the October24 academic MVP demo deployed? | [Demo deployment/rollback](demo-deployment.md); actual remote proof is recorded separately |
 | How do we launch/recover/respond to incidents? | [Release checklist](release-checklist.md), deployment §§5–13, testing §§11–13 |
 
 New focused documents above are owned by their linked parent specification; do not create competing policy copies. [V0.2 OpenAPI](data/openapi.yaml) covers auth/profile and five public catalog operations with schema/example/HTTP/MySQL checks; [V0.3 onboarding schemas](data/onboarding.openapi.json) and enabled routes extend it with private applications/evidence/review/manual consent. The retained `ui_convertion.md` filename and original packaged HTML are intentional.

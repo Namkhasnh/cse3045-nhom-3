@@ -11,7 +11,7 @@ export class RestaurantSettingsRepository {
  await c.db.$queryRaw`SELECT id FROM restaurants WHERE id=${id} FOR UPDATE`;
  const r=await c.db.restaurants.findUnique({where:{id}});if(!r||(!admin&&r.owner_id!==actor))throw new NotFoundException();return r;}
  hours(c:TransactionContext,id:bigint){return c.db.restaurant_hours.findMany({where:{restaurant_id:id},orderBy:[{weekday:'asc'},{opens_at:'asc'}]});}
- async update(c:TransactionContext,id:bigint,expected:number,data:Record<string,string|boolean|null>,hours?:Hours[]){
+ async update(c:TransactionContext,id:bigint,expected:number,data:Record<string,string|boolean|bigint|null>,hours?:Hours[]){
  const current=await c.db.restaurants.findUniqueOrThrow({where:{id}});
  const changed=('address' in data&&data.address!==current.address)||('latitude' in data&&data.latitude!==(current.latitude?.toFixed(6)??null))||('longitude' in data&&data.longitude!==(current.longitude?.toFixed(6)??null));
  if(changed&&current.location_version>=2147483646)return conflict();

@@ -482,3 +482,7 @@ The approved [notification contract](../notifications-contract.md) adds `notific
 ## V0.8 AI metadata
 
 [DEC-09](../ai-v08-contract.md) adds ai_admission singleton, ai_counters and ai_leases via forward migration20261022010000_recommendations. No prompt/output/contact storage or business-history changes. Account lock precedes singleton admission lock; no network calls in transactions. Atomic counter reservations and30s durable leases bound multiple instances; failed/uncertain calls consume quota. Startup/hourly/admission cleanup removes7day-old metadata with1000row bounds; offline cleanup resumes at startup. Runtime has narrow admission UPDATE(id), metadata INSERT/UPDATE/DELETE, no new business write privileges. [Evidence](../ai-local-verification.md) uses disposable MySQL9.2 only; subsequent explicitly authorized local metadata adoption is recorded in the [review/receipt](../ai-local-adoption-review.md), with original58 tables/173 rows unchanged and real quota carried forward.
+
+## Optional restaurant storefront extension — October 24
+
+User-approved nullable introduction/current-cover pointer and separate same-restaurant cover metadata use the forward migration and constraints documented in the [storefront persistence contract](../ui/restaurant-detail-figma.md#persistence-and-storage). Cover lifecycle cleanup is independent of dish media; immutable snapshots/readiness criteria are unchanged. Runtime grant additions are reviewable SQL only, not proof of retained adoption.

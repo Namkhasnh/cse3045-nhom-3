@@ -67,3 +67,7 @@ User requested commands and asked why the new version is absent remotely. Agent 
 ## Explicit retained Mac copy request
 
 User has now chosen **all existing Mac hlf_dev_flow data into a NEW Docker DB on the VPS**, superseding synthetic-only scope for this specific SQL copy. [Copy handoff](mac-to-vps-database-copy.md) and [receipt](evidence/p29-mac-vps-transfer.json) record fresh backup and actual importer rehearsal PASS62tables/203rows/28migrations; encrypted clipboard-transfer package and separate hidden-key prompt are prepared. Actual remote execution NOT RUN. No existing VPS DB/service, application startup, public routing or release approval is implied. No original age/application key is bundled.
+
+## Academic demo deployment supersedes the private-only route
+
+User now explicitly requests next-day demo deployment, selects public `https://sv26.bcse-vju.com` with rollback, and approves encrypted SMTP/MFA/media transfer plus a temporary Cloudflare ciphertext-download endpoint. [Demo handoff](demo-deployment.md)/[receipt](evidence/demo-deployment.json) record a full local Docker rehearsal PASS and the exact user-run deployment command. Live nginx site metadata is supplied; old DB/service are preserved. User-reported remote deployment now PASS after targeted routing repair; independent public HTTPS/catalog/assets checks and native Edge discovery/menu observation PASS. Authenticated VPS journeys remain NOT RUN, scheduler NOT CONFIGURED; this academic scope does not accept P29/P35 or commercial V1.0.

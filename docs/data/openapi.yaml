@@ -961,7 +961,7 @@
       "get": {
         "operationId": "publicCategoryList",
         "summary": "Public category list",
-        "description": "Anonymous; no auth/me dependency. Active ready restaurants and visible dishes only. Unknown query keys, repeated fields, unsupported sort/filter or malformed scalars return 422. Lists are live, not snapshots. Closed restaurants and sold-out visible dishes remain readable.",
+        "description": "Anonymous; no auth/me dependency. By default returns the complete category taxonomy for menu creation. public_only=true returns categories with at least one visible dish from an active ready restaurant; visible sold-out dishes and closed restaurants still qualify. Signed cursors bind this filter. Unknown query keys, repeated fields, unsupported sort/filter or malformed scalars return 422. Lists are live, not snapshots.",
         "tags": [
           "V0.2 public catalog"
         ],
@@ -1000,6 +1000,16 @@
                 "name"
               ],
               "default": "name"
+            }
+          },
+          {
+            "name": "public_only",
+            "in": "query",
+            "required": false,
+            "description": "true restricts categories to those with visible dishes from active ready restaurants. false or omitted returns the complete taxonomy.",
+            "schema": {
+              "type": "boolean",
+              "default": false
             }
           }
         ],
@@ -13005,7 +13015,9 @@
           "min_price_vnd",
           "max_price_vnd",
           "version",
-          "updated_at"
+          "updated_at",
+          "description",
+          "cover_image_reference"
         ],
         "properties": {
           "id": {
@@ -13077,6 +13089,20 @@
           "updated_at": {
             "type": "string",
             "format": "date-time"
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 2000
+          },
+          "cover_image_reference": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^/api/v1/restaurant-cover-media/[1-9][0-9]*$"
           }
         },
         "examples": [
@@ -13094,7 +13120,9 @@
             "min_price_vnd": "30000",
             "max_price_vnd": "30000",
             "version": 1,
-            "updated_at": "2026-10-19T00:00:00.000Z"
+            "updated_at": "2026-10-19T00:00:00.000Z",
+            "description": null,
+            "cover_image_reference": null
           }
         ]
       },
@@ -13250,7 +13278,9 @@
                 "min_price_vnd": "30000",
                 "max_price_vnd": "30000",
                 "version": 1,
-                "updated_at": "2026-10-19T00:00:00.000Z"
+                "updated_at": "2026-10-19T00:00:00.000Z",
+                "description": null,
+                "cover_image_reference": null
               }
             ],
             "page": {
@@ -13287,7 +13317,9 @@
               "min_price_vnd": "30000",
               "max_price_vnd": "30000",
               "version": 1,
-              "updated_at": "2026-10-19T00:00:00.000Z"
+              "updated_at": "2026-10-19T00:00:00.000Z",
+              "description": null,
+              "cover_image_reference": null
             }
           }
         ]

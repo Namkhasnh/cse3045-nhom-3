@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react'
 import { Button } from '../../../shared/ui/Button'
-import { Icon } from '../../../shared/ui/Icon'
-import { RestaurantFilters } from '../components/RestaurantFilters'
-import { RestaurantList } from '../components/RestaurantList'
-import { catalogApi, summary, type Category, type Restaurant } from '../api/catalog.api'
-import { useCatalog } from '../hooks/use-catalog'
-import type { RestaurantFilterValues } from '../types'
+import { Reveal } from '../../../shared/ui/Reveal'
+import { catalogApi, type Category } from '../api/catalog.api'
+import type { PriceRange, RestaurantFilterValues } from '../types'
 import { FixtureRestaurantListPage } from './FixtureRestaurantListPage'
 import { DishDiscovery } from '../components/DishDiscovery'
+import { HomeHero } from '../components/HomeHero'
+import { HomeCategories } from '../components/HomeCategories'
+import { HomeRestaurants } from '../components/HomeRestaurants'
+import { HomeRecommendation } from '../components/HomeRecommendation'
 const defaults: RestaurantFilterValues = { query: '', category: 'all', priceRange: 'all' }
 export function RestaurantListPage({ preview = false }: { preview?: boolean }) {
   return preview && import.meta.env.DEV ? <FixtureRestaurantListPage /> : <ConnectedRestaurants />
@@ -15,33 +16,21 @@ export function RestaurantListPage({ preview = false }: { preview?: boolean }) {
 function ConnectedRestaurants() {
   const [filters, setFilters] = useState(defaults)
   const [categories, setCategories] = useState<Category[]>([])
-  const [categoryError, setCategoryError] = useState(false)
+  const [categoryStatus, setCategoryStatus] = useState('loading')
   const [categoryAttempt, setCategoryAttempt] = useState(0)
   useEffect(() => {
     const c = new AbortController()
-    catalogApi.categories(c.signal).then(values => { setCategories(values); setCategoryError(false) }).catch(() => { if (!c.signal.aborted) setCategoryError(true) })
+    catalogApi.categories(c.signal).then(values => { if (!c.signal.aborted) { setCategories(values); setCategoryStatus('ready') } }).catch(() => { if (!c.signal.aborted) setCategoryStatus('error') })
     return () => c.abort()
   }, [categoryAttempt])
-  const catalog = useCatalog<Restaurant>(filters)
+  const reset = () => setFilters(defaults)
   const hasFilters = Boolean(filters.query || filters.category !== 'all' || filters.priceRange !== 'all')
-  return <>
-    <section className="home-intro" aria-labelledby="page-title">
-      <p className="home-location"><Icon name="pin" />Dành cho cộng đồng VJU · Hòa Lạc</p>
-      <h1 id="page-title">Hôm nay, <span>ăn gì ở VJU?</span></h1>
-      <p className="home-description">Tìm quán hợp khẩu vị, xem giá món và lựa chọn bữa ăn của bạn. Khám phá ngay, không cần đăng nhập.</p>
-      <a className="home-discover-link" href="#kham-pha">Khám phá quán <span aria-hidden="true">↓</span></a>
-    </section>
-    <DishDiscovery />
-    <section id="kham-pha" className="discovery-header" aria-labelledby="discovery-title">
-      <div className="discovery-heading"><h2 id="discovery-title">Quán quanh VJU</h2></div>
-    </section>
-    <RestaurantFilters values={filters} categories={categories} onChange={setFilters} onReset={() => setFilters(defaults)} hasFilters={hasFilters} />
-    {categoryError && <p role="alert">Chưa tải được danh mục. <Button variant="neutral" onClick={() => setCategoryAttempt(v => v + 1)}>Thử lại danh mục</Button></p>}
-    <section className="restaurant-section" aria-label="Danh sách quán">
-      <p className="result-count" role="status" aria-live="polite">{catalog.status === 'loading' ? 'Đang tải…' : catalog.status === 'error' ? 'Chưa tải được dữ liệu' : `Đã tải ${catalog.data.length} quán${hasFilters ? ' phù hợp' : ''}`}</p>
-      <RestaurantList status={catalog.status} restaurants={catalog.data.map(summary)} hasFilters={hasFilters} onReset={() => setFilters(defaults)} onRetry={catalog.retry} />
-      {catalog.moreError && <p role="alert">Chưa tải được trang tiếp theo. Hãy thử lại.</p>}
-      {catalog.hasMore && <Button disabled={catalog.loadingMore} onClick={catalog.loadMore}>{catalog.loadingMore ? 'Đang tải…' : 'Tải thêm quán'}</Button>}
-    </section>
-  </>
+  return <div className="home-design">
+    <HomeHero query={filters.query} onQuery={query => setFilters(current => ({ ...current, query }))} />
+    <Reveal><HomeCategories categories={categories} selected={filters.category} onSelect={category => { setFilters(current => ({ ...current, category })); document.getElementById('dishes')?.scrollIntoView({ block: 'start' }) }} loading={categoryStatus === 'loading'} error={categoryStatus === 'error'} onRetry={() => { setCategoryStatus('loading'); setCategoryAttempt(v => v + 1) }} /></Reveal>
+    <div className="design-container home-filter-bar"><label htmlFor="home-price">Giá một món</label><select id="home-price" className="input" value={filters.priceRange} onChange={event => setFilters(current => ({ ...current, priceRange: event.target.value as PriceRange }))}><option value="all">Tất cả mức giá</option><option value="under-30">Dưới 30.000đ</option><option value="30-to-50">30.000 – 50.000đ</option><option value="over-50">Trên 50.000đ</option></select><Button variant="neutral" disabled={!hasFilters} onClick={reset}>Xóa bộ lọc</Button></div>
+    <Reveal><DishDiscovery filters={filters} onReset={reset} /></Reveal>
+    <Reveal><HomeRestaurants filters={filters} onReset={reset} /></Reveal>
+    <Reveal><HomeRecommendation /></Reveal>
+  </div>
 }

@@ -1,6 +1,11 @@
 import type { CSSProperties } from 'react'
 
 const paths = {
+  arrow: <><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></>,
+  menu: <path d="M4 7h16M4 12h16M4 17h16" />,
+  trash: <><path d="M4 7h16M9 7V4h6v3m-8 0 1 13h8l1-13M10 11v5M14 11v5" /></>,
+  close: <path d="m6 6 12 12M18 6 6 18" />,
+  sparkle: <><path d="m12 3 1.4 4.1L17.5 9l-4.1 1.5L12 15l-1.5-4.5L6.5 9l4-1.9L12 3Z" /><path d="m18.5 15 .7 2.1 2.3.9-2.3.8-.7 2.2-.8-2.2-2.2-.8 2.2-.9.8-2.1Z" /></>,
   bowl: <><path d="M3 11h18c0 5-3 8-9 8s-9-3-9-8ZM8 22h8M8 3v4M12 2v5M16 3v4" /></>,
   pin: <><path d="M19 10c0 5-7 11-7 11S5 15 5 10a7 7 0 1 1 14 0Z" /><circle cx="12" cy="10" r="2.5" /></>,
   search: <><circle cx="10.5" cy="10.5" r="6.5" /><path d="m16 16 4 4" /></>,

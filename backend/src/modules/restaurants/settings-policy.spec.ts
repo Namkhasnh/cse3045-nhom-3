@@ -14,3 +14,13 @@ test('ONBOARD-03 no readiness/ownership/rate override or incomplete readiness',(
  assert.equal(ready({profile:true,hours:true,menu:false,delivery:false,commission:false}),false);
  assert.throws(()=>settingsInput({expected_version:1,latitude:'21.000000'}));
 });
+test('CAT-01 storefront text and generated media references stay bounded and owner-only',()=>{
+ assert.equal(settingsInput({expected_version:1,description:'   '}).data.description,null);
+ assert.equal(settingsInput({expected_version:1,description:null}).data.description,null);
+ assert.equal(settingsInput({expected_version:1,description:'  Xin chào VJU  '}).data.description,'Xin chào VJU');
+ assert.doesNotThrow(()=>settingsInput({expected_version:1,description:'🍜'.repeat(2000)}));
+ for(const description of ['a'.repeat(2001),'bad\0text',42])assert.throws(()=>settingsInput({expected_version:1,description}));
+ for(const cover_image_reference of ['https://example.test/a.jpg','/api/v1/dish-media/1','/api/v1/restaurant-cover-media/0','//foreign.test/a',5])assert.throws(()=>settingsInput({expected_version:1,cover_image_reference}));
+ assert.equal(settingsInput({expected_version:1,cover_image_reference:null}).cover,null);
+ for(const name of ['description','cover_image_reference'])assert.throws(()=>settingsInput({expected_version:1,[name]:null},true));
+});

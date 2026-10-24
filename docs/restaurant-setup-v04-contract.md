@@ -59,3 +59,7 @@ Readiness now derives profile/valid weekly hours/visible available menu/current 
 `commissionAmount(subtotal,rate)` uses exact scaled integer arithmetic, half-up once per order, delivery excluded by its subtotal-only interface. Generic arithmetic tests may use10%; commercial configuration rejects values outside3–5%. No ledger/settlement/order execution is enabled. Existing API §3 caps and signed scalar parsing remain authoritative.
 
 Owner survey and commission context embeds the latest100 proposals; Admin survey history has a cursor for the complete stored history. Public cart remains available to Admin, but quote issuance requires buy capability and explicitly denies sole Admin; no implicit buyer authority is introduced.
+
+## Optional storefront content — October 24 extension
+
+User-approved US03/US12 extension: [storefront contract](ui/restaurant-detail-figma.md#owner-content-contract) adds owner introduction/cover writes, protected preview, public current-cover reads and independent media cleanup. Existing readiness criteria remain unchanged. [Forward persistence and storage rules](ui/restaurant-detail-figma.md#persistence-and-storage) and updated setup OpenAPI own the additive interfaces; this is not retained migration authorization.

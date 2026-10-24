@@ -1,0 +1,64 @@
+import {RestaurantSettingsModule} from '../../src/http/restaurant-settings/settings.module.js';
+import {test} from 'node:test';import assert from 'node:assert/strict';import sharp from 'sharp';
+import {randomBytes} from 'node:crypto';import {Test} from '@nestjs/testing';
+import {S3Client,HeadBucketCommand,CreateBucketCommand} from '@aws-sdk/client-s3';
+import {AppModule} from '../../src/app.module.js';import {PrismaService} from '../../src/prisma/prisma.service.js';
+import {SessionService} from '../../src/http/auth/session.service.js';import {configureApiHttp} from '../../src/common/http/api-http.js';
+import {AuditService} from '../../src/modules/audit/audit.service.js';import {TransactionRunner,type TransactionContext} from '../../src/common/transactions/transaction-runner.js';
+import {RestaurantCoverWorkflow} from '../../src/workflows/restaurant-cover.workflow.js';import {DishesWorkflow} from '../../src/workflows/dishes.workflow.js';
+import {DishStorage} from '../../src/integrations/storage/dish-storage.js';import {checkSetupResponse} from '../setup-contract.js';
+test('CAT-01 AUTH-02 storefront MySQL/MinIO: scoped media, versions, rollback and cleanup isolation',async()=>{
+ Object.assign(process.env,{JWT_SIGNING_KEY:'11'.repeat(32),CSRF_HMAC_KEY:'22'.repeat(32),ADMIN_MFA_ENCRYPTION_KEY:'33'.repeat(32),JWT_ISSUER:'storefront-test',JWT_AUDIENCE:'storefront-test',JWT_KEY_ID:'storefront-test',PUBLIC_ORIGIN:'http://127.0.0.1:43127'});
+ const target=new URL(process.env.TEST_DATABASE_URL!);assert.ok(['127.0.0.1','localhost'].includes(target.hostname)&&target.pathname.startsWith('/test_'));
+ const s3=new S3Client({endpoint:process.env.MEDIA_S3_ENDPOINT,region:'us-east-1',forcePathStyle:true,credentials:{accessKeyId:process.env.MEDIA_S3_ACCESS_KEY!,secretAccessKey:process.env.MEDIA_S3_SECRET_KEY!}});
+ try{await s3.send(new HeadBucketCommand({Bucket:process.env.MEDIA_S3_BUCKET}));}catch{await s3.send(new CreateBucketCommand({Bucket:process.env.MEDIA_S3_BUCKET}));}finally{s3.destroy();}
+ const module=await Test.createTestingModule({imports:[AppModule]}).overrideProvider(PrismaService).useValue(new PrismaService(process.env.TEST_RUNTIME_DATABASE_URL??process.env.TEST_DATABASE_URL)).compile();
+ const app=module.createNestApplication();configureApiHttp(app);await app.listen(0,'127.0.0.1');const db=new PrismaService(process.env.TEST_DATABASE_URL),origin=await app.getUrl(),sessions=app.get(SessionService),nonce=crypto.randomUUID().slice(0,8);
+ try{
+  assert.match((await db.$queryRaw<Array<{v:string}>>`SELECT VERSION() v`)[0].v,/^9\.2\.0/);
+  const create=(prefix:string)=>db.account.create({data:{loginIdentifier:prefix+nonce,passwordHash:'synthetic',role:'student',displayName:'Synthetic storefront'}});
+  const owner=await create('sf_owner'),foreign=await create('sf_foreign'),inactive=await create('sf_inactive');await db.account.update({where:{id:inactive.id},data:{isActive:false}});
+  const r=await db.restaurants.create({data:{owner_id:owner.id,name:'Synthetic storefront',address:'Synthetic VJU',contact_phone:'0900000000',is_active:true,updated_at:new Date()}}),other=await db.restaurants.create({data:{owner_id:foreign.id,name:'Other synthetic storefront',address:'Synthetic',contact_phone:'0900000000',updated_at:new Date()}});
+  const path='/owner/restaurants/'+r.id;
+  const req=async(url:string,method='GET',body?:object,actor=owner)=>{const s=sessions.issue(actor);const response=await fetch(origin+'/api/v1'+url,{method,headers:{Cookie:`__Host-hlf_access=${s.jwt}; __Host-hlf_csrf=${s.csrf}`,'X-CSRF-Token':s.csrf,Origin:process.env.PUBLIC_ORIGIN!,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});const payload=await response.json();checkSetupResponse(url,method,response.status,payload);return {status:response.status,body:payload};};
+  const current=async()=> (await req(path)).body.data;
+  assert.equal((await current()).description,null);assert.equal((await current()).cover_image_reference,null);
+  const jpeg=await sharp({create:{width:100,height:50,channels:3,background:'orange'}}).withMetadata({exif:{IFD0:{Artist:'Private synthetic metadata'}}}).jpeg().toBuffer();
+  const image={mime_type:'image/jpeg',content_base64:jpeg.toString('base64')};
+  assert.equal((await req(path+'/cover-media','POST',image,foreign)).status,404);
+  assert.equal((await req(path+'/cover-media','POST',image,inactive)).status,401);
+  assert.equal((await req(path+'/cover-media','POST',{...image,mime_type:'image/png'})).status,422);
+  assert.equal((await req(path+'/cover-media','POST',{mime_type:'image/png',content_base64:Buffer.alloc(5242881).toString('base64')})).status,422);
+  const wide=await sharp({create:{width:4097,height:1,channels:3,background:'red'}}).png().toBuffer();assert.equal((await req(path+'/cover-media','POST',{mime_type:'image/png',content_base64:wide.toString('base64')})).status,422);
+  const png=await sharp(randomBytes(512*512*3),{raw:{width:512,height:512,channels:3}}).png().toBuffer();assert.ok(png.length>100000);assert.equal((await req(path+'/cover-media','POST',{mime_type:'image/png',content_base64:png.toString('base64')})).status,201,'Upload route allows valid files over ordinary JSON limit');
+  const asset=(await req(path+'/cover-media','POST',image)).body.data;const preview=path+'/cover-media/'+asset.id;
+  assert.equal((await fetch(origin+asset.image_reference)).status,404,'Unattached media is private');
+  const session=sessions.issue(owner);const viewed=await fetch(origin+'/api/v1'+preview,{headers:{Cookie:`__Host-hlf_access=${session.jwt}`}});assert.equal(viewed.status,200);assert.equal(viewed.headers.get('cache-control'),'no-store');assert.equal(viewed.headers.get('x-content-type-options'),'nosniff');assert.equal((await sharp(Buffer.from(await viewed.arrayBuffer())).metadata()).exif,undefined);
+  assert.equal((await fetch(origin+'/api/v1'+preview)).status,401);const foreignSession=sessions.issue(foreign);assert.equal((await fetch(origin+'/api/v1'+preview,{headers:{Cookie:`__Host-hlf_access=${foreignSession.jwt}`}})).status,404);
+  assert.equal((await req(path,'PATCH',{expected_version:1,description:'Xin chào VJU',cover_image_reference:asset.image_reference})).status,200);
+  assert.equal((await current()).description,'Xin chào VJU');assert.equal((await current()).readiness,'setup_required','Storefront content cannot enable sales');
+  assert.equal((await req('/owner/restaurants/'+other.id,'PATCH',{expected_version:1,cover_image_reference:asset.image_reference},foreign)).status,404);
+  await assert.rejects(db.restaurants.update({where:{id:other.id},data:{cover_media_asset_id:BigInt(asset.id)}}),'MySQL enforces same-restaurant attachment');
+  await assert.rejects(db.restaurants.update({where:{id:r.id},data:{description:'a'.repeat(2001)}}),'MySQL text bound');
+  await assert.rejects(db.restaurantCoverMedia.create({data:{restaurant_id:r.id,uploader_id:owner.id,object_key:'covers/invalid-'+nonce,content_hash:'0'.repeat(64),mime_type:'image/svg+xml',size_bytes:1,width:1,height:1}}));
+  // Public visibility fixture only, not proof of full sell-readiness setup.
+  await db.restaurants.update({where:{id:r.id},data:{readiness:'ready'}});
+  const publicDto=await(await fetch(origin+'/api/v1/restaurants/'+r.id)).json();assert.equal(publicDto.data.cover_image_reference,asset.image_reference);assert.equal(publicDto.data.description,'Xin chào VJU');assert.equal((await fetch(origin+asset.image_reference)).status,200);
+  await app.get(DishesWorkflow).cleanup(owner.id,r.id.toString());assert.equal((await fetch(origin+asset.image_reference)).status,200,'Dish cleanup does not claim cover metadata');
+  const expected=(await current()).version;const race=await Promise.all(['First writer','Second writer'].map(description=>req(path,'PATCH',{expected_version:expected,description})));assert.deepEqual(race.map(x=>x.status).sort(),[200,409]);
+  const before=await current(),audit=app.get(AuditService),record=audit.record.bind(audit);audit.record=async(c,e)=>{if(e.action==='restaurant.settings_updated')throw new Error('Synthetic audit outage');return record(c,e);};
+  assert.equal((await req(path,'PATCH',{expected_version:before.version,description:'Rollback',cover_image_reference:null})).status,500);audit.record=record;
+  assert.equal((await current()).version,before.version);assert.equal((await current()).description,before.description);assert.equal((await current()).cover_image_reference,asset.image_reference);assert.equal((await db.restaurantCoverMedia.findUniqueOrThrow({where:{id:BigInt(asset.id)}})).cleanup_requested_at,null);
+  const runner=app.get(TransactionRunner),run=runner.run.bind(runner);let lose=true;runner.run=async<T>(op:(c:TransactionContext)=>Promise<T>):Promise<T>=>{const result=await run(op);if(lose&&result&&typeof result==='object'&&'image_reference'in result){lose=false;throw new Error('Synthetic acknowledgement loss');}return result;};
+  assert.equal((await req(path+'/cover-media','POST',image)).status,500);runner.run=run;
+  const uncertain=await db.restaurantCoverMedia.findFirstOrThrow({where:{restaurant_id:r.id},orderBy:{id:'desc'}});assert.ok((await app.get(DishStorage).get(uncertain.object_key)).length,'Possibly committed metadata retains object');
+  const next=(await req(path+'/cover-media','POST',image)).body.data,storage=app.select(RestaurantSettingsModule).get(DishStorage,{strict:true}),remove=storage.remove.bind(storage),old=await db.restaurantCoverMedia.findUniqueOrThrow({where:{id:BigInt(asset.id)}});let fail=true;
+  storage.remove=async key=>{if(fail&&key===old.object_key){fail=false;throw new Error('Synthetic deletion outage');}return remove(key);};
+  assert.equal((await req(path,'PATCH',{expected_version:before.version,cover_image_reference:next.image_reference})).status,200);assert.ok((await db.restaurantCoverMedia.findUniqueOrThrow({where:{id:old.id}})).deletion_requested_at);assert.equal((await db.restaurantCoverMedia.findUniqueOrThrow({where:{id:old.id}})).deleted_at,null);
+  assert.equal((await fetch(origin+asset.image_reference)).status,404);assert.equal((await fetch(origin+'/api/v1'+preview,{headers:{Cookie:`__Host-hlf_access=${session.jwt}`}})).status,404);
+  assert.equal((await req(path,'PATCH',{expected_version:(await current()).version,cover_image_reference:asset.image_reference})).status,404);
+  await app.get(RestaurantCoverWorkflow).cleanup(owner.id,r.id.toString());storage.remove=remove;assert.ok((await db.restaurantCoverMedia.findUniqueOrThrow({where:{id:old.id}})).deleted_at);
+  assert.equal((await req(path,'PATCH',{expected_version:(await current()).version,description:null,cover_image_reference:null})).status,200);assert.equal((await current()).cover_image_reference,null);assert.equal((await current()).description,null);
+  await db.restaurants.update({where:{id:r.id},data:{readiness:'ready',is_active:false,cover_media_asset_id:uncertain.id}});assert.equal((await fetch(origin+'/api/v1/restaurant-cover-media/'+uncertain.id)).status,404,'Inactive restaurants never publish media');
+ }finally{await db.$disconnect();await app.close();}
+});

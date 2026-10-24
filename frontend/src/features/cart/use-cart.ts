@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useReducer, useState } from 'react'
-import { cartReducer, orderable, CART_STORAGE_KEY, itemCount, parseDraft, subtotal, type CartCatalog, type CartDish, type CartRestaurant } from './model'
+import { cartReducer, orderable, orderabilityReason, CART_STORAGE_KEY, itemCount, parseDraft, subtotal, type CartCatalog, type CartDish, type CartRestaurant } from './model'
 
 type Current<T> = { status: 'ready'; value: T } | { status: 'missing' | 'error' }
 type Validation = { key: string; status: 'ready'; restaurant: Current<CartRestaurant>; dishes: Record<string, Current<CartDish>> }
@@ -13,7 +13,12 @@ function initialDraft() {
 }
 export function useCartState(catalog: CartCatalog) {
   const [initial] = useState(initialDraft)
-  const [{ draft, notice, pending }, dispatch] = useReducer(cartReducer, { draft: initial.draft, notice: '', pending: null })
+  const [{ draft, notice, pending, undo }, dispatch] = useReducer(cartReducer, { draft: initial.draft, notice: '', pending: null })
+  useEffect(() => {
+    if (!undo) return
+    const timer = setTimeout(() => dispatch({ type: 'expire-undo' }), Math.max(0, undo.expiresAt - Date.now()))
+    return () => clearTimeout(timer)
+  }, [undo])
   const [storageWarning, setStorageWarning] = useState(initial.warning)
   const [attempt, setAttempt] = useState(0)
   const [validation, setValidation] = useState<Validation | null>(null)
@@ -61,7 +66,12 @@ export function useCartState(catalog: CartCatalog) {
     }
     dispatch({ type: 'accept-prices', restaurantId: draft.restaurant.id, prices })
   }
-  return { draft, current, storageWarning, notice, pending, count: itemCount(draft), subtotal: subtotal(draft), refresh,
+  const issue = !draft ? 'Giỏ hàng đang trống.' : !current ? 'Đang kiểm tra giá và tình trạng món…'
+    : current.restaurant.status === 'error' ? 'Chưa kiểm tra được quán. Hãy thử kiểm tra lại giỏ.'
+    : current.restaurant.status === 'missing' ? 'Quán không còn công khai. Giỏ hàng được giữ nguyên.'
+    : current.restaurant.status !== 'ready' ? 'Chưa kiểm tra được quán. Hãy thử kiểm tra lại giỏ.' : orderabilityReason(current.restaurant.value) || (draft.items.some(i => current.dishes[i.id]?.status !== 'ready') ? 'Chưa xác minh được tất cả món. Hãy kiểm tra lại giỏ.'
+      : draft.items.some(i => { const d = current.dishes[i.id]; return d.status === 'ready' && !d.value.is_available }) ? 'Có món đang tạm hết. Hãy xem lại giỏ.' : '')
+  return { draft, undo, undoRemove: () => { dispatch({ type: 'undo-remove' }); refresh() }, current, issue, storageWarning, notice, pending, count: itemCount(draft), subtotal: subtotal(draft), refresh,
     add: (restaurant: CartRestaurant, dish: CartDish) => dispatch({ type: 'add', restaurant, dish }), acceptPrices,
     quantity: (id: string, quantity: number) => dispatch({ type: 'quantity', id, quantity }),
     remove: (id: string) => dispatch({ type: 'remove', id }), clear: () => dispatch({ type: 'clear' }),

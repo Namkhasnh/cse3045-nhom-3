@@ -5,5 +5,5 @@ test('V0.4 machine contract compiles every closed request example and rejects ac
  if(!operation.requestBody)continue;const examples=operation.requestBody.content['application/json'].examples;assert.ok(examples&&Object.keys(examples).length);const pointer='/paths/'+path.replaceAll('~','~0').replaceAll('/','~1')+'/'+method+'/requestBody/content/application~1json/schema';const validate=ajv.compile({$ref:'setup#'+pointer});
  for(const {value} of Object.values(examples)){assert.ok(validate(value),JSON.stringify(validate.errors));assert.equal(validate({...value,owner_id:'999'}),false);assert.equal(validate({...value,actor_id:'999'}),false);count++;}
  }
- assert.equal(count,14);
+ assert.equal(count,15);
 });

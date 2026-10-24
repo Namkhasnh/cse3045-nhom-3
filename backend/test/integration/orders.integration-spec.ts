@@ -1,4 +1,5 @@
 import type {Prisma} from '../../src/generated/prisma/client.js';
+import {NotificationsService} from '../../src/modules/notifications/public.js';
 import {OrdersWorkflow} from '../../src/workflows/orders.workflow.js';
 import {schema} from '../auth-contract.js';
 import {test} from 'node:test';import assert from 'node:assert/strict';import {Test} from '@nestjs/testing';
@@ -42,6 +43,21 @@ test('P15 IDEM-01/02 PRICE-01 ELIG-01 HIST-01 DATA-01 actual MySQL cash aggregat
  const place=(body= intent,key='create')=>req('/orders','POST',body,key,buyer);
  const results=await Promise.all([place(),place()]);assert.deepEqual(results.map(x=>x.status).sort(),[200,201],JSON.stringify(results));const order=results[0].body.data,oid=BigInt(order.id);assert.equal(results[1].body.data.id,order.id);for(const response of results){assert.equal(response.replayed,String(response.status===200));assert.equal(response.location,response.status===201?'/api/v1/orders/'+order.id:null);}assert.ok(schema('CashOrder')(order));assert.equal(order.total_vnd,'90000');assert.equal(order.payment.status,'unpaid');
  assert.equal(await db.orders.count({where:{student_id:buyer.id,restaurant_id:restaurant.id}}),1);assert.equal(await db.order_status_history.count({where:{order_id:oid}}),1);assert.equal(await db.order_payment_history.count({where:{order_id:oid}}),1);assert.equal(await db.auditLog.count({where:{action:'order.created',targetId:oid}}),1);
+ const noticeWhere={source_id:oid,type:'order.pending'};
+ const notices=await db.notification.findMany({where:noticeWhere});assert.equal(notices.length,2,'Same-key concurrent create emits one message per mailbox');
+ assert.deepEqual(notices.map(n=>n.recipient_key).sort(),['account:'+buyer.id,'account:'+owner.id].sort());
+ assert.ok(notices.every(n=>!n.body.includes(intent.recipient.name)&&!n.body.includes(intent.recipient.phone)));
+ assert.equal(notices.find(n=>n.recipient_key==='account:'+owner.id)?.href,'/owner/restaurants/'+r+'/orders?order='+oid);
+ const buyerNotice=notices.find(n=>n.recipient_key==='account:'+buyer.id)!;
+ const detail=(await req('/notifications/'+buyerNotice.id,'GET',undefined,undefined,buyer)).body.data;
+ assert.equal(detail.current_context.href,'/orders/'+oid);assert.equal(detail.current_context.status,'order');
+ assert.equal((await req('/notifications/'+buyerNotice.id,'GET',undefined,undefined,owner)).status,404);
+ const noticesService=app.get(NotificationsService),append=noticesService.account.bind(noticesService),beforeNotices=await db.notification.count({where:{type:'order.pending',restaurant_id:restaurant.id}});
+ let appended=0;noticesService.account=async(...args)=>{await append(...args);if(++appended===2)throw new Error('Synthetic notice outage after insert');};
+ assert.equal((await place(intent,'notice-rollback')).status,500);noticesService.account=append;
+ assert.equal(await db.order_requests.count({where:{actor_id:buyer.id,idempotency_key:'notice-rollback-'+nonce}}),0);
+ assert.equal(await db.orders.count({where:{student_id:buyer.id}}),1);
+ assert.equal(await db.notification.count({where:{type:'order.pending',restaurant_id:restaurant.id}}),beforeNotices,'Notice failure rolls back both order and messages');
  assert.equal((await place({...intent,recipient:{...intent.recipient,name:'Different'}})).body.error.code,'IDEMPOTENCY_KEY_REUSED');
  assert.equal((await req('/orders/'+order.id,'GET',undefined,undefined,admin)).status,404);assert.equal((await req('/orders/'+order.id,'GET',undefined,undefined,owner)).body.data.recipient,undefined);
  assert.equal((await req('/orders/'+order.id,'GET',undefined,undefined,buyer)).body.data.recipient.name,'Synthetic recipient');
@@ -50,7 +66,7 @@ test('P15 IDEM-01/02 PRICE-01 ELIG-01 HIST-01 DATA-01 actual MySQL cash aggregat
  await db.dishes.update({where:{id:BigInt(dish.id)},data:{price_vnd:46000}});const changed=await place(intent,'price');assert.equal(changed.status,409);assert.equal(changed.body.error.code,'PRICE_OR_FEE_CHANGED');assert.equal(changed.body.error.details.items[0].current_unit_price_vnd,'46000');assert.equal(await db.order_requests.count({where:{actor_id:buyer.id,idempotency_key:'price-'+nonce}}),0);
  const staleIntent={...intent,items:[{...intent.items[0],accepted_unit_price_vnd:'46000'}]};await db.deliveryQuote.updateMany({where:{restaurant_id:restaurant.id},data:{created_at:new Date(Date.now()-900001),expires_at:new Date(Date.now()-1)}});const stale=await place(staleIntent,'expired');assert.equal(stale.body.error.code,'QUOTE_STALE',JSON.stringify(stale));const replacement=stale.body.error.details.current_delivery_quote;assert.equal((await place({...staleIntent,accepted_delivery_quote:accepted(replacement)},'fresh')).status,201,'replacement quote survives conflict');
  const wf=app.get(OrdersWorkflow),createOrder=wf.create.bind(wf);wf.create=async(...args)=>{await createOrder(...args);throw new Error('Synthetic response lost after commit')};
- const recoveredIntent={...staleIntent,accepted_delivery_quote:accepted(replacement)};assert.equal((await place(recoveredIntent,'lost')).status,500);wf.create=createOrder;const recovered=await place(recoveredIntent,'lost');assert.equal(recovered.status,200);assert.equal(recovered.replayed,'true');assert.equal(await db.order_requests.count({where:{actor_id:buyer.id,idempotency_key:'lost-'+nonce}}),1);
+ const recoveredIntent={...staleIntent,accepted_delivery_quote:accepted(replacement)};assert.equal((await place(recoveredIntent,'lost')).status,500);wf.create=createOrder;const recovered=await place(recoveredIntent,'lost');assert.equal(recovered.status,200);assert.equal(recovered.replayed,'true');assert.equal(await db.notification.count({where:{source_id:BigInt(recovered.body.data.id),type:'order.pending'}}),2);assert.equal(await db.order_requests.count({where:{actor_id:buyer.id,idempotency_key:'lost-'+nonce}}),1);
  const second=(await req(path+'/dishes','POST',{name:'Second synthetic',description:'Equal-total fixture',price_vnd:'54000',category_id:category.id,is_visible:true,is_available:true},'second')).body.data;
  const equal={...recoveredIntent,items:[{dish_id:dish.id,quantity:1,accepted_unit_price_vnd:'46000'},{dish_id:second.id,quantity:1,accepted_unit_price_vnd:'54000'}]};await db.dishes.update({where:{id:BigInt(dish.id)},data:{price_vnd:45000}});await db.dishes.update({where:{id:BigInt(second.id)},data:{price_vnd:55000}});const eq=await place(equal,'equal');assert.equal(eq.body.error.code,'PRICE_OR_FEE_CHANGED');assert.equal(eq.body.error.details.current.subtotal_vnd,eq.body.error.details.accepted.subtotal_vnd);assert.equal(eq.body.error.details.items.length,2);
  await db.dishes.update({where:{id:BigInt(dish.id)},data:{name:'Changed synthetic',is_visible:false}});await db.restaurants.update({where:{id:restaurant.id},data:{is_active:false}});const replay=await place();assert.equal(replay.status,200);assert.equal(replay.body.data.id,order.id);assert.deepEqual(replay.body.data.items,order.items);const closed=await place(intent,'closed');assert.equal(closed.status,422);assert.equal(closed.body.error.details.reason,'RESTAURANT_NOT_ORDERABLE');assert.equal(closed.body.error.details.current_delivery_quote,null);

@@ -1,0 +1,200 @@
+{
+  "observed_at": "2026-10-23T16:31:28.314Z",
+  "boundary": "Read-only retained localhost metadata. No recipient, credentials, request key or ciphertext.",
+  "order": {
+    "id": "2",
+    "student_id": "11",
+    "restaurant_id": "4",
+    "status": "completed",
+    "version": 5,
+    "subtotal_vnd": "60000",
+    "delivery_fee_vnd": "5000",
+    "total_vnd": "65000",
+    "commission_rate_snapshot": "0.04000000",
+    "created_at": "2026-10-23T15:10:57.953Z",
+    "updated_at": "2026-10-23T15:13:30.378Z",
+    "completed_at": "2026-10-23T15:13:30.378Z"
+  },
+  "history": [
+    {
+      "from_status": null,
+      "to_status": "pending",
+      "order_version": 1,
+      "actor_id": "11",
+      "created_at": "2026-10-23T15:10:57.971Z"
+    },
+    {
+      "from_status": "pending",
+      "to_status": "accepted",
+      "order_version": 2,
+      "actor_id": "8",
+      "created_at": "2026-10-23T15:12:39.035Z"
+    },
+    {
+      "from_status": "accepted",
+      "to_status": "delivering",
+      "order_version": 4,
+      "actor_id": "8",
+      "created_at": "2026-10-23T15:12:46.541Z"
+    },
+    {
+      "from_status": "delivering",
+      "to_status": "completed",
+      "order_version": 5,
+      "actor_id": "8",
+      "created_at": "2026-10-23T15:13:30.383Z"
+    }
+  ],
+  "ready": {
+    "order_id": "2",
+    "actor_id": "8",
+    "ready_at": "2026-10-23T15:12:43.201Z",
+    "order_version": 3
+  },
+  "payment": {
+    "order_id": "2",
+    "method": "cash",
+    "status": "paid",
+    "confirmed_by": "8",
+    "confirmed_at": "2026-10-23T15:13:18.533Z",
+    "version": 2,
+    "updated_at": "2026-10-23T15:13:18.533Z"
+  },
+  "commission": [
+    {
+      "id": "2",
+      "kind": "base",
+      "amount_vnd": "2400",
+      "actor_id": "8",
+      "created_at": "2026-10-23T15:13:30.393Z"
+    }
+  ],
+  "notices": [
+    {
+      "id": "18",
+      "recipient_key": "account:11",
+      "type": "order.pending",
+      "source_version": 1,
+      "href": "/orders/2",
+      "created_at": "2026-10-23T15:10:57.992Z"
+    },
+    {
+      "id": "19",
+      "recipient_key": "account:8",
+      "type": "order.pending",
+      "source_version": 1,
+      "href": "/owner/restaurants/4/orders?order=2",
+      "created_at": "2026-10-23T15:10:57.995Z"
+    },
+    {
+      "id": "20",
+      "recipient_key": "account:11",
+      "type": "order.accepted",
+      "source_version": 2,
+      "href": "/orders/2",
+      "created_at": "2026-10-23T15:12:39.045Z"
+    },
+    {
+      "id": "21",
+      "recipient_key": "account:8",
+      "type": "order.accepted",
+      "source_version": 2,
+      "href": "/owner/restaurants/4/orders?order=2",
+      "created_at": "2026-10-23T15:12:39.047Z"
+    },
+    {
+      "id": "22",
+      "recipient_key": "account:11",
+      "type": "order.ready",
+      "source_version": 3,
+      "href": "/orders/2",
+      "created_at": "2026-10-23T15:12:43.208Z"
+    },
+    {
+      "id": "23",
+      "recipient_key": "account:8",
+      "type": "order.ready",
+      "source_version": 3,
+      "href": "/owner/restaurants/4/orders?order=2",
+      "created_at": "2026-10-23T15:12:43.211Z"
+    },
+    {
+      "id": "24",
+      "recipient_key": "account:11",
+      "type": "order.delivering",
+      "source_version": 4,
+      "href": "/orders/2",
+      "created_at": "2026-10-23T15:12:46.551Z"
+    },
+    {
+      "id": "25",
+      "recipient_key": "account:8",
+      "type": "order.delivering",
+      "source_version": 4,
+      "href": "/owner/restaurants/4/orders?order=2",
+      "created_at": "2026-10-23T15:12:46.553Z"
+    },
+    {
+      "id": "26",
+      "recipient_key": "account:11",
+      "type": "order.completed",
+      "source_version": 5,
+      "href": "/orders/2",
+      "created_at": "2026-10-23T15:13:30.401Z"
+    },
+    {
+      "id": "27",
+      "recipient_key": "account:8",
+      "type": "order.completed",
+      "source_version": 5,
+      "href": "/owner/restaurants/4/orders?order=2",
+      "created_at": "2026-10-23T15:13:30.403Z"
+    }
+  ],
+  "hours": [
+    {
+      "weekday": 1,
+      "opens_at": "08:00:00",
+      "closes_at": "20:00:00",
+      "closes_next_day": false
+    },
+    {
+      "weekday": 2,
+      "opens_at": "08:00:00",
+      "closes_at": "20:00:00",
+      "closes_next_day": false
+    },
+    {
+      "weekday": 3,
+      "opens_at": "08:00:00",
+      "closes_at": "20:00:00",
+      "closes_next_day": false
+    },
+    {
+      "weekday": 4,
+      "opens_at": "08:00:00",
+      "closes_at": "20:00:00",
+      "closes_next_day": false
+    },
+    {
+      "weekday": 5,
+      "opens_at": "08:00:00",
+      "closes_at": "20:00:00",
+      "closes_next_day": false
+    },
+    {
+      "weekday": 6,
+      "opens_at": "08:00:00",
+      "closes_at": "20:00:00",
+      "closes_next_day": false
+    },
+    {
+      "weekday": 7,
+      "opens_at": "08:00:00",
+      "closes_at": "20:00:00",
+      "closes_next_day": false
+    }
+  ],
+  "requests": 1,
+  "private_payloads": 1
+}

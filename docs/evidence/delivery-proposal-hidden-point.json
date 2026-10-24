@@ -1,0 +1,17 @@
+{
+  "result": "PASS",
+  "mysql": "9.2.0",
+  "scope": "isolated synthetic database only",
+  "reported_hidden_point_reproduced_http": 422,
+  "chrome_submission": "PASS",
+  "saved_active_point_rows": 2,
+  "zero_fee_preserved": true,
+  "distances_and_fees_preserved": true,
+  "old_approved_rate_unchanged": true,
+  "invalid_proposal_rolled_back": true,
+  "frontend_unit_tests": 2,
+  "frontend_lint": "PASS",
+  "frontend_build": "PASS",
+  "retained_proposal_submitted": false,
+  "finished_at": "2026-10-23T18:29:18.032Z"
+}

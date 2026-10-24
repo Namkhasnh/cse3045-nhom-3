@@ -35,7 +35,7 @@ GRANT INSERT ON {{database}}.restaurants TO {{runtime}};
 -- and cooperation termination require their separately reviewed operator workflow.
 
 -- P11: owning restaurant workflow alone derives readiness. HTTP rejects direct writes.
-GRANT UPDATE (name,address,contact_phone,latitude,longitude,location_version,is_active,is_accepting_orders,readiness,version,updated_at) ON {{database}}.restaurants TO {{runtime}};
+GRANT UPDATE (name,address,contact_phone,description,cover_media_asset_id,latitude,longitude,location_version,is_active,is_accepting_orders,readiness,version,updated_at) ON {{database}}.restaurants TO {{runtime}};
 GRANT INSERT, DELETE ON {{database}}.restaurant_hours TO {{runtime}};
 
 -- P12 proposals remain immutable except lifecycle status/version.
@@ -127,3 +127,7 @@ GRANT UPDATE (read_at) ON {{database}}.notifications TO {{runtime}};
 GRANT UPDATE (id) ON {{database}}.ai_admission TO {{runtime}};
 GRANT INSERT, UPDATE, DELETE ON {{database}}.ai_counters TO {{runtime}};
 GRANT INSERT, UPDATE, DELETE ON {{database}}.ai_leases TO {{runtime}};
+
+-- Optional storefront media: object identity stays immutable.
+GRANT INSERT ON {{database}}.restaurant_cover_media TO {{runtime}};
+GRANT UPDATE (cleanup_requested_at,deletion_requested_at,deleted_at) ON {{database}}.restaurant_cover_media TO {{runtime}};

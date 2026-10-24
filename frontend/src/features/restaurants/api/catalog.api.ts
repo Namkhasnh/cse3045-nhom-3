@@ -1,10 +1,10 @@
 import type { RestaurantFilterValues, RestaurantSummary } from '../types'
 export type Page<T> = { data: T[]; page: { has_more: boolean; next_cursor: string | null } }
 export type Category = { id: string; name: string }
-export type Restaurant = { id: string; name: string; address: string; is_active: boolean; is_open: boolean;
+export type Restaurant = { description?: string | null; cover_image_reference?: string | null; id: string; name: string; address: string; is_active: boolean; is_open: boolean;
   is_accepting_orders: boolean; min_price_vnd: string | null; max_price_vnd: string | null;
   hours: { weekday: number; opens_at: string; closes_at: string; closes_next_day: boolean }[] }
-export type Dish = { id: string; restaurant_id: string; restaurant_name: string; name: string; description: string;
+export type Dish = { category_id?: string; id: string; restaurant_id: string; restaurant_name: string; name: string; description: string;
   price_vnd: string; image_reference: string | null; is_available: boolean }
 export class CatalogError extends Error { readonly status: number; constructor(status: number) { super('Không tải được danh mục'); this.status = status } }
 async function get<T>(path: string, signal?: AbortSignal): Promise<T> {
@@ -29,7 +29,7 @@ export const catalogApi = {
   dishes: (query: URLSearchParams, signal?: AbortSignal) => get<Page<Dish>>(`/dishes?${query}`, signal),
   categories: async (signal?: AbortSignal): Promise<Category[]> => {
     const result: Category[] = []; let cursor: string | null = null
-    do { const page: Page<Category> = await get(`/dish-categories?limit=100${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`, signal)
+    do { const page: Page<Category> = await get(`/dish-categories?limit=100&public_only=true${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`, signal)
       result.push(...page.data); cursor = page.page.next_cursor
     } while (cursor)
     return result

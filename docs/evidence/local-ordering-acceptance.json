@@ -1,0 +1,135 @@
+{
+  "recorded_at": "2026-10-23T16:46:10.249448+00:00",
+  "scope": "Localhost restaurant4; no VPS action",
+  "overall_real_acceptance": "PASS_REAL_ORDER_3_FUNCTIONAL_JOURNEY; RAW_MUTATION_HTTP_AND_EXHAUSTIVE_ACCESSIBILITY_LIMITATIONS_RECORDED",
+  "review": "Codex self-review only",
+  "real_data": {
+    "saved_intent": "Reappeared unchanged after correct buyer login; final submission performed by user following UI review rejection",
+    "hours": "Friday temporarily23:59 with explicit authorization; restored20:00; all seven original intervals confirmed by UI refresh and MySQL",
+    "buyer_session": "khanh124/Nguyen Nam Khanh; normal login after natural expiry recovered order3 full timeline",
+    "owner_session": "khanh25051505/Khánh Namm in independent Edge; owner4 verified; all commands for order3 directly observed",
+    "foreign_order_and_owner_list_reads": "NOT_FOUND for authenticated buyer",
+    "real_new_order_submission": "User final submit; Codex observed order3 success65000cash/pending/unpaid and opened tracking link. Order2 also retained.",
+    "payment_receipt": "User clarified order2 payment was a test click, not actual receipt. Existing actor8 paid history retained; Codex did not confirm or rewrite it.",
+    "retained_metadata_receipt": [
+      "local-ordering-real-order-2.json",
+      "local-ordering-real-order-3.json"
+    ],
+    "live_transition_polling": "PASS direct native browser observation for order3; per-action observation bounds and HTTP200 Resource Timing correlation recorded separately",
+    "retained_unpaid_completion": "PASS order3 completed/unpaid; one commission2400; no receipt actor/time",
+    "restored_hours_verified_at": "2026-10-23T16:44:35.431Z",
+    "next_observed_run": "Completed order3; Friday restored20:00 again; all seven original intervals verified",
+    "order3_observation_bounds_ms": {
+      "accepted": 10966,
+      "ready": 9768,
+      "delivering": 1038,
+      "completed": 9324
+    },
+    "order3_first_post_mutation_http_200": {
+      "accepted": "2026-10-23T16:41:16.156Z",
+      "ready": "2026-10-23T16:41:56.630Z",
+      "delivering": "2026-10-23T16:42:11.889Z",
+      "completed": "2026-10-23T16:42:22.233Z"
+    },
+    "order3_read_delay_from_history_ms": {
+      "accepted": 4694,
+      "ready": 2668,
+      "delivering": 326,
+      "completed": 1345
+    },
+    "timing_boundary": "HTTP Resource Timing + persisted mutation timestamps correlated with direct UI state observations; not exact paint latency. Initial status0 aborted read excluded."
+  },
+  "runtime": {
+    "duplicate_watchers": "Two verified; non-serving duplicate stopped",
+    "historical_EADDRINUSE_log_matches": [
+      186,
+      54
+    ],
+    "first_failed_login_root_cause": "NOT ESTABLISHED; later same saved credential login succeeded",
+    "final_serving_mode": "Single tested dist/main.js process; no watcher; public HTTP200",
+    "build_watch_collision": "Observed MODULE_NOT_FOUND during shared dist deletion; dev now emits .dev-dist"
+  },
+  "checks": {
+    "backend_lint": "PASS",
+    "backend_unit": {
+      "passed": 59,
+      "failed": 0
+    },
+    "backend_http_e2e": {
+      "passed": 9,
+      "failed": 0
+    },
+    "backend_build": "PASS",
+    "mysql_selected_integration": "PASS orders/fulfillment/notifications",
+    "frontend_lint": "PASS",
+    "frontend_build": "PASS",
+    "frontend_cart": 6,
+    "frontend_orders": 10,
+    "chrome_checkout": "PASS",
+    "chrome_tracking": "PASS",
+    "comprehensive_accessibility": "NOT RUN",
+    "dev_port_preflight": {
+      "pass": 1,
+      "fail": 0
+    },
+    "dev_build_isolation_probe": {
+      "result": "PASS",
+      "dev_before_build_http": 200,
+      "dev_after_build_http": 200,
+      "retained_local_http": 200,
+      "dev_output": ".dev-dist/main.js",
+      "build_output": "dist/main.js",
+      "missing_module_errors": 0,
+      "database": "separate disposable test database",
+      "finished_at": "2026-10-23T14:44:42.221Z"
+    },
+    "frontend_lint_after_order_dialog_copy": "PASS",
+    "frontend_build_after_order_dialog_copy": "PASS",
+    "browser_after_order_dialog_copy": "PASS real order3 accept/deliver/complete confirmation dialogs show Quay lại",
+    "actual_visual": "Native Chrome order3 detail at360px and desktop observed"
+  },
+  "source_sha256": {
+    "backend/src/common/http/api-http.ts": "bec2fbc42781f2aa82461b252f6f84d44ea206c09ee41dd30d98a67036940cc8",
+    "backend/src/common/http/api-http.spec.ts": "87940327dbcc467d35271c4f112c2f30ee44ab7819b99ef81366dd0ed0bc39b6",
+    "frontend/src/app/hooks/useCheckout.ts": "78a1085b17a01062c5b2b6de632b430123c0b13f4e6cca41c9f7b668f5119048",
+    "frontend/src/app/pages/CheckoutPage.tsx": "d7bbc53d0dce9c0965c3d42714baed99828a3929108c1ddc1861c716de3c3f74",
+    "frontend/src/features/cart/model.ts": "6bffd28187dd625284645d64ad62cf966cb5bad9ce417edd4a74740dd8b19693",
+    "frontend/src/features/cart/use-cart.ts": "090d0a1809c3297e568e778b923bbc9fa2517656260bc96323b0c1521d29e338",
+    "frontend/src/features/cart/CartPage.tsx": "9a4061a2e47372badd4a6eaa3ce9b9c52459b468cae3d27ede0c8f4473baa41d",
+    "frontend/src/features/delivery/api.ts": "7b400dbba30210601df3f233be25d1899af2923db350d4cd629516f85744a337",
+    "frontend/src/features/delivery/use-pickup-points.ts": "989d2726925e770dbe902629a7ad21bda52309387d4eafee52efc011be4488f3",
+    "frontend/src/features/delivery/DeliverySelector.tsx": "295d17a4e8f4afd0bd22ff7c1cac5e87fcb815a472df62d3541596e9905284c0",
+    "frontend/src/features/orders/use-orders.ts": "0e2c71057605e3de2d2a687ab08ed4b4dfa99be52142285e638ed3b532e56899",
+    "frontend/src/features/orders/HistoryPage.tsx": "1b00a17dcef685b73e9a6fe65e5bc803ef2502de2a0a8dc2558c0fd6aa0e0b0a",
+    "frontend/src/features/orders/OwnerOrdersPage.tsx": "41b9385d3281c02fe54edbaf531e8bc3ffe5003a660fda5f5097ce3bc19d01b5",
+    "frontend/src/features/auth/pages/AuthPage.tsx": "fc70e456f39b61b1c29408b71be199b62c7611365152d3de883b078befb5547e",
+    "frontend/src/shared/api/request.ts": "2b984fc48fec0572456d1e660f1124af1175f3ab3785cf15d0d066f1937c279c",
+    "frontend/src/features/restaurants/pages/RestaurantMenuPage.tsx": "bb412bfd084081f8f17d5c5a2222eb1b3e637ac46bde7ac75e0ccf05b7ab9504",
+    "frontend/scripts/browser-checkout.mjs": "75477703cb6844d555b466451aed485743da0d35dfbc933a165e4b92bf6ad1cb",
+    "frontend/scripts/browser-tracking.mjs": "00c6336e49bf37d3c0bdc34ef0e37d1a79234cdb1817e17bfca44bd4da948c26",
+    "backend/package.json": "f30bdfa75c713fd534b6bb8010d10d373563d3ba6865dcc9942eeec4324013f3",
+    "backend/.gitignore": "c04a2d19332c087c172e58623378585a1716aa474f6edc1c6eaa6b43f39b4a8f",
+    "backend/eslint.config.mjs": "ce16df993781138399cd65b3dd6aecc3452d22fe97d71628a20a151a08c3a58e",
+    "backend/tsconfig.dev.json": "75af7348b82f299bd3bd43d83d1ff5a736eead6ae3386d0f352bd34ea3b93c8e",
+    "backend/scripts/check-dev-port.mjs": "480e6e6285d0cd0128141d7b92cc23339e0715cdc4a3a8fc875a32f42ea0ff48",
+    "backend/test/dev-runtime.test.mjs": "8b1ec14cf6fb6a2ef848d078fdd22dde68860157a050e8afebcddc2b4368b99e",
+    "frontend/src/features/orders/OrderDetail.tsx": "b53e85bdca344724c8747a46a43be8efaf14f0e3651ccf397452bdaee892b2b3"
+  },
+  "synthetic_screenshots_visually_inspected": {
+    "checkout360": {
+      "path": "/var/folders/pn/4h65x5kx5sj8_4q9lkdj48k00000gn/T/hlf-browser-evidence-yK7How/p16-checkout-360.png",
+      "sha256": "982a3af7199d103dcb2d1b9c6523012d5149d910f0463ee7302fa4b0227dc5b2"
+    },
+    "tracking_offline360": {
+      "path": "/var/folders/pn/4h65x5kx5sj8_4q9lkdj48k00000gn/T/hlf-browser-evidence-7Yxozl/p18-offline-360.png",
+      "sha256": "7d3e44b080b906edc7fa871fde29c78f0b4226f90a43509a2de9b6c8117a390b"
+    }
+  },
+  "limitations": [
+    "Raw real create/command HTTP status not captured; real GET polling200 recorded",
+    "Retained foreign mutations NOT RUN; disposable scope checks passed",
+    "Exhaustive accessibility NOT RUN",
+    "Local key backup NOT CONFIGURED",
+    "Existing sample-point labels preserved; no operational pilot or actual delivery/payment proven"
+  ]
+}

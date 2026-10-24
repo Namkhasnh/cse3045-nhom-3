@@ -1,0 +1,49 @@
+{
+  "result": "PASS",
+  "scope": "local hlf_dev_flow only",
+  "mysql": "9.2.0",
+  "accounts_suspended": 7,
+  "restaurants_archived": 2,
+  "dishes_hidden": 7,
+  "sample_points_disabled": 2,
+  "physical_deletions": 0,
+  "history_all_original_rows_preserved": true,
+  "real_account_and_dish_rows_unchanged": true,
+  "old_demo_sessions_rejected": 7,
+  "demo_ordinary_management_forbidden": 7,
+  "real_account_session_probes": 2,
+  "password_login": "NOT RUN; original credentials preserved, probes used in-memory signed sessions",
+  "replay_no_changes": true,
+  "public_restaurants": 0,
+  "public_dishes": 0,
+  "active_pickup_points": 0,
+  "discovery_categories": 0,
+  "management_categories": 8,
+  "restaurant_states": [
+    {
+      "id": "1",
+      "is_active": false,
+      "is_accepting_orders": false,
+      "readiness": "setup_required"
+    },
+    {
+      "id": "2",
+      "is_active": false,
+      "is_accepting_orders": false,
+      "readiness": "setup_required"
+    },
+    {
+      "id": "3",
+      "is_active": true,
+      "is_accepting_orders": false,
+      "readiness": "setup_required"
+    },
+    {
+      "id": "4",
+      "is_active": true,
+      "is_accepting_orders": false,
+      "readiness": "setup_required"
+    }
+  ],
+  "finished_at": "2026-10-23T18:07:06.527Z"
+}
