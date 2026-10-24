@@ -57,7 +57,7 @@ try {
  }
  async function navigate(path='/'){
   await evaluate("document.documentElement.dataset.leaving='true'");await call('Page.navigate',{url:base+path});
-  await until(()=>evaluate("document.readyState==='complete'&&!document.documentElement.dataset.leaving&&Boolean(document.querySelector('.footer'))"),'Navigation incomplete');
+  await until(()=>evaluate("document.readyState==='complete'&&!document.documentElement.dataset.leaving&&Boolean(document.querySelector('.footer,.workspace-footer'))"),'Navigation incomplete');
  }
  const text=()=>evaluate('document.body.innerText');
  const waitText=word=>until(async()=>(await text()).includes(word),'Missing '+word);
@@ -66,7 +66,7 @@ try {
  async function shellCheck(width){
   assert(await evaluate('document.documentElement.scrollWidth<=innerWidth'),`Horizontal overflow ${width}`);
   assert(await evaluate("document.querySelectorAll('main').length===1&&document.querySelectorAll('#main-content').length===1"),'Duplicate main');
-  assert(await evaluate("document.querySelectorAll('header.nav-shell').length===1&&document.querySelectorAll('footer.footer').length===1"),'Duplicate chrome');
+  assert(await evaluate("document.querySelectorAll('header.nav-shell').length===1&&document.querySelectorAll('footer.footer,footer.workspace-footer').length===1"),'Duplicate chrome');
   assert(!await evaluate("Boolean(document.querySelector('.student-nav'))"),'Old mobile navigation remains');
  }
  await mock();
@@ -94,7 +94,7 @@ try {
  assert(await evaluate("document.querySelector('#site-mobile-menu a[href=\"/orders\"]')!==null"),'History destination wrong');
  await mock({...user,managed_restaurant_id:'1',capabilities:['buy','manage_restaurant']});await navigate();await waitText('Quán kiểm thử VJU');await click('.mobile-menu-button');await waitText('Quán của tôi');
  assert(!await evaluate("document.querySelector('#site-mobile-menu').innerText.includes('Mở quán ăn')"),'Owner offered second restaurant');
- await navigate('/owner');await waitText('Chủ quán');await shellCheck(390);await shot('owner-390');
+ await navigate('/owner');await waitText('Tổng quan quán');await shellCheck(390);await shot('owner-390');
  await mock({...user,capabilities:['admin']});await navigate('/admin');await waitText('Quản trị');await shellCheck(390);
  assert(await evaluate("document.querySelectorAll('.notification-bell').length===1"),'Missing or duplicate bells');await shot('admin-390');
  await call('Emulation.setDeviceMetricsOverride',{width:1440,height:900,deviceScaleFactor:1,mobile:false});await navigate('/admin');await shellCheck(1440);await shot('admin-1440');

@@ -51,7 +51,13 @@ try {
  db=await mariadb.createConnection({host:target.hostname,port:Number(target.port||3306),user:decodeURIComponent(target.username),password:decodeURIComponent(target.password),database:target.pathname.slice(1),allowPublicKeyRetrieval:true});
 
  await call('Emulation.setDeviceMetricsOverride',{width:360,height:900,deviceScaleFactor:1,mobile:true});
- await navigate('/login?returnTo=/owner');await waitText('Chào mừng bạn trở lại.');await fill('#username','browser_manager');await fill('#password','synthetic browser passphrase');await submit();await waitText('Thiết lập quán');await waitText('Hồ sơ công khai');
+ await navigate('/login?returnTo=/owner/settings');await waitText('Chào mừng bạn trở lại.');await fill('#username','browser_manager');await fill('#password','synthetic browser passphrase');await submit();await waitText('Thiết lập quán');await waitText('Hồ sơ công khai');
+ stage='personal-profile';await navigate('/account');await waitText('Tài khoản của tôi');
+ assert(await evaluate("document.querySelector('[data-workspace]').dataset.workspace==='personal'"),'Owner profile has management navigation');
+ await evaluate("document.querySelector('#profile-name').select()");await fill('#profile-name','Chủ quán hồ sơ cá nhân kiểm thử');await fill('#profile-phone','0900000001');await evaluate("document.querySelector('.personal-profile-card form').requestSubmit()");await waitText('Đã lưu thông tin.');
+ const savedProfile=(await db.query("SELECT display_name,phone FROM accounts WHERE login_identifier='browser_manager'"))[0];assert(savedProfile.display_name==='Chủ quán hồ sơ cá nhân kiểm thử'&&savedProfile.phone==='0900000001','Personal profile did not persist');
+ await navigate('/account');await waitText('Chủ quán hồ sơ cá nhân kiểm thử');assert(await evaluate("document.querySelector('#profile-phone').value==='0900000001'"),'Personal profile reload lost phone');await snapshot('workspace-profile-connected-360');
+ await navigate('/owner/settings');await waitText('Hồ sơ công khai');
  stage='uiux-settings-drafts';
  await evaluate("document.querySelector('[name=name]').select()");
  await fill('[name=name]','Bản nháp tên chưa lưu');
@@ -69,7 +75,7 @@ try {
  await evaluate("Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Thêm khoảng giờ').click()");await evaluate("Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Lưu giờ mở cửa').click()");await waitText('Kiểm tra thông tin');
  await call('Input.dispatchKeyEvent',{type:'keyDown',key:'Tab',code:'Tab',windowsVirtualKeyCode:9});await call('Input.dispatchKeyEvent',{type:'keyUp',key:'Tab',code:'Tab',windowsVirtualKeyCode:9});assert(await evaluate('document.activeElement!==document.body'),'Keyboard focus missing');
  for(const width of [360,390,768,1024,1440]){await call('Emulation.setDeviceMetricsOverride',{width,height:900,deviceScaleFactor:1,mobile:width<768});assert(await evaluate('document.documentElement.scrollWidth<=innerWidth'),'Settings overflow '+width);await snapshot('p11-settings-'+width);}
- assert(orderRequests.length===0,'Unexpected order request');console.log('P11 connected Chrome PASS profile save, missing readiness, overlap validation, keyboard, five widths: '+screenshots);
+ assert(orderRequests.length===0,'Unexpected order request');console.log('P11 + workspace connected Chrome PASS personal profile persistence/reload, restaurant profile save, missing readiness, overlap validation, keyboard, five widths: '+screenshots);
 
 } catch(error) { await captureFailure?.().catch(()=>{}); console.error('Stage: '+stage);console.error(String(error)); console.error(backend.log().slice(-1200));process.exitCode=1; }
 finally {await db?.end();socket?.close();for(const child of children)child.kill('SIGTERM');await delay(400);await rm(profile,{recursive:true,force:true});}

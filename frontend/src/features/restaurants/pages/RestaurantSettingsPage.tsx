@@ -8,6 +8,14 @@ import {Input} from '../../../shared/ui/Input'
 export function RestaurantSettingsPage({renderSetup}:{renderSetup?:(id:string,version:number)=>ReactNode}){
  const [data,setData]=useState<Settings|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[notice,setNotice]=useState('')
  const errorRef=useRef<HTMLParagraphElement>(null)
+ const loaded=Boolean(data)
+ useEffect(()=>{
+  if(!loaded)return
+  const reveal=()=>{const target=document.getElementById(window.location.hash.slice(1));if(target){target.scrollIntoView({block:'start'});target.setAttribute('tabindex','-1');target.focus({preventScroll:true})}}
+  const frame=requestAnimationFrame(reveal)
+  window.addEventListener('hashchange',reveal)
+  return()=>{cancelAnimationFrame(frame);window.removeEventListener('hashchange',reveal)}
+ },[loaded])
  useEffect(()=>{if(error)errorRef.current?.focus()},[error])
  const load=()=>{setError('');settingsApi.own().then(setData).catch(e=>setError(requestMessage(e)))}
  useEffect(()=>{let active=true;settingsApi.own().then(v=>{if(active)setData(v)}).catch(e=>{if(active)setError(requestMessage(e))});return()=>{active=false}},[])
@@ -17,13 +25,13 @@ export function RestaurantSettingsPage({renderSetup}:{renderSetup?:(id:string,ve
   try{const saved=await settingsApi.save(data.id,{expected_version:data.version,...body});setData(saved);setNotice('Đã lưu '+scope+'.');return saved}
   catch(e){setError(scope+': '+requestMessage(e))}finally{setBusy(false)}
  }
- return <section className="settings-page"><h1>Thiết lập quán</h1>{error&&<p ref={errorRef} tabIndex={-1} role="alert">{error}</p>}<button onClick={load} disabled={busy}>Tải lại thiết lập</button>{notice&&<p role="status">{notice}</p>}{!data?<p role="status">Đang tải thiết lập…</p>:<>
+ return <section className="settings-page"><h1>Thiết lập quán</h1>{error&&<p ref={errorRef} tabIndex={-1} role="alert">{error}</p>}<button onClick={load} disabled={busy}>Tải lại thiết lập</button>{notice&&<p role="status">{notice}</p>}{!data?!error&&<p role="status">Đang tải thiết lập…</p>:<>
  <h2>{data.name}</h2><p>{data.readiness==='ready'?'Đã đủ cấu hình':'Cần hoàn thiện cấu hình'} · {data.is_active?'Đã được kích hoạt':'Chờ Admin kích hoạt'}</p>
  {renderSetup?.(data.id,data.version)}
  <div id="profile"/><ProfileForm key={'profile'+data.id} initial={data} busy={busy} save={body=>save(body,'hồ sơ quán')}/>
  <StorefrontForm key={'storefront'+data.id} initial={data} busy={busy} save={body=>save(body,'ảnh bìa và giới thiệu')}/>
  <div id="hours"/><HoursForm key={'hours'+data.id} initial={data.hours} busy={busy} save={hours=>save({hours},'giờ mở cửa')}/>
- <button id="accepting" disabled={busy||(!data.is_accepting_orders&&(data.readiness!=='ready'||!data.is_active))} onClick={()=>void save({is_accepting_orders:!data.is_accepting_orders},'trạng thái nhận đơn')}>{data.is_accepting_orders?'Tạm ngừng nhận đơn':'Bật nhận đơn'}</button>
+ <div id="accepting" role="group" aria-label="Trạng thái nhận đơn"><button disabled={busy||(!data.is_accepting_orders&&(data.readiness!=='ready'||!data.is_active))} onClick={()=>void save({is_accepting_orders:!data.is_accepting_orders},'trạng thái nhận đơn')}>{data.is_accepting_orders?'Tạm ngừng nhận đơn':'Bật nhận đơn'}</button></div>
  </>}</section>
 }
 

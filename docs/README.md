@@ -33,6 +33,7 @@ Requirements govern behavior; architecture boundaries, database storage and API 
 | How is sell readiness configured? | [V0.4 setup contract](restaurant-setup-v04-contract.md), [local verification](setup-local-verification.md) |
 | How do restaurant cover/introduction and the new detail page work? | [Approved Figma storefront and interfaces](ui/restaurant-detail-figma.md), [verification](ui/restaurant-detail-verification.md) |
 | How does the redesigned cart handle real fees, undo and checkout handoff? | [Cart design and verification](ui/cart-figma.md) |
+| How are personal accounts and restaurant management separated? | [Approved account/owner workspaces and verification](ui/workspaces-figma.md) |
 | How should screens look and behave? | UI §§1–13, [design coordination](ui/design-skills.md), [original HTML](ui/Hoa%20Lac%20Food%20Ordering%20Platform.html) |
 | How are the scoped UI/UX defect fixes reproduced? | [UI/UX fix verification](uiux-fixes-local-verification.md) |
 | What is implemented or tested? | [Implementation/evidence](implementation-status.md), [historical fixture report](ui/student-discovery-verification.md), [legacy verification archive](history/legacy-verification.md), [documentation checks](documentation-verification.md) |

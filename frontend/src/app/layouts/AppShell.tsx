@@ -4,6 +4,8 @@ import { SiteHeader } from './SiteHeader'
 import { SiteFooter } from './SiteFooter'
 import './figma-home.css'
 import './site-shell.css'
-export function AppShell({ children, user, pending, cartCount, path, onOpenCart }: { children: ReactNode; user: User | null; pending: boolean; cartCount: number; path: string; onOpenCart?: () => void }) {
-  return <div className="app-shell"><a className="skip-link" href="#main-content">Đến nội dung chính</a><SiteHeader key={user?.id ?? 'guest'} user={user} pending={pending} cartCount={cartCount} path={path} onOpenCart={onOpenCart} /><div className="app-body">{children}</div><SiteFooter user={user} compact={!/^\/(owner|admin)(\/|$)/.test(path) && !(['/account','/notifications','/support','/privacy'].includes(path) && Boolean(user?.managed_restaurant_id || user?.capabilities.includes('admin')))} /></div>
+const currentYear = new Date().getFullYear()
+export function AppShell({ children, user, pending, cartCount, path, onOpenCart, onLogout }: { children: ReactNode; user: User | null; pending: boolean; cartCount: number; path: string; onOpenCart?: () => void; onLogout: () => Promise<void> }) {
+  const workspace = !user?.capabilities.includes('admin') && (/^\/owner(?:\/|$)/.test(path) || ['/account', '/notifications', '/support', '/privacy', '/orders'].includes(path) || /^\/orders\/[1-9][0-9]*$/.test(path))
+  return <div className={`app-shell${workspace ? ' app-shell--workspace' : ''}`}><a className="skip-link" href="#main-content">Đến nội dung chính</a><SiteHeader key={user?.id ?? 'guest'} user={user} pending={pending} cartCount={cartCount} path={path} onOpenCart={onOpenCart} onLogout={onLogout} /><div className="app-body">{children}</div>{workspace ? <footer className="workspace-footer">© {currentYear} Hoa Lac Food · VJU, Hòa Lạc</footer> : <SiteFooter user={user} compact={!/^\/(owner|admin)(\/|$)/.test(path) && !(['/account','/notifications','/support','/privacy'].includes(path) && Boolean(user?.capabilities.includes('admin')))} />}</div>
 }

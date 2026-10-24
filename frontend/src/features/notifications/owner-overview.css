@@ -1,0 +1,68 @@
+.owner-overview-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; }
+.managed-restaurant { display: flex; align-items: center; gap: 12px; max-width: 320px; min-width: 220px; padding: 12px; border: 1px solid var(--color-surface-line); border-radius: 15px; background: var(--color-surface); }
+.managed-restaurant > span { display: grid; place-items: center; flex: 0 0 40px; height: 40px; border-radius: 11px; color: var(--color-brand-dark); background: var(--color-brand-tint); }
+.managed-restaurant small, .managed-restaurant strong { display: block; }
+.managed-restaurant small { color: var(--color-ink-muted); font-size: 11px; }
+.managed-restaurant strong { margin-top: 4px; font-size: 13px; overflow-wrap: anywhere; }
+.owner-status-banner { display: flex; align-items: center; gap: 20px; margin-bottom: 24px; padding: 28px; border-radius: 23px; background: var(--color-ink); color: var(--color-surface); box-shadow: 0 18px 38px rgb(37 32 29 / .13); }
+.owner-banner-mark { width: 56px; height: 56px; display: grid; place-items: center; flex: 0 0 auto; border: 1px solid rgb(255 255 255 / .16); border-radius: 17px; background: rgb(255 255 255 / .08); color: var(--color-focus-ring); }
+.owner-banner-mark .icon { width: 30px; height: 30px; }
+.owner-banner-copy { min-width: 0; flex: 1; }
+.owner-banner-copy > span { color: var(--color-focus-ring); font-size: 12px; font-weight: 700; overflow-wrap: anywhere; }
+.owner-banner-copy h2 { margin: 7px 0 9px; font-size: clamp(20px, 2vw, 25px); line-height: 1.35; font-weight: 500; letter-spacing: -.5px; }
+.owner-banner-copy p { font-size: 12px; color: var(--color-owner-sidebar-ink); opacity: .9; }
+.owner-banner-status { max-width: 240px; text-align: right; flex-shrink: 0; }
+.owner-banner-status button { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin: 8px 0 0 auto; min-height: 44px; background: none; border: 0; color: var(--color-owner-sidebar-ink); font-size: 12px; }
+.owner-banner-status button:disabled { opacity: .7; }
+.owner-overview-grid { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(265px, .7fr); gap: 22px; align-items: start; }
+.owner-readiness { padding: 27px; }
+.owner-readiness-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
+.owner-readiness h2 { font-size: 23px; font-weight: 500; letter-spacing: -.6px; line-height: 1.35; margin-bottom: 8px; }
+.owner-readiness-head p { color: var(--color-ink-muted); font-size: 12px; }
+.readiness-ring { width: 70px; height: 70px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 50%; background: conic-gradient(var(--color-fresh) var(--readiness-progress), var(--color-fresh-tint) 0); }
+.readiness-ring > div { width: 60px; height: 60px; display: grid; align-content: center; text-align: center; border-radius: 50%; background: var(--color-surface); }
+.readiness-ring strong { font-size: 16px; }
+.readiness-ring span { font-size: 9px; color: var(--color-ink-muted); }
+.readiness-progress { display: block; appearance: none; width: 100%; height: 5px; margin: 22px 0 14px; border: 0; border-radius: 999px; overflow: hidden; background: var(--color-surface-sunk); color: var(--color-fresh); }
+.readiness-progress::-webkit-progress-bar { background: var(--color-surface-sunk); }
+.readiness-progress::-webkit-progress-value { background: var(--color-fresh); border-radius: 999px; transition: width .24s ease; }
+.readiness-progress::-moz-progress-bar { background: var(--color-fresh); border-radius: 999px; }
+.overview-availability { color: var(--color-ink-muted); font-size: 11px; margin-bottom: 8px; }
+.readiness-steps { list-style: none; padding: 0; margin: 0; }
+.readiness-step { display: flex; align-items: center; gap: 12px; padding: 18px 0; border-bottom: 1px solid var(--color-surface-line); }
+.readiness-step:last-child { border-bottom: 0; padding-bottom: 0; }
+.readiness-step-icon { width: 36px; height: 36px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 11px; }
+.readiness-step-icon--done, .readiness-badge--done { color: var(--color-fresh-ink); background: var(--color-fresh-tint); }
+.readiness-step-icon--todo, .readiness-badge--todo { color: var(--color-warn); background: var(--color-warn-tint); }
+.readiness-step-icon--waiting, .readiness-badge--waiting { color: var(--color-ink-muted); background: var(--cream-dark); }
+.readiness-badge { display: inline-flex; align-items: center; padding: 5px 9px; border-radius: 999px; font-size: 10px; font-weight: 700; line-height: 1.4; }
+.readiness-step-copy { min-width: 0; flex: 1; }
+.readiness-step-copy > div { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.readiness-step-copy h3 { font-size: 13px; font-weight: 700; }
+.readiness-step-copy p { color: var(--color-ink-muted); font-size: 11px; line-height: 1.6; margin-top: 6px; overflow-wrap: anywhere; }
+.readiness-action { display: inline-flex; align-items: center; justify-content: center; gap: 3px; min-height: 44px; padding: 8px; border-radius: 9px; background: var(--color-brand-tint); color: var(--color-brand-dark); font-size: 11px; font-weight: 700; }
+.readiness-action .icon { width: 15px; height: 15px; }
+.readiness-action:hover { background: var(--color-brand-dark); color: var(--color-surface); }
+.owner-quick-actions { padding: 24px; }
+.owner-shortcut { display: flex; align-items: center; gap: 12px; padding: 17px 0; border-bottom: 1px solid var(--color-surface-line); }
+.owner-shortcut > span { display: grid; place-items: center; width: 38px; height: 38px; flex: 0 0 auto; border-radius: 10px; background: var(--cream-dark); color: var(--color-brand-dark); transition: background .18s, color .18s; }
+.owner-shortcut > div { flex: 1; min-width: 0; }
+.owner-shortcut strong, .owner-shortcut small { display: block; }
+.owner-shortcut strong { font-size: 12px; }
+.owner-shortcut small { color: var(--color-ink-muted); font-size: 10px; margin-top: 4px; }
+.owner-shortcut > .icon { width: 16px; height: 16px; }
+.owner-shortcut:hover > span { background: var(--color-brand-dark); color: var(--color-surface); }
+.owner-support-note { display: flex; align-items: flex-start; gap: 10px; margin-top: 20px; padding: 18px; border-radius: 13px; background: var(--color-ink); color: var(--color-surface); }
+.owner-support-note > .icon { flex-shrink: 0; color: var(--color-focus-ring); }
+.owner-support-note strong { font-size: 12px; }
+.owner-support-note p { color: var(--color-owner-sidebar-ink); font-size: 10px; line-height: 1.6; margin-top: 7px; }
+.overview-error { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 24px; padding: 20px; border: 1px solid var(--color-surface-line); border-radius: 14px; background: var(--color-warn-tint); color: var(--color-warn); font-size: 13px; }
+.overview-error > .icon { flex-shrink: 0; }
+.overview-error button { min-height: 44px; margin-top: 8px; text-decoration: underline; font-weight: 700; }
+.overview-loading { display: grid; gap: 20px; color: var(--color-ink-muted); font-size: 13px; }
+.overview-skeleton { height: 100px; border-radius: 22px; background: var(--color-surface-sunk); animation: overview-pulse 1.4s ease-in-out infinite alternate; }
+.overview-skeleton--banner { height: 150px; }
+@keyframes overview-pulse { to { opacity: .5; } }
+@media (max-width: 1279px) { .owner-overview-grid { grid-template-columns: minmax(0, 1fr); } .owner-quick-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 20px; } .owner-quick-actions .workspace-card-title, .owner-support-note { grid-column: 1 / -1; } .owner-status-banner { flex-wrap: wrap; } .owner-banner-status { max-width: none; width: 100%; display: flex; align-items: center; justify-content: space-between; text-align: left; } .owner-banner-status button { margin: 0; } }
+@media (max-width: 767px) { .owner-overview-heading { flex-direction: column; align-items: stretch; gap: 20px; } .managed-restaurant { max-width: none; min-width: 0; } .owner-status-banner { padding: 22px; gap: 14px; } .owner-banner-copy { flex-basis: calc(100% - 70px); } .owner-banner-status { flex-wrap: wrap; gap: 8px; } .owner-banner-status .readiness-badge { max-width: 100%; } .owner-readiness { padding: 22px 17px; } .owner-readiness h2 { font-size: 21px; } .readiness-step { gap: 10px; align-items: flex-start; flex-wrap: wrap; } .readiness-step-copy > div { align-items: flex-start; flex-direction: column; gap: 6px; } .readiness-action { margin-left: 46px; } .owner-quick-actions { display: block; padding: 22px; } }
+@media (prefers-reduced-motion: reduce) { .overview-skeleton { animation: none; } }

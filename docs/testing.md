@@ -345,3 +345,7 @@ NOTIFY-01 covers real MySQL9.2.0 scoped inbox/read-loaded races, bootstrap dedup
 ## Scoped restaurant storefront evidence
 
 [October24 storefront verification](ui/restaurant-detail-verification.md) records CAT-01/AUTH-02/CART-01/PRICE-01 coverage, exact commands, controlled-browser versus real-MySQL/MinIO/Chrome boundaries, upgrade preservation and restricted-runtime evidence. It does not establish retained migration or release acceptance.
+
+## Scoped account and owner workspace evidence
+
+[Account/owner verification](ui/workspaces-figma.md) covers the separated shells, five-width rendering, profile validation/save/conflict, checklist refresh, native mobile drawer, safe return and legacy settings anchors. `npm --prefix frontend run test:workspaces` uses isolated Chrome with controlled API responses. Existing `test:settings` additionally checks actual account-profile save/reload against its disposable MySQL backend; `test:setup` verifies readiness and explicit receiving through real APIs. These are scoped UI checks, not release acceptance.

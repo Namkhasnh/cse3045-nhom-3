@@ -151,6 +151,9 @@ The user approved the linked Figma Make homepage and its desktop/mobile CSS moti
 
 ### 5.8. Approved Figma Restaurant Detail — October 24, 2026
 The user approved the [restaurant storefront, owner content and compact buyer-footer contract](restaurant-detail-figma.md), including the shared-cart drawer. It supersedes the previous menu presentation and buyer footer only; public data, explicit consent, existing header and management identity remain authoritative. The [approved cart redesign and verification](cart-figma.md) extends `/cart` with the matching layout, real fee lookup, account-scoped point handoff and five-second undo; checkout consent remains explicit.
+### 5.9. Approved Personal and Owner Workspaces — October 24, 2026
+The user approved separate `/account` and `/owner` workspaces from Figma Make, with shared navigation changes and existing business-page contents retained. [Workspace design and verification](workspaces-figma.md) owns the scoped implementation. It supersedes §6.2's dark owner sidebar with a light, grouped, collapsible sidebar, a dark operational banner, and separate personal navigation. Admin keeps its existing shell. Configuration forms move to `/owner/settings`; original setup anchors remain compatible. Progress and status come from the current backend guide; the one-restaurant limit remains authoritative.
+
 ## 6. Layout and Responsive Behavior
 The visual treatments below describe the current baseline; approved identity revisions must retain role clarity, responsive behavior and accessible navigation.
 ### 6.1. Student — `StudentLayout`

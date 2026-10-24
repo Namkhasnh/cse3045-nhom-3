@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react'
 import type { User } from '../../features/auth'
+import { WorkspaceLayout } from './WorkspaceLayout'
 
 export function RoleLayout({ user, children, title, path }: { user: User; children: ReactNode; title: string; path: string }) {
+  if (!user.capabilities.includes('admin')) return <WorkspaceLayout user={user} path={path} owner={Boolean(user.managed_restaurant_id)}>{children}</WorkspaceLayout>
   const home = user.capabilities.includes('admin') ? '/admin' : '/owner'
   return <div className={`role-layout role-layout--${user.capabilities.includes('admin') ? 'admin' : 'restaurant_owner'}`}>
     <aside className="role-sidebar" aria-label="Điều hướng">
