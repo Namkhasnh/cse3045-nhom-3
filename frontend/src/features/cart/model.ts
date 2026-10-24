@@ -3,7 +3,7 @@ export const CART_STORAGE_KEY = 'hlf.cart.v1'
 export type CartItem = { id: string; name: string; quantity: number; acceptedPriceVnd: string }
 export type CartDraft = { version: 1; restaurant: { id: string; name: string }; items: CartItem[] }
 export type CartRestaurant = { id: string; name: string; is_active: boolean; is_open: boolean; is_accepting_orders: boolean }
-export type CartDish = { id: string; restaurant_id: string; name: string; price_vnd: string; is_available: boolean }
+export type CartDish = { id: string; restaurant_id: string; name: string; price_vnd: string; is_available: boolean; description?: string; image_reference?: string | null }
 export type CartCatalog = { restaurant(id: string, signal?: AbortSignal): Promise<CartRestaurant>; dish(id: string, signal?: AbortSignal): Promise<CartDish> }
 const id = (v: unknown): v is string => typeof v === 'string' && /^[1-9][0-9]{0,18}$/.test(v) && BigInt(v) <= 9223372036854775807n
 const money = (v: unknown): v is string => typeof v === 'string' && /^(0|[1-9][0-9]{0,9})$/.test(v) && BigInt(v) <= 1000000000n
@@ -30,6 +30,12 @@ export function itemCount(draft: CartDraft | null) { return draft?.items.reduce(
 export function subtotal(draft: CartDraft | null): string {
   return (draft?.items.reduce((n, i) => n + BigInt(i.acceptedPriceVnd) * BigInt(i.quantity), 0n) ?? 0n).toString()
 }
+export function orderabilityReason(restaurant: CartRestaurant): string {
+  if (!restaurant.is_active) return 'Quán hiện không hoạt động.'
+  if (!restaurant.is_open) return 'Quán đã đóng cửa theo giờ mở cửa. Bạn có thể giữ giỏ và quay lại khi quán mở.'
+  if (!restaurant.is_accepting_orders) return 'Quán đang tạm ngưng nhận đơn.'
+  return ''
+}
 export function orderable(restaurant: CartRestaurant) { return restaurant.is_active && restaurant.is_open && restaurant.is_accepting_orders }
 function checked(draft: CartDraft): CartDraft {
   const valid = parseDraft(JSON.stringify(draft))
@@ -53,13 +59,18 @@ export function removeItem(draft: CartDraft, id: string): CartDraft | null {
   return items.length ? { ...draft, items } : null
 }
 
-export type CartState = { draft: CartDraft | null; notice: string; pending: { restaurant: CartRestaurant; dish: CartDish } | null }
+export type CartState = { draft: CartDraft | null; notice: string; pending: { restaurant: CartRestaurant; dish: CartDish } | null; undo?: { draft: CartDraft; name: string; expiresAt: number } }
 export type CartAction = { type: 'add'; restaurant: CartRestaurant; dish: CartDish }
-  | { type: 'quantity'; id: string; quantity: number } | { type: 'remove'; id: string }
+  | { type: 'undo-remove' | 'expire-undo'; now?: number }
+  | { type: 'quantity'; id: string; quantity: number } | { type: 'remove'; id: string; now?: number }
   | { type: 'replace'; draft: CartDraft | null } | { type: 'clear' | 'cancel-switch' | 'confirm-switch' }
   | { type: 'accept-prices'; restaurantId: string; prices: Record<string, string> }
 // Resolve queued actions against the latest state, including rapid repeated clicks.
 export function cartReducer(state: CartState, action: CartAction): CartState {
+  const previousUndo = state.undo
+  if (action.type === 'expire-undo') return previousUndo && previousUndo.expiresAt <= (action.now ?? Date.now()) ? { ...state, undo: undefined } : state
+  state = { ...state, undo: undefined }
+  if (action.type === 'undo-remove') return previousUndo && previousUndo.expiresAt > (action.now ?? Date.now()) ? { ...state, draft: previousUndo.draft, notice: 'Đã khôi phục món. Giá và tình trạng món sẽ được kiểm tra lại.' } : state
   const { draft } = state
   try {
     switch (action.type) {
@@ -69,7 +80,7 @@ export function cartReducer(state: CartState, action: CartAction): CartState {
         return { ...state, draft: addDish(draft, action.restaurant, action.dish), notice: `Đã thêm ${action.dish.name} vào giỏ.` }
       }
       case 'quantity': return draft ? { ...state, draft: setQuantity(draft, action.id, action.quantity), notice: '' } : state
-      case 'remove': return draft ? { ...state, draft: removeItem(draft, action.id), notice: '' } : state
+      case 'remove': return draft && draft.items.some(i => i.id === action.id) ? { ...state, draft: removeItem(draft, action.id), notice: '', undo: { draft, name: draft.items.find(i => i.id === action.id)!.name, expiresAt: (action.now ?? Date.now()) + 5000 } } : state
       case 'clear': return { draft: null, notice: 'Đã xóa giỏ.', pending: null }
       case 'replace': return { draft: action.draft, notice: '', pending: null }
       case 'cancel-switch': return { ...state, pending: null }

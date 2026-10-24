@@ -1,0 +1,133 @@
+{
+  "date_vietnam": "2026-10-23",
+  "target_demo_date": "2026-10-24",
+  "origin": "https://sv26.bcse-vju.com",
+  "authorization": [
+    "Academic MVP demo deployment requested",
+    "Existing sv26 hostname switch with rollback approved",
+    "Encrypted source SMTP/MFA plus local media transfer explicitly approved after automatic-review rejection",
+    "Temporary public Cloudflare encrypted-file transfer explicitly approved after automatic-review rejection"
+  ],
+  "live_user_metadata": {
+    "site": "/etc/nginx/sites-enabled/hlf",
+    "server_name": "sv26.bcse-vju.com",
+    "listen": [
+      "80",
+      "[::]:80"
+    ],
+    "old_root": "/var/www/hlf",
+    "containers_reported": [
+      "hlf-mysql mysql:9.2.0 127.0.0.1:3306"
+    ]
+  },
+  "local_probe": {
+    "result": "PASS",
+    "mode": "LOCAL PROBE",
+    "stage": "complete",
+    "release": "9b7dd1fc-0070-4f83-9fdf-81487c109bda",
+    "application_started": true,
+    "http": {
+      "catalog": 200,
+      "anonymous_me": 401,
+      "invalid_login": 401
+    },
+    "objects": 205,
+    "tables": 62,
+    "rows": 203,
+    "stats": [
+      "hlf-demo-probe-db-9b7dd1fc-0070-4f83-9fdf-81487c109bda | 223.7MiB / 384MiB",
+      "hlf-demo-probe-api-9b7dd1fc-0070-4f83-9fdf-81487c109bda | 220.8MiB / 384MiB",
+      "hlf-demo-probe-s3-9b7dd1fc-0070-4f83-9fdf-81487c109bda | 96.82MiB / 192MiB"
+    ],
+    "finished_at": "2026-10-23T12:32:35.375Z"
+  },
+  "local_probe_secret_scope": "Synthetic MFA/SMTP runtime values only; original secrets remain encrypted on Mac",
+  "preparation": {
+    "result": "PASS",
+    "object_count": 205,
+    "bucket_count": 2,
+    "encrypted_private_data_bytes": 6773164,
+    "original_age_identity_included": false,
+    "private_config_is_separate": true
+  },
+  "delivery": {
+    "format": "hlf-demo-delivery-v1",
+    "iv": "9c1beab07bf5351fcd6c0436",
+    "tag": "adb3d2ba9cc0532b856abd278c26d743",
+    "sha256": "ce86373fbfd1713929deded3395dfc6dfbef3341a90b72c7127f36f0c2707cf6",
+    "bytes": 259482323,
+    "key_in_delivery": false,
+    "original_age_identity_in_delivery": false,
+    "endpoint": "Authorized temporary Cloudflare ciphertext-only download; close after confirmed VPS download",
+    "head_http": 200,
+    "endpoint_shutdown": "CLOSED after user reported authenticated encrypted bundle and no concurrent transfer; SIGTERM exact tunnel/file-server PIDs"
+  },
+  "source_sha256": {
+    "ops/demo/test_nginx.py": "b8e9cbcf3d3baf1068716afc99e913526b62aa531445a19b67b2dde6a6fc880b",
+    "ops/demo/switch-nginx.py": "78146a842c9f521b43a897ea577a9810ba32f8feb54032678de0ed42c36f9bf6",
+    "ops/demo/package.mjs": "54943853eebdb3f42139c723391cb15f9049df1fb44964f46cd9f46ae4620f90",
+    "ops/demo/install.mjs": "e47d798392813955fb2cbb11f16df490366742a8c0ba74bae18149d6e4dad8cf",
+    "ops/demo/file-server.mjs": "cced2266f840d85cbace6d473edb4b23cb550d01435024eb51dd62775c5c41ce",
+    "ops/demo/prepare.mjs": "28af8640de0d7385eeed371348b9e6506f597ccc5fee5b789d52952003b23a22",
+    "ops/demo/bootstrap.mjs": "60a4e26898f59fc5187c356af0b5b2c77a240082720baf61ad92205d09dff37d",
+    "ops/demo/rollback.sh": "4417209aca371181f3a960f16cd0cf069bb0b54fa47a3855c96dbde8a60660a7"
+  },
+  "checks": [
+    "Full Docker local stack probe PASS",
+    "Three Python routing tests PASS",
+    "Scoped ESLint/Node/shell syntax PASS",
+    "Archive/source/key exclusion PASS"
+  ],
+  "remote_deploy": {
+    "result": "PASS",
+    "stage": "complete",
+    "url": "https://sv26.bcse-vju.com",
+    "evidence": "User-reported final targeted repair output; followed by independent public HTTPS checks"
+  },
+  "public_browser": {
+    "result": "PASS for public discovery/menu rendering",
+    "browser": "Native Microsoft Edge via CUA",
+    "observed": [
+      "Homepage lists one source sample restaurant and four dishes",
+      "Restaurant menu renders source prices and add-to-cart controls",
+      "Source sample-data labels and missing-image placeholders remain visible",
+      "Login username/password form renders; no authentication attempted"
+    ],
+    "authenticated_three_role_journeys": "NOT RUN on VPS; prior local evidence is separate",
+    "mobile_viewport": "NOT RUN on VPS"
+  },
+  "scheduler": "NOT CONFIGURED",
+  "v09_v10_acceptance": "NOT ACCEPTED; academic demo is a separate scope",
+  "nginx_repair": {
+    "cause": "Node fetch ignores supplied Host; local correct-host server reproduces original421/fixed explicit HTTP200",
+    "user_error": "NGINX_SWITCH_FAILED: Invalid mode or existing route handoff; inspect before reuse",
+    "scope": "Archive prior owned rollback record only if current config equals preserved original; reapply only selected host; explicit http.client Host smoke; rollback on failed smoke; no DB/media reimport",
+    "source_sha256": "7620c93ce657f1cc2221feb2eb29272fae54d4ee94cc2ef9bda1dbc444115de4",
+    "remote_result": "PASS: demo hostname switched; previous configuration saved. User reported result PASS/stage complete after bounded-readiness repair.",
+    "actual_nginx_probe": {
+      "result": "PASS",
+      "nginx": "1.24.0",
+      "immediate_after_reload_http": 200,
+      "bounded_ready_frontend": 200,
+      "bounded_ready_api": 200,
+      "root_marker": true,
+      "scope": "Actual nginx with selected hostname, exact packaged frontend and disposable HTTP API stub; no retained data or VPS mutation"
+    }
+  },
+  "public_probe": {
+    "checked_at_utc": "2026-10-23T14:13:02Z",
+    "login": 200,
+    "restaurants": 200,
+    "restaurant_count": 1,
+    "dishes": 200,
+    "dish_count": 4,
+    "anonymous_me": 401,
+    "javascript": 200,
+    "stylesheet": 200,
+    "asset_bytes_match_package": true,
+    "javascript_sha256": "bcc59ac6f5b6ac2c2abb35df5b0991257261d71327afcc864406d5273a6ef6d7",
+    "stylesheet_sha256": "4d7c49920e79f87929271483a4fe7d96688f4bd1c19afcc6654ef50f60d13988",
+    "html_note": "Cloudflare edge challenge insertion; packaged JS/CSS bytes match exactly",
+    "media": "Public four dishes have null image_reference; browser shows explicit missing-image placeholders. Remote original-object reads NOT RUN."
+  }
+}

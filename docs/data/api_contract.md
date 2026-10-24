@@ -46,6 +46,7 @@ Delivery/gates: [roadmap](../roadmap.md), [decisions](../decisions.md), [current
 - Defaults: `limit=20`, maximum 100; `cursor` is opaque and optional. Use stable **keyset** pagination, not offset/page numbers. Cursor binds filters, sort and authorized scope; reject mismatched/invalid cursor with 422. Lists are live, not a multi-page snapshot.
 - `q` is trimmed, nonempty name-prefix search, maximum 200 characters; case/diacritic matching follows a documented deployment collation (`utf8mb4_0900_ai_ci`, approved October 19). Restaurant category/price filters mean “has a matching visible dish,” not a stored restaurant price. Do not promise fuzzy search.
 - Catalog filters: `restaurant_id` (dishes), `category_id`, `min_price_vnd`, `max_price_vnd`, `is_available` (dishes), `is_open` (restaurants). Price bounds inclusive; minimum ≤ maximum. Public-facing results exclude inactive restaurants/hidden dishes; visible sold-out dishes remain discoverable unless filtered.
+- Category lists accept `public_only=true` for discovery: require a visible dish from an active, ready restaurant, including visible sold-out dishes and closed restaurants. Omitted/false retains the complete taxonomy for menu creation. Cursors bind this filter; other catalog resources reject it. The homepage uses this filtered list.
 - Catalog sort allowlist: `name,-name` and dishes additionally `price_vnd,-price_vnd`; default `name`, with ascending numeric ID as tie-breaker. Orders/ledger/settlements default `-created_at`, descending ID tie-breaker; allowed `created_at,-created_at`. Reject unsupported sort/filter keys.
 - Management filters: restaurant `is_active,owner_id` (admin), dish `is_visible,is_available`, orders `status,payment_status`, entries `kind,assigned`, settlements `restaurant_id`. Every query remains server-scoped to the actor.
 - Time filters use inclusive `from` and exclusive `to` instants. Orders use `created_at`, completed-order reports use `completed_at`, entries use `created_at`, receipts use `received_at`; these are not interchangeable settlement-membership rules. Monthly boundaries are converted from local business time to UTC.
@@ -145,7 +146,7 @@ The five public GET operations below are enabled in V0.2 and described by [OpenA
 | Menu context; US03 | GET `/restaurants/{restaurant_id}` | B | Path ID | 200 `One<Restaurant>` | 404 hidden/missing → browse | None | R |
 | Discover/menu dishes; US02–03 | GET `/dishes` | B | Catalog query; `restaurant_id` selects menu | 200 `List<Dish>` | 422 filters → fix | None; visible catalog only | R |
 | Dish detail; US03 | GET `/dishes/{dish_id}` | B | Path ID | 200 `One<Dish>` | 404 hidden/inactive parent/missing | None | R |
-| Category choices; FR02/07 | GET `/dish-categories` | B | `limit,cursor,sort=name` | 200 `{"data":[{"id":"2","name":"Rice"}],"page":{"next_cursor":null,"has_more":false}}` | Common errors | None; taxonomy/write permissions TBD | R |
+| Category choices; FR02/07 | GET `/dish-categories` | B | `limit,cursor,sort=name,public_only` | 200 `{"data":[{"id":"2","name":"Rice"}],"page":{"next_cursor":null,"has_more":false}}` | Common errors | None; taxonomy/write permissions TBD | R |
 | Current management context; US12 | GET `/owner/restaurants` | O capability | List query | 200 `List<Restaurant>` with `owner_id` | Common errors | None; zero or one current active/inactive/setup-required restaurant; no switcher | R |
 | Operate own restaurant; US12 | PATCH `/owner/restaurants/{restaurant_id}` | O | `RestaurantOwnerPatch` | 200 `One<Restaurant>` management projection | 409 version; 422 hours → fix | Operational fields/hours only, invalidate relevant quotes | V |
 | Admin partner list; US16 | GET `/admin/restaurants` | A | List query, admin filters | 200 `List<Restaurant>` management projection | Common errors | None, includes inactive | R |
@@ -409,3 +410,7 @@ P24 report rows/details also return integer `entry_count` so a nonempty net-zero
 ## Onboarding notification extension
 
 US27/FR13/AC18 adds authenticated `/notifications` inbox/summary/detail/read/read-all/setup/tasks interfaces. [Focused contract](../notifications-contract.md) owns closed inputs, bounded pagination, current authority checks, logical mailboxes and loaded-ID read semantics. Reading never performs a business action.
+
+## Optional restaurant storefront extension — October 24
+
+US03/US12 add nullable `description/cover_image_reference` to restaurant detail/catalog DTOs, owner versioned content PATCH, owner cover upload/protected preview and public current-cover bytes. [Storefront interfaces](../ui/restaurant-detail-figma.md#owner-content-contract) define bounds, scope, lifecycle and errors; setup/public catalog OpenAPI include the machine schemas. Blank values select presentation defaults without inventing persisted restaurant facts.

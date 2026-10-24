@@ -16,7 +16,7 @@ export class CatalogService {
 
   private async restaurantDtos(rows: RestaurantRow[]) {
     const hours = rows.length ? await this.repository.hours(rows.map(r => r.id)) : [];
-    return rows.map(r => ({ id: r.id.toString(), name: r.name, address: r.address,
+    return rows.map(r => ({ id: r.id.toString(), name: r.name, description:r.description??null,cover_image_reference:r.cover_media_asset_id==null?null:"/api/v1/restaurant-cover-media/"+r.cover_media_asset_id, address: r.address,
       latitude: r.latitude?.toFixed(6) ?? null, longitude: r.longitude?.toFixed(6) ?? null, contact_phone: r.contact_phone,
       is_active: Boolean(r.is_active), is_accepting_orders: Boolean(r.is_accepting_orders), is_open: Boolean(r.is_open),
       hours: hours.filter(h => h.restaurant_id === r.id).map(({ weekday, opens_at, closes_at, closes_next_day }) => ({ weekday, opens_at, closes_at, closes_next_day })),

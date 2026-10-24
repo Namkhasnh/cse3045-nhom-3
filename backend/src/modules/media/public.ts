@@ -14,3 +14,5 @@ export class MediaService {
  claim(...a:Parameters<MediaRepository['claim']>){return this.repo.claim(...a);}
  deleted(...a:Parameters<MediaRepository['deleted']>){return this.repo.deleted(...a);}
 }
+
+export {CoverMediaService,coverDto,coverReference} from './cover-public.js';

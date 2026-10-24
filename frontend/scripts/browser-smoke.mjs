@@ -47,7 +47,7 @@ try {
   }
   // No auth backend is required: its failure must not gate public discovery.
   const home = await render('/');
-  for (const expected of ['ăn gì ở VJU?', 'Quán quanh VJU', 'href="/login"', 'href="/register"', 'Chưa tải được danh sách quán']) {
+  for (const expected of ['ở VJU?', 'Khám phá quán ăn quanh VJU', 'href="/login"', 'href="/register"', 'Chưa tải được danh sách quán']) {
     if (!home.includes(expected)) throw new Error(`Missing public homepage content: ${expected}`);
   }
   if (home.includes('Đang chuyển trang…')) throw new Error('Public homepage redirected to authentication.');

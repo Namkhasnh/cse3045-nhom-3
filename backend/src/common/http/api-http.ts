@@ -2,7 +2,7 @@ import { json } from 'express';
 import { randomUUID } from 'node:crypto';
 import {
   CallHandler, Catch, type ArgumentsHost, type ExceptionFilter, HttpException,
-  Injectable, type NestInterceptor,
+  Injectable, Logger, type NestInterceptor,
 } from '@nestjs/common';
 import type { INestApplication } from '@nestjs/common';
 import { map, type Observable } from 'rxjs';
@@ -49,6 +49,14 @@ export class ApiExceptionFilter implements ExceptionFilter {
       : typeof object.message === 'string' && status < 500
         ? object.message : status >= 500 ? 'The service is temporarily unavailable.' : 'Request could not be completed.';
     const requestId = randomUUID();
+    if (status >= 500) {
+      const databaseCode = exception && typeof exception === 'object' && 'code' in exception &&
+        typeof exception.code === 'string' && /^P[0-9]{4}$/.test(exception.code) ? exception.code : null;
+      const frames = exception instanceof Error ? (exception.stack?.split('\n').slice(1) ?? [])
+        .flatMap(line => line.match(/(?:src|dist)\/[A-Za-z0-9_./-]+\.(?:js|ts):[0-9]+:[0-9]+/) ?? []).slice(0, 5) : [];
+      // Do not log exception messages, SQL, request bodies, contacts or credentials.
+      Logger.error(JSON.stringify({ request_id: requestId, status, code, database_code: databaseCode, frames }), 'ApiExceptionFilter');
+    }
     response.setHeader('X-Request-Id', requestId);
     response.status(status).json({ error: {
       code, message, field_errors: fieldErrors,
@@ -72,7 +80,7 @@ export class ApiEnvelopeInterceptor implements NestInterceptor {
 export function configureApiHttp(app: INestApplication): void {
   app.use('/api/v1/onboarding-evidence', json({limit:'8mb'}));
   app.use('/api/v1/admin/onboarding-evidence', json({limit:'8mb'}));
-  app.use(/^\/api\/v1\/owner\/restaurants\/[1-9][0-9]*\/dish-media$/, json({limit:'8mb'}));
+  app.use(/^\/api\/v1\/owner\/restaurants\/[1-9][0-9]*\/(dish-media|cover-media)$/, json({limit:'8mb'}));
   app.use(/^\/api\/v1\/owner\/restaurants\/[1-9][0-9]*\/payment-evidence$/, json({limit:'8mb'}));
   app.use(json({limit:'100kb'}));
   app.setGlobalPrefix('api/v1');

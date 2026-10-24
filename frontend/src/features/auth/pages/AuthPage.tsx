@@ -5,6 +5,8 @@ import { Input } from '../../../shared/ui/Input'
 import { authApi, ApiError, type User } from '../api/auth.api'
 
 const errorText: Record<string, string> = {
+  INTERNAL_ERROR: 'Máy chủ gặp lỗi khi đăng nhập. Chưa thể mở phiên; hãy thử lại sau hoặc liên hệ hỗ trợ.',
+  TEMPORARILY_UNAVAILABLE: 'Dịch vụ đăng nhập đang tạm thời không sẵn sàng. Hãy thử lại sau.',
   REQUEST_TIMEOUT: 'Máy chủ phản hồi quá lâu. Hãy kiểm tra kết nối và đăng nhập lại. Yêu cầu không được tự gửi lại.',
   MFA_INVALID: 'Mã MFA không hợp lệ, đã hết hạn hoặc hết lượt thử. Bạn có thể đăng nhập lại.',
   INVALID_CREDENTIALS: 'Tên đăng nhập hoặc mật khẩu chưa đúng.',
@@ -104,7 +106,6 @@ export function AuthPage({ mode, onLogin, onNavigate }: {
   const register = mode === 'register'
   const verify = mode === 'verify'
   return <div className={`auth-shell${mode === 'login' ? ' auth-shell--login' : ''}`}>
-    <a className="skip-link" href="#main-content">Đến nội dung chính</a>
     {mode === 'login' && <aside className="auth-story" aria-hidden="true">
       <div className="auth-story__top">HÒA LẠC FOOD <span>•</span> VJU</div>
       <div className="auth-story__plate"><span className="auth-story__plate-inner" /></div>

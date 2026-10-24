@@ -1,0 +1,9 @@
+{
+  "result": "PASS",
+  "nginx": "1.24.0",
+  "immediate_after_reload_http": 200,
+  "bounded_ready_frontend": 200,
+  "bounded_ready_api": 200,
+  "root_marker": true,
+  "scope": "Actual nginx with selected hostname, exact packaged frontend and disposable HTTP API stub; no retained data or VPS mutation"
+}

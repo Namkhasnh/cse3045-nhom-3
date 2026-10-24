@@ -25,7 +25,11 @@
     "test:finance": "node scripts/browser-finance.mjs",
     "test:finance-unit": "node --test test/finance.test.mjs",
     "test:administration": "node scripts/browser-administration.mjs",
-    "test:recommendations": "node scripts/browser-recommendations.mjs"
+    "test:recommendations": "node scripts/browser-recommendations.mjs",
+    "test:homepage": "node scripts/browser-homepage.mjs",
+    "test:storefront": "node scripts/browser-storefront.mjs",
+    "test:storefront-connected": "node scripts/browser-storefront-connected.mjs",
+    "test:cart-browser": "node scripts/browser-cart.mjs"
   },
   "dependencies": {
     "@fontsource/be-vietnam-pro": "5.3.0",

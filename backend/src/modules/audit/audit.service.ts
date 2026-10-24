@@ -12,7 +12,7 @@ export type AuditEvent = {
   requestId?: string;
 };
 
-const allowedTargets: Record<string,string> = {'order.food_ready':'order','order.transitioned':'order','payment.confirmed':'order','order.created':'order','commission.proposed':'restaurant','commission.confirmed':'restaurant','dish.updated':'dish','dish.removed':'dish','dish.category_updated':'dish_category','dish.image_uploaded':'dish_media','dish.image_deleted':'dish_media','delivery.point_updated':'pickup_point','delivery.proposed':'delivery_proposal','delivery.reviewed':'delivery_proposal', 'restaurant.settings_updated':'restaurant', 'application.submitted':'application','evidence.uploaded':'evidence','evidence.deleted':'evidence','application.reviewed':'application','application.proposed':'application','application.confirmed':'application' };
+const allowedTargets: Record<string,string> = {'order.food_ready':'order','order.transitioned':'order','payment.confirmed':'order','order.created':'order','commission.proposed':'restaurant','commission.confirmed':'restaurant','dish.updated':'dish','dish.removed':'dish','dish.category_updated':'dish_category','dish.image_uploaded':'dish_media','dish.image_deleted':'dish_media','delivery.point_updated':'pickup_point','delivery.proposed':'delivery_proposal','delivery.reviewed':'delivery_proposal', 'restaurant.cover_uploaded':'restaurant_cover_media','restaurant.cover_deleted':'restaurant_cover_media','restaurant.settings_updated':'restaurant', 'application.submitted':'application','evidence.uploaded':'evidence','evidence.deleted':'evidence','application.reviewed':'application','application.proposed':'application','application.confirmed':'application' };
 Object.assign(allowedTargets,{'payment.qr_propose':'restaurant','payment.qr_review':'restaurant','payment.qr_suspend':'restaurant','payment.qr_received':'order','payment.refund_required':'order','payment.refunded':'order','payment.claimed':'order','payment.disputed':'order','payment.dispute_resolved':'order','payment.image_uploaded':'payment_image','payment.image_deleted':'payment_image'});
 const allowedChanges: Record<string, readonly string[]> = {
  'order.food_ready':['version'],'order.transitioned':['from_status','to_status','version'],'payment.confirmed':['method'],
@@ -20,7 +20,7 @@ const allowedChanges: Record<string, readonly string[]> = {
  'commission.proposed':['proposal_id','rate','base_version'],'commission.confirmed':['proposal_id','rate'],
  'dish.updated':['restaurant_id','version','name','price_vnd','previous_name','previous_price_vnd','is_visible','is_available','category_id','image_changed'],'dish.removed':['restaurant_id','outcome'],'dish.category_updated':['version'],'dish.image_uploaded':['restaurant_id'],'dish.image_deleted':['restaurant_id'],
  'delivery.point_updated':['version'],'delivery.proposed':['restaurant_id'],'delivery.reviewed':['decision','restaurant_id'],
- 'restaurant.settings_updated':['version','profile_changed','hours_changed'],
+ 'restaurant.cover_uploaded':['restaurant_id'],'restaurant.cover_deleted':['restaurant_id'],'restaurant.settings_updated':['version','profile_changed','hours_changed','description_changed','cover_changed'],
   'application.submitted':['terms_version'],
   'application.proposed':['terms_version'],
   'application.confirmed':['terms_version'],

@@ -1,4 +1,4 @@
-# In-site onboarding notifications
+# In-site onboarding and order notifications
 
 Approved implementation scope: user plan October22, 2026; requirements US27/FR13/AC18. Existing onboarding/setup, consent, sole MFA Admin and operating rules remain authoritative. No external delivery provider or business state change from reading.
 
@@ -29,6 +29,12 @@ Logical keys are account:<id> or admin. No account FK is intentional: a notifica
 First-access summary uses a stable summary.v1 key and account-first serialization. Existing state is summarized, never backfilled as historical events. GET summary/list can insert that one summary. Message detail obtains current checklist separately; old snapshot content remains unchanged. Reading an old message cannot restore stale surveys/agreements.
 
 One provider per active frontend session polls count/recent data every5seconds when visible/online, exponential error backoff up to30seconds; stops on unmount/logout/expiry. Requests bind X-Account-Id; stale/aborted replies are discarded. Inbox pagination and reading are explicit; opening the bell never marks messages read. Native disclosure supports keyboard/Escape; mobile uses the approved identity.
+
+## Order events — October23 scoped extension
+
+The user's request to use existing real local data follows the reported missing order/history/notification behavior. New order creation and effective accepted/delivering/completed/cancelled/rejected/food-ready changes append messages to the buyer and current owner's account mailboxes in the same transaction as the order/history/audit. Each mailbox event includes order ID/version and recipient role in its durable uniqueness key; replay, repeated state commands and concurrent completion never duplicate messages. A notification failure rolls back the order mutation. No historical event backfill or external push/email/SMS is implied.
+
+Messages include only order ID, safe status copy and restaurant/source/version IDs; never recipient contacts, item details, payment proof or rejection free text. Buyer links use `/orders/{id}`; current-owner links use `/owner/restaurants/{restaurant_id}/orders?order={id}`. Order notification detail returns the message's order link in current_context and asks the user to open it for current state; it never labels an order event as an opening/setup task. The order endpoint independently reauthorizes current access, including changed ownership. No schema migration is needed.
 
 ## Verification and adoption
 

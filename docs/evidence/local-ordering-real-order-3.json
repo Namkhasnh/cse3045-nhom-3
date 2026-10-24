@@ -1,0 +1,232 @@
+{
+  "observed_at": "2026-10-23T16:44:35.431Z",
+  "assertions": "PASS: scopes, terminal unpaid, totals, one request/private payload/base commission, histories, five notices per recipient, five audit events and restored original hours",
+  "order": {
+    "id": "3",
+    "student_id": "11",
+    "restaurant_id": "4",
+    "status": "completed",
+    "version": 5,
+    "subtotal_vnd": "60000",
+    "delivery_fee_vnd": "5000",
+    "total_vnd": "65000",
+    "commission_rate_snapshot": "0.04000000",
+    "created_at": "2026-10-23T16:40:26.415Z",
+    "updated_at": "2026-10-23T16:42:20.885Z",
+    "completed_at": "2026-10-23T16:42:20.885Z"
+  },
+  "history": [
+    {
+      "from_status": null,
+      "to_status": "pending",
+      "order_version": 1,
+      "actor_id": "11",
+      "created_at": "2026-10-23T16:40:26.429Z"
+    },
+    {
+      "from_status": "pending",
+      "to_status": "accepted",
+      "order_version": 2,
+      "actor_id": "8",
+      "created_at": "2026-10-23T16:41:11.462Z"
+    },
+    {
+      "from_status": "accepted",
+      "to_status": "delivering",
+      "order_version": 4,
+      "actor_id": "8",
+      "created_at": "2026-10-23T16:42:11.563Z"
+    },
+    {
+      "from_status": "delivering",
+      "to_status": "completed",
+      "order_version": 5,
+      "actor_id": "8",
+      "created_at": "2026-10-23T16:42:20.888Z"
+    }
+  ],
+  "ready": {
+    "order_id": "3",
+    "actor_id": "8",
+    "ready_at": "2026-10-23T16:41:53.962Z",
+    "order_version": 3
+  },
+  "payment": {
+    "order_id": "3",
+    "method": "cash",
+    "status": "unpaid",
+    "confirmed_by": null,
+    "confirmed_at": null,
+    "version": 1,
+    "updated_at": "2026-10-23T16:40:26.431Z"
+  },
+  "commission": [
+    {
+      "id": "3",
+      "kind": "base",
+      "amount_vnd": "2400",
+      "actor_id": "8",
+      "created_at": "2026-10-23T16:42:20.906Z"
+    }
+  ],
+  "notices": [
+    {
+      "id": "28",
+      "recipient_key": "account:11",
+      "type": "order.pending",
+      "source_version": 1,
+      "href": "/orders/3",
+      "created_at": "2026-10-23T16:40:26.445Z"
+    },
+    {
+      "id": "29",
+      "recipient_key": "account:8",
+      "type": "order.pending",
+      "source_version": 1,
+      "href": "/owner/restaurants/4/orders?order=3",
+      "created_at": "2026-10-23T16:40:26.447Z"
+    },
+    {
+      "id": "30",
+      "recipient_key": "account:11",
+      "type": "order.accepted",
+      "source_version": 2,
+      "href": "/orders/3",
+      "created_at": "2026-10-23T16:41:11.477Z"
+    },
+    {
+      "id": "31",
+      "recipient_key": "account:8",
+      "type": "order.accepted",
+      "source_version": 2,
+      "href": "/owner/restaurants/4/orders?order=3",
+      "created_at": "2026-10-23T16:41:11.484Z"
+    },
+    {
+      "id": "32",
+      "recipient_key": "account:11",
+      "type": "order.ready",
+      "source_version": 3,
+      "href": "/orders/3",
+      "created_at": "2026-10-23T16:41:53.972Z"
+    },
+    {
+      "id": "33",
+      "recipient_key": "account:8",
+      "type": "order.ready",
+      "source_version": 3,
+      "href": "/owner/restaurants/4/orders?order=3",
+      "created_at": "2026-10-23T16:41:53.976Z"
+    },
+    {
+      "id": "34",
+      "recipient_key": "account:11",
+      "type": "order.delivering",
+      "source_version": 4,
+      "href": "/orders/3",
+      "created_at": "2026-10-23T16:42:11.599Z"
+    },
+    {
+      "id": "35",
+      "recipient_key": "account:8",
+      "type": "order.delivering",
+      "source_version": 4,
+      "href": "/owner/restaurants/4/orders?order=3",
+      "created_at": "2026-10-23T16:42:11.602Z"
+    },
+    {
+      "id": "36",
+      "recipient_key": "account:11",
+      "type": "order.completed",
+      "source_version": 5,
+      "href": "/orders/3",
+      "created_at": "2026-10-23T16:42:20.912Z"
+    },
+    {
+      "id": "37",
+      "recipient_key": "account:8",
+      "type": "order.completed",
+      "source_version": 5,
+      "href": "/owner/restaurants/4/orders?order=3",
+      "created_at": "2026-10-23T16:42:20.915Z"
+    }
+  ],
+  "audit": [
+    {
+      "id": "94",
+      "actorId": "11",
+      "action": "order.created",
+      "createdAt": "2026-10-23T16:40:26.434Z"
+    },
+    {
+      "id": "95",
+      "actorId": "8",
+      "action": "order.transitioned",
+      "createdAt": "2026-10-23T16:41:11.467Z"
+    },
+    {
+      "id": "96",
+      "actorId": "8",
+      "action": "order.food_ready",
+      "createdAt": "2026-10-23T16:41:53.966Z"
+    },
+    {
+      "id": "97",
+      "actorId": "8",
+      "action": "order.transitioned",
+      "createdAt": "2026-10-23T16:42:11.573Z"
+    },
+    {
+      "id": "98",
+      "actorId": "8",
+      "action": "order.transitioned",
+      "createdAt": "2026-10-23T16:42:20.908Z"
+    }
+  ],
+  "hours": [
+    {
+      "weekday": 1,
+      "opens_at": "08:00:00",
+      "closes_at": "20:00:00",
+      "closes_next_day": false
+    },
+    {
+      "weekday": 2,
+      "opens_at": "08:00:00",
+      "closes_at": "20:00:00",
+      "closes_next_day": false
+    },
+    {
+      "weekday": 3,
+      "opens_at": "08:00:00",
+      "closes_at": "20:00:00",
+      "closes_next_day": false
+    },
+    {
+      "weekday": 4,
+      "opens_at": "08:00:00",
+      "closes_at": "20:00:00",
+      "closes_next_day": false
+    },
+    {
+      "weekday": 5,
+      "opens_at": "08:00:00",
+      "closes_at": "20:00:00",
+      "closes_next_day": false
+    },
+    {
+      "weekday": 6,
+      "opens_at": "08:00:00",
+      "closes_at": "20:00:00",
+      "closes_next_day": false
+    },
+    {
+      "weekday": 7,
+      "opens_at": "08:00:00",
+      "closes_at": "20:00:00",
+      "closes_next_day": false
+    }
+  ],
+  "requests": 1,
+  "private_payloads": 1
+}

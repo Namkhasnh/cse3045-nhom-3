@@ -1,0 +1,62 @@
+{
+  "recorded_at": "2026-10-23T13:16:11.876645+00:00",
+  "scope": "Existing Mac loopback:3307/hlf_dev_flow ordering; no VPS/production operation",
+  "review": "Codex self-review",
+  "retained_activation": {
+    "mysql": "9.2.0",
+    "vault": "persistent external directory; private permissions; database binding verified",
+    "probe": "encrypt/decrypt with recreated service; no database writes",
+    "before_and_after_counts": {
+      "orders": 1,
+      "private_payloads": 0,
+      "notifications": 17
+    },
+    "public_catalog_http": 200,
+    "saved_checkout_intent": "observed in actual Chrome; not submitted by Codex"
+  },
+  "verification": {
+    "backend_lint": "PASS",
+    "backend_unit": {
+      "pass": 58,
+      "fail": 0
+    },
+    "backend_http_e2e": {
+      "pass": 9,
+      "fail": 0
+    },
+    "backend_build": "PASS",
+    "mysql_selected_integration": [
+      "orders",
+      "fulfillment",
+      "notifications"
+    ],
+    "frontend_lint": "PASS",
+    "frontend_build": "PASS",
+    "chrome_checkout_and_order_inbox": "PASS",
+    "full_integration_suite": "NOT RUN",
+    "real_order_submission": "NOT RUN",
+    "automatic_vault_backup": "NOT CONFIGURED",
+    "offsite_vault_restore": "NOT RUN"
+  },
+  "initial_failures": [
+    "Sandbox HTTP listen EPERM; rerun with approved escalation passed",
+    "Integration cwd prevented contract file reads; corrected",
+    "Foreign-notification assertion used buyer alias; corrected actor",
+    "Checkout runner had two stale setup label waits; corrected"
+  ],
+  "source_sha256": {
+    "backend/src/integrations/storage/personal-vault.ts": "c59189a7391e67e248e9b5e15f014635c3d8dba0176cd3a8ce247a36789e65ad",
+    "backend/src/integrations/storage/personal-vault.spec.ts": "72af4cc219337b283834584d57d6fc261cc0e9196b1659cabbe8a2738638c20f",
+    "backend/scripts/configure-local-orders.mjs": "86be271ff298386fda949abec9e61467402202b7667f8564027ff37aefe0dd66",
+    "backend/src/workflows/orders.workflow.ts": "93d09a9d77493d9a0d7c6af1b83efb4cedc1d1380e4fc20dafbb75cd29a593e3",
+    "backend/src/workflows/notifications.workflow.ts": "c04f95e6afc82d1f1532903dd4316fd865501396a4e268fd58077ead2132ad85",
+    "backend/test/integration/orders.integration-spec.ts": "83f522ee1210e5eefafdb3ae1fbdb67499d2a298c29dd2299be8797c6a88779c",
+    "backend/test/integration/fulfillment.integration-spec.ts": "62900f714ee57277bcdeb5fa30773ca6ebe18d13d7417507d8ef8cbeaf334e4f",
+    "frontend/src/features/notifications/InboxPage.tsx": "df6ec572cb0a56c177febd8715638a4eeacede82795b6e5ed24ff9bc305963d0",
+    "frontend/scripts/browser-checkout.mjs": "2a6a9df04b89032f80330e2f969556575081f211e10ac61061764eab6a3cf1e1"
+  },
+  "visually_inspected_synthetic_screenshots": {
+    "local-order-notification-360.png": "d504bdb8c6b4642dc6823ff52fccf709390790c5fed06c9bd85d73ae73241ba7",
+    "local-order-notification-owner.png": "428d193b1319cbfde8eaf84daecd1add1983afac1b95c6248cf6bd7e77860f2a"
+  }
+}

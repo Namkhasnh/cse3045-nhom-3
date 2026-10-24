@@ -1,30 +1,24 @@
 import { Button } from '../../../shared/ui/Button'
 import { ListState } from '../../../shared/ui/ListState'
+import { Icon } from '../../../shared/ui/Icon'
 import { formatVnd } from '../../../shared/lib/format'
 import type { Dish } from '../api/catalog.api'
+import type { RestaurantFilterValues } from '../types'
 import { useCatalog } from '../hooks/use-catalog'
 import { DishImage } from './DishImage'
-
-const filters = { query: '', category: 'all', priceRange: 'all' as const }
-
-export function DishDiscovery() {
+export function DishDiscovery({ filters, onReset }: { filters: RestaurantFilterValues; onReset: () => void }) {
   const catalog = useCatalog<Dish>(filters, undefined, 'dishes')
-  return <section className="dish-discovery" aria-labelledby="dish-discovery-title">
-    <div className="discovery-header"><h2 id="dish-discovery-title">Khám phá món ăn</h2></div>
-    {catalog.status === 'loading' ? <p role="status">Đang tải món ăn…</p>
+  const filtered = Boolean(filters.query || filters.category !== 'all' || filters.priceRange !== 'all')
+  return <section className="dishes-section section" id="dishes" aria-labelledby="dish-discovery-title"><div className="design-container">
+    <div className="section-heading section-heading--inline"><div><span className="kicker">Món ngon gần bạn</span><h2 id="dish-discovery-title">Ăn gì hôm nay?</h2></div>{filtered && <button className="view-all" onClick={onReset}>Xem tất cả <Icon name="arrow" /></button>}</div>
+    {catalog.status === 'loading' ? <div role="status" aria-busy="true"><p>Đang tải món ăn…</p><div className="dish-grid" aria-hidden="true">{[0, 1, 2].map(n => <div className="dish-card" key={n}><div className="home-dish-image skeleton" /><div className="dish-content"><div className="skeleton skeleton-title" /><div className="skeleton skeleton-line" /></div></div>)}</div></div>
       : catalog.status === 'error' ? <ListState error title="Chưa tải được món ăn" action="Thử lại món ăn" onAction={catalog.retry}>Kiểm tra kết nối và thử lại.</ListState>
-      : catalog.data.length === 0 ? <ListState title="Chưa có món công khai">Các món sẽ xuất hiện khi quán hoàn tất thiết lập.</ListState>
-      : <div className="restaurant-grid">{catalog.data.map(dish => <article className="restaurant-card menu-dish" key={dish.id}>
-        <DishImage key={dish.image_reference} name={dish.name} source={dish.image_reference} />
-        <div className="restaurant-card-content">
-          <h3><a href={`/restaurants/${dish.restaurant_id}`}>{dish.name}</a></h3>
-          <p className="dish-seller">Quán bán: <a href={`/restaurants/${dish.restaurant_id}`}>{dish.restaurant_name}</a></p>
-          <p className="restaurant-price">{formatVnd(dish.price_vnd)}</p>
-          <p>{dish.is_available ? 'Còn món' : 'Tạm hết món'}</p>
-          <p>{dish.description}</p>
-        </div>
+      : catalog.data.length === 0 ? <ListState title={filtered ? 'Chưa tìm thấy món phù hợp' : 'Chưa có món công khai'} action={filtered ? 'Xóa bộ lọc' : undefined} onAction={onReset}>Thử từ khóa khác hoặc khám phá các nhóm món đang có.</ListState>
+      : <div className="dish-grid">{catalog.data.map(dish => <article className="dish-card" key={dish.id}>
+        <a className="home-dish-image" href={`/restaurants/${dish.restaurant_id}`} aria-label={`Xem món ${dish.name}`}><DishImage key={dish.image_reference} name={dish.name} source={dish.image_reference} /></a>
+        <div className="dish-content"><div className="dish-title-row"><h3><a href={`/restaurants/${dish.restaurant_id}`}>{dish.name}</a></h3><strong>{formatVnd(dish.price_vnd)}</strong></div><p className="dish-seller">Quán bán: <a href={`/restaurants/${dish.restaurant_id}`}>{dish.restaurant_name}</a></p><div className="dish-footer"><span className={`status${dish.is_available ? '' : ' status--unavailable'}`}><i />{dish.is_available ? 'Còn món' : 'Tạm hết món'}</span><a href={`/restaurants/${dish.restaurant_id}`}>Xem chi tiết <Icon name="arrow" /></a></div></div>
       </article>)}</div>}
     {catalog.moreError && <p role="alert">Chưa tải được trang món tiếp theo. Hãy thử lại.</p>}
-    {catalog.hasMore && <Button disabled={catalog.loadingMore} onClick={catalog.loadMore}>{catalog.loadingMore ? 'Đang tải…' : 'Tải thêm món ăn'}</Button>}
-  </section>
+    {catalog.hasMore && <Button className="home-load-more" disabled={catalog.loadingMore} onClick={catalog.loadMore}>{catalog.loadingMore ? 'Đang tải…' : 'Tải thêm món ăn'}</Button>}
+  </div></section>
 }

@@ -5,7 +5,7 @@ export function id(value: unknown): string {
   if (typeof value !== 'string' || !/^[1-9][0-9]*$/.test(value) || value.length > 19 || BigInt(value) > 9223372036854775807n) return invalid();
   return value;
 }
-export type CatalogQuery = { limit: number; sort: string; q?: string; category_id?: string; restaurant_id?: string;
+export type CatalogQuery = { limit: number; sort: string; q?: string; category_id?: string; restaurant_id?: string; public_only?: boolean;
   min_price_vnd?: string; max_price_vnd?: string; is_available?: boolean; is_open?: boolean;
   after?: { id: string; value: string }; binding: string };
 const sign = (value: string) => {
@@ -14,7 +14,7 @@ const sign = (value: string) => {
 };
 export function parseQuery(raw: Record<string, unknown>, kind: 'restaurants' | 'dishes' | 'categories'): CatalogQuery {
   const common = ['limit', 'cursor', 'sort'];
-  const allowed = kind === 'categories' ? common : [...common, 'q', 'category_id', 'min_price_vnd', 'max_price_vnd',
+  const allowed = kind === 'categories' ? [...common, 'public_only'] : [...common, 'q', 'category_id', 'min_price_vnd', 'max_price_vnd',
     ...(kind === 'dishes' ? ['restaurant_id', 'is_available'] : ['is_open'])];
   if (Object.keys(raw).some(k => !allowed.includes(k)) || Object.values(raw).some(v => typeof v !== 'string')) invalid();
   const limit = raw.limit === undefined ? 20 : typeof raw.limit === 'string' && /^[1-9][0-9]{0,2}$/.test(raw.limit) ? Number(raw.limit) : invalid();
@@ -22,6 +22,10 @@ export function parseQuery(raw: Record<string, unknown>, kind: 'restaurants' | '
   const sort = raw.sort as string ?? 'name';
   if (!(kind === 'categories' ? ['name'] : kind === 'dishes' ? ['name', '-name', 'price_vnd', '-price_vnd'] : ['name', '-name']).includes(sort)) invalid();
   const result: CatalogQuery = { limit, sort, binding: '' };
+  if (raw.public_only !== undefined) {
+    if (!['true', 'false'].includes(raw.public_only as string)) invalid();
+    result.public_only = raw.public_only === 'true';
+  }
   if (raw.q !== undefined) { const q = (raw.q as string).trim(); if (!q || [...q].length > 200) invalid(); result.q = q; }
   for (const key of ['category_id', 'restaurant_id'] as const) if (raw[key] !== undefined) result[key] = id(raw[key]);
   for (const key of ['min_price_vnd', 'max_price_vnd'] as const) if (raw[key] !== undefined) {

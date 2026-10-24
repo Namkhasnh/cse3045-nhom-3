@@ -1,3 +1,4 @@
+import {StorefrontForm} from '../components/StorefrontForm'
 import type {ReactNode} from 'react'
 import {useEffect,useRef,useState} from 'react'
 import {settingsApi,type Settings,type Hours} from '../api/settings.api'
@@ -20,6 +21,7 @@ export function RestaurantSettingsPage({renderSetup}:{renderSetup?:(id:string,ve
  <h2>{data.name}</h2><p>{data.readiness==='ready'?'Đã đủ cấu hình':'Cần hoàn thiện cấu hình'} · {data.is_active?'Đã được kích hoạt':'Chờ Admin kích hoạt'}</p>
  {renderSetup?.(data.id,data.version)}
  <div id="profile"/><ProfileForm key={'profile'+data.id} initial={data} busy={busy} save={body=>save(body,'hồ sơ quán')}/>
+ <StorefrontForm key={'storefront'+data.id} initial={data} busy={busy} save={body=>save(body,'ảnh bìa và giới thiệu')}/>
  <div id="hours"/><HoursForm key={'hours'+data.id} initial={data.hours} busy={busy} save={hours=>save({hours},'giờ mở cửa')}/>
  <button id="accepting" disabled={busy||(!data.is_accepting_orders&&(data.readiness!=='ready'||!data.is_active))} onClick={()=>void save({is_accepting_orders:!data.is_accepting_orders},'trạng thái nhận đơn')}>{data.is_accepting_orders?'Tạm ngừng nhận đơn':'Bật nhận đơn'}</button>
  </>}</section>

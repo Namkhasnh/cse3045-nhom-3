@@ -1,11 +1,9 @@
-import {NotificationBell} from '../../features/notifications'
 import type { ReactNode } from 'react'
 import type { User } from '../../features/auth'
 
 export function RoleLayout({ user, children, title, path }: { user: User; children: ReactNode; title: string; path: string }) {
   const home = user.capabilities.includes('admin') ? '/admin' : '/owner'
   return <div className={`role-layout role-layout--${user.capabilities.includes('admin') ? 'admin' : 'restaurant_owner'}`}>
-    <a className="skip-link" href="#main-content">Đến nội dung chính</a>
     <aside className="role-sidebar" aria-label="Điều hướng">
       <a href={home} className="brand">Hòa Lạc <span>Food</span></a>
       <p className="role-label">{title}</p>
@@ -31,7 +29,7 @@ export function RoleLayout({ user, children, title, path }: { user: User; childr
         </>}
       </nav>
     </aside>
-    <main id="main-content" className="role-main" tabIndex={-1}><div className="role-notifications"><a href="/account">{user.display_name}</a><NotificationBell/></div>{!user.is_active&&<p role="alert">Tài khoản đã đình chỉ. Chỉ xử lý đơn cũ, hoàn tiền, công nợ và hỗ trợ.</p>}{children}</main>
+    <main id="main-content" className="role-main" tabIndex={-1}>{!user.is_active&&<p role="alert">Tài khoản đã đình chỉ. Chỉ xử lý đơn cũ, hoàn tiền, công nợ và hỗ trợ.</p>}{children}</main>
   </div>
 }
 

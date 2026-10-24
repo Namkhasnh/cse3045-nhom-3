@@ -68,6 +68,23 @@ test('P04 CAT-01 / PUBLIC-01 / DATA-01: anonymous HTTP contract and exact MySQL 
   for(const query of ['limit=0','limit=101','limit=01','q=','sort=rating','is_open=1','category_id=01','min_price_vnd=1e3','min_price_vnd=1000000001','min_price_vnd=2&max_price_vnd=1','owner_id=1','q=A&q=B','cursor=broken']) await read(`/restaurants?${query}`,'Error',422);
   await read(`/dishes?restaurant_id=${restaurants[2]}`,'Error',404);
   await read(`/dishes?restaurant_id=${restaurants[0]}&is_available=true`,'DishList');
+  for(const label of ['HiddenOnly','InactiveOnly','SetupOnly','Empty','SoldOutOnly'])categories.push((await db.dish_categories.create({data:{name:`${prefix} ${label}`}})).id);
+  await create(0,2,'Hidden-only category',10000n,false);
+  await create(3,3,'Inactive-only category',10000n);
+  await create(2,4,'Setup-only category',10000n);
+  await create(0,6,'Sold-out category',10000n,true,false);
+  const taxonomy=await read('/dish-categories?limit=100','CategoryList');
+  for(const id of categories)assert.ok(taxonomy.data.some((c:{id:string})=>c.id===String(id)),'Management taxonomy must retain every category');
+  assert.deepEqual((await read('/dish-categories?limit=100&public_only=false','CategoryList')).data,taxonomy.data);
+  const discoverable:string[]=[];let categoryCursor:string|null=null;
+  do {const page=await read('/dish-categories?public_only=true&limit=1'+(categoryCursor?'&cursor='+encodeURIComponent(categoryCursor):''),'CategoryList');discoverable.push(...page.data.map((c:{id:string})=>c.id));categoryCursor=page.page.next_cursor;
+   if(categoryCursor)await read('/dish-categories?limit=1&cursor='+encodeURIComponent(categoryCursor),'Error',422);
+  }while(categoryCursor);
+  assert.equal(new Set(discoverable).size,discoverable.length);
+  for(const i of [0,1,6])assert.ok(discoverable.includes(String(categories[i])),'Visible sold-out/closed restaurant dishes remain discoverable');
+  for(const i of [2,3,4,5])assert.ok(!discoverable.includes(String(categories[i])),'Non-public-only categories must be excluded');
+  await read('/dish-categories?public_only=1','Error',422);
+  await read('/restaurants?public_only=true','Error',422);
   await read('/auth/me','Error',500); // Public reads above succeeded even with broken session verification.
   const invalid=await read('/restaurants/01','Error',422); assert.equal(invalid.error.code,'VALIDATION_ERROR');
  } finally {
