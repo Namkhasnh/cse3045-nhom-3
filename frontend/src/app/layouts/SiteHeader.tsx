@@ -3,11 +3,14 @@ import { safeReturnPath, type User } from '../../features/auth'
 import { NotificationBell } from '../../features/notifications'
 import { Icon } from '../../shared/ui/Icon'
 import { SiteBrand } from './SiteBrand'
+import { initials } from '../../shared/lib/initials'
 
-type Props = { user: User | null; pending: boolean; cartCount: number; path: string; onOpenCart?: () => void }
-export function SiteHeader({ user, pending, cartCount, path, onOpenCart }: Props) {
+type Props = { user: User | null; pending: boolean; cartCount: number; path: string; onOpenCart?: () => void; onLogout: () => Promise<void> }
+export function SiteHeader({ user, pending, cartCount, path, onOpenCart, onLogout }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [accountOpen, setAccountOpen] = useState(false)
+  const [logoutBusy, setLogoutBusy] = useState(false)
+  const [logoutError, setLogoutError] = useState('')
   const header = useRef<HTMLElement>(null)
   const mobileButton = useRef<HTMLButtonElement>(null)
   const accountButton = useRef<HTMLButtonElement>(null)
@@ -40,11 +43,15 @@ export function SiteHeader({ user, pending, cartCount, path, onOpenCart }: Props
   }, [accountOpen, mobileOpen])
   const links = <><a href="/" aria-current={path === '/' && !window.location.hash ? 'page' : undefined}>Trang chủ</a><a href="/#dishes">Khám phá món ăn</a><a href="/#restaurants">Quán ăn</a></>
   const accountLinks = <>
+    <div className="account-links-identity"><strong>{user?.display_name}</strong><span>{user?.login_identifier}</span></div>
+    <a href="/account"><Icon name="user" />Tài khoản cá nhân</a>
+    {active && (admin || user?.managed_restaurant_id && user.capabilities.includes('manage_restaurant')) && <a href={admin ? '/admin' : '/owner'}><Icon name="shop" />{admin ? 'Quản trị' : 'Quản lý quán'}</a>}
     {canHistory && <a href="/orders"><Icon name="orders" />Lịch sử mua hàng</a>}
-    <a href="/account"><Icon name="user" />Tài khoản</a>
     {active && <a href="/notifications">Hộp thư thông báo</a>}
     <a href={admin ? '/admin/support' : '/support'}>Trợ giúp</a>
     <a href="/privacy">Quyền riêng tư</a>
+    <button type="button" disabled={logoutBusy} onClick={async () => { if (logoutBusy) return; setLogoutBusy(true); setLogoutError(''); try { await onLogout() } catch { setLogoutError('Không thể đăng xuất. Vui lòng thử lại.') } finally { setLogoutBusy(false) } }}><Icon name="logout" />{logoutBusy ? 'Đang đăng xuất…' : 'Đăng xuất'}</button>
+    {logoutError && <p role="alert">{logoutError}</p>}
   </>
   return <header className="nav-shell" ref={header} onClick={event => {
     if (event.target instanceof Element && event.target.closest('a')) { setMobileOpen(false); setAccountOpen(false) }
@@ -60,8 +67,8 @@ export function SiteHeader({ user, pending, cartCount, path, onOpenCart }: Props
       <div className="nav-actions header-actions">
         {pending ? <span role="status" className="session-pending">Đang kiểm tra tài khoản…</span> : user ? <>
           {management && <a className="header-link" href={management.href}>{management.label}</a>}
-          <div className="account-disclosure" onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) setAccountOpen(false) }}>
-            <button className="account-toggle" ref={accountButton} aria-expanded={accountOpen} aria-controls="account-links" onClick={() => setAccountOpen(!accountOpen)}><Icon name="user" /><span>{user.display_name}</span><span aria-hidden="true">⌄</span></button>
+          <div className="account-disclosure" onBlur={event => { if (event.relatedTarget && !event.currentTarget.contains(event.relatedTarget)) setAccountOpen(false) }}>
+            <button className="account-toggle" ref={accountButton} aria-label={'Menu tài khoản ' + user.display_name} aria-expanded={accountOpen} aria-controls="account-links" onClick={() => setAccountOpen(!accountOpen)}><span className="header-avatar" aria-hidden="true">{initials(user.display_name)}</span><span>{user.display_name}</span><span aria-hidden="true">⌄</span></button>
             {accountOpen && <nav id="account-links" className="account-links" aria-label="Tài khoản">{accountLinks}</nav>}
           </div>
         </> : <><a className="header-link login" href={authLink('/login')}>Đăng nhập</a><a className="design-button design-button--small" href={authLink('/register')}>Đăng ký <Icon name="arrow" /></a></>}

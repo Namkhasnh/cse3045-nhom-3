@@ -52,7 +52,7 @@ try {
  db=await mariadb.createConnection({host:target.hostname,port:Number(target.port||3306),user:decodeURIComponent(target.username),password:decodeURIComponent(target.password),database:target.pathname.slice(1),allowPublicKeyRetrieval:true});
 
  await call('Emulation.setDeviceMetricsOverride',{width:360,height:900,deviceScaleFactor:1,mobile:true});
- await navigate('/login?returnTo=/owner');await waitText('Chào mừng bạn trở lại.');await fill('#username',managerLogin);await fill('#password','synthetic browser passphrase');await submit();await waitText('Thiết lập quán');await waitText('Hồ sơ công khai');
+ await navigate('/login?returnTo=/owner/settings');await waitText('Chào mừng bạn trở lại.');await fill('#username',managerLogin);await fill('#password','synthetic browser passphrase');await submit();await waitText('Thiết lập quán');await waitText('Hồ sơ công khai');
 
  stage='storefront-content';
  await waitText('Ảnh bìa và giới thiệu quán');
@@ -65,9 +65,9 @@ try {
  const upload=async file=>{await call('DOM.enable');const {root}=await call('DOM.getDocument');const {nodeId}=await call('DOM.querySelector',{nodeId:root.nodeId,selector:'#restaurant-cover-file'});await call('DOM.setFileInputFiles',{nodeId,files:[file]});await until(()=>evaluate("Boolean(document.querySelector('.storefront-form-preview > img'))"),'Local preview missing');await evaluate("document.querySelector('.storefront-form').requestSubmit()");await waitText('Đã lưu ảnh bìa và giới thiệu.');await until(async()=> (await db.query('SELECT cover_media_asset_id FROM restaurants WHERE id=?',[restaurantId]))[0].cover_media_asset_id!=null,'Cover not persisted');};
  const imagePath=new URL('../public/images/restaurant/default-cover.jpg',import.meta.url).pathname;
  // Hide a previous success notice so the next wait verifies a new acknowledgement.
- await navigate('/owner');await waitText('Ảnh bìa và giới thiệu quán');await upload(imagePath);
+ await navigate('/owner/settings');await waitText('Ảnh bìa và giới thiệu quán');await upload(imagePath);
  const first=(await db.query('SELECT cover_media_asset_id FROM restaurants WHERE id=?',[restaurantId]))[0].cover_media_asset_id;
- await navigate('/owner');await waitText('Ảnh bìa và giới thiệu quán');
+ await navigate('/owner/settings');await waitText('Ảnh bìa và giới thiệu quán');
  assert(await evaluate("document.querySelector('#restaurant-description').value==='Giới thiệu do chủ quán lưu từ Chrome.'"),'Reload lost description');
  await until(()=>evaluate("document.querySelector('.storefront-form-preview .storefront-cover img')?.naturalWidth>0"),'Protected owner preview unavailable');
  await snapshot('storefront-owner-cover-360');
@@ -76,8 +76,8 @@ try {
  // Visibility fixture only; full restaurant readiness is tested by the existing setup suite.
  await db.query("UPDATE restaurants SET readiness='ready',is_active=TRUE WHERE id=?",[restaurantId]);
  await navigate('/restaurants/'+restaurantId);await waitText('Giới thiệu do chủ quán lưu từ Chrome.');await until(()=>evaluate("document.querySelector('.storefront-cover img')?.naturalWidth>0"),'Public cover unavailable');assert(!await evaluate("Boolean(document.querySelector('.storefront-cover-caption'))"),'Uploaded cover mislabeled as illustration');await snapshot('storefront-public-uploaded-360');
- await navigate('/owner');await waitText('Ảnh bìa và giới thiệu quán');await evaluate("[...document.querySelectorAll('.storefront-form button')].find(b=>b.textContent==='Dùng ảnh mặc định').click()");await evaluate("document.querySelector('.storefront-form').requestSubmit()");await waitText('Đã lưu ảnh bìa và giới thiệu.');assert((await db.query('SELECT cover_media_asset_id FROM restaurants WHERE id=?',[restaurantId]))[0].cover_media_asset_id===null,'Default cover not persisted');
- await navigate('/owner');await waitText('Ảnh bìa và giới thiệu quán');await waitText('Ảnh minh họa');
+ await navigate('/owner/settings');await waitText('Ảnh bìa và giới thiệu quán');await evaluate("[...document.querySelectorAll('.storefront-form button')].find(b=>b.textContent==='Dùng ảnh mặc định').click()");await evaluate("document.querySelector('.storefront-form').requestSubmit()");await waitText('Đã lưu ảnh bìa và giới thiệu.');assert((await db.query('SELECT cover_media_asset_id FROM restaurants WHERE id=?',[restaurantId]))[0].cover_media_asset_id===null,'Default cover not persisted');
+ await navigate('/owner/settings');await waitText('Ảnh bìa và giới thiệu quán');await waitText('Ảnh minh họa');
  assert(orderRequests.length===0,'Unexpected order mutation');console.log('PASS: real Chrome → authenticated Nest → MySQL/MinIO description, upload, preview, replace, reload, public cover and default reset. '+screenshots);
 } catch(error) {await captureFailure?.().catch(()=>{});console.error('Stage: '+stage);console.error(String(error));console.error(backend.log().slice(-1400));process.exitCode=1;}
 finally {await db?.end();socket?.close();for(const child of children)child.kill('SIGTERM');await delay(400);await rm(profile,{recursive:true,force:true});}

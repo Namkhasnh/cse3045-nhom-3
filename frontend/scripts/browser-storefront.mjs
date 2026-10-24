@@ -46,7 +46,7 @@ try {
     return reply({},503);
    };`});
  }
- async function navigate(path='/restaurants/1'){await evaluate("document.documentElement.dataset.leaving='true'");await call('Page.navigate',{url:base+path});await until(()=>evaluate("document.readyState==='complete'&&!document.documentElement.dataset.leaving&&Boolean(document.querySelector('.footer'))"),'Navigation incomplete');}
+ async function navigate(path='/restaurants/1'){await evaluate("document.documentElement.dataset.leaving='true'");await call('Page.navigate',{url:base+path});await until(()=>evaluate("document.readyState==='complete'&&!document.documentElement.dataset.leaving&&Boolean(document.querySelector('.footer,.workspace-footer'))"),'Navigation incomplete');}
  const waitText=word=>until(()=>evaluate(`document.body.innerText.includes(${JSON.stringify(word)})`),'Missing '+word);
  const click=async selector=>{await evaluate("Promise.all(document.getAnimations().filter(a=>a.effect?.getTiming().iterations!==Infinity).map(a=>a.finished.catch(()=>{})))");const rect=await evaluate(`(()=>{const el=document.querySelector(${JSON.stringify(selector)});el.scrollIntoView({block:'center',behavior:'instant'});const r=el.getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2}})()`);await call('Input.dispatchMouseEvent',{type:'mousePressed',...rect,button:'left',clickCount:1});await call('Input.dispatchMouseEvent',{type:'mouseReleased',...rect,button:'left',clickCount:1});};
  const key=async(name,code=name,virtual=9,modifiers=0)=>{await call('Input.dispatchKeyEvent',{type:'keyDown',key:name,code,windowsVirtualKeyCode:virtual,modifiers});await call('Input.dispatchKeyEvent',{type:'keyUp',key:name,code,windowsVirtualKeyCode:virtual,modifiers});};
@@ -58,7 +58,7 @@ try {
   await until(()=>evaluate("document.querySelector('.storefront-cover img')?.naturalWidth>0"),'Default Figma cover missing');
   assert(await evaluate("document.querySelector('.storefront-cover-caption').textContent==='Ảnh minh họa'"),'Default image unlabeled');
   assert(await evaluate(`getComputedStyle(document.querySelector('.storefront-grid')).gridTemplateColumns.split(' ').length===${width===1440?3:width===768?2:1}`),'Wrong card columns');
-  if(width===1440)assert(await evaluate("(()=>{const h=document.querySelector('.footer').getBoundingClientRect().height;return h>=140&&h<=200})()"),'Footer outside compact target');
+  if(width===1440)assert(await evaluate("(()=>{const h=document.querySelector('.footer,.workspace-footer').getBoundingClientRect().height;return h>=140&&h<=200})()"),'Footer outside compact target');
   await shot('restaurant-'+width);
  }
  await click('.storefront-dish .button');await waitText('Đã thêm');assert(!await evaluate("Boolean(document.querySelector('dialog.cart-drawer'))"),'Adding unexpectedly opens drawer');
@@ -78,7 +78,7 @@ try {
   if(mode==='broken')await until(()=>evaluate("document.querySelector('.storefront-cover img')?.getAttribute('src')==='/images/restaurant/default-cover.jpg'&&document.querySelector('.storefront-cover img').naturalWidth>0"),'Broken cover fallback failed');
   if(mode==='long')await shot('restaurant-long-360');
  }
- await mock('ready',true);await navigate('/owner');await waitText('Ảnh bìa và giới thiệu quán');await evaluate("document.querySelector('#restaurant-description').focus()");await call('Input.insertText',{text:'Giới thiệu quán do chủ quán tự nhập.'});await click('.storefront-form button[type=submit]');await waitText('Đã lưu ảnh bìa và giới thiệu');await navigate('/owner');await waitText('Giới thiệu quán do chủ quán tự nhập.');await noOverflow();await shot('owner-content-360');
+ await mock('ready',true);await navigate('/owner/settings');await waitText('Ảnh bìa và giới thiệu quán');await evaluate("document.querySelector('#restaurant-description').focus()");await call('Input.insertText',{text:'Giới thiệu quán do chủ quán tự nhập.'});await click('.storefront-form button[type=submit]');await waitText('Đã lưu ảnh bìa và giới thiệu');await navigate('/owner/settings');await waitText('Giới thiệu quán do chủ quán tự nhập.');await noOverflow();await shot('owner-content-360');
  await mock();await navigate();await waitText('Mì tôm cay chua');await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});assert(await evaluate("getComputedStyle(document.querySelector('.storefront-hero')).animationName==='none'"),'Reduced motion failed');
  await call('Emulation.setDeviceMetricsOverride',{width:720,height:900,deviceScaleFactor:1,mobile:false});await evaluate("document.documentElement.style.zoom='2'");await noOverflow();await shot('restaurant-zoom');
  assert(errors.length===0,'Uncaught runtime exception: '+errors.join(', '));console.log('PASS CAT-01/CART-01/PRICE-01: responsive Figma cover/grid/footer, drawer focus and persistence, price consent, filters, states, owner form, reduced motion and zoom. Controlled API responses only.');console.log('Screenshots: '+evidence);

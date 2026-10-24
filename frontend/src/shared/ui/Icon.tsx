@@ -1,6 +1,17 @@
 import type { CSSProperties } from 'react'
 
 const paths = {
+  shop: <><path d="M4 10v11h16V10M3 4h18l-2 6H5Z" /><path d="M9 21v-6h6v6" /></>,
+  check: <path d="m5 12 4 4L19 6" />,
+  chevron: <path d="m9 18 6-6-6-6" />,
+  book: <><path d="M4 5a3 3 0 0 1 3-3h13v17H7a3 3 0 0 0-3 3ZM4 5v17" /></>,
+  briefcase: <><rect x="3" y="7" width="18" height="13" rx="2" /><path d="M9 7V4h6v3M3 12h18" /></>,
+  help: <><circle cx="12" cy="12" r="9" /><path d="M9.5 9a2.6 2.6 0 1 1 3 2.6c-.5.2-.5.8-.5 1.4M12 17h.01" /></>,
+  inbox: <><path d="M4 4h16v16H4ZM4 14h4l2 3h4l2-3h4" /></>,
+  logout: <path d="M10 4H5v16h5M14 8l4 4-4 4M8 12h10" />,
+  qr: <path d="M4 4h6v6H4ZM14 4h6v6h-6ZM4 14h6v6H4ZM14 14h2v2h-2ZM18 14h2v6h-6v-2" />,
+  wallet: <><path d="M4 6h14a2 2 0 0 1 2 2v11H4a2 2 0 0 1-2-2V6a3 3 0 0 1 3-3h12M15 11h5v4h-5Z" /></>,
+  settings: <><circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M4.9 4.9 7 7M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1" /></>,
   arrow: <><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></>,
   menu: <path d="M4 7h16M4 12h16M4 17h16" />,
   trash: <><path d="M4 7h16M9 7V4h6v3m-8 0 1 13h8l1-13M10 11v5M14 11v5" /></>,

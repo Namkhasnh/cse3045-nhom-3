@@ -10,14 +10,15 @@ import {CheckoutPage} from './app/pages/CheckoutPage'
 import {OwnerCommissionPage,AdminCommissionPage,FinancePage} from './features/commissions'
 import {OwnerMenuPage,AdminCategoriesPage} from './features/dishes'
 import {OwnerDeliveryPage,AdminDeliveryPage} from './features/delivery'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { StudentLayout } from './app/layouts/StudentLayout'
 import { RoleLayout } from './app/layouts/RoleLayout'
+import { WorkspaceLayout } from './app/layouts/WorkspaceLayout'
 import { RestaurantListPage, RestaurantMenuPage, RestaurantSettingsPage, AdminRestaurantsPage, catalogApi } from './features/restaurants'
 import { CartProvider, CartDrawer, useCart } from './features/cart'
 import { ApplicationsPage,AdminApplicationsPage } from './features/onboarding'
 import { formatVnd } from './shared/lib/format'
-import { authApi, AuthPage, CredentialRecoveryPage, ProfilePage, safeReturnPath, type User } from './features/auth'
+import { authApi, ApiError, AuthPage, CredentialRecoveryPage, ProfilePage, safeReturnPath, type User } from './features/auth'
 
 const recommendationOptions=async()=>{const [points,categories]=await Promise.all([deliveryApi.points(),catalogApi.categories()]);return {points,categories}}
 
@@ -34,13 +35,14 @@ function AppRoutes() {
   const cart = useCart()
   const [drawerOpen, setDrawerOpen] = useState(false)
   const sessionRequest = useRef(0)
-  const [path, setPath] = useState(pathNow)
+  const [locationHref, setLocationHref] = useState(() => window.location.href)
+  const path = new URL(locationHref).pathname
   const [session, setSession] = useState<{ status: 'loading' | 'ready' | 'anonymous' | 'error'; user: User | null }>(
     { status: 'loading', user: null })
 
   useEffect(() => {
     let active = true
-    const onPopState = () => setPath(pathNow())
+    const onPopState = () => setLocationHref(window.location.href)
     const checkSession = () => {
       if (import.meta.env.DEV && pathNow() === '/preview') return
       const token = ++sessionRequest.current
@@ -51,10 +53,11 @@ function AppRoutes() {
     }
     const onVisible = () => { if (document.visibilityState === 'visible') checkSession() }
     window.addEventListener('popstate', onPopState)
+    window.addEventListener('hashchange', onPopState)
     window.addEventListener('focus', checkSession)
     document.addEventListener('visibilitychange', onVisible)
     checkSession()
-    return () => { active = false; window.removeEventListener('popstate', onPopState); window.removeEventListener('focus', checkSession); document.removeEventListener('visibilitychange', onVisible) }
+    return () => { active = false; window.removeEventListener('popstate', onPopState); window.removeEventListener('hashchange', onPopState); window.removeEventListener('focus', checkSession); document.removeEventListener('visibilitychange', onVisible) }
   }, [])
   const onboardingAccountId=session.user?.id
   useEffect(() => { if (onboardingAccountId) { const own='hlf.onboarding.'+onboardingAccountId; try { for (const key of Object.keys(sessionStorage)) if (key.startsWith('hlf.setup.')&&!key.endsWith('.administration')&&!key.startsWith('hlf.setup.'+onboardingAccountId+'.')) sessionStorage.removeItem(key); else if (key.startsWith('hlf.onboarding.') && key!==own && !key.startsWith(own+'.')) sessionStorage.removeItem(key) } catch { /* storage unavailable */ } } }, [onboardingAccountId])
@@ -63,11 +66,22 @@ function AppRoutes() {
 
   function navigate(next: string) {
     window.history.pushState(null, '', next)
-    setPath(pathNow())
+    setLocationHref(window.location.href)
     window.scrollTo(0, 0)
   }
 
-  return <NotificationProvider key={session.user?.id??'guest'} actor={session.status==='ready'&&session.user?.is_active?session.user.id:null}><AppShell user={session.user} pending={path !== '/preview' && session.status === 'loading'} cartCount={cart.count} path={path} onOpenCart={/^\/restaurants\/[1-9][0-9]*$/.test(path) ? () => setDrawerOpen(true) : undefined}>{renderRoutes()}{drawerOpen && <CartDrawer onClose={() => setDrawerOpen(false)} />}</AppShell></NotificationProvider>
+  function endSession() {
+    try { for (const key of Object.keys(sessionStorage)) if (key.startsWith('hlf.onboarding.') || key.startsWith('hlf.setup.') && !key.endsWith('.administration')) sessionStorage.removeItem(key) } catch { /* storage unavailable */ }
+    sessionRequest.current++
+    setSession({ status: 'anonymous', user: null })
+    navigate('/login')
+  }
+  async function logout() {
+    try { await authApi.logout() } catch (error) { if (!(error instanceof ApiError) || error.status !== 401) throw error }
+    endSession()
+  }
+
+  return <NotificationProvider key={session.user?.id??'guest'} actor={session.status==='ready'&&session.user?.is_active?session.user.id:null}><AppShell user={session.user} pending={path !== '/preview' && session.status === 'loading'} cartCount={cart.count} path={path} onLogout={logout} onOpenCart={/^\/restaurants\/[1-9][0-9]*$/.test(path) ? () => setDrawerOpen(true) : undefined}>{renderRoutes()}{drawerOpen && <CartDrawer onClose={() => setDrawerOpen(false)} />}</AppShell></NotificationProvider>
   function renderRoutes(){
   const publicUser = session.user?.is_active ? session.user : null
   if (path === '/' || path === '/cart' || /^\/restaurants\/[1-9][0-9]*$/.test(path) || (path === '/preview' && import.meta.env.DEV)) return <StudentLayout
@@ -88,24 +102,24 @@ function AppRoutes() {
   if (!session.user) return <Redirect to={`/login?returnTo=${encodeURIComponent(window.location.pathname + window.location.search + window.location.hash)}`} />
   const user = session.user
   const profile = <ProfilePage user={user} onUpdate={updated => setSession({ status: 'ready', user: updated })}
-    onLogout={() => { try { for (const key of Object.keys(sessionStorage)) if (key.startsWith('hlf.onboarding.')||key.startsWith('hlf.setup.')&&!key.endsWith('.administration')) sessionStorage.removeItem(key) } catch { /* storage unavailable */ } sessionRequest.current++; setSession({ status: 'anonymous', user: null }); navigate('/login') }} />
+    onLogout={endSession} />
+  const personal = (content: ReactNode) => <WorkspaceLayout user={user} path={path}>{content}</WorkspaceLayout>
   if(path==='/support'||path==='/admin/support'&&user.capabilities.includes('admin')||path==='/privacy'){
     const content=path==='/privacy'?<PrivacyPage key={user.id} actor={user.id} protectedAccount={user.capabilities.includes('admin')}/>:<SupportPage key={user.id} actor={user.id} admin={user.capabilities.includes('admin')}/>
-    return user.capabilities.includes('admin')||user.managed_restaurant_id?<RoleLayout user={user} title={user.capabilities.includes('admin')?'Quản trị':'Chủ quán'} path={path}>{content}</RoleLayout>:<StudentLayout path={path}>{!user.is_active&&<p role="alert">Tài khoản đã đình chỉ; chỉ xử lý nghĩa vụ cũ.</p>}{content}</StudentLayout>
+    return user.capabilities.includes('admin') || path === '/support' && user.managed_restaurant_id && new URLSearchParams(window.location.search).get('workspace') === 'owner' ? <RoleLayout user={user} title={user.capabilities.includes('admin')?'Quản trị':'Chủ quán'} path={path}>{content}</RoleLayout> : personal(content)
   }
   if(path==='/admin/users'&&user.capabilities.includes('admin'))return <RoleLayout user={user} title="Quản trị" path={path}><UsersPage key={user.id} actor={user.id}/></RoleLayout>
   if(path==='/admin/audit'&&user.capabilities.includes('admin'))return <RoleLayout user={user} title="Quản trị" path={path}><AuditPage key={user.id} actor={user.id}/></RoleLayout>
   if(!user.is_active&&!['/orders','/account','/owner/finance'].includes(path)&&!/^\/orders\/[1-9][0-9]*$/.test(path)&&path!=='/owner/restaurants/'+user.managed_restaurant_id+'/orders')return <RoleLayout user={user} title="Quyền truy cập giới hạn" path={path}><p role="alert">Tài khoản đã đình chỉ. Chỉ xử lý nghĩa vụ cũ.</p><a href="/support">Mở hỗ trợ</a></RoleLayout>
-  if (path === '/orders' && (user.capabilities.includes('buy')||user.capabilities.includes('obligations'))) return <StudentLayout path={path}><HistoryPage key={user.id} accountId={user.id}/></StudentLayout>
-  if (/^\/orders\/[1-9][0-9]*$/.test(path) && (user.capabilities.includes('buy')||user.capabilities.includes('obligations'))) return <StudentLayout path={path}><OrderPage key={user.id+path} id={path.split('/')[2]} accountId={user.id} renderPayment={(o,apply)=>o.payment?.method==='qr'?<PaymentPanel key={user.id+':'+o.id} actor={user.id} restaurant={o.restaurant_id} orderId={o.id} orderStatus={o.status} payment={o.payment} onPayment={apply}/>:null}/></StudentLayout>
+  if (path === '/orders' && (user.capabilities.includes('buy')||user.capabilities.includes('obligations'))) return personal(<HistoryPage key={user.id} accountId={user.id}/>)
+  if (/^\/orders\/[1-9][0-9]*$/.test(path) && (user.capabilities.includes('buy')||user.capabilities.includes('obligations'))) return personal(<OrderPage key={user.id+path} id={path.split('/')[2]} accountId={user.id} renderPayment={(o,apply)=>o.payment?.method==='qr'?<PaymentPanel key={user.id+':'+o.id} actor={user.id} restaurant={o.restaurant_id} orderId={o.id} orderStatus={o.status} payment={o.payment} onPayment={apply}/>:null}/>)
   if (user.managed_restaurant_id&&path==='/owner/restaurants/'+user.managed_restaurant_id+'/orders') return <RoleLayout user={user} title="Chủ quán" path={path}><OwnerOrdersPage restricted={!user.is_active} key={user.id} restaurantId={user.managed_restaurant_id} accountId={user.id} renderPayment={(o,apply)=>o.payment?.method==='qr'?<PaymentPanel key={user.id+':'+o.id} actor={user.id} restaurant={o.restaurant_id} orderId={o.id} orderStatus={o.status} payment={o.payment} owner onPayment={apply}/>:null}/></RoleLayout>
   if (path === '/recommendations' && user.capabilities.includes('buy') && !user.capabilities.includes('admin')) return <StudentLayout path={path}><RecommendationsPage key={user.id} actor={user.id} loadOptions={recommendationOptions} onSelect={async(row:Recommendation)=>{const [restaurant,dish]=await Promise.all([catalogApi.restaurant(row.restaurant_id),catalogApi.dish(row.dish_id)]);if(!restaurant.is_active||!restaurant.is_open||!restaurant.is_accepting_orders||!dish.is_available||dish.restaurant_id!==restaurant.id||dish.price_vnd!==row.unit_price_vnd)throw new Error('Changed catalog');cart.add(restaurant,dish)}}/></StudentLayout>
   if (path === '/checkout'  && user.capabilities.includes('buy')) return <StudentLayout path={path}><CheckoutPage key={user.id} accountId={user.id}/></StudentLayout>
   if (path === '/open-restaurant') return <StudentLayout path={path}><ApplicationsPage renderSetup={id=><SetupChecklist key={id} restaurantId={id}/>} key={user.id} userId={user.id} canApply={user.capabilities.includes('apply_for_restaurant')&&!user.capabilities.includes('admin')} /></StudentLayout>
-  if (path === '/account') return !user.capabilities.includes('admin') && !user.capabilities.includes('manage_restaurant') ? <StudentLayout path={path}>{profile}</StudentLayout> :
-    <RoleLayout user={user} title={user.capabilities.includes('admin') ? 'Quản trị' : 'Chủ quán'} path={path}>{profile}</RoleLayout>
+  if (path === '/account') return user.capabilities.includes('admin') ? <RoleLayout user={user} title="Quản trị" path={path}>{profile}</RoleLayout> : personal(profile)
 
-  if(path==='/notifications'&&user.is_active)return user.managed_restaurant_id||user.capabilities.includes('admin')?<RoleLayout user={user} title={user.capabilities.includes('admin')?'Quản trị':'Chủ quán'} path={path}><InboxPage/></RoleLayout>:<StudentLayout path={path}><InboxPage/></StudentLayout>
+  if(path==='/notifications'&&user.is_active)return user.capabilities.includes('admin')?<RoleLayout user={user} title="Quản trị" path={path}><InboxPage/></RoleLayout>:personal(<InboxPage/>)
   if(path==='/admin'&&user.capabilities.includes('admin'))return <RoleLayout user={user} title="Quản trị" path={path}><AdminTasksPage/></RoleLayout>
   if(path==='/owner/payments'&&user.managed_restaurant_id)return <RoleLayout user={user} title="Chủ quán" path={path}><PaymentsPage key={user.id} actor={user.id} restaurant={user.managed_restaurant_id}/></RoleLayout>
   if(path==='/admin/payments'&&user.capabilities.includes('admin'))return <RoleLayout user={user} title="Quản trị" path={path}><PaymentsPage key={user.id} actor={user.id} admin/></RoleLayout>
@@ -119,7 +133,11 @@ function AppRoutes() {
   if (path === '/admin/categories' && user.capabilities.includes('admin')) return <RoleLayout user={user} title="Quản trị" path={path}><AdminCategoriesPage key={user.id} actor={user.id}/></RoleLayout>
   if (path === '/owner/delivery' && user.managed_restaurant_id) return <RoleLayout user={user} title="Chủ quán" path={path}><OwnerDeliveryPage key={user.id} actor={user.id} restaurantId={user.managed_restaurant_id}/></RoleLayout>
   if (path === '/admin/delivery' && user.capabilities.includes('admin')) return <RoleLayout user={user} title="Quản trị" path={path}><AdminDeliveryPage key={user.id} actor={user.id}/></RoleLayout>
-  if (path === '/owner' && user.capabilities.includes('manage_restaurant')) return <RoleLayout user={user} title="Chủ quán" path={path}><RestaurantSettingsPage key={user.id} renderSetup={(id,version)=><SetupChecklist key={id} restaurantId={id} version={version}/>}/></RoleLayout>
+  if (path === '/owner' && user.capabilities.includes('manage_restaurant') && user.managed_restaurant_id) {
+    if (['#profile', '#hours', '#accepting'].includes(window.location.hash)) return <Redirect to={'/owner/settings' + window.location.hash} />
+    return <RoleLayout user={user} title="Chủ quán" path={path}><SetupChecklist key={user.id+user.managed_restaurant_id} restaurantId={user.managed_restaurant_id} variant="overview" /></RoleLayout>
+  }
+  if (path === '/owner/settings' && user.capabilities.includes('manage_restaurant') && user.managed_restaurant_id) return <RoleLayout user={user} title="Chủ quán" path={path}><RestaurantSettingsPage key={user.id} renderSetup={(id,version)=><SetupChecklist key={id} restaurantId={id} version={version}/>}/></RoleLayout>
   if ((path === '/owner' && user.capabilities.includes('manage_restaurant')) || (path === '/admin' && user.capabilities.includes('admin'))) {
     return <RoleLayout user={user} title={user.capabilities.includes('admin') ? 'Quản trị' : 'Chủ quán'} path={path}>
       <h1>Xin chào, {user.display_name}</h1>
