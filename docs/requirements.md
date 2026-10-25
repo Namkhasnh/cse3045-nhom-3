@@ -28,7 +28,7 @@ The Vite + React frontend communicates with the NestJS backend through REST APIs
 ### 1.1 Operating Model (summary)
 
 - Restaurants **deliver orders themselves**. The platform has no driver accounts.
-- Students pay **cash or QR directly to the restaurant**; the restaurant confirms receipt.
+- Students pay on delivery outside the platform; cash or transfer is agreed with the restaurant/deliverer.
 - The platform computes and tracks **commission** on completed orders; collection is **manual**.
 - V1.0 uses verified fixed VJU pickup points and surveyed restaurant–point fees. Route-based free addresses belong to V1.2.
 
@@ -40,12 +40,12 @@ The Vite + React frontend communicates with the NestJS backend through REST APIs
 
 ### 2.2 V1.0 in scope
 
-- Anonymous homepage, restaurant search/list and public menus; guests may build one-restaurant carts.
+- Anonymous homepage, restaurant search/list and public menus; guests may build multi-restaurant carts; each submitted order still belongs to one restaurant.
 - Email-verified ordinary-user registration without role selection. A manager keeps buyer rights under the same identity.
 - One restaurant maximum per account; opening application, versioned partnership consent and review history; approval creates restaurant and ownership atomically.
 - One operator-owned Admin, MFA, recovery and protected provisioning; no website flow can request or grant additional Admin access.
 - Restaurant setup, hours, dishes/images, fixed VJU points and surveyed fees; explicit commission configuration before selling.
-- Cash orders, durable tracking/history/recovery; QR paid directly to the restaurant, owner-verified receipt and recorded direct-refund obligations.
+- COD orders, durable tracking/history/recovery; legacy QR receipt/refund obligations remain serviceable.
 - Manual commission ledger, reconciliation, receipts/reports; user/restaurant administration, order-linked support and audit lookup.
 - Grounded AI recommendations with approved privacy/cost controls and manual fallback.
 - Tested staging, real-partner pilot, backup/restore, incident/support procedures and approved controlled release.
@@ -60,7 +60,7 @@ V0.1 identity/security; V0.2 public discovery/cart; V0.3 onboarding; V0.4 sell r
 
 ### 2.5 After V1.0
 
-V1.1: reorder, favorites, reviews and random selection, each with finalized contracts. Durable order history is already V0.5/V1.0. V1.2: other service areas, free addresses/map pins and route-distance fee tiers. Drivers, custody/splitting, multiple restaurants per manager and extra Admins remain excluded.
+V1.1: favorites, reviews and random selection, each with finalized contracts. The October25 user-approved purchase-history extension brings forward reorder and grouped multi-restaurant cart/checkout; see [its contract](ui/purchase-history-figma.md). Durable order history is already V0.5/V1.0. V1.2: other service areas, free addresses/map pins and route-distance fee tiers. Drivers, custody/splitting, multiple restaurants per manager and extra Admins remain excluded.
 
 ## 3. User Stories
 
@@ -70,16 +70,16 @@ V1.1: reorder, favorites, reviews and random selection, each with finalized cont
 | US02 | Visitor / User | Search restaurants and dishes by name, category, price range. | Must |
 | US03 | Visitor / User | View menu, price, opening hours, dish availability. | Must |
 | US04 | User | Select fixed VJU pickup point and see surveyed fee in V0.4; free address/map pin and route fees deferred to V1.2. | Must by version |
-| US05 | Visitor / User | Build one-restaurant cart before login; retain it through login, revalidate and explicitly confirm authenticated checkout. | V0.2/V0.5 Must |
-| US06 | Student | Choose cash or restaurant QR transfer. | Must |
+| US05 | Visitor / User | Build a grouped multi-restaurant cart before login; retain it through login, revalidate and explicitly confirm authenticated checkout. | V0.2/V0.5 Must |
+| US06 | Student | Pay on delivery; cash or transfer is arranged externally. | Must |
 | US07 | Student | Track order status; cancel while restaurant has not accepted. | Must |
 | US08 | Student | Get AI dish suggestions by budget, preferences, pickup/delivery point. | Must |
 | US09 | Student | Pick a random dish that satisfies ordering conditions. | Should |
-| US10 | User | View durable order history/recovery in V0.5; reorder in V1.1. | History Must; reorder Should |
+| US10 | User | View durable order history/recovery; scoped October25 extension enables reorder into a grouped cart. | History Must; reorder Should |
 | US11 | Restaurant Owner | Create, read, update, delete dishes in own restaurant's menu. | Must |
-| US12 | Restaurant Owner | Update restaurant info including optional cover/introduction, hours, order-accepting status, delivery range and fees. | Must |
+| US12 | Restaurant Owner | Update restaurant info including optional cover/avatar/introduction and image crop selection, hours, order-accepting status, delivery range and fees. | Must |
 | US13 | Restaurant Owner | Receive, accept or reject (with reason) orders and update progress. | Must |
-| US14 | Restaurant Owner | Configure payment QR; confirm payment after verifying the transaction. | Must |
+| US14 | Restaurant Owner | Organize delivery and payment collection outside the platform; handle legacy payment obligations. | Must |
 | US15 | Restaurant Owner | View completed orders, dish revenue and commission per period. | Must |
 | US16 | Admin | Create, read, update, delete restaurants; manage responsible owner accounts. | Must |
 | US17 | Admin | Set commission rate per restaurant; view monthly totals, receivable/collected amounts; reconcile. | Must |
@@ -102,16 +102,16 @@ New stories (US01–US22 retain their IDs; US21–22 remain excluded):
 
 | ID | Area | Requirement |
 | --- | --- | --- |
-| FR01 | Accounts and authorization | Ordinary-user registration; one MFA-protected Admin; management derived from current ownership, maximum one restaurant per account. Managers retain buyer capabilities. |
+| FR01 | Accounts and authorization | Ordinary-user registration; one MFA-protected Admin; management derived from current ownership, maximum one restaurant per account. Managers retain buyer capabilities. Browser sessions do not expire due to elapsed time or inactivity; logout and account-security revocation still apply (October 24, 2026 user request). |
 | FR02 | Search and menu | Anonymous view/search/filter of allowlisted public restaurant/menu data; no account, application or financial disclosure. |
 | FR03 | Location and delivery fee | Resolve pickup point/address, route distance, delivery range and fee per restaurant policy (produces a *delivery quote*). |
 | FR04 | Cart and orders | Manage cart, compute totals, place, accept, track and cancel orders per status rules. |
-| FR05 | Payment | Choose cash or QR; restaurant confirms receipt. |
+| FR05 | Payment | Pay on delivery; the platform does not verify collection for new orders. |
 | FR06 | Recommendations | AI suggestion and random selection from eligible dishes only. |
 | FR07 | Dish CRUD | Owner creates, views, edits, deletes, or hides dishes of own restaurant. |
 | FR08 | Restaurant CRUD | Admin creates, views, edits, deletes, or deactivates restaurants; owner edits only permitted operational data of own restaurant. |
 | FR09 | Commission and settlement | Compute commission on completed orders; aggregate by restaurant, period, collected/uncollected. |
-| FR10 | Utilities and support | History/recovery V0.5, order-linked support V0.7; reorder/reviews/favorites V1.1. |
+| FR10 | Utilities and support | History/recovery V0.5, order-linked support V0.7; reorder in the October25 scoped extension; reviews/favorites V1.1. |
 | FR11 | Opening applications | Versioned terms consent, applicant/review history; atomic approval and setup-required restaurant; manual create obeys the same ownership cap. |
 | FR12 | User administration | Audited availability controls, protected sole Admin, session revocation and privacy-scoped support/audit reads. |
 
@@ -172,10 +172,10 @@ Thresholds are **proposed acceptance targets** and must be measured during imple
 
 | ID | Rule |
 | --- | --- |
-| BR11 | Payment methods: cash or QR transfer paid **directly to the restaurant**. |
-| BR12 | Scanning a QR or the customer reporting a transfer is **not** proof of payment; the restaurant must verify and confirm. |
-| BR13 | Payment status is tracked separately from order status: `unpaid`, `paid`, `refund_pending`, `refunded`. |
-| BR14 | Refunds of transfers are made by the restaurant directly; the system records the result. |
+| BR11 | New orders use `cod`: pay on delivery externally, in cash or by transfer as agreed with the deliverer. |
+| BR12 | No shipper accounts, advances or customer-collection confirmation for new COD orders; legacy QR verification remains historical. |
+| BR13 | COD payment is `not_tracked`, or `not_required` for zero totals; fulfillment never asserts collection. Legacy payment states remain separate. |
+| BR14 | New payment disputes are handled externally by restaurant/deliverer/customer. Preserve recorded legacy receipts/refund obligations. |
 
 ### 6.4 Order Lifecycle and Cancellation
 
@@ -197,6 +197,8 @@ stateDiagram-v2
 | BR17 | Owner rejection requires a reason. Invalid transitions are rejected. |
 | BR18 | Resubmitting the current status causes no additional effect (no duplicate commission or transition event). |
 | BR19 | A race between cancel and accept results in exactly one valid transition. |
+
+Orders have one immutable, globally unique public `order_code` shared by buyer and restaurant for reconciliation. IDs remain technical references. The owner sees the configured pickup point before acceptance; recipient name/phone become available only after the existing food-ready milestone. See [owner order redesign](ui/owner-orders-figma.md).
 
 ### 6.5 Commission and Settlement
 
@@ -305,7 +307,7 @@ stateDiagram-v2
 | Commercial policy/provider/hosting decisions | [Decision register](decisions.md); dependent versions BLOCKED until approved |
 | Reviews and favorites detail design | Could; defined at implementation |
 
-Superseded on October 18, 2026: FR01 role selection and Owner/Admin requests; §4.1 exclusive buyer/owner roles; §7.3 multi-restaurant management; cash-only MVP launch; post-MVP QR/support/reporting/history screen deferrals. IDs are retained with revised meaning above; old tests/evidence do not prove these revisions.
+Superseded on October 18, 2026: FR01 role selection and Owner/Admin requests; §4.1 exclusive buyer/owner roles; §7.3 multi-restaurant management; cash-only MVP launch; post-MVP QR/support/reporting/history screen deferrals. October25 new-order COD rules supersede the former cash/QR selection; old obligations survive. IDs are retained with revised meaning above; old tests/evidence do not prove these revisions.
 
 | New AC | Scenario | Expected result |
 | --- | --- | --- |
@@ -348,10 +350,22 @@ US18/25/26, FR12, NFR07 and AC17 are refined by [approved DEC-08](account-suppor
 
 ## Onboarding notifications extension — approved October 22, 2026
 
-US27 / FR13 / AC18: authenticated applicants, current managers and the sole MFA Admin receive durable in-site notifications for application submission/review/manual invitation/confirmation/creation, delivery proposal/review, commission proposal/acceptance, readiness transitions and restaurant activation. Approval guidance lists every setup requirement, responsible actor and actionable link. A bell shows unread count/recent messages; a mailbox supports pagination, unread filtering, detail and explicit read/read-loaded actions. Reading never consents, activates or submits a business command.
+US27 / FR13 / AC18: authenticated applicants, current managers and the sole MFA Admin receive durable in-site notifications for application submission/review/manual invitation/confirmation/creation, delivery proposal/review, commission proposal/acceptance, readiness transitions and restaurant activation. Approval guidance lists every setup requirement, responsible actor and actionable link. A bell shows unread count/recent messages; a standalone notification page supports pagination, All/Unread/Read and category filters, details and authenticated mailbox-wide mark-all-as-read. Clicking an item marks that item read; opening the bell does not. This October 24 approved redesign supersedes the earlier read-loaded-only UI. Reading never consents, activates or submits a business command. The October 24 incoming-alert extension adds a dismissible in-site popup for newly observed unread messages and an optional local chime. Separate account/browser preferences default to popup on and sound off. Initial mailbox loading never replays old alerts; no background delivery outside the active website is implied.
 
-Current setup guidance is distinct from immutable event content and separates public visibility (active+ready) from orderability (also accepting+open). Admin has paginated current tasks. Existing partners/applicants receive one explicitly current-state summary, never fabricated historical events. No email/chat/browser push or order/finance notifications are added. [Notification contract](notifications-contract.md) owns interfaces, storage and evidence boundaries.
+Current setup guidance is distinct from immutable event content and separates public visibility (active+ready) from orderability (also accepting+open). Admin has paginated current tasks. Existing partners/applicants receive one explicitly current-state summary, never fabricated historical events. No email/chat/browser push or finance notification expansion is implied. Order events follow the October 23 extension in the notification contract. [Notification contract](notifications-contract.md) owns interfaces, storage and evidence boundaries.
 
 ## Approved V0.8 clarification — October22
 
 [DEC-09](ai-v08-contract.md) owns delivery-inclusive one-portion budget1–1000000 VND, category-only soft preferences, free-tier provider content-use disclosure, USD0/no billing escalation and bounded operational/evaluation controls. No application conversation/training storage; Google free-tier content improvement/human review is explicitly accepted for minimized non-personal catalog data. Manual ordering remains independent.
+
+## Approved checkout/voucher extension
+
+The October 25, 2026 user-approved [checkout/voucher contract](checkout-vouchers.md) extends this specification: owner-funded restaurant codes, platform-funded global codes, pre-discount commission, signed completion subsidies, exact discounted totals and independent `not_required` payment for new zero-total orders. It supersedes earlier conflicting no-discount formulas only within this capability. Vouchers own definitions/redemptions; orders own immutable discount snapshots; commissions own subsidy ledger entries.
+
+## Approved COD cutover — October 25, 2026
+
+[COD contract](cod-ordering.md) supersedes new-order QR/cash selection, QR configuration/review and platform-funded voucher creation/redemption. Restaurants arrange their own delivery (including external shipper advances); the platform tracks fulfillment only. Owner-funded vouchers and completed-only pre-discount dish commission remain. Existing QR/refund obligations and platform-voucher order subsidies survive. Stable IDs US06/14, FR05, BR11–14 and AC5 now distinguish new COD behavior from legacy-only handling.
+
+## October25 grouped purchase extension
+
+The user approved [purchase-history/reorder and multi-restaurant cart/checkout](ui/purchase-history-figma.md). BR01 still applies to each order. A cart may retain several restaurants and checkbox selections; one explicit checkout confirms separate orders with a common surveyed point, independent fees/vouchers and separate idempotency keys. Successful orders survive partial failures; unknown results retain their original intent/key. Only confirmed quantities are removed. This supersedes earlier single-restaurant **cart** restrictions, not single-restaurant **order** invariants or the manager ownership limit.

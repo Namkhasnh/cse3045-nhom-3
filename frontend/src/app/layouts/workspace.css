@@ -16,6 +16,9 @@
 .workspace-nav a .icon, .workspace-bottom .icon { width: 22px; height: 22px; flex-shrink: 0; }
 .workspace-nav a:hover, .workspace-bottom a:hover, .workspace-collapse:hover { background: var(--cream); color: var(--color-ink); }
 .workspace-nav a[aria-current='page'] { color: var(--color-brand-dark); background: var(--color-brand-tint); box-shadow: inset 3px 0 var(--orange-dark); }
+.workspace-layout--admin .workspace-icon { background: var(--color-admin-sidebar); box-shadow: 0 8px 18px rgb(31 42 68 / .12); }
+.workspace-layout--admin .workspace-nav a[aria-current='page'] { color: var(--color-admin-sidebar); background: var(--color-admin-sidebar-ink); box-shadow: inset 3px 0 var(--color-admin-sidebar); }
+.workspace-layout--admin .workspace-eyebrow { color: var(--color-admin-sidebar); }
 .workspace-link-label { overflow-wrap: anywhere; }
 .workspace-bottom { display: grid; gap: 6px; padding-top: 12px; border-top: 1px solid var(--color-surface-line); }
 .workspace-bottom > a { color: var(--color-ink); background: var(--cream-dark); }

@@ -1,7 +1,7 @@
 import {request} from '../../../shared/api/request'
 export type Hours={weekday:number;opens_at:string;closes_at:string;closes_next_day:boolean}
-export type Settings={description?:string|null;cover_image_reference?:string|null;id:string;name:string;address:string;contact_phone:string;latitude:string|null;longitude:string|null;version:number;readiness:string;is_active:boolean;is_accepting_orders:boolean;is_open:boolean;hours:Hours[];checklist:{profile:boolean;hours:boolean;menu:boolean;delivery:boolean;commission:boolean}}
-export const settingsApi={uploadCover,own:async()=>{const p=await request<{data:Settings[]}>('/owner/restaurants');return p.data[0]},read:(id:string,admin=false)=>request<Settings>(`/${admin?'admin':'owner'}/restaurants/${id}`),save:(id:string,body:object,admin=false)=>request<Settings>(`/${admin?'admin':'owner'}/restaurants/${id}`,'PATCH',body)}
+export type Settings={description?:string|null;avatar_image_reference?:string|null;cover_image_reference?:string|null;id:string;name:string;address:string;contact_phone:string;latitude:string|null;longitude:string|null;version:number;readiness:string;is_active:boolean;is_accepting_orders:boolean;is_open:boolean;hours:Hours[];checklist:{profile:boolean;hours:boolean;menu:boolean;delivery:boolean;commission:boolean}}
+export const settingsApi={uploadCover,own:async(signal?:AbortSignal)=>{const p=await request<{data:Settings[]}>('/owner/restaurants','GET',undefined,undefined,signal);return p.data[0]},read:(id:string,admin=false)=>request<Settings>(`/${admin?'admin':'owner'}/restaurants/${id}`),save:(id:string,body:object,admin=false)=>request<Settings>(`/${admin?'admin':'owner'}/restaurants/${id}`,'PATCH',body)}
 
 export type CoverUpload={id:string;image_reference:string;mime_type:string;size_bytes:number;width:number;height:number}
 async function uploadCover(id:string,file:File){

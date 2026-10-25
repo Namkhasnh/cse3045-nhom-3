@@ -17,7 +17,7 @@ export function openSql(now?: Date) {
       (h.closes_next_day=TRUE AND h.opens_at<=${time}))) OR
     (h.weekday=${previous} AND h.closes_next_day=TRUE AND h.closes_at>${time})))`;
 }
-export type RestaurantRow = { description: string | null; cover_media_asset_id: bigint | null; id: bigint; name: string; address: string; latitude: Prisma.Decimal | null; longitude: Prisma.Decimal | null;
+export type RestaurantRow = { description: string | null; cover_media_asset_id: bigint | null; avatar_media_asset_id: bigint | null; id: bigint; name: string; address: string; latitude: Prisma.Decimal | null; longitude: Prisma.Decimal | null;
   contact_phone: string; is_active: number; is_accepting_orders: number; is_open: number; version: number; updated_at: Date;
   min_price_vnd: bigint | null; max_price_vnd: bigint | null };
 export type DishRow = { id: bigint; restaurant_id: bigint; restaurant_name: string; category_id: bigint; name: string; description: string; price_vnd: bigint;
@@ -50,7 +50,7 @@ export class CatalogRepository {
     if (q.category_id || q.min_price_vnd !== undefined || q.max_price_vnd !== undefined)
       conditions.push(Prisma.sql`EXISTS(SELECT 1 FROM dishes d WHERE d.restaurant_id=r.id AND ${Prisma.join(dishConditions(q), ' AND ')})`);
     conditions.push(boundary(q, Prisma.sql`r.name COLLATE utf8mb4_0900_ai_ci`, Prisma.sql`r.id`));
-    return this.prisma.$queryRaw<RestaurantRow[]>(Prisma.sql`SELECT r.id,r.name,r.description,r.cover_media_asset_id,r.address,r.latitude,r.longitude,r.contact_phone,
+    return this.prisma.$queryRaw<RestaurantRow[]>(Prisma.sql`SELECT r.id,r.name,r.description,r.cover_media_asset_id,r.avatar_media_asset_id,r.address,r.latitude,r.longitude,r.contact_phone,
       r.is_active,r.is_accepting_orders,r.version,r.updated_at,${openSql()} AS is_open,
       (SELECT MIN(d.price_vnd) FROM dishes d WHERE d.restaurant_id=r.id AND d.is_visible=TRUE) AS min_price_vnd,
       (SELECT MAX(d.price_vnd) FROM dishes d WHERE d.restaurant_id=r.id AND d.is_visible=TRUE) AS max_price_vnd

@@ -23,13 +23,16 @@ export class RestaurantSettingsWorkflow {
  const result=await this.runner.run(async c=>{await this.accounts.lock(c,actor,actor,admin);if(admin)await this.accounts.authority(c,actor);
  const r=await this.restaurants.lock(c,restaurantId,actor,admin);if(r.version!==input.expected)return conflict();
  const cover=input.cover===undefined?undefined:input.cover===null?null:await this.covers.attach(c,restaurantId,BigInt(id(input.cover.split('/').at(-1))));
- await this.restaurants.update(c,restaurantId,input.expected,{...input.data,...(cover===undefined?{}:{cover_media_asset_id:cover}),...(input.data.is_active===false?{is_accepting_orders:false}:{})},input.hours);
- if(cover!==undefined&&r.cover_media_asset_id!==null&&cover!==r.cover_media_asset_id)await this.covers.requestCleanup(c,r.cover_media_asset_id);
+ const avatar=input.avatar===undefined?undefined:input.avatar===null?null:await this.covers.attach(c,restaurantId,BigInt(id(input.avatar.split('/').at(-1))));
+ if(avatar!=null){const asset=await this.covers.get(avatar,c);if(asset.width!==asset.height)return invalid();}
+ const nextCover=cover===undefined?r.cover_media_asset_id:cover,nextAvatar=avatar===undefined?r.avatar_media_asset_id:avatar;
+ await this.restaurants.update(c,restaurantId,input.expected,{...input.data,...(cover===undefined?{}:{cover_media_asset_id:cover}),...(avatar===undefined?{}:{avatar_media_asset_id:avatar}),...(input.data.is_active===false?{is_accepting_orders:false}:{})},input.hours);
+ for(const old of new Set([r.cover_media_asset_id,r.avatar_media_asset_id]))if(old!==null&&old!==nextCover&&old!==nextAvatar)await this.covers.requestCleanup(c,old);
  const view=await this.view(c,restaurantId,actor,admin);
  if(input.data.is_accepting_orders===true&&(!ready(view.checklist)||!view.is_active))return conflict('RESTAURANT_NOT_READY');
  await this.setup.sync(c,restaurantId,actor,admin);
  if(typeof input.data.is_active==='boolean'&&input.data.is_active!==r.is_active)await this.notifications.account(c,r.owner_id,'restaurant.activation:'+r.id+':'+(r.version+1),{type:'restaurant.activation',restaurant_id:r.id,source_version:r.version+1,title:input.data.is_active?'Quán đã được Admin kích hoạt':'Quán đã ngừng hoạt động',body:input.data.is_active?'Kiểm tra checklist. Nếu đủ cấu hình, bạn cần tự bật nhận đơn; khách đặt trong giờ mở cửa.':'Quán không xuất hiện công khai và không nhận đơn mới. Xem thiết lập và liên hệ Admin để biết bước tiếp theo.',href:'/owner'});
- await this.audit.record(c,{actorId:actor,action:'restaurant.settings_updated',targetType:'restaurant',targetId:restaurantId,changes:{version:view.version,profile_changed:['name','address','contact_phone','latitude','longitude'].some(k=>k in input.data),hours_changed:input.hours!==undefined,description_changed:'description' in input.data,cover_changed:input.cover!==undefined}});
+ await this.audit.record(c,{actorId:actor,action:'restaurant.settings_updated',targetType:'restaurant',targetId:restaurantId,changes:{version:view.version,profile_changed:['name','address','contact_phone','latitude','longitude'].some(k=>k in input.data),hours_changed:input.hours!==undefined,description_changed:'description' in input.data,cover_changed:input.cover!==undefined,avatar_changed:input.avatar!==undefined}});
  return this.view(c,restaurantId,actor,admin);});
- if(input.cover!==undefined&&!admin)await this.coverWorkflow.cleanup(actor,value).catch(()=>undefined);return result;}
+ if((input.cover!==undefined||input.avatar!==undefined)&&!admin)await this.coverWorkflow.cleanup(actor,value).catch(()=>undefined);return result;}
 }

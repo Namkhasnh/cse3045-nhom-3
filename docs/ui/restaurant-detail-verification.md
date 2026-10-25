@@ -40,3 +40,5 @@ The Figma Make source was inspected in its Files UI and rendered preview because
 ## Adoption boundary
 
 Retained/local working database migration and VPS deployment: NOT RUN, outside the requested scope. Before running this backend against an existing database, apply the reviewed forward migration and matching restricted runtime grants through its authorized migration workflow. No reset, seed, applied-migration rewrite, production upload, release or V1.0 acceptance is implied. Production media/provider/scheduling remains subject to DEC-10; current storage intentionally supports the existing local test configuration.
+
+Subsequent authorized local error repair completed retained-local adoption of this existing migration after verified backup/restore/rehearsal and preservation checks; see [October24 runtime repair](../website-local-verification.md). The NOT RUN statement above remains the historical storefront-delivery boundary; VPS deployment remains NOT RUN.

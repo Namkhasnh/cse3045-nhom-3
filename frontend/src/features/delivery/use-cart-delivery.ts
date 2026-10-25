@@ -30,5 +30,5 @@ export function useCartDelivery(accountId: string | null, restaurantId: string, 
   const current = enabled && result?.key === key ? result : null
   return { ...pointsState, point, setPoint, quote: current?.quote ?? null, error: current?.error ?? '', expired: current?.expired ?? false,
     busy: enabled && !current, retry: () => setAttempt(v => v + 1),
-    remember: () => { if (!current?.quote || Date.parse(current.quote.expires_at) <= Date.now()) throw new Error('Báo phí đã hết hạn.'); if (accountId && validPoint) saveCartPoint(accountId, restaurantId, point) } }
+    remember: () => { if (!current?.quote || Date.parse(current.quote.expires_at) <= Date.now()) throw new Error('Báo phí đã hết hạn.'); if (accountId && validPoint) saveCartPoint(accountId, restaurantId, point, current.quote, intentKey) } }
 }

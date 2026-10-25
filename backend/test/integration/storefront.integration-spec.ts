@@ -59,6 +59,31 @@ test('CAT-01 AUTH-02 storefront MySQL/MinIO: scoped media, versions, rollback an
   assert.equal((await req(path,'PATCH',{expected_version:(await current()).version,cover_image_reference:asset.image_reference})).status,404);
   await app.get(RestaurantCoverWorkflow).cleanup(owner.id,r.id.toString());storage.remove=remove;assert.ok((await db.restaurantCoverMedia.findUniqueOrThrow({where:{id:old.id}})).deleted_at);
   assert.equal((await req(path,'PATCH',{expected_version:(await current()).version,description:null,cover_image_reference:null})).status,200);assert.equal((await current()).cover_image_reference,null);assert.equal((await current()).description,null);
+  // Avatar and cover share sanitized storage, but have independent references and lifecycle.
+  assert.equal((await current()).avatar_image_reference,null);
+  const nonsquare=(await req(path+'/cover-media','POST',image)).body.data;
+  assert.equal((await req(path,'PATCH',{expected_version:(await current()).version,avatar_image_reference:nonsquare.image_reference})).status,422,'Avatar must be square');
+  const square=await sharp({create:{width:160,height:160,channels:3,background:'blue'}}).png().toBuffer();
+  const avatar=(await req(path+'/cover-media','POST',{mime_type:'image/png',content_base64:square.toString('base64')})).body.data;
+  await assert.rejects(db.restaurants.update({where:{id:other.id},data:{avatar_media_asset_id:BigInt(avatar.id)}}),'MySQL avatar same-restaurant FK');
+  assert.equal((await req('/owner/restaurants/'+other.id,'PATCH',{expected_version:1,avatar_image_reference:avatar.image_reference},foreign)).status,404);
+  assert.equal((await req(path,'PATCH',{expected_version:(await current()).version,avatar_image_reference:avatar.image_reference,cover_image_reference:avatar.image_reference})).status,200);
+  assert.equal((await current()).avatar_image_reference,avatar.image_reference);
+  assert.equal((await req(path,'PATCH',{expected_version:(await current()).version,cover_image_reference:null})).status,200);
+  assert.equal((await db.restaurantCoverMedia.findUniqueOrThrow({where:{id:BigInt(avatar.id)}})).deleted_at,null,'Clearing cover preserves the same asset used by avatar');
+  await db.restaurants.update({where:{id:r.id},data:{readiness:'ready'}});
+  assert.equal((await fetch(origin+avatar.image_reference)).status,200,'Current avatar is public');
+  const dto=await(await fetch(origin+'/api/v1/restaurants/'+r.id)).json();assert.equal(dto.data.avatar_image_reference,avatar.image_reference);assert.equal(dto.data.cover_image_reference,null);
+  const avatarVersion=(await current()).version;
+  audit.record=async(c,e)=>{if(e.action==='restaurant.settings_updated')throw new Error('Synthetic avatar audit outage');return record(c,e);};
+  assert.equal((await req(path,'PATCH',{expected_version:avatarVersion,avatar_image_reference:null})).status,500);audit.record=record;
+  assert.equal((await current()).avatar_image_reference,avatar.image_reference,'Audit failure rolls avatar removal back');
+  const avatarRace=await Promise.all([null,avatar.image_reference].map(avatar_image_reference=>req(path,'PATCH',{expected_version:avatarVersion,avatar_image_reference})));
+  assert.deepEqual(avatarRace.map(x=>x.status).sort(),[200,409]);
+  if((await current()).avatar_image_reference)assert.equal((await req(path,'PATCH',{expected_version:(await current()).version,avatar_image_reference:null})).status,200);
+  await app.get(RestaurantCoverWorkflow).cleanup(owner.id,r.id.toString());
+  assert.ok((await db.restaurantCoverMedia.findUniqueOrThrow({where:{id:BigInt(avatar.id)}})).deleted_at,'Unused avatar is cleaned');
+  assert.equal((await fetch(origin+avatar.image_reference)).status,404);
   await db.restaurants.update({where:{id:r.id},data:{readiness:'ready',is_active:false,cover_media_asset_id:uncertain.id}});assert.equal((await fetch(origin+'/api/v1/restaurant-cover-media/'+uncertain.id)).status,404,'Inactive restaurants never publish media');
  }finally{await db.$disconnect();await app.close();}
 });

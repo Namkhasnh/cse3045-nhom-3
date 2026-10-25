@@ -20,7 +20,7 @@ const allowedChanges: Record<string, readonly string[]> = {
  'commission.proposed':['proposal_id','rate','base_version'],'commission.confirmed':['proposal_id','rate'],
  'dish.updated':['restaurant_id','version','name','price_vnd','previous_name','previous_price_vnd','is_visible','is_available','category_id','image_changed'],'dish.removed':['restaurant_id','outcome'],'dish.category_updated':['version'],'dish.image_uploaded':['restaurant_id'],'dish.image_deleted':['restaurant_id'],
  'delivery.point_updated':['version'],'delivery.proposed':['restaurant_id'],'delivery.reviewed':['decision','restaurant_id'],
- 'restaurant.cover_uploaded':['restaurant_id'],'restaurant.cover_deleted':['restaurant_id'],'restaurant.settings_updated':['version','profile_changed','hours_changed','description_changed','cover_changed'],
+ 'restaurant.cover_uploaded':['restaurant_id'],'restaurant.cover_deleted':['restaurant_id'],'restaurant.settings_updated':['version','profile_changed','hours_changed','description_changed','cover_changed','avatar_changed'],
   'application.submitted':['terms_version'],
   'application.proposed':['terms_version'],
   'application.confirmed':['terms_version'],
@@ -43,6 +43,8 @@ Object.assign(allowedChanges,{'commission.adjusted':['restaurant_id','order_id',
 
 Object.assign(allowedTargets,{'account.credentials_recovered':'account','account.availability':'account','account.read':'account','accounts.lookup':'account','support.created':'support','support.updated':'support','support.read':'support','support.lookup':'account','audit.lookup':'account','privacy.hold_read':'order','privacy.application_hold_read':'application','privacy.application_release':'application','privacy.application_hold':'application','privacy.hold':'order','privacy.release':'order','privacy.erasure':'account','privacy.reveal':'support','privacy.deleted':'order'});
 Object.assign(allowedChanges,{'account.credentials_recovered':[],'account.availability':['from_is_active','is_active','version','from_credentials_blocked','credentials_blocked'],'account.read':[],'accounts.lookup':['count'],'support.created':['order_id'],'support.updated':['version','status'],'support.read':[],'support.lookup':['count'],'audit.lookup':['count'],'privacy.hold_read':[],'privacy.application_hold_read':[],'privacy.application_release':[],'privacy.application_hold':[],'privacy.hold':[],'privacy.release':[],'privacy.erasure':['status'],'privacy.reveal':[],'privacy.deleted':[]});
+Object.assign(allowedTargets,{'voucher.created':'voucher','voucher.toggled':'voucher'});
+Object.assign(allowedChanges,{'voucher.created':['funding','restaurant_id'],'voucher.toggled':['is_active']});
 export const auditActions=Object.keys(allowedChanges);
 export const auditTargets=[...new Set(Object.values(allowedTargets).concat('account'))];
 

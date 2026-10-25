@@ -156,16 +156,17 @@ export class AccountsService {
 
   async access(account: Account) {
     const { authority, managed, factor } = await new AccountAccessRepository(this.prisma).context(account.id);
+    const isAdmin = authority?.accountId === account.id;
     const capabilities: string[] = [];
-    if (account.isActive) {
+    if (account.isActive && !isAdmin) {
       capabilities.push('buy');
       if (managed.length === 1) capabilities.push('manage_restaurant');
       if (managed.length === 0) capabilities.push('apply_for_restaurant');
-      if (authority?.accountId === account.id && factor?.enrolledAt) capabilities.push('admin');
     }
+    if (account.isActive && isAdmin && factor?.enrolledAt) capabilities.push('admin');
     if (!account.isActive) capabilities.push('obligations');
-    return { capabilities, managed_restaurant_id: managed.length === 1 ? managed[0].id.toString() : null,
-      isAdmin: authority?.accountId === account.id };
+    return { capabilities, managed_restaurant_id: !isAdmin && managed.length === 1 ? managed[0].id.toString() : null,
+      isAdmin };
   }
 
   async present(account: Account) {

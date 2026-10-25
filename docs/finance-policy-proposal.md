@@ -1,5 +1,7 @@
 # DEC-07 — Approved reconciliation policy
 
+> October25 COD cutover: [approved operating/API/history contract](cod-ordering.md) supersedes new-order cash/QR selection, QR authoring/review and platform voucher issuance/redemption. Legacy payment/refund and accepted voucher subsidy obligations remain. Prior verification is historical.
+
 Status: **APPROVED by the repository operator/user**, October 21, 2026. Decision package `DEC-07.2026-10-21.v1`.
 Owner: [DEC-07](decisions.md), requirements US15/17, BR20–27, AC10/11.
 Scope: [P22](prompts/v0.7.md#p22), followed by P23 backend and P24 UI/reports after explicit approval.
@@ -125,3 +127,7 @@ The repository operator/user approved this complete package on October21: “Duy
 Alternatives considered: partial/custom periods permit omitted debt/overlaps and complicate recovery; mutable reopen erases accepted history; receipt editing destroys auditability; clamped credit can overcharge; keying settlement creates would require an additional request-result design (not necessary with unique-month recovery). Full reversal is simpler to audit than partial reversal but needs a separate replacement step. Mandatory evidence references minimize new storage/retention exposure; attachments can be designed separately. No provider fee or new commercial rate is introduced.
 
 DEC-08 stays unresolved until P25: suspension with active orders/refunds/debt, scoped support statuses/escalation/response targets, audit lookup/access, and privacy/retention/deletion rules need their own concrete package and explicit choice. DEC-07 approval does not approve those controls or the separate anti-evasion receivable.
+
+## Approved voucher subsidy extension
+
+The October 25, 2026 user-approved [checkout/voucher contract](checkout-vouchers.md) extends this specification: owner-funded restaurant codes, historical platform-funded global codes (no new issuance/redemption), pre-discount commission, preserved legacy completion subsidies, exact discounted totals and independent `not_required` payment for new zero-total orders. It supersedes earlier conflicting no-discount formulas only within this capability. Vouchers own definitions/redemptions; orders own immutable discount snapshots; commissions own subsidy ledger entries.

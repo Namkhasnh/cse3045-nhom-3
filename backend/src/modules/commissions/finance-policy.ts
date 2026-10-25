@@ -1,6 +1,6 @@
 import {createHmac,timingSafeEqual} from 'node:crypto';
 import {id,invalid,money,text} from '../../common/http/input.js';
-export const FINANCE_POLICY='DEC-07.2026-10-21.v1';
+export const FINANCE_POLICY='DEC-07.2026-10-25.v2';
 export const monthStart=(at:Date)=>{const d=new Date(at.getTime()+25200000);return new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),1)-25200000);};
 export const nextMonth=(at:Date)=>{const d=new Date(at.getTime()+25200000);return new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth()+1,1)-25200000);};
 export function instant(v:unknown){if(typeof v!=='string'||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(v))return invalid();const d=new Date(v);if(!Number.isFinite(d.getTime())||d.toISOString()!==v||d.getUTCFullYear()<2000||d.getUTCFullYear()>9998)return invalid();return d;}

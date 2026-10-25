@@ -12,13 +12,13 @@ export function CartDrawer({ onClose }: { onClose: () => void }) {
     dialog.showModal()
     return () => { dialog.close(); document.body.style.overflow = overflow; if (previous?.isConnected) previous.focus() }
   }, [])
-  const changed = cart.draft?.items.some(item => { const d = cart.current?.dishes[item.id]; return d?.status === 'ready' && d.value.price_vnd !== item.acceptedPriceVnd })
+  const changed = cart.groups.flatMap(g=>g.items).some(item => { const d = cart.current?.dishes[item.id]; return d?.status === 'ready' && d.value.price_vnd !== item.acceptedPriceVnd })
   return <dialog className="cart-drawer" ref={ref} aria-labelledby="drawer-title" onCancel={event => { event.preventDefault(); onClose() }} onClick={event => { if (event.target === event.currentTarget) { const r = event.currentTarget.getBoundingClientRect(); if (event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom) onClose() } }}>
     <div className="cart-drawer-inner"><div className="cart-drawer-heading"><div><p>BỮA NGON BẠN CHỌN</p><h2 id="drawer-title">Giỏ hàng <span>({cart.count})</span></h2></div><button autoFocus type="button" aria-label="Đóng giỏ hàng" onClick={onClose}><Icon name="close" /></button></div>
     {!cart.draft ? <div className="cart-drawer-empty"><Icon name="bag" /><h3>Giỏ hàng đang trống</h3><p>Chọn món bạn thích để bắt đầu bữa ngon.</p><button className="button button--primary" onClick={onClose}>Tiếp tục xem món</button></div> : <>
-      <div className="cart-drawer-scroll"><a className="cart-drawer-restaurant" href={`/restaurants/${cart.draft.restaurant.id}`}><Icon name="bowl" />{cart.draft.restaurant.name}</a>
+      <div className="cart-drawer-scroll"><a className="cart-drawer-restaurant" href={`/cart`}><Icon name="bowl" />{cart.groups.length} quán trong giỏ</a>
         {cart.issue && <p className="cart-drawer-warning" role="status">{cart.issue}</p>}{cart.storageWarning && <p role="alert">{cart.storageWarning}</p>}
-        <ul>{cart.draft.items.map(item => { const result = cart.current?.dishes[item.id], dish = result?.status === 'ready' ? result.value : null
+        <ul>{cart.groups.flatMap(g=>g.items).map(item => { const result = cart.current?.dishes[item.id], dish = result?.status === 'ready' ? result.value : null
           return <li key={item.id}><div className="cart-drawer-item-title"><h3>{item.name}</h3><button aria-label={`Xóa ${item.name}`} onClick={() => cart.remove(item.id)}>Xóa</button></div><p>{formatVnd(item.acceptedPriceVnd)} / phần</p>
             {dish && dish.price_vnd !== item.acceptedPriceVnd && <p className="cart-drawer-warning">Giá hiện tại: {formatVnd(dish.price_vnd)}. Cần xác nhận lại trong trang giỏ.</p>}
             {dish && !dish.is_available && <p role="alert">Món đang tạm hết.</p>}{result?.status === 'missing' && <p role="alert">Món không còn công khai.</p>}{result?.status === 'error' && <p role="alert">Chưa tải được món.</p>}

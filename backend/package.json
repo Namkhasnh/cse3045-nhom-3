@@ -49,7 +49,12 @@
     "ai:cleanup": "npm run build && node dist/maintenance-ai.js",
     "test:ai-evaluation-unit": "node --test test/ai-evaluation-summary.test.mjs",
     "test:storefront-upgrade": "node scripts/verify-storefront-upgrade.mjs",
-    "test:storefront-permissions": "npm run test:compile && node test/storefront-restricted.mjs"
+    "test:storefront-permissions": "npm run test:compile && node test/storefront-restricted.mjs",
+    "test:owner-analytics": "npm run test:compile && node --test .test-dist/test/integration/owner-analytics.integration-spec.js",
+    "test:order-code-upgrade": "node scripts/verify-order-code-upgrade.mjs",
+    "test:voucher-upgrade": "node scripts/verify-voucher-upgrade.mjs",
+    "test:cod-upgrade": "node scripts/verify-cod-upgrade.mjs",
+    "test:avatar-upgrade": "node scripts/verify-restaurant-avatar-upgrade.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1152.0",

@@ -12,5 +12,6 @@ export class NotificationsService {
  list(...a:Parameters<NotificationsRepository['list']>){return this.repository.list(...a);}
  count(...a:Parameters<NotificationsRepository['count']>){return this.repository.count(...a);}
  detail(...a:Parameters<NotificationsRepository['detail']>){return this.repository.detail(...a);}
+ readAll(...a:Parameters<NotificationsRepository['readAll']>){return this.repository.readAll(...a);}
  read(...a:Parameters<NotificationsRepository['read']>){return this.repository.read(...a);}
 }

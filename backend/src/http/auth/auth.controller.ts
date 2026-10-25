@@ -103,8 +103,8 @@ export class AuthController {
 
   private completeLogin(account: import('../../generated/prisma/client.js').Account, response: AuthResponse, mfa: boolean) {
     const { jwt, csrf } = this.sessions.issue(account, mfa);
-    response.cookie('__Host-hlf_access', jwt, { httpOnly: true, secure: true, sameSite: 'lax', path: '/', maxAge: 900000 });
-    response.cookie('__Host-hlf_csrf', csrf, { httpOnly: false, secure: true, sameSite: 'lax', path: '/', maxAge: 900000 });
+    response.cookie('__Host-hlf_access', jwt, { httpOnly: true, secure: true, sameSite: 'lax', path: '/' });
+    response.cookie('__Host-hlf_csrf', csrf, { httpOnly: false, secure: true, sameSite: 'lax', path: '/' });
     response.setHeader('Cache-Control', 'no-store');
     return this.accounts.present(account);
   }

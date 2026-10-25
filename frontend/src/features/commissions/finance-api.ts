@@ -1,8 +1,8 @@
 import {request} from '../../shared/api/request'
 export type Page<T>={data:T[];page:{has_more:boolean;next_cursor:string|null;as_of:string}}
-export type Entry={id:string;restaurant_id:string;order_id:string;kind:'base'|'adjustment';amount_vnd:string;reason:string|null;booking_month:string;settlement_id:string|null;corrects_entry_id:string|null}
+export type Entry={id:string;restaurant_id:string;order_id:string;order_code:string;kind:'base'|'adjustment'|'voucher_subsidy';amount_vnd:string;reason:string|null;booking_month:string;settlement_id:string|null;corrects_entry_id:string|null}
 export type Summary={account_receivable_vnd:string;account_collected_vnd:string;account_outstanding_vnd:string}
-export type Row={entry_count:number;period_start_at:string;period_end_at:string;settlement_id:string|null;base_vnd:string;adjustment_vnd:string;receivable_vnd:string;collected_vnd:string;outstanding_vnd:string;collectible_vnd:string;dish_revenue_vnd:string;delivery_fee_vnd:string;order_total_vnd:string;completed_order_count:number;gross_receipts_vnd:string;receipt_reversals_vnd:string;net_recorded_collection_vnd:string;as_of:string}
+export type Row={entry_count:number;period_start_at:string;period_end_at:string;settlement_id:string|null;base_vnd:string;adjustment_vnd:string;subsidy_vnd?:string;receivable_vnd:string;collected_vnd:string;outstanding_vnd:string;collectible_vnd:string;dish_revenue_vnd:string;delivery_fee_vnd:string;order_total_vnd:string;completed_order_count:number;gross_receipts_vnd:string;receipt_reversals_vnd:string;net_recorded_collection_vnd:string;as_of:string}
 export type Report=Page<Row>&{summary:Summary}
 export type Statement={created_at:string;entry_count:number;id:string;restaurant_id:string;period_start_at:string;period_end_at:string;entry_ids:string[];outstanding_vnd:string;collectible_vnd:string}&Summary
 export type Receipt={id:string;settlement_id:string;amount_vnd:string;received_at:string;created_at:string;method:string;reference:string;note:string|null;replaces_receipt_id:string|null;reversal:{id:string;reason:string;created_at:string}|null}

@@ -1,10 +1,12 @@
 # Decision Register
 
+> October25 COD cutover: [approved operating/API/history contract](cod-ordering.md) supersedes new-order cash/QR selection, QR authoring/review and platform voucher issuance/redemption. Legacy payment/refund and accepted voucher subsidy obligations remain. Prior verification is historical.
+
 This is the canonical register of unresolved product and operational decisions. Owning specifications define invariants; the entries below identify what still needs an explicit owner decision. No values, provider contracts, fees or legal terms are invented here. Technical documents and prompts are in English; the final user-facing policy text is Vietnamese.
 
 ## Decided baseline — October 18, 2026
 
-Public homepage/list/menu; ordinary-user signup without role choice; manager capability from current ownership, at most one restaurant per account; one operator-owned Admin with MFA/recovery; atomic application approval and manual create-with-owner; VJU fixed surveyed points; cash and direct restaurant QR; restaurant delivery; manual commission reconciliation; MySQL 9.2.0, React/Vite, NestJS/Prisma and approved identity remain fixed.
+Public homepage/list/menu; ordinary-user signup without role choice; manager capability from current ownership, at most one restaurant per account; one operator-owned Admin with MFA/recovery; atomic application approval and manual create-with-owner; VJU fixed surveyed points; COD with externally arranged cash/transfer; restaurant delivery; manual commission reconciliation; MySQL 9.2.0, React/Vite, NestJS/Prisma and approved identity remain fixed.
 
 No driver, custody/splitting, multi-restaurant order, additional Admin, multiple restaurants per manager or AI transcript storage is authorized. V1.1 retention features and V1.2 route expansion are later scope.
 
@@ -95,3 +97,7 @@ October23 independent local offsite database drill: **PASS** agent-executed `nod
 ## Local retained ordering authorization — October23, 2026
 
 The user explicitly requested using real data after the existing local checkout was blocked by synthetic-only personal-key storage. This authorizes the scoped existing Mac `hlf_dev_flow` ordering configuration, persistent external local key custody and order inbox events described in [local ordering adoption](local-ordering-adoption.md). No fabricated survey, partner consent, default rate, sample-to-real conversion, legacy plaintext rewrite, retained privacy purge, VPS action or production release follows from this instruction. Production DEC-10/11/12 gates remain separate. Existing local records and unknown-outcome order intent/body/key must be preserved; no automatic checkout submission on configuration/login/reload.
+
+## October25 approved COD cutover
+
+The operator/user approved and requested implementation of [COD ordering](cod-ordering.md): no new website QR/cash selection, no shipper accounts/advance/collection ledger, owner-only funded vouchers, pre-discount completed-dish commission excluding delivery. DEC-06 QR authoring/review is retired for new work; historic receipts/refunds/disputes survive. The former platform-voucher extension is retired for new orders, while accepted old discounts/subsidies survive. Admin finance and general account/restaurant/support authority remain. Retained migration/deployment and real-term publication are separate.

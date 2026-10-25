@@ -22,5 +22,12 @@ test('CAT-01 storefront text and generated media references stay bounded and own
  for(const description of ['a'.repeat(2001),'bad\0text',42])assert.throws(()=>settingsInput({expected_version:1,description}));
  for(const cover_image_reference of ['https://example.test/a.jpg','/api/v1/dish-media/1','/api/v1/restaurant-cover-media/0','//foreign.test/a',5])assert.throws(()=>settingsInput({expected_version:1,cover_image_reference}));
  assert.equal(settingsInput({expected_version:1,cover_image_reference:null}).cover,null);
- for(const name of ['description','cover_image_reference'])assert.throws(()=>settingsInput({expected_version:1,[name]:null},true));
+ for(const name of ['description','cover_image_reference','avatar_image_reference'])assert.throws(()=>settingsInput({expected_version:1,[name]:null},true));
+});
+
+test('CAT-01 avatar accepts only platform media references and explicit null',()=>{
+ assert.equal(settingsInput({expected_version:1,avatar_image_reference:'/api/v1/restaurant-cover-media/123'}).avatar,'/api/v1/restaurant-cover-media/123');
+ assert.equal(settingsInput({expected_version:1,avatar_image_reference:null}).avatar,null);
+ assert.equal(settingsInput({expected_version:1,name:'Name'}).avatar,undefined);
+ for(const avatar_image_reference of ['https://foreign.test/a.png','/api/v1/dish-media/1','/api/v1/restaurant-cover-media/0',5])assert.throws(()=>settingsInput({expected_version:1,avatar_image_reference}));
 });

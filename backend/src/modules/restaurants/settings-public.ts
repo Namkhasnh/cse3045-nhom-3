@@ -15,7 +15,7 @@ export class RestaurantSettings {
  const r=await this.repository.lock(c,id,a,admin),hours=await this.repository.hours(c,id);
  let validHours=false;try{validHours=hoursInput(hours.map(({weekday,opens_at,closes_at,closes_next_day})=>({weekday,opens_at,closes_at,closes_next_day}))).length>0}catch{/* Invalid retained configuration never enables sales. */}
  const checklist:Checklist={profile:Boolean(r.name.trim()&&r.address.trim()&&/^\+?[0-9]{9,15}$/.test(r.contact_phone)),hours:validHours,...dependencies};
- return {id:r.id.toString(),description:r.description,cover_image_reference:r.cover_media_asset_id==null?null:"/api/v1/restaurant-cover-media/"+r.cover_media_asset_id,name:r.name,address:r.address,contact_phone:r.contact_phone,latitude:r.latitude?.toFixed(6)??null,longitude:r.longitude?.toFixed(6)??null,
+ return {id:r.id.toString(),description:r.description,avatar_image_reference:r.avatar_media_asset_id==null?null:"/api/v1/restaurant-cover-media/"+r.avatar_media_asset_id,cover_image_reference:r.cover_media_asset_id==null?null:"/api/v1/restaurant-cover-media/"+r.cover_media_asset_id,name:r.name,address:r.address,contact_phone:r.contact_phone,latitude:r.latitude?.toFixed(6)??null,longitude:r.longitude?.toFixed(6)??null,
  is_active:r.is_active,is_accepting_orders:r.is_accepting_orders,readiness:ready(checklist)?'ready':'setup_required',checklist,is_open:openAt(hours),hours:hours.map(({weekday,opens_at,closes_at,closes_next_day})=>({weekday,opens_at,closes_at,closes_next_day})),version:r.version,updated_at:r.updated_at.toISOString()};}
  readiness(c:TransactionContext,id:bigint,value:boolean){return this.repository.readiness(c,id,value);}
 }

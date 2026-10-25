@@ -131,3 +131,7 @@
  .cart-shop h2 { font-size: 16px; }
  .cart-order-summary { padding: 20px; }
 }
+
+.cart-restaurant-group{padding-bottom:24px;margin-bottom:24px;border-bottom:1px solid var(--color-surface-line,#e8e1da)}
+.cart-select-item{display:flex;align-items:center;gap:8px;grid-column:1/-1;min-height:44px;font-size:13px}.cart-redesign input[type=checkbox]{width:20px;height:20px;accent-color:var(--color-brand,#e54b16);flex-shrink:0}.cart-restaurant-group>.cart-shop input{margin-right:8px}.cart-redesign select{max-width:100%}
+.cart-redesign .cart-product{display:grid;grid-template-columns:144px minmax(0,1fr)}.cart-redesign .cart-select-item{grid-column:1/-1}.cart-redesign .cart-product-content{min-width:0}.cart-redesign .cart-product-photo{width:144px}.cart-redesign .cart-product h3{overflow-wrap:break-word}@media(max-width:639px){.cart-redesign .cart-product{grid-template-columns:84px minmax(0,1fr);gap:10px}.cart-redesign .cart-product-photo{width:84px}.cart-redesign .cart-shop{flex-wrap:wrap}.cart-redesign .cart-shop>a{margin-left:auto}}

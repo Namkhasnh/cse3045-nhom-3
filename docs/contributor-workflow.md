@@ -1,5 +1,7 @@
 # Contributor Workflow and Short Requests
 
+> October25 COD cutover: [approved operating/API/history contract](cod-ordering.md) supersedes new-order cash/QR selection, QR authoring/review and platform voucher issuance/redemption. Legacy payment/refund and accepted voucher subsidy obligations remain. Prior verification is historical.
+
 [AGENTS.md](../AGENTS.md) defines always-on rules; [documentation map](README.md) owns specifications. Use [quick-start requests](prompts/quick-start.md) instead of repeating project rules in every message. Read this guide when resolving task scope, resuming roadmap work or preparing handoff; it does not add product policy.
 
 ## Select context by intent
@@ -19,7 +21,7 @@ Choose one main implementation workflow. run-roadmap orchestrates and may consul
 | Discovery/menu/media | US02–03/US11–12/US16; API §3/§7.2/§10; database §4.1/§8–10; UI §10 corrections | 01–02/08–09/11 |
 | Cart/quote/order creation | BR01–10; architecture §5.1/§6–7; database §4.2–4.3/§6/§10; API §5/§7.3–7.4/§8; UI §9.2–9.3 | 02–03 |
 | Fulfillment/tracking | BR15–19; architecture §5.2–5.3/§7–8; database §5/§10; API §7.4/§9; UI §9.1/§9.3 | 04/07 |
-| Cash/QR/refund | BR11–14; payments-policy; architecture §5.4; database §4.4/§10; API §7.4/§9/§11; testing §8 | 03–04/07/09 |
+| COD/legacy QR/refund | BR11–14; cod-ordering; payments-policy; architecture §5.4; database §4.4/§10; API §7.4/§9/§11; testing §8 | 03–04/07/09 |
 | Commission/settlement/report | BR20–27; architecture §5.3/§6–7; database §4.5/§6–11; API §5/§7.5/§11; testing §6–8 | 10/12 |
 | AI | BR28–31; ai_integration; API §7.6/§11–12; architecture §5.5; testing §9 | 05 |
 | Support/users/audit/retention | account-security; DEC-08; requirements NFR07/§7; database §4.6/§8/§10; deployment §8; testing USER-01/SUPPORT-01/AUDIT-01 | 13 and approved support patterns |

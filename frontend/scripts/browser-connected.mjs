@@ -90,7 +90,7 @@ try {
  const orderCount=(await db.query('SELECT COUNT(*) AS n FROM orders'))[0].n;
  const cartValue=()=>evaluate("JSON.parse(localStorage.getItem('hlf.cart.v1'))");
  const cartReady=()=>until(async()=>!(await text()).includes('Đang kiểm tra giá và tình trạng món'),'Cart revalidation incomplete');
- const addFirst=async()=>{await click('.menu-dish button:not(:disabled)');await waitText('Đã thêm');};
+ const addFirst=async()=>{await click('.storefront-dish button:not(:disabled)');await waitText('Đã thêm');};
  await addFirst();await addFirst();
  assert((await cartValue()).items[0].quantity===2,'Duplicate add lost quantity');
  await navigate('/cart');await waitText('2 phần');await cartReady();
@@ -99,7 +99,7 @@ try {
  await click('[aria-label="Giảm Cơm kiểm thử"]');await waitText('2 phần');
  const originalCart=await cartValue();
  const other=(await (await fetch('http://127.0.0.1:43128/api/v1/restaurants?q='+encodeURIComponent('Quán thứ hai'))).json()).data[0];
- await navigate('/restaurants/'+other.id);await waitText('Món quán thứ hai');await click('.menu-dish button');await waitText('Đổi quán trong giỏ?');
+ await navigate('/restaurants/'+other.id);await waitText('Món quán thứ hai');await click('.storefront-dish button');await waitText('Đổi quán trong giỏ?');
  assert(await evaluate("document.activeElement.textContent==='Giữ giỏ hiện tại'"),'Dialog must initially focus safe cancel');
  await call('Emulation.setDeviceMetricsOverride',{width:360,height:900,deviceScaleFactor:1,mobile:true});await snapshot('cart-switch-360');
  await call('Input.dispatchKeyEvent',{type:'keyDown',key:'Tab',code:'Tab',windowsVirtualKeyCode:9,modifiers:8});await call('Input.dispatchKeyEvent',{type:'keyUp',key:'Tab',code:'Tab',windowsVirtualKeyCode:9,modifiers:8});
@@ -108,12 +108,12 @@ try {
  assert(await evaluate("document.activeElement.textContent==='Giữ giỏ hiện tại'"),'Dialog Tab escaped focus trap');
 
  await call('Input.dispatchKeyEvent',{type:'keyDown',key:'Escape',code:'Escape',windowsVirtualKeyCode:27});await call('Input.dispatchKeyEvent',{type:'keyUp',key:'Escape',code:'Escape',windowsVirtualKeyCode:27});
- await until(()=>evaluate("!document.querySelector('dialog')"),'Escape did not cancel cart switch');
+ await until(()=>evaluate("!document.querySelector('dialog[open]')"),'Escape did not cancel cart switch');
  assert(JSON.stringify(await cartValue())===JSON.stringify(originalCart),'Cancel changed original cart');
  assert(await evaluate("document.activeElement.textContent.includes('Thêm vào giỏ')"),'Dialog did not restore focus');
- await click('.menu-dish button');await waitText('Đổi quán trong giỏ?');await evaluate("Array.from(document.querySelectorAll('dialog button')).find(b=>b.textContent==='Xóa giỏ cũ và thêm món').click()");
+ await click('.storefront-dish button');await waitText('Đổi quán trong giỏ?');await evaluate("Array.from(document.querySelectorAll('dialog button')).find(b=>b.textContent==='Xóa giỏ cũ và thêm món').click()");
  await until(async()=>(await cartValue()).restaurant.id===other.id,'Confirmed switch failed');
- await navigate(menuPath);await waitText('Cơm kiểm thử');await click('.menu-dish button:not(:disabled)');await waitText('Đổi quán trong giỏ?');await evaluate("Array.from(document.querySelectorAll('dialog button')).find(b=>b.textContent==='Xóa giỏ cũ và thêm món').click()");await waitText('Đã đổi quán trong giỏ.');
+ await navigate(menuPath);await waitText('Cơm kiểm thử');await click('.storefront-dish button:not(:disabled)');await waitText('Đổi quán trong giỏ?');await evaluate("Array.from(document.querySelectorAll('dialog button')).find(b=>b.textContent==='Xóa giỏ cũ và thêm món').click()");await waitText('Đã đổi quán trong giỏ.');
  await navigate('/cart');await waitText('1 phần');await cartReady();await click('[aria-label="Tăng Cơm kiểm thử"]');await waitText('2 phần');
  const saved=await cartValue();
  await evaluate("localStorage.setItem('hlf.cart.v1','{corrupt')");await navigate('/cart');await waitText('Giỏ hàng đang trống');await waitText('Giỏ đã lưu không hợp lệ');
@@ -121,13 +121,13 @@ try {
  stage='storage-denied';
  const denied=await call('Page.addScriptToEvaluateOnNewDocument',{source:`for(const method of ['getItem','setItem','removeItem']){const original=Storage.prototype[method];Storage.prototype[method]=function(key,...rest){if(key==='hlf.cart.v1')throw new DOMException('Denied','SecurityError');return original.call(this,key,...rest)}}`});
  await navigate(menuPath);await waitText('Cơm kiểm thử');await waitText('Không thể lưu giỏ trên thiết bị');await addFirst();await waitText('1 phần');
- await navigate(await evaluate('location.pathname+location.search+location.hash'));await waitText('Cơm kiểm thử');await waitText('Không thể lưu giỏ trên thiết bị');assert(!await evaluate("Boolean(document.querySelector('.cart-menu-link'))"),'Memory-only cart survived reload');
+ await navigate(await evaluate('location.pathname+location.search+location.hash'));await waitText('Cơm kiểm thử');await waitText('Không thể lưu giỏ trên thiết bị');assert(!await evaluate("Boolean(document.querySelector('.storefront-cart-trigger'))"),'Memory-only cart survived reload');
  await call('Page.removeScriptToEvaluateOnNewDocument',{identifier:denied.identifier});await navigate('/cart');await waitText('2 phần');await cartReady();
  stage='availability';
  const mainId=saved.restaurant.id, dishId=saved.items[0].id;
  await db.query('UPDATE dishes SET is_visible=FALSE WHERE id=?',[dishId]);await evaluate("Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Kiểm tra lại giỏ').click()");await waitText('Món không còn công khai');assert((await cartValue()).items[0].quantity===2,'Hidden dish was silently removed');
  await db.query('UPDATE dishes SET is_visible=TRUE,is_available=FALSE WHERE id=?',[dishId]);await evaluate("Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Kiểm tra lại giỏ').click()");await waitText('Món đang tạm hết');
- await db.query('UPDATE dishes SET is_available=TRUE WHERE id=?',[dishId]);await db.query('UPDATE restaurants SET is_accepting_orders=FALSE WHERE id=?',[mainId]);await evaluate("Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Kiểm tra lại giỏ').click()");await waitText('Quán đang đóng cửa hoặc tạm ngưng');
+ await db.query('UPDATE dishes SET is_available=TRUE WHERE id=?',[dishId]);await db.query('UPDATE restaurants SET is_accepting_orders=FALSE WHERE id=?',[mainId]);await evaluate("Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Kiểm tra lại giỏ').click()");await waitText('Quán đang tạm ngưng nhận đơn.');
  await db.query('UPDATE restaurants SET is_accepting_orders=TRUE WHERE id=?',[mainId]);
  await call('Network.setBlockedURLs',{urls:['*api/v1/dishes/*']});await evaluate("Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Kiểm tra lại giỏ').click()");await waitText('Chưa tải được món');
  await call('Network.setBlockedURLs',{urls:[]});await evaluate("Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Kiểm tra lại giỏ').click()");await cartReady();
@@ -135,13 +135,13 @@ try {
  await snapshot('cart-guest-1440');
  await navigate('/login?returnTo=%2Fcart');await waitText('Chào mừng bạn trở lại.');
  await db.query('UPDATE dishes SET price_vnd=35000 WHERE id=?',[dishId]);
- await fill('#username','browser_manager');await fill('#password','synthetic browser passphrase');await submit();await waitText('Giá thay đổi');await waitText('Tiếp tục đặt món');assert(!(await text()).includes('Tiếp tục đặt món tiền mặt')&&!(await text()).includes('Thanh toán tiền mặt trực tiếp cho quán.'),'Cash-only copy remains');
+ await fill('#username','browser_manager');await fill('#password','synthetic browser passphrase');await submit();await waitText('Giá thay đổi');await waitText('Cần xác nhận giá mới');assert(await evaluate("Array.from(document.querySelectorAll('button')).some(b=>b.textContent.includes('Cần xác nhận giá mới')&&b.disabled)"),'Price reconfirmation must block checkout');assert(!(await text()).includes('Tiếp tục đặt món tiền mặt')&&!(await text()).includes('Thanh toán tiền mặt trực tiếp cho quán.'),'Cash-only copy remains');
  assert(await evaluate('location.pathname')==='/cart','Login lost cart return');assert((await cartValue()).items[0].acceptedPriceVnd==='30000','Login silently accepted new price');assert((await cartValue()).items[0].quantity===2,'Login lost quantity');
  await snapshot('cart-price-change-1440');await evaluate("Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Chấp nhận giá hiện tại').click()");await waitText('Đã xác nhận giá hiện tại');assert((await cartValue()).items[0].acceptedPriceVnd==='35000','Explicit price confirmation failed');
  for(const width of [360,390,768,1024,1440]){await call('Emulation.setDeviceMetricsOverride',{width,height:900,deviceScaleFactor:1,mobile:width<768});assert(await evaluate('document.documentElement.scrollWidth<=innerWidth'),`Cart overflow ${width}`);await snapshot(`cart-${width}`);}
  await call('Emulation.setDeviceMetricsOverride',{width:360,height:900,deviceScaleFactor:1,mobile:true});
  await evaluate("Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Xóa toàn bộ giỏ').focus()");
- assert(await evaluate("(()=>{const button=document.activeElement.getBoundingClientRect();const header=document.querySelector('.nav-shell').getBoundingClientRect();return button.bottom<=innerHeight&&button.top>=header.bottom})()"),'Sticky header covers focused cart controls');
+ await until(()=>evaluate("(()=>{const button=document.activeElement.getBoundingClientRect();const header=document.querySelector('.nav-shell').getBoundingClientRect();return button.bottom<=innerHeight&&button.top>=header.bottom})()"),'Sticky header covers focused cart controls after scrolling settles',2000);
  await db.query("UPDATE accounts SET auth_version=auth_version+1 WHERE login_identifier='browser_manager'");
  await evaluate("window.dispatchEvent(new Event('focus'))");await waitText('Đăng nhập để đặt hàng');assert((await cartValue()).items[0].quantity===2,'Expired session lost guest cart');
  assert((await db.query('SELECT COUNT(*) AS n FROM orders'))[0].n===orderCount,'Login created an order');assert(orderRequests.length===0,'Cart/login sent an order request');
@@ -167,7 +167,7 @@ try {
  await waitText('Mã xác minh');await fill('#email-code','123456');await submit();await waitText('Email đã được xác minh');
  await fill('#username',username);await fill('#password','synthetic browser passphrase');await submit();await waitText('Đăng xuất');
  assert(await evaluate("location.pathname+location.search+location.hash")==='/account?tab=profile#details','Login lost return path');
- await navigate('/cart');await waitText('2 phần');await waitText('Tiếp tục đặt món');assert(!(await text()).includes('Tiếp tục đặt món tiền mặt')&&!(await text()).includes('Thanh toán tiền mặt trực tiếp cho quán.'),'Cash-only copy remains');
+ await navigate('/cart');await waitText('2 phần');await waitText('Chọn điểm nhận để tiếp tục');assert(await evaluate("Array.from(document.querySelectorAll('button')).some(b=>b.textContent.includes('Chọn điểm nhận để tiếp tục')&&b.disabled)"),'Missing pickup quote must block checkout');assert(!(await text()).includes('Tiếp tục đặt món tiền mặt')&&!(await text()).includes('Thanh toán tiền mặt trực tiếp cho quán.'),'Cash-only copy remains');
  assert((await cartValue()).items[0].acceptedPriceVnd==='35000','Account switch lost public draft');
  assert(!JSON.stringify(await cartValue()).includes('browser_manager'),'Prior account leaked into guest intent');
  await navigate('/account');await waitText('Đăng xuất');await evaluate("Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Đăng xuất').click()");await waitText('Chào mừng bạn trở lại.');
@@ -175,7 +175,7 @@ try {
  assert(await evaluate("new URLSearchParams(location.search).get('returnTo')")==='/account?tab=profile#details','Protected redirect lost destination');
  await fill('#username','browser_manager');await fill('#password','synthetic browser passphrase');await submit();await waitText('Đăng xuất');
  assert(await evaluate('location.pathname')==='/account','Manager return failed');
- await navigate('/');await waitText('Quán của tôi');await waitText('Quán kiểm thử VJU');
+ await navigate('/');await waitText('Quán kiểm thử VJU');await click('.mobile-menu-button');await waitText('Quán của tôi');
  await navigate('/account');await waitText('Đăng xuất');await evaluate("Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Đăng xuất').click()");await waitText('Chào mừng bạn trở lại.');
  for (const unsafe of ['//evil.example','/\\evil.example','/login','/unknown','/%2f%2fevil.example','/account\n']) {
   await navigate('/login?returnTo='+encodeURIComponent(unsafe));await waitText('Chào mừng bạn trở lại.');
@@ -193,7 +193,7 @@ try {
  await fill('#username','browser_operator');await fill('#password','synthetic browser passphrase');await submit();await waitText('Mã Authenticator');
  assert(!await evaluate("document.cookie.includes('__Host-hlf_csrf=')"),'Admin password issued session');
  const counter=Buffer.alloc(8);counter.writeBigUInt64BE(BigInt(Math.floor(Date.now()/30000)));const digest=createHmac('sha1',Buffer.alloc(20,9)).update(counter).digest();const offset=digest[19]&15;const code=String((digest.readUInt32BE(offset)&0x7fffffff)%1000000).padStart(6,'0');
- await fill('#mfa-code',code);await submit();await waitText('Admin kiểm thử');assert(await evaluate('location.pathname')==='/admin','Unsafe external return accepted');
+ await fill('#mfa-code',code);await submit();await waitText('Tổng quan quản trị');assert(await evaluate('location.pathname')==='/admin','Unsafe external return accepted');
  await navigate('/');await waitText('Quán kiểm thử VJU');
  await call('Emulation.setDeviceMetricsOverride',{width:1440,height:1000,deviceScaleFactor:1,mobile:false});
  assert(await evaluate('document.documentElement.scrollWidth<=innerWidth'),'Desktop horizontal overflow');await snapshot('home-1440');

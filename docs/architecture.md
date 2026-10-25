@@ -1,5 +1,7 @@
 # System Architecture — Hoa Lac Food Ordering Platform
 
+> October25 COD cutover: [approved operating/API/history contract](cod-ordering.md) supersedes new-order cash/QR selection, QR authoring/review and platform voucher issuance/redemption. Legacy payment/refund and accepted voucher subsidy obligations remain. Prior verification is historical.
+
 > **Purpose:** describe the overall technical design, where each responsibility belongs, and which dependencies are allowed. Implementers, including AI coding assistants, must preserve these boundaries when adding or changing code.
 >
 > **Status:** commercial V1.0 target revised October 18, 2026. [Current implementation/evidence](implementation-status.md) remains partly legacy; this task changes documentation only.
@@ -74,7 +76,7 @@ The service names below are proposed architectural contracts, not claims that th
 
 The V1.0 cart belongs to the frontend and represents purchase intent only. A guest can build a cart before login. Login preserves its non-sensitive draft; safe internal return navigation restores checkout, refreshes current data and requires a new explicit order confirmation. Login must never submit an order automatically. Isolate private checkout drafts and unknown-outcome keys by account; do not leak them on logout/account switching. A created order belongs to the backend; losing browser state must not lose the order.
 
-Tracking, durable history screens and recovery are required from V0.5. Reorder is V1.1. No later scope label defers snapshots, audit or financial constraints.
+Tracking, durable history screens and recovery are required from V0.5. The [October25 scoped purchase extension](ui/purchase-history-figma.md) enables reorder, a grouped browser cart and multi-order checkout. Each order remains one restaurant with its own quote/key/transaction. No later scope label defers snapshots, audit or financial constraints.
 
 ### 3.1. New capability boundaries
 
@@ -113,9 +115,9 @@ flowchart TD
 
 | Workflow | Services called and their purpose |
 | --- | --- |
-| `OrderWorkflow.create` | Restaurant: order eligibility; Dishes: current dishes/prices; Delivery: valid quote; Commissions: current rate; Orders: totals and snapshots; Payments: initial unpaid state; Audit: recording |
+| `OrderWorkflow.create` | Restaurant: order eligibility; Dishes: current dishes/prices; Delivery: valid quote; Commissions: current rate; Orders: totals and snapshots; Payments: COD not_tracked (zero total not_required); Audit: recording |
 | `OrderWorkflow.transition` | RestaurantAccess/Orders: permissions and state; Orders: transition; Payments: refund obligations when applicable; Commissions: base entry on completion; Audit: changes |
-| `PaymentWorkflow.confirm` | Orders: read and lock order context; RestaurantAccess: verify owner; Payments: confirm receipt of funds; Audit: record the action |
+| `PaymentWorkflow.confirm` | Orders: read and lock order context; RestaurantAccess: verify owner; Payments: legacy-only receipt confirmation; COD rejected; Audit: record the action |
 | `RecommendationWorkflow.suggest` | Restaurant/Dishes/Delivery: build eligible candidates; Recommendations + AiGateway: rank/recommend; revalidate returned IDs |
 | `RestaurantAdminWorkflow.delete` | Restaurants: lock and authorize; Orders/Settlements: check history; Dishes/Delivery/Payments/Commissions: remove deletable configuration through owning services; Restaurants: delete restaurant/management relationship or deactivate; Audit: result |
 | `SettlementWorkflow` | RestaurantAccess: restaurant scope; Commissions/Settlements: entry grouping, adjustments, receipts; Audit: reasons and actors |
@@ -439,3 +441,7 @@ When adding a feature, identify the data-owning module first, place cross-module
 Commercial execution gates and P01–P36 are owned by [roadmap](roadmap.md); unresolved decisions by [register](decisions.md).
 
 V0.8 implementation refinement: [approved DEC-09](ai-v08-contract.md) selects Gemini free behind the provider-neutral AiGateway; recommendations own only quota/lease metadata, not conversations. Current catalog, delivery and accepted commission facts are supplied by public services. Network calls occur outside DB transactions. This supersedes earlier AI-provider-undecided wording only.
+
+## Checkout/voucher ownership extension
+
+The October 25, 2026 user-approved [checkout/voucher contract](checkout-vouchers.md) extends this specification: owner-funded restaurant codes, historical platform-funded global codes (no new issuance/redemption), pre-discount commission, preserved legacy completion subsidies, exact discounted totals and independent `not_required` payment for new zero-total orders. It supersedes earlier conflicting no-discount formulas only within this capability. Vouchers own definitions/redemptions; orders own immutable discount snapshots; commissions own subsidy ledger entries.

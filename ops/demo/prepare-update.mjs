@@ -6,7 +6,19 @@ import {cp,mkdtemp,readdir,readFile,writeFile} from 'node:fs/promises';
 import {spawn,spawnSync} from 'node:child_process';
 import {pipeline} from 'node:stream/promises';
 import {createGzip} from 'node:zlib';
-const id='20261024-36e01f1';
+async function sourceIdentity(){
+ const files=[];
+ async function walk(path){for(const e of await readdir(path,{withFileTypes:true})){
+  if(['node_modules','dist','.test-dist','generated','.git','__pycache__'].includes(e.name)||e.name.startsWith('.env')||/\.(key|pem|p12|pfx)$/.test(e.name))continue;
+  const name=path+'/'+e.name;
+  if(e.isDirectory())await walk(name);else if(e.isFile())files.push(name);
+ }}
+ for(const path of ['backend/src','backend/prisma','frontend/src','frontend/public','ops/demo','ops/staging'])await walk(path);
+ for(const path of ['backend/package.json','backend/package-lock.json','backend/tsconfig.json','backend/tsconfig.build.json','backend/nest-cli.json','backend/prisma7.config.ts','frontend/package.json','frontend/package-lock.json','frontend/tsconfig.json','frontend/tsconfig.app.json','frontend/tsconfig.node.json','frontend/vite.config.ts','frontend/index.html'])files.push(path);
+ const h=createHash('sha256');for(const path of files.sort()){h.update(path+'\0');h.update(await readFile(path));}return h.digest('hex');
+}
+const source=await sourceIdentity();
+const id='20261025-'+source.slice(0,7);
 const call=(args)=>{const r=spawnSync(args[0],args.slice(1),{encoding:'utf8',maxBuffer:16*1024*1024});assert.equal(r.status,0,'Artifact command failed: '+args[0]);return r.stdout.trim();};
 const hash=async path=>{const h=createHash('sha256');for await(const chunk of createReadStream(path))h.update(chunk);return h.digest('hex');};
 if(process.argv[2]==='--bootstrap'){
@@ -14,6 +26,9 @@ if(process.argv[2]==='--bootstrap'){
  assert.ok(dir?.startsWith('/private/tmp/hlf-demo-release-update-'));
  assert.match(url??'',/^https:\/\/[a-z0-9-]+\.trycloudflare\.com\/[a-f0-9]{48}\/delivery\.enc$/);
  const meta=JSON.parse(await readFile(dir+'/delivery.json','utf8'));
+ const manifest=JSON.parse(await readFile(dir+'/update.json','utf8'));
+ const id=manifest.id;
+ assert.match(id,/^20261025-[a-f0-9]{7}$/);
  const script=`#!/bin/sh
 sudo sh <<'HLF_UPDATE_BOOTSTRAP'
 set -eu
@@ -60,11 +75,14 @@ HLF_UPDATE_BOOTSTRAP
  console.log(JSON.stringify({result:'PASS',script:dir+'/deploy-vps.sh',key_embedded:false}));
 }else{
  assert.equal(process.argv.length,2);
- assert.equal(call(['git','rev-parse','--short=7','HEAD']),'36e01f1','Application revision changed');
- assert.equal(call(['git','status','--porcelain','--','backend','frontend']),'','Application worktree changed');
+ for(const [target,image] of [['schema-operator','schema'],['backend-runtime','backend'],['frontend-build','frontend']]){
+  const r=spawnSync('docker',['build','--platform','linux/amd64','-f','ops/staging/Dockerfile','--target',target,'-t','hlf-demo-'+image+':'+id,'.'],{stdio:'inherit'});
+  assert.equal(r.status,0,'Linux build failed: '+target);
+ }
+ assert.equal(await sourceIdentity(),source,'Source changed during build; rebuild required');
  const dir=await mkdtemp('/private/tmp/hlf-demo-release-update-');
  const backend='hlf-demo-backend:'+id,schema='hlf-demo-schema:'+id;
- const manifest={id,source_commit:call(['git','rev-parse','HEAD']),backend_image:backend,schema_image:schema,files:{}};
+ const manifest={id,source_snapshot_sha256:source,source_worktree:true,source_commit:call(['git','rev-parse','HEAD']),backend_image:backend,schema_image:schema,files:{}};
  for(const field of ['backend_image','schema_image']){
   const info=JSON.parse(call(['docker','image','inspect',manifest[field]]))[0];
   assert.equal(info.Os+'/'+info.Architecture,'linux/amd64');manifest[field+'_id']=info.Id;

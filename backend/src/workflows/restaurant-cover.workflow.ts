@@ -28,17 +28,17 @@ export class RestaurantCoverWorkflow {
    const restaurant=await this.restaurants.lock(c,asset.restaurant_id,owner?.actor??0n,!owner);
    if(owner&&restaurant.id!==BigInt(id(owner.restaurant)))throw new NotFoundException();
    const current=await this.media.get(asset.id,c);
-   if(current.deleted_at||current.deletion_requested_at||(!owner&&(!restaurant.is_active||restaurant.readiness!=='ready'||restaurant.cover_media_asset_id!==asset.id)))throw new NotFoundException();
+   if(current.deleted_at||current.deletion_requested_at||(!owner&&(!restaurant.is_active||restaurant.readiness!=='ready'||(restaurant.cover_media_asset_id!==asset.id&&restaurant.avatar_media_asset_id!==asset.id))))throw new NotFoundException();
   });
   const bytes=await this.storage.get(asset.object_key);if(digest(bytes)!==asset.content_hash)throw new Error('Cover media integrity failure');return {bytes,mime:asset.mime_type};
  }
  async cleanup(actor:bigint,value:string){
   const restaurant=BigInt(id(value));const rows=await this.runner.run(async c=>{
    await this.accounts.lock(c,actor,actor,false);const r=await this.restaurants.lock(c,restaurant,actor),claimed=[];
-   for(const asset of await this.media.candidates(c,restaurant)){if(r.cover_media_asset_id===asset.id)continue;await this.media.claim(c,asset.id);claimed.push(asset);}return claimed;
+   for(const asset of await this.media.candidates(c,restaurant)){if(r.cover_media_asset_id===asset.id||r.avatar_media_asset_id===asset.id)continue;await this.media.claim(c,asset.id);claimed.push(asset);}return claimed;
   });let deleted=0;
   for(const asset of rows){await this.storage.remove(asset.object_key);await this.runner.run(async c=>{
-   await this.accounts.lock(c,actor,actor,false);const r=await this.restaurants.lock(c,restaurant,actor);if(r.cover_media_asset_id===asset.id)throw new Error('Cover reference changed after claim');
+   await this.accounts.lock(c,actor,actor,false);const r=await this.restaurants.lock(c,restaurant,actor);if(r.cover_media_asset_id===asset.id||r.avatar_media_asset_id===asset.id)throw new Error('Cover reference changed after claim');
    await this.media.deleted(c,asset.id);await this.audit.record(c,{actorId:actor,action:'restaurant.cover_deleted',targetType:'restaurant_cover_media',targetId:asset.id,changes:{restaurant_id:value}});
   });deleted++;}return {deleted};
  }

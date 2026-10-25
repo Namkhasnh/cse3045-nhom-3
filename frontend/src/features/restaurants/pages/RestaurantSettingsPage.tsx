@@ -1,86 +1,48 @@
-import {StorefrontForm} from '../components/StorefrontForm'
-import type {ReactNode} from 'react'
-import {useEffect,useRef,useState} from 'react'
-import {settingsApi,type Settings,type Hours} from '../api/settings.api'
+import {type ReactNode,useEffect,useMemo,useRef,useState} from 'react'
+import {settingsApi,type Settings} from '../api/settings.api'
 import {requestMessage} from '../../../shared/api/request'
-import {Input} from '../../../shared/ui/Input'
-
+import {Icon} from '../../../shared/ui/Icon'
+import {RestaurantProfileEditor} from '../components/RestaurantProfileEditor'
+import {profileDraft} from '../profile-draft'
+import {OpeningHoursEditor} from '../components/OpeningHoursEditor'
+import {useLeaveWarning,useSettingsDraft} from '../hooks/use-settings-draft'
+import '../owner.css'
+const tabs=[['profile','Thông tin quán','shop'],['hours','Giờ mở cửa','clock'],['accepting','Vận hành','sparkle'],['readiness','Điều kiện mở bán','orders']] as const
+function selectedTab(){const hash=window.location.hash.slice(1);return tabs.some(t=>t[0]===hash)?hash:'profile'}
 export function RestaurantSettingsPage({renderSetup}:{renderSetup?:(id:string,version:number)=>ReactNode}){
- const [data,setData]=useState<Settings|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[notice,setNotice]=useState('')
- const errorRef=useRef<HTMLParagraphElement>(null)
- const loaded=Boolean(data)
- useEffect(()=>{
-  if(!loaded)return
-  const reveal=()=>{const target=document.getElementById(window.location.hash.slice(1));if(target){target.scrollIntoView({block:'start'});target.setAttribute('tabindex','-1');target.focus({preventScroll:true})}}
-  const frame=requestAnimationFrame(reveal)
-  window.addEventListener('hashchange',reveal)
-  return()=>{cancelAnimationFrame(frame);window.removeEventListener('hashchange',reveal)}
- },[loaded])
+ const [data,setData]=useState<Settings|null>(null),[error,setError]=useState(''),[attempt,setAttempt]=useState(0)
+ useEffect(()=>{const c=new AbortController();settingsApi.own(c.signal).then(v=>{if(!c.signal.aborted){setData(v);setError('')}}).catch(e=>{if(!c.signal.aborted){if([401,403,404].includes(e?.status))setData(null);setError(requestMessage(e))}});return()=>c.abort()},[attempt])
+ if(!data)return <section className="owner-page"><h1>Cài đặt quán</h1>{error?<p role="alert">{error}<button onClick={()=>setAttempt(n=>n+1)}>Thử lại</button></p>:<div className="owner-skeleton" role="status">Đang tải thiết lập…</div>}</section>
+ return <SettingsEditor data={data} onData={setData} renderSetup={renderSetup}/>
+}
+function SettingsEditor({data,onData,renderSetup}:{data:Settings;onData:(d:Settings)=>void;renderSetup?:(id:string,version:number)=>ReactNode}){
+ const baseline=useMemo(()=>profileDraft(data),[data])
+ const profile=useSettingsDraft(baseline),hours=useSettingsDraft(data.hours),accepting=useSettingsDraft(data.is_accepting_orders)
+ const [file,setFile]=useState<File|null>(null),[avatarFile,setAvatarFile]=useState<File|null>(null),[tab,setTab]=useState(selectedTab),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState(''),[needsReload,setNeedsReload]=useState(false)
+ const locked=useRef(false),alive=useRef(true),errorRef=useRef<HTMLParagraphElement>(null),panel=useRef<HTMLDivElement>(null)
+ useEffect(()=>{alive.current=true;return()=>{alive.current=false}},[])
+ useLeaveWarning(profile.dirty||hours.dirty||accepting.dirty||Boolean(file)||Boolean(avatarFile))
+ const preview=useMemo(()=>file?URL.createObjectURL(file):'',[file])
+ useEffect(()=>()=>{if(preview)URL.revokeObjectURL(preview)},[preview])
+ const avatarPreview=useMemo(()=>avatarFile?URL.createObjectURL(avatarFile):'',[avatarFile])
+ useEffect(()=>()=>{if(avatarPreview)URL.revokeObjectURL(avatarPreview)},[avatarPreview])
+ useEffect(()=>{const reveal=()=>{setTab(selectedTab());requestAnimationFrame(()=>panel.current?.focus())};window.addEventListener('hashchange',reveal);if(window.location.hash)reveal();return()=>window.removeEventListener('hashchange',reveal)},[])
  useEffect(()=>{if(error)errorRef.current?.focus()},[error])
- const load=()=>{setError('');settingsApi.own().then(setData).catch(e=>setError(requestMessage(e)))}
- useEffect(()=>{let active=true;settingsApi.own().then(v=>{if(active)setData(v)}).catch(e=>{if(active)setError(requestMessage(e))});return()=>{active=false}},[])
- async function save(body:object,scope:string){
-  if(!data)return
-  setBusy(true);setError('');setNotice('')
-  try{const saved=await settingsApi.save(data.id,{expected_version:data.version,...body});setData(saved);setNotice('Đã lưu '+scope+'.');return saved}
-  catch(e){setError(scope+': '+requestMessage(e))}finally{setBusy(false)}
- }
- return <section className="settings-page"><h1>Thiết lập quán</h1>{error&&<p ref={errorRef} tabIndex={-1} role="alert">{error}</p>}<button onClick={load} disabled={busy}>Tải lại thiết lập</button>{notice&&<p role="status">{notice}</p>}{!data?!error&&<p role="status">Đang tải thiết lập…</p>:<>
- <h2>{data.name}</h2><p>{data.readiness==='ready'?'Đã đủ cấu hình':'Cần hoàn thiện cấu hình'} · {data.is_active?'Đã được kích hoạt':'Chờ Admin kích hoạt'}</p>
- {renderSetup?.(data.id,data.version)}
- <div id="profile"/><ProfileForm key={'profile'+data.id} initial={data} busy={busy} save={body=>save(body,'hồ sơ quán')}/>
- <StorefrontForm key={'storefront'+data.id} initial={data} busy={busy} save={body=>save(body,'ảnh bìa và giới thiệu')}/>
- <div id="hours"/><HoursForm key={'hours'+data.id} initial={data.hours} busy={busy} save={hours=>save({hours},'giờ mở cửa')}/>
- <div id="accepting" role="group" aria-label="Trạng thái nhận đơn"><button disabled={busy||(!data.is_accepting_orders&&(data.readiness!=='ready'||!data.is_active))} onClick={()=>void save({is_accepting_orders:!data.is_accepting_orders},'trạng thái nhận đơn')}>{data.is_accepting_orders?'Tạm ngừng nhận đơn':'Bật nhận đơn'}</button></div>
- </>}</section>
-}
-
-const profileKeys=['name','address','contact_phone','latitude','longitude'] as const
-type ProfileKey=typeof profileKeys[number]
-type Profile=Record<ProfileKey,string>
-const profileValues=(data:Settings):Profile=>({name:data.name,address:data.address,contact_phone:data.contact_phone,latitude:data.latitude??'',longitude:data.longitude??''})
-const profileLabels:Profile={name:'Tên quán',address:'Địa chỉ',contact_phone:'Điện thoại kinh doanh',latitude:'Vĩ độ (6 số thập phân)',longitude:'Kinh độ (6 số thập phân)'}
-function ProfileForm({initial,busy,save}:{initial:Settings;busy:boolean;save:(body:object)=>Promise<Settings|undefined>}){
- const [values,setValues]=useState(()=>profileValues(initial)),[errors,setErrors]=useState<Partial<Profile>>({})
- const baseline=useRef(profileValues(initial)),form=useRef<HTMLFormElement>(null)
- useEffect(()=>{
-  const previous=baseline.current,next=profileValues(initial)
-  // Refresh clean fields only. Saving hours or reloading must not erase a draft.
-  setValues(current=>Object.fromEntries(profileKeys.map(k=>[k,current[k]===previous[k]?next[k]:current[k]])) as Profile)
-  baseline.current=next
- },[initial])
- function submit(){
-  const invalid:Partial<Profile>={}
-  if(!values.name.trim()||[...values.name].length>200)invalid.name='Nhập tên quán từ 1 đến 200 ký tự.'
-  if(!values.address.trim()||[...values.address].length>1000)invalid.address='Nhập địa chỉ từ 1 đến 1000 ký tự.'
-  if(!/^\+?[0-9]{9,15}$/.test(values.contact_phone))invalid.contact_phone='Điện thoại cần 9–15 chữ số, có thể bắt đầu bằng +.'
-  if(Boolean(values.latitude)!==Boolean(values.longitude)){
-   invalid[values.latitude?'longitude':'latitude']='Nhập đủ cả vĩ độ và kinh độ, hoặc để trống cả hai.'
-  }
-  for(const k of ['latitude','longitude'] as const){
-   const limit=k==='latitude'?90:180
-   if(values[k]&&(!/^-?[0-9]+\.[0-9]{6}$/.test(values[k])||Math.abs(Number(values[k]))>limit))invalid[k]=`Nhập tọa độ từ -${limit} đến ${limit}, đúng 6 số thập phân.`
-  }
-  setErrors(invalid)
-  const first=profileKeys.find(k=>invalid[k])
-  if(first){form.current?.querySelector<HTMLInputElement>(`[name=${first}]`)?.focus();return}
-  void save({...values,latitude:values.latitude||null,longitude:values.longitude||null}).then(saved=>{if(saved){const next=profileValues(saved);baseline.current=next;setValues(next)}})
- }
- return <form ref={form} noValidate onSubmit={e=>{e.preventDefault();submit()}}><fieldset disabled={busy}><legend>Hồ sơ công khai</legend>
- {profileKeys.map(k=><Input key={k} id={'restaurant-'+k} name={k} label={profileLabels[k]} error={errors[k]} value={values[k]} required={['name','address','contact_phone'].includes(k)} maxLength={k==='address'?1000:k==='name'?200:k==='contact_phone'?16:32} onChange={e=>{setValues({...values,[k]:e.target.value});setErrors(current=>({...current,[k]:undefined}))}}/>)}
- <p>Đổi vị trí sẽ yêu cầu duyệt lại khảo sát giao hàng.</p><button type="submit">Lưu hồ sơ quán</button></fieldset></form>
-}
-function HoursForm({initial,busy,save}:{initial:Hours[];busy:boolean;save:(hours:Hours[])=>Promise<Settings|undefined>}){
- const [hours,setHours]=useState(initial),baseline=useRef(initial)
- useEffect(()=>{
-  const previous=baseline.current
-  setHours(current=>JSON.stringify(current)===JSON.stringify(previous)?initial:current)
-  baseline.current=initial
- },[initial])
- const change=(i:number,patch:Partial<Hours>)=>setHours(hours.map((h,j)=>j===i?{...h,...patch}:h))
- return <form onSubmit={e=>{e.preventDefault();void save(hours).then(saved=>{if(saved){baseline.current=saved.hours;setHours(saved.hours)}})}}><fieldset disabled={busy}><legend>Giờ mở cửa · giờ Việt Nam</legend><p>Không có khoảng giờ nghĩa là đóng cửa. Có thể thêm nhiều khoảng mỗi ngày.</p>
- {hours.map((h,i)=><div className="hours-row" key={i}><label>Ngày<select value={h.weekday} onChange={e=>change(i,{weekday:Number(e.target.value)})}>{['Thứ hai','Thứ ba','Thứ tư','Thứ năm','Thứ sáu','Thứ bảy','Chủ nhật'].map((n,j)=><option key={n} value={j+1}>{n}</option>)}</select></label>
- <label>Mở<input type="time" step="1" required value={h.opens_at} onChange={e=>change(i,{opens_at:e.target.value.length===5?e.target.value+':00':e.target.value})}/></label><label>Đóng<input type="time" step="1" required value={h.closes_at} onChange={e=>change(i,{closes_at:e.target.value.length===5?e.target.value+':00':e.target.value})}/></label>
- <label><input type="checkbox" checked={h.closes_next_day} onChange={e=>change(i,{closes_next_day:e.target.checked})}/>Đóng vào hôm sau</label><button type="button" onClick={()=>setHours(hours.filter((_,j)=>j!==i))}>Xóa khoảng {i+1}</button></div>)}
- <button type="button" onClick={()=>setHours([...hours,{weekday:1,opens_at:'08:00:00',closes_at:'20:00:00',closes_next_day:false}])}>Thêm khoảng giờ</button><button type="submit">Lưu giờ mở cửa</button></fieldset></form>
+ function choose(next:string){setTab(next);history.replaceState(null,'','/owner/settings#'+next)}
+ async function save(scope:string,body:object,upload=false){if(locked.current||needsReload)return;locked.current=true;setBusy(true);setError('');setNotice('')
+ try{let fields=body;if(upload&&file){const uploaded=await settingsApi.uploadCover(data.id,file);fields={...fields,cover_image_reference:uploaded.image_reference};if(alive.current){profile.setValue(v=>({...v,cover_image_reference:uploaded.image_reference}));setFile(null)}}
+ if(upload&&avatarFile){const uploaded=await settingsApi.uploadCover(data.id,avatarFile);fields={...fields,avatar_image_reference:uploaded.image_reference};if(alive.current){profile.setValue(v=>({...v,avatar_image_reference:uploaded.image_reference}));setAvatarFile(null)}}
+ const saved=await settingsApi.save(data.id,{expected_version:data.version,...fields});if(!alive.current)return;onData(saved);if(scope==='hồ sơ quán')profile.setValue(profileDraft(saved));if(scope==='giờ mở cửa')hours.setValue(saved.hours);if(scope==='trạng thái nhận đơn')accepting.setValue(saved.is_accepting_orders);setNotice('Đã lưu '+scope+'.')
+ }catch(e){if(alive.current){setError(requestMessage(e));setNeedsReload(true)}}finally{locked.current=false;if(alive.current)setBusy(false)}}
+ async function reload(){if(locked.current)return;locked.current=true;setBusy(true);setError('');try{const fresh=await settingsApi.read(data.id);if(alive.current){onData(fresh);setNeedsReload(false);setNotice('Đã tải trạng thái mới. Bản nháp được giữ; hãy kiểm tra trước khi lưu lại.')}}catch(e){if(alive.current)setError(requestMessage(e))}finally{locked.current=false;if(alive.current)setBusy(false)}}
+ const disabled=busy||needsReload
+ return <section className="owner-page owner-settings"><header className="owner-heading"><div><span className="workspace-eyebrow">Trung tâm điều hành</span><h1>Cài đặt quán</h1><p>Quản lý thông tin, lịch hoạt động và điều kiện mở bán.</p></div><div className="owner-heading-actions"><a className="owner-outline" href={`/restaurants/${data.id}`}>Xem trang quán <Icon name="arrow"/></a><span className="owner-badge">{data.is_active?'Quán đã kích hoạt':'Chờ Admin kích hoạt'}</span></div></header>
+ <div className="owner-tabs" role="tablist" aria-label="Cài đặt quán" onKeyDown={e=>{const current=tabs.findIndex(t=>t[0]===tab);let next=current;if(e.key==='ArrowRight')next=(current+1)%tabs.length;else if(e.key==='ArrowLeft')next=(current+tabs.length-1)%tabs.length;else if(e.key==='Home')next=0;else if(e.key==='End')next=tabs.length-1;else return;e.preventDefault();choose(tabs[next][0]);document.getElementById('tab-'+tabs[next][0])?.focus()}}>{tabs.map(([key,label,icon])=><button type="button" role="tab" id={'tab-'+key} key={key} aria-selected={tab===key} aria-controls={'panel-'+key} tabIndex={tab===key?0:-1} onClick={()=>choose(key)}><Icon name={icon}/>{label}</button>)}</div>
+ {error&&<p className="owner-feedback" ref={errorRef} tabIndex={-1} role="alert">{error}</p>}{needsReload&&<button disabled={busy} onClick={()=>void reload()}>Tải lại thiết lập trước khi lưu tiếp</button>}<p className="owner-save-notice" role="status" aria-live="polite">{notice}</p>
+ <div ref={panel} tabIndex={-1} className="owner-tab-panels">{tabs.map(([key])=><div key={key} role="tabpanel" id={'panel-'+key} aria-labelledby={'tab-'+key} hidden={tab!==key}>
+ {key==='profile'&&<RestaurantProfileEditor value={profile.value} onChange={profile.setValue} file={file} onFile={setFile} preview={preview} avatarFile={avatarFile} onAvatarFile={setAvatarFile} avatarPreview={avatarPreview} restaurantId={data.id} busy={disabled} onReset={()=>{profile.reset();setFile(null);setAvatarFile(null)}} onSave={()=>void save('hồ sơ quán',{...profile.value,latitude:profile.value.latitude||null,longitude:profile.value.longitude||null},true)}/>}
+ {key==='hours'&&<OpeningHoursEditor hours={hours.value} onChange={hours.setValue} busy={disabled} onSave={()=>void save('giờ mở cửa',{hours:hours.value})} onReset={hours.reset}/>}
+ {key==='accepting'&&<div className="owner-settings-grid"><section className="owner-card"><h2>Trạng thái nhận đơn</h2><p>Kiểm soát khả năng nhận đơn mới của quán.</p><div className="owner-operating-state"><Icon name="check"/><div><strong>{data.is_accepting_orders?'Đã bật nhận đơn':'Đã tạm ngừng nhận đơn'}</strong><p>{data.is_open?'Hiện trong giờ mở cửa.':'Hiện ngoài giờ mở cửa.'} {data.readiness==='ready'?'Quán đã đủ cấu hình.':'Quán cần hoàn thiện cấu hình.'}</p></div></div><label className="owner-switch">Nhận đơn mới<input type="checkbox" role="switch" checked={accepting.value} disabled={disabled||(!data.is_accepting_orders&&(data.readiness!=='ready'||!data.is_active))} onChange={e=>accepting.setValue(e.target.checked)}/></label><p>Tắt tùy chọn này để chủ động tạm ngừng nhận đơn. Giờ mở cửa và kích hoạt vẫn được kiểm tra riêng.</p><div className="owner-form-actions"><button disabled={disabled} onClick={accepting.reset}>Khôi phục trạng thái đã lưu</button><button className="button button--primary" disabled={disabled||accepting.value===data.is_accepting_orders} onClick={()=>void save('trạng thái nhận đơn',{is_accepting_orders:accepting.value})}>{busy?'Đang lưu…':'Lưu trạng thái'}</button></div></section><aside className="owner-card"><h2>Điều kiện vận hành</h2><p>{data.readiness==='ready'?'Đủ cấu hình mở bán':'Cần hoàn thiện cấu hình'}</p><p>{data.is_open?'Trong giờ mở cửa':'Ngoài giờ mở cửa'}</p><p>{data.checklist.delivery?'Giao hàng đã cấu hình':'Giao hàng chưa đủ cấu hình'}</p><a className="owner-outline" href="/owner/delivery">Xem cấu hình giao hàng <Icon name="arrow"/></a></aside></div>}
+ {key==='readiness'&&<div className="owner-card owner-readiness-details">{renderSetup?.(data.id,data.version)}</div>}
+ </div>)}</div></section>
 }

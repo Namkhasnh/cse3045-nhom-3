@@ -1,11 +1,10 @@
-// Only the selected public point ID crosses the cart/checkout boundary, never a quote.
+import type {Quote} from './api'
 const storageKey = (accountId: string) => `hlf.setup.${accountId}.cart-delivery`
-export function loadCartPoint(accountId: string, restaurantId: string): string {
-  try {
-    const value = JSON.parse(sessionStorage.getItem(storageKey(accountId)) ?? 'null')
-    return value?.restaurantId === restaurantId && typeof value.pointId === 'string' && /^[1-9][0-9]{0,18}$/.test(value.pointId) ? value.pointId : ''
-  } catch { return '' }
+export type CartReview={restaurantId:string;pointId:string;fingerprint:string;quote:Quote}
+export function loadCartPoint(accountId:string,restaurantId:string):string {try {const v=JSON.parse(sessionStorage.getItem(storageKey(accountId))??'null');return v?.restaurantId===restaurantId&&typeof v.pointId==='string'&&/^[1-9][0-9]{0,18}$/.test(v.pointId)?v.pointId:''}catch{return ''}}
+export function loadCartReview(accountId:string,restaurantId:string,fingerprint:string):CartReview|null {
+ try{const raw=sessionStorage.getItem(storageKey(accountId));if(!raw||raw.length>10000)return null;const v=JSON.parse(raw),q=v?.quote;if(v.restaurantId!==restaurantId||v.fingerprint!==fingerprint||loadCartPoint(accountId,restaurantId)!==v.pointId||!q||q.destination?.pickup_point_id!==v.pointId||typeof q.destination?.pickup_point_name!=='string'||!q.destination.pickup_point_name||typeof q.quote_artifact!=='string'||!/^[A-Za-z0-9_-]{43}$/.test(q.quote_artifact)||typeof q.delivery_fee_vnd!=='string'||! /^(0|[1-9][0-9]{0,8})$/.test(q.delivery_fee_vnd)||!Number.isFinite(Date.parse(q.expires_at))||!['policy_version','pickup_point_version','survey_version'].every(k=>Number.isInteger(q[k])&&q[k]>0)||!Number.isInteger(q.distance_m)||q.distance_m<0)return null;return v}catch{return null}
 }
-export function saveCartPoint(accountId: string, restaurantId: string, pointId: string): void {
-  sessionStorage.setItem(storageKey(accountId), JSON.stringify({ restaurantId, pointId }))
+export function saveCartPoint(accountId:string,restaurantId:string,pointId:string,quote?:Quote,fingerprint?:string):void {
+ const value={restaurantId,pointId,...(quote?{fingerprint,quote:{quote_artifact:quote.quote_artifact,policy_version:quote.policy_version,pickup_point_version:quote.pickup_point_version,survey_version:quote.survey_version,distance_m:quote.distance_m,delivery_fee_vnd:quote.delivery_fee_vnd,expires_at:quote.expires_at,destination:{pickup_point_id:quote.destination.pickup_point_id,pickup_point_name:quote.destination.pickup_point_name}}}:{})};const raw=JSON.stringify(value);sessionStorage.setItem(storageKey(accountId),raw);if(sessionStorage.getItem(storageKey(accountId))!==raw)throw new Error('Không lưu được điểm nhận.')
 }

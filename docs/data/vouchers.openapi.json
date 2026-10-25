@@ -1,0 +1,2089 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Approved checkout and vouchers",
+    "version": "1.0.0",
+    "description": " October25 COD cutover: owner-only new vouchers; legacy facts retained. See docs/cod-ordering.md."
+  },
+  "servers": [
+    {
+      "url": "/api/v1"
+    }
+  ],
+  "paths": {
+    "/admin/vouchers": {
+      "get": {
+        "operationId": "voucher_list_admin",
+        "tags": [
+          "Checkout vouchers"
+        ],
+        "responses": {
+          "200": {
+            "description": "Acknowledged server result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "code": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{2,31}$"
+                          },
+                          "rate": {
+                            "type": "string",
+                            "pattern": "^(0\\.[0-9]{8}|1\\.00000000)$"
+                          },
+                          "max_discount_vnd": {
+                            "type": "string",
+                            "pattern": "^(0|[1-9][0-9]{0,18})$"
+                          },
+                          "min_subtotal_vnd": {
+                            "type": "string",
+                            "pattern": "^(0|[1-9][0-9]{0,18})$"
+                          },
+                          "starts_at": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "ends_at": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "total_limit": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 2147483646
+                          },
+                          "per_account_limit": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 2147483646
+                          },
+                          "id": {
+                            "type": "string",
+                            "pattern": "^[1-9][0-9]{0,18}$"
+                          },
+                          "restaurant_id": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "funding": {
+                            "enum": [
+                              "platform",
+                              "restaurant"
+                            ]
+                          },
+                          "discount_vnd": {
+                            "type": "string",
+                            "pattern": "^(0|[1-9][0-9]{0,18})$"
+                          },
+                          "is_active": {
+                            "type": "boolean"
+                          },
+                          "version": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 2147483646
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "rate",
+                          "max_discount_vnd",
+                          "min_subtotal_vnd",
+                          "starts_at",
+                          "ends_at",
+                          "total_limit",
+                          "per_account_limit",
+                          "id",
+                          "restaurant_id",
+                          "funding",
+                          "discount_vnd",
+                          "is_active",
+                          "version"
+                        ]
+                      }
+                    },
+                    "page": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "has_more": {
+                          "type": "boolean"
+                        },
+                        "next_cursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "has_more",
+                        "next_cursor"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "page"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "after_id",
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "name": "X-Account-Id",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          }
+        ]
+      },
+      "post": {
+        "operationId": "voucher_create_admin",
+        "tags": [
+          "Checkout vouchers"
+        ],
+        "responses": {
+          "200": {
+            "description": "Acknowledged server result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{2,31}$"
+                        },
+                        "rate": {
+                          "type": "string",
+                          "pattern": "^(0\\.[0-9]{8}|1\\.00000000)$"
+                        },
+                        "max_discount_vnd": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9][0-9]{0,18})$"
+                        },
+                        "min_subtotal_vnd": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9][0-9]{0,18})$"
+                        },
+                        "starts_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "ends_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "total_limit": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 2147483646
+                        },
+                        "per_account_limit": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 2147483646
+                        },
+                        "id": {
+                          "type": "string",
+                          "pattern": "^[1-9][0-9]{0,18}$"
+                        },
+                        "restaurant_id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "funding": {
+                          "enum": [
+                            "platform",
+                            "restaurant"
+                          ]
+                        },
+                        "discount_vnd": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9][0-9]{0,18})$"
+                        },
+                        "is_active": {
+                          "type": "boolean"
+                        },
+                        "version": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 2147483646
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "rate",
+                        "max_discount_vnd",
+                        "min_subtotal_vnd",
+                        "starts_at",
+                        "ends_at",
+                        "total_limit",
+                        "per_account_limit",
+                        "id",
+                        "restaurant_id",
+                        "funding",
+                        "discount_vnd",
+                        "is_active",
+                        "version"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{2,31}$"
+                  },
+                  "rate": {
+                    "type": "string",
+                    "pattern": "^(0\\.[0-9]{8}|1\\.00000000)$"
+                  },
+                  "max_discount_vnd": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9][0-9]{0,18})$"
+                  },
+                  "min_subtotal_vnd": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9][0-9]{0,18})$"
+                  },
+                  "starts_at": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "ends_at": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "total_limit": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 2147483646
+                  },
+                  "per_account_limit": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 2147483646
+                  }
+                },
+                "required": [
+                  "code",
+                  "rate",
+                  "max_discount_vnd",
+                  "min_subtotal_vnd",
+                  "starts_at",
+                  "ends_at",
+                  "total_limit",
+                  "per_account_limit"
+                ]
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "X-Account-Id",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "description": "COD cutover: new QR authoring/review/uploads and platform voucher mutations are retired (410). Authorized committed keyed replays remain recoverable where applicable. Historical reads/obligations survive.",
+        "deprecated": true
+      }
+    },
+    "/admin/vouchers/{voucher_id}": {
+      "patch": {
+        "operationId": "voucher_toggle_admin",
+        "tags": [
+          "Checkout vouchers"
+        ],
+        "responses": {
+          "200": {
+            "description": "Acknowledged server result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{2,31}$"
+                        },
+                        "rate": {
+                          "type": "string",
+                          "pattern": "^(0\\.[0-9]{8}|1\\.00000000)$"
+                        },
+                        "max_discount_vnd": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9][0-9]{0,18})$"
+                        },
+                        "min_subtotal_vnd": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9][0-9]{0,18})$"
+                        },
+                        "starts_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "ends_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "total_limit": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 2147483646
+                        },
+                        "per_account_limit": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 2147483646
+                        },
+                        "id": {
+                          "type": "string",
+                          "pattern": "^[1-9][0-9]{0,18}$"
+                        },
+                        "restaurant_id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "funding": {
+                          "enum": [
+                            "platform",
+                            "restaurant"
+                          ]
+                        },
+                        "discount_vnd": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9][0-9]{0,18})$"
+                        },
+                        "is_active": {
+                          "type": "boolean"
+                        },
+                        "version": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 2147483646
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "rate",
+                        "max_discount_vnd",
+                        "min_subtotal_vnd",
+                        "starts_at",
+                        "ends_at",
+                        "total_limit",
+                        "per_account_limit",
+                        "id",
+                        "restaurant_id",
+                        "funding",
+                        "discount_vnd",
+                        "is_active",
+                        "version"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "expected_version": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 2147483646
+                  },
+                  "is_active": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "expected_version",
+                  "is_active"
+                ]
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "voucher_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "name": "X-Account-Id",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "description": "COD cutover: new QR authoring/review/uploads and platform voucher mutations are retired (410). Authorized committed keyed replays remain recoverable where applicable. Historical reads/obligations survive.",
+        "deprecated": true
+      }
+    },
+    "/owner/restaurants/{restaurant_id}/vouchers": {
+      "get": {
+        "operationId": "voucher_list_owner",
+        "tags": [
+          "Checkout vouchers"
+        ],
+        "responses": {
+          "200": {
+            "description": "Acknowledged server result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "code": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{2,31}$"
+                          },
+                          "rate": {
+                            "type": "string",
+                            "pattern": "^(0\\.[0-9]{8}|1\\.00000000)$"
+                          },
+                          "max_discount_vnd": {
+                            "type": "string",
+                            "pattern": "^(0|[1-9][0-9]{0,18})$"
+                          },
+                          "min_subtotal_vnd": {
+                            "type": "string",
+                            "pattern": "^(0|[1-9][0-9]{0,18})$"
+                          },
+                          "starts_at": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "ends_at": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "total_limit": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 2147483646
+                          },
+                          "per_account_limit": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 2147483646
+                          },
+                          "id": {
+                            "type": "string",
+                            "pattern": "^[1-9][0-9]{0,18}$"
+                          },
+                          "restaurant_id": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "funding": {
+                            "enum": [
+                              "platform",
+                              "restaurant"
+                            ]
+                          },
+                          "discount_vnd": {
+                            "type": "string",
+                            "pattern": "^(0|[1-9][0-9]{0,18})$"
+                          },
+                          "is_active": {
+                            "type": "boolean"
+                          },
+                          "version": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 2147483646
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "rate",
+                          "max_discount_vnd",
+                          "min_subtotal_vnd",
+                          "starts_at",
+                          "ends_at",
+                          "total_limit",
+                          "per_account_limit",
+                          "id",
+                          "restaurant_id",
+                          "funding",
+                          "discount_vnd",
+                          "is_active",
+                          "version"
+                        ]
+                      }
+                    },
+                    "page": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "has_more": {
+                          "type": "boolean"
+                        },
+                        "next_cursor": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "has_more",
+                        "next_cursor"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "page"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "after_id",
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "name": "restaurant_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "name": "X-Account-Id",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          }
+        ]
+      },
+      "post": {
+        "operationId": "voucher_create_owner",
+        "tags": [
+          "Checkout vouchers"
+        ],
+        "responses": {
+          "200": {
+            "description": "Acknowledged server result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{2,31}$"
+                        },
+                        "rate": {
+                          "type": "string",
+                          "pattern": "^(0\\.[0-9]{8}|1\\.00000000)$"
+                        },
+                        "max_discount_vnd": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9][0-9]{0,18})$"
+                        },
+                        "min_subtotal_vnd": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9][0-9]{0,18})$"
+                        },
+                        "starts_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "ends_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "total_limit": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 2147483646
+                        },
+                        "per_account_limit": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 2147483646
+                        },
+                        "id": {
+                          "type": "string",
+                          "pattern": "^[1-9][0-9]{0,18}$"
+                        },
+                        "restaurant_id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "funding": {
+                          "enum": [
+                            "platform",
+                            "restaurant"
+                          ]
+                        },
+                        "discount_vnd": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9][0-9]{0,18})$"
+                        },
+                        "is_active": {
+                          "type": "boolean"
+                        },
+                        "version": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 2147483646
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "rate",
+                        "max_discount_vnd",
+                        "min_subtotal_vnd",
+                        "starts_at",
+                        "ends_at",
+                        "total_limit",
+                        "per_account_limit",
+                        "id",
+                        "restaurant_id",
+                        "funding",
+                        "discount_vnd",
+                        "is_active",
+                        "version"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{2,31}$"
+                  },
+                  "rate": {
+                    "type": "string",
+                    "pattern": "^(0\\.[0-9]{8}|1\\.00000000)$"
+                  },
+                  "max_discount_vnd": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9][0-9]{0,18})$"
+                  },
+                  "min_subtotal_vnd": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9][0-9]{0,18})$"
+                  },
+                  "starts_at": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "ends_at": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "total_limit": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 2147483646
+                  },
+                  "per_account_limit": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 2147483646
+                  }
+                },
+                "required": [
+                  "code",
+                  "rate",
+                  "max_discount_vnd",
+                  "min_subtotal_vnd",
+                  "starts_at",
+                  "ends_at",
+                  "total_limit",
+                  "per_account_limit"
+                ]
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "restaurant_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "name": "X-Account-Id",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ]
+      }
+    },
+    "/owner/restaurants/{restaurant_id}/vouchers/{voucher_id}": {
+      "patch": {
+        "operationId": "voucher_toggle_owner",
+        "tags": [
+          "Checkout vouchers"
+        ],
+        "responses": {
+          "200": {
+            "description": "Acknowledged server result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{2,31}$"
+                        },
+                        "rate": {
+                          "type": "string",
+                          "pattern": "^(0\\.[0-9]{8}|1\\.00000000)$"
+                        },
+                        "max_discount_vnd": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9][0-9]{0,18})$"
+                        },
+                        "min_subtotal_vnd": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9][0-9]{0,18})$"
+                        },
+                        "starts_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "ends_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "total_limit": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 2147483646
+                        },
+                        "per_account_limit": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 2147483646
+                        },
+                        "id": {
+                          "type": "string",
+                          "pattern": "^[1-9][0-9]{0,18}$"
+                        },
+                        "restaurant_id": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "funding": {
+                          "enum": [
+                            "platform",
+                            "restaurant"
+                          ]
+                        },
+                        "discount_vnd": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9][0-9]{0,18})$"
+                        },
+                        "is_active": {
+                          "type": "boolean"
+                        },
+                        "version": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 2147483646
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "rate",
+                        "max_discount_vnd",
+                        "min_subtotal_vnd",
+                        "starts_at",
+                        "ends_at",
+                        "total_limit",
+                        "per_account_limit",
+                        "id",
+                        "restaurant_id",
+                        "funding",
+                        "discount_vnd",
+                        "is_active",
+                        "version"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "expected_version": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 2147483646
+                  },
+                  "is_active": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "expected_version",
+                  "is_active"
+                ]
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "restaurant_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "name": "voucher_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "name": "X-Account-Id",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ]
+      }
+    },
+    "/orders/preview": {
+      "post": {
+        "operationId": "checkout_preview",
+        "tags": [
+          "Checkout vouchers"
+        ],
+        "responses": {
+          "200": {
+            "description": "Acknowledged server result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "restaurant_id": {
+                          "type": "string",
+                          "pattern": "^[1-9][0-9]{0,18}$"
+                        },
+                        "restaurant_name": {
+                          "type": "string"
+                        },
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "dish_id": {
+                                "type": "string",
+                                "pattern": "^[1-9][0-9]{0,18}$"
+                              },
+                              "dish_name": {
+                                "type": "string"
+                              },
+                              "quantity": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 2147483646
+                              },
+                              "accepted_unit_price_vnd": {
+                                "type": "string",
+                                "pattern": "^(0|[1-9][0-9]{0,18})$"
+                              },
+                              "current_unit_price_vnd": {
+                                "type": "string",
+                                "pattern": "^(0|[1-9][0-9]{0,18})$"
+                              }
+                            },
+                            "required": [
+                              "dish_id",
+                              "dish_name",
+                              "quantity",
+                              "accepted_unit_price_vnd",
+                              "current_unit_price_vnd"
+                            ]
+                          }
+                        },
+                        "subtotal_vnd": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9][0-9]{0,18})$"
+                        },
+                        "discount_vnd": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9][0-9]{0,18})$"
+                        },
+                        "delivery_fee_vnd": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9][0-9]{0,18})$"
+                        },
+                        "total_vnd": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9][0-9]{0,18})$"
+                        },
+                        "current_delivery_quote": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "schema_version": {
+                              "const": 1
+                            },
+                            "source": {
+                              "const": "survey"
+                            },
+                            "restaurant_id": {
+                              "type": "string",
+                              "pattern": "^[1-9][0-9]{0,18}$"
+                            },
+                            "policy_version": {
+                              "type": "integer",
+                              "minimum": 1
+                            },
+                            "pickup_point_version": {
+                              "type": "integer",
+                              "minimum": 1
+                            },
+                            "survey_version": {
+                              "type": "integer",
+                              "minimum": 1
+                            },
+                            "destination": {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "pickup_point_id": {
+                                  "type": "string",
+                                  "pattern": "^[1-9][0-9]{0,18}$"
+                                },
+                                "pickup_point_name": {
+                                  "type": "string"
+                                },
+                                "text": {
+                                  "type": "string"
+                                },
+                                "latitude": {
+                                  "type": "string"
+                                },
+                                "longitude": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "pickup_point_id",
+                                "pickup_point_name",
+                                "text",
+                                "latitude",
+                                "longitude"
+                              ]
+                            },
+                            "distance_m": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "delivery_fee_vnd": {
+                              "type": "string",
+                              "pattern": "^(0|[1-9][0-9]{0,18})$"
+                            },
+                            "issued_at": {
+                              "type": "string"
+                            },
+                            "expires_at": {
+                              "type": "string"
+                            },
+                            "matched_tier": {
+                              "type": "null"
+                            },
+                            "quote_artifact": {
+                              "type": "string",
+                              "pattern": "^[A-Za-z0-9_-]{43}$"
+                            }
+                          },
+                          "required": [
+                            "schema_version",
+                            "source",
+                            "restaurant_id",
+                            "policy_version",
+                            "pickup_point_version",
+                            "survey_version",
+                            "destination",
+                            "distance_m",
+                            "delivery_fee_vnd",
+                            "issued_at",
+                            "expires_at",
+                            "matched_tier",
+                            "quote_artifact"
+                          ]
+                        },
+                        "voucher": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "pattern": "^[1-9][0-9]{0,18}$"
+                                },
+                                "code": {
+                                  "type": "string"
+                                },
+                                "version": {
+                                  "type": "integer",
+                                  "minimum": 1
+                                },
+                                "funding": {
+                                  "enum": [
+                                    "platform",
+                                    "restaurant"
+                                  ]
+                                },
+                                "rate": {
+                                  "type": "string",
+                                  "pattern": "^(0\\.[0-9]{8}|1\\.00000000)$"
+                                },
+                                "max_discount_vnd": {
+                                  "type": "string",
+                                  "pattern": "^(0|[1-9][0-9]{0,18})$"
+                                },
+                                "discount_vnd": {
+                                  "type": "string",
+                                  "pattern": "^(0|[1-9][0-9]{0,18})$"
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "code",
+                                "version",
+                                "funding",
+                                "rate",
+                                "max_discount_vnd",
+                                "discount_vnd"
+                              ]
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "restaurant_id",
+                        "restaurant_name",
+                        "items",
+                        "subtotal_vnd",
+                        "discount_vnd",
+                        "delivery_fee_vnd",
+                        "total_vnd",
+                        "current_delivery_quote",
+                        "voucher"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Existing structured API error; invalid voucher/profile is actionable and never silently removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "restaurant_id": {
+                    "type": "string",
+                    "pattern": "^[1-9][0-9]{0,18}$"
+                  },
+                  "items": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 50,
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "dish_id": {
+                          "type": "string",
+                          "pattern": "^[1-9][0-9]{0,18}$"
+                        },
+                        "quantity": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 99
+                        },
+                        "accepted_unit_price_vnd": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9][0-9]{0,18})$"
+                        }
+                      },
+                      "required": [
+                        "dish_id",
+                        "quantity",
+                        "accepted_unit_price_vnd"
+                      ]
+                    }
+                  },
+                  "pickup_point_id": {
+                    "type": "string",
+                    "pattern": "^[1-9][0-9]{0,18}$"
+                  },
+                  "recipient": {
+                    "$ref": "#/components/schemas/CashRecipient"
+                  },
+                  "payment_method": {
+                    "const": "cod"
+                  },
+                  "accepted_delivery_quote": {
+                    "$ref": "#/components/schemas/CashAcceptedQuote"
+                  },
+                  "voucher_code": {
+                    "type": "string",
+                    "pattern": "^[A-Z0-9][A-Z0-9_-]{2,31}$"
+                  },
+                  "accepted_voucher": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "pattern": "^[1-9][0-9]{0,18}$"
+                      },
+                      "version": {
+                        "type": "integer",
+                        "minimum": 1
+                      },
+                      "discount_vnd": {
+                        "type": "string",
+                        "pattern": "^(0|[1-9][0-9]{0,18})$"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "version",
+                      "discount_vnd"
+                    ]
+                  }
+                },
+                "required": [
+                  "restaurant_id",
+                  "items",
+                  "pickup_point_id",
+                  "payment_method",
+                  "accepted_delivery_quote"
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CashAcceptedQuote": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "quote_artifact": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{43}$"
+          },
+          "policy_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "pickup_point_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "survey_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "distance_m": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "delivery_fee_vnd": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,18})$"
+          }
+        },
+        "required": [
+          "quote_artifact",
+          "policy_version",
+          "pickup_point_version",
+          "survey_version",
+          "distance_m",
+          "delivery_fee_vnd"
+        ],
+        "examples": [
+          {
+            "quote_artifact": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "policy_version": 1,
+            "pickup_point_version": 1,
+            "survey_version": 1,
+            "distance_m": 450,
+            "delivery_fee_vnd": "5000"
+          }
+        ]
+      },
+      "CashRecipient": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "phone": {
+            "type": "string",
+            "pattern": "^\\+?[0-9]{9,15}$"
+          }
+        },
+        "required": [
+          "name",
+          "phone"
+        ],
+        "examples": [
+          {
+            "name": "Người nhận giả lập",
+            "phone": "0900000000"
+          }
+        ]
+      },
+      "Error": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "code",
+              "message",
+              "field_errors",
+              "details",
+              "request_id",
+              "retryable"
+            ],
+            "properties": {
+              "code": {
+                "enum": [
+                  "MALFORMED_REQUEST",
+                  "AUTH_REQUIRED",
+                  "TOKEN_INVALID",
+                  "ACCOUNT_INACTIVE",
+                  "FORBIDDEN",
+                  "CSRF_FAILED",
+                  "VALIDATION_ERROR",
+                  "VERSION_CONFLICT",
+                  "ACCOUNT_TAKEN",
+                  "INVALID_CREDENTIALS",
+                  "EMAIL_CODE_INVALID",
+                  "MFA_INVALID",
+                  "RATE_LIMITED",
+                  "PASSWORD_CHECK_UNAVAILABLE",
+                  "EMAIL_UNAVAILABLE",
+                  "EMAIL_NOT_CONFIGURED",
+                  "INTERNAL_ERROR",
+                  "TEMPORARILY_UNAVAILABLE",
+                  "NOT_FOUND",
+                  "RESTAURANT_LIMIT_REACHED",
+                  "APPLICATION_PENDING",
+                  "APPLICATION_STATE_CONFLICT",
+                  "TERMS_VERSION_CONFLICT",
+                  "IDEMPOTENCY_KEY_REUSED",
+                  "PAYLOAD_TOO_LARGE",
+                  "ENTRY_ALREADY_ASSIGNED",
+                  "PERIOD_ALREADY_FINALIZED",
+                  "ELIGIBLE_ENTRIES_CHANGED",
+                  "COLLECTION_EXCEEDS_OUTSTANDING",
+                  "RECEIPT_ALREADY_REVERSED",
+                  "COLLECTION_REFERENCE_REUSED",
+                  "ACCOUNT_CHANGED",
+                  "ACCOUNT_RESTRICTED",
+                  "SOLE_ADMIN_PROTECTED",
+                  "SUPPORT_STATE_CONFLICT",
+                  "SUPPORT_MESSAGE_LIMIT",
+                  "EVIDENCE_DELETION_IN_PROGRESS",
+                  "DISPUTE_OPEN",
+                  "ERASURE_PENDING",
+                  "CREDENTIAL_RECOVERY_REQUIRED",
+                  "RECOVERY_CODE_INVALID",
+                  "PASSWORD_REUSED"
+                ]
+              },
+              "message": {
+                "type": "string"
+              },
+              "field_errors": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "path",
+                    "code",
+                    "message"
+                  ],
+                  "properties": {
+                    "path": {
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "details": {
+                "type": "object"
+              },
+              "request_id": {
+                "type": "string"
+              },
+              "retryable": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "examples": [
+          {
+            "error": {
+              "code": "EMAIL_CODE_INVALID",
+              "message": "Invalid or expired verification code.",
+              "field_errors": [],
+              "details": {},
+              "request_id": "synthetic-request",
+              "retryable": false
+            }
+          }
+        ]
+      }
+    }
+  }
+}

@@ -13,6 +13,8 @@ Commercial V1.0 design revised October 18, 2026. Start with [requirements](requi
 
 Requirements govern behavior; architecture boundaries, database storage and API wire contracts own their respective domains. UI/AI refine within them; roadmap owns sequencing. Source/manifests/lockfiles/CI establish what exists, never authority to override the design. Correct downstream conflicts at the owning specification first.
 
+Current ordering/payment policy: [COD and owner-only vouchers](cod-ordering.md); [implementation evidence](cod-verification.md); [retained-local COD startup repair](local-cod-runtime-repair.md). Earlier QR/voucher evidence remains historical.
+
 ## Feature and operational contracts
 
 | Question | Read |
@@ -22,7 +24,7 @@ Requirements govern behavior; architecture boundaries, database storage and API 
 | What closes compatibility, login return, expired-email and DB-grant gaps? | [Scoped follow-up](auth-followup.md) |
 | How do I perform the approved auth/discovery cutover? | [Operator handoff](auth-discovery-cutover.md) |
 | Which legacy identities/data need compatibility work? | [Migration plan](data/migration-plan.md), implementation status, DEC-01 |
-| How do cash, direct QR, receipt verification and refunds interact? | [Approved payment policy](payments-policy.md), [V0.6 acceptance](progress/V0.6.md), [isolated reproduction](payments-local-verification.md), API §9/database §4.4 |
+| How are legacy cash/QR receipts and refunds handled after COD cutover? | [Approved payment policy](payments-policy.md), [V0.6 acceptance](progress/V0.6.md), [isolated reproduction](payments-local-verification.md), API §9/database §4.4 |
 | How do I enable ordering with existing local data? | [Retained local ordering and key custody](local-ordering-adoption.md) |
 | How do I verify cash checkout/fulfillment/history safely? | [V0.5 acceptance](progress/V0.5.md), [isolated commands and adoption boundary](cash-ordering-local-verification.md) |
 | What about totals/snapshots/keys/locks/settlements? | Database §§4–11; API §§3–10; architecture §§5–7 |
@@ -31,14 +33,24 @@ Requirements govern behavior; architecture boundaries, database storage and API 
 | Why does the local homepage now show sample dishes? | [Local demo adoption and recovery](local-demo-adoption.md) |
 | How were local sample accounts/catalog/points removed from active use? | [Local demo cleanup and recovery](local-demo-cleanup.md); history retained, real selling setup still required |
 | How is sell readiness configured? | [V0.4 setup contract](restaurant-setup-v04-contract.md), [local verification](setup-local-verification.md) |
-| How do restaurant cover/introduction and the new detail page work? | [Approved Figma storefront and interfaces](ui/restaurant-detail-figma.md), [verification](ui/restaurant-detail-verification.md) |
-| How does the redesigned cart handle real fees, undo and checkout handoff? | [Cart design and verification](ui/cart-figma.md) |
-| How are personal accounts and restaurant management separated? | [Approved account/owner workspaces and verification](ui/workspaces-figma.md) |
+| How do restaurant cover/avatar, crop selection and the detail page work? | [Approved Figma storefront and interfaces](ui/restaurant-detail-figma.md), [verification](ui/restaurant-detail-verification.md), [cover/avatar and crop editor](ui/restaurant-images.md) |
+| What governs checkout, vouchers and subsidy reconciliation? | [Approved checkout/voucher contract](checkout-vouchers.md), [implementation/verification](ui/checkout-verification.md) |
+| How does the redesigned cart handle real fees, undo and checkout handoff? | [Cart design and verification](ui/cart-figma.md), [transient action feedback](ui/action-feedback.md) |
+| How do purchase history, reorder and grouped multi-order checkout work? | [Approved purchase extension](ui/purchase-history-figma.md) |
+| How does the redesigned buyer order details page work? | [Buyer order design and verification](ui/buyer-order-figma.md) |
+| How do owner orders, food-ready privacy and shared reconciliation codes work? | [Order dashboard and verification](ui/owner-orders-figma.md) |
+| How does the redesigned owner menu work? | [Menu design, interactions and verification](ui/owner-menu-figma.md) |
+| How do the owner dashboard and four settings tabs work? | [Owner Figma implementation](ui/owner-dashboard-figma.md) and [backend analytics](ui/owner-analytics.md) |
+| How are personal, restaurant management and Admin workspaces separated? | [Approved account/owner workspaces and verification](ui/workspaces-figma.md) |
+| How does the standalone notification center behave? | [Approved notification redesign](ui/notifications-figma.md), [API/persistence contract](notifications-contract.md), [verification](notifications-verification.md) |
 | How should screens look and behave? | UI §§1–13, [design coordination](ui/design-skills.md), [original HTML](ui/Hoa%20Lac%20Food%20Ordering%20Platform.html) |
 | How are the scoped UI/UX defect fixes reproduced? | [UI/UX fix verification](uiux-fixes-local-verification.md) |
 | What is implemented or tested? | [Implementation/evidence](implementation-status.md), [historical fixture report](ui/student-discovery-verification.md), [legacy verification archive](history/legacy-verification.md), [documentation checks](documentation-verification.md) |
 | How is the authorized Mac DB copy prepared for a new VPS Docker server? | [Encrypted copy handoff](mac-to-vps-database-copy.md); remote import remains separate from complete deployment |
 | How is the October24 academic MVP demo deployed? | [Demo deployment/rollback](demo-deployment.md); actual remote proof is recorded separately |
+| Why did the local owner dashboard/orders return500 after the order redesign? | [Order-code schema adoption and full regression](local-runtime-order-code-repair.md) |
+| Why did local login/catalog return502 after checkout changes? | [Checkout schema adoption and runtime repair](local-checkout-runtime-repair.md) |
+| How is current local code/COD schema deployed while keeping VPS data? | [October25 code-only update](demo-cod-update.md) |
 | How are retained local/SSH forks merged without replacing SSH data? | [Demo database merge and recovery](demo-database-merge.md); private manifests and exact-clone rehearsal |
 | How do we launch/recover/respond to incidents? | [Release checklist](release-checklist.md), deployment §§5–13, testing §§11–13 |
 
@@ -94,3 +106,5 @@ V0.9: [P29 infrastructure/recovery proposal](infrastructure-recovery-proposal.md
 [Scoped MVP ordering/three-role UX verification](mvp-ordering-verification.md) records current buyer/manager/Admin journeys, fixes, automated/Chrome evidence and the boundary from V0.9 operational acceptance.
 
 [Next staging handoff](staging-next-step.md) records current VPS resource evidence, proposed isolated caps, prepared Linux artifacts and remaining remote-access/origin/service gates. No VPS deployment or release approval implied.
+
+[Local website runtime repair and regression](website-local-verification.md) records the October24 notification/order error diagnosis, verified retained-local storefront adoption, startup schema gate and broad regression boundaries.

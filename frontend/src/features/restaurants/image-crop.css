@@ -1,0 +1,22 @@
+.restaurant-crop-dialog { position: fixed; inset: 0; margin: auto; width: min(680px, calc(100% - 24px)); max-height: calc(100dvh - 24px); overflow: auto; padding: 24px; border: 1px solid var(--line); border-radius: 20px; background: var(--surface, #fffdf9); color: var(--text, #25201d); }
+.restaurant-crop-dialog::backdrop { background: #211a16b8; }
+.restaurant-crop-dialog h2 { margin: 0 0 12px; font-size: 22px; }
+.restaurant-crop-dialog p { font-size: 14px; }
+.restaurant-crop-frame { position: relative; overflow: hidden; width: 100%; max-height: 50dvh; background: #302923; touch-action: none; cursor: grab; }
+.restaurant-crop-frame:active { cursor: grabbing; }
+.restaurant-crop-frame img { position: absolute; max-width: none; object-fit: fill; user-select: none; pointer-events: none; }
+.restaurant-crop-grid { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to right,transparent 33.1%,#fff6 33.2%,#fff6 33.5%,transparent 33.6%,transparent 66.4%,#fff6 66.5%,#fff6 66.8%,transparent 66.9%),linear-gradient(to bottom,transparent 33.1%,#fff6 33.2%,#fff6 33.5%,transparent 33.6%,transparent 66.4%,#fff6 66.5%,#fff6 66.8%,transparent 66.9%); box-shadow: inset 0 0 0 2px #fff; }
+.restaurant-crop-dialog fieldset { border: 0; padding: 16px 0; margin: 0; display: grid; gap: 12px; }
+.restaurant-crop-dialog label { display: grid; gap: 4px; font-size: 14px; }
+.restaurant-crop-dialog input { width: 100%; min-height: 32px; accent-color: var(--color-brand-dark); }
+.restaurant-crop-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 12px; }
+.restaurant-crop-actions button { min-height: 44px; padding: 10px 18px; }
+.restaurant-avatar { display: grid; place-items: center; width: 80px; height: 80px; flex: 0 0 80px; border-radius: 16px; border: 2px solid #fff; background: var(--surface, #fff8f0); color: var(--color-brand-dark); overflow: hidden; }
+.restaurant-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.restaurant-avatar .icon { width: 36px; height: 36px; }
+.storefront-identity { display: flex; align-items: center; gap: 20px; }
+@media(max-width: 480px) { .restaurant-crop-dialog { padding: 16px; }.storefront-identity { gap: 12px; }.storefront-identity .restaurant-avatar { width: 64px; height: 64px; flex-basis: 64px; } }
+
+.home-restaurant-identity { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+.home-restaurant-identity .restaurant-avatar { width: 48px; height: 48px; flex-basis: 48px; border-radius: 12px; }
+.home-restaurant-identity .restaurant-avatar .icon { width: 24px; height: 24px; }

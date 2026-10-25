@@ -38,3 +38,24 @@ import {paymentIntent} from '../src/features/payments/intent.ts'
 test('P21 recovery binds actor and exact operation target; corrupt storage cannot redirect a financial command',()=>{const p={actor:'9007199254740993',path:'/orders/7/payment/confirm-refund',method:'POST',body:{refund_id:'9',amount_vnd:'9007199254740993'},key:'stable'};assert.deepEqual(paymentIntent(p,p.actor,'order-7'),p);for(const q of [{...p,actor:'2'},{...p,path:'/orders/8/payment/confirm-refund'},{...p,path:'/auth/logout'},{...p,body:[]},{...p,key:'bad key'},{...p,extra:true}])assert.throws(()=>paymentIntent(q,p.actor,'order-7'));assert.equal(paymentIntent({...p,path:'/owner/restaurants/12/payment-evidence'},p.actor,'qr-image-12').path,'/owner/restaurants/12/payment-evidence');assert.throws(()=>paymentIntent({...p,path:'/owner/restaurants/13/payment-evidence'},p.actor,'qr-image-12'))})
 test('P21 QR checkout recovery preserves approved version/string money and rejects missing version',()=>{const i={accountId:'1',key:'qr-original',body:{payment_method:'qr',accepted_qr_version:4,items:[{dish_id:'9007199254740993',quantity:1,accepted_unit_price_vnd:'9007199254740993'}],recipient:{name:'Synthetic',phone:'0900000000'},accepted_delivery_quote:{}}};const values=new Map(),storage={getItem:k=>values.get(k)??null,setItem:(k,v)=>values.set(k,v)};persistIntent(storage,i);assert.deepEqual(loadIntent(storage,'1'),i);for(const version of [undefined,0,-1,1.5,'4',2147483648]){values.set(intentStorageKey('1'),JSON.stringify({...i,body:{...i.body,accepted_qr_version:version}}));assert.throws(()=>loadIntent(storage,'1'))}})
 test('P21 late paid response cannot erase newer refund debt or refunded terminal state',()=>{const o={id:'7',version:2,status:'cancelled',payment:{order_id:'7',version:4,status:'refund_pending',refund_due_vnd:'9007199254740993'}};const stale={...o,version:1,status:'pending',payment:{order_id:'7',version:3,status:'paid'}};assert.equal(mergeOrder(o,stale).payment.refund_due_vnd,'9007199254740993');const refunded={...o,payment:{order_id:'7',version:5,status:'refunded'}};assert.equal(mergeOrder(refunded,o).payment.status,'refunded');assert.equal(mergeOrder(refunded,stale).status,'cancelled')})
+
+test('COD-01 durable intents retain COD and both historical methods without rewriting keys',()=>{
+ for(const method of ['cod','cash','qr']){const values=new Map(),storage={getItem:k=>values.get(k)??null,setItem:(k,v)=>values.set(k,v)},intent={accountId:'1',key:'original-'+method,body:{payment_method:method,...(method==='qr'?{accepted_qr_version:2}:{}),items:[{dish_id:'1',quantity:1,accepted_unit_price_vnd:'9007199254740993'}],recipient:{name:'Synthetic',phone:'0900000000'},accepted_delivery_quote:{quote_artifact:'a'.repeat(43)}}};persistIntent(storage,intent);assert.deepEqual(loadIntent(storage,'1'),intent)}
+})
+
+test('COD-01 retired intent and untracked payment errors explain recovery without claiming receipt',()=>{
+ assert.match(requestMessage(new RequestError(422,'PAYMENT_METHOD_RETIRED')),/kiểm tra lịch sử.*bỏ ý định.*thanh toán khi nhận hàng/)
+ assert.match(requestMessage(new RequestError(409,'PAYMENT_NOT_TRACKED')),/không xác nhận thu tiền/)
+ assert.match(requestMessage(new RequestError(410,'PLATFORM_VOUCHERS_RETIRED')),/Chỉ quán tạo và tài trợ/)
+ assert.match(requestMessage(new RequestError(410,'QR_RETIRED')),/Hồ sơ thanh toán đơn cũ vẫn được giữ/)
+})
+
+import {progressState} from '../src/features/orders/buyer-order-model.ts'
+test('Buyer progress reflects server status; terminal cancellation never implies completed steps',()=>{
+ const states=s=>[0,1,2,3].map(i=>progressState(s,i))
+ assert.deepEqual(states('pending'),['active','upcoming','upcoming','upcoming'])
+ assert.deepEqual(states('accepted'),['done','active','upcoming','upcoming'])
+ assert.deepEqual(states('delivering'),['done','done','active','upcoming'])
+ assert.deepEqual(states('completed'),['done','done','done','done'])
+ for(const s of ['cancelled','rejected','unknown'])assert.deepEqual(states(s),['upcoming','upcoming','upcoming','upcoming'])
+})

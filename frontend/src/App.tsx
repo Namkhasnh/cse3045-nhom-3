@@ -1,24 +1,30 @@
+import {useOrderImages} from './app/hooks/useOrderImages'
+import {useReorder} from './app/hooks/useReorder'
+import {VouchersPage} from './features/vouchers'
 import { CartRoutePage } from './app/pages/CartRoutePage'
+import {FeedbackViewport} from './shared/ui/FeedbackViewport'
 import { AppShell } from './app/layouts/AppShell'
 import {RecommendationsPage,type Recommendation} from './features/recommendations'
 import {deliveryApi} from './features/delivery'
-import {NotificationProvider,InboxPage,AdminTasksPage,SetupChecklist} from './features/notifications'
+import {NotificationProvider,InboxPage,AdminTasksPage,SetupChecklist,notificationsApi} from './features/notifications'
 import {UsersPage,AuditPage,SupportPage,PrivacyPage} from './features/administration'
 import {PaymentPanel,PaymentsPage} from './features/payments'
-import {HistoryPage,OrderPage,OwnerOrdersPage} from './features/orders'
+import {HistoryPage,OrderPage,OwnerOrdersPage,ordersApi} from './features/orders'
 import {CheckoutPage} from './app/pages/CheckoutPage'
 import {OwnerCommissionPage,AdminCommissionPage,FinancePage} from './features/commissions'
-import {OwnerMenuPage,AdminCategoriesPage} from './features/dishes'
+import {OwnerMenuPage,AdminCategoriesPage,dishesApi} from './features/dishes'
 import {OwnerDeliveryPage,AdminDeliveryPage} from './features/delivery'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { StudentLayout } from './app/layouts/StudentLayout'
 import { RoleLayout } from './app/layouts/RoleLayout'
 import { WorkspaceLayout } from './app/layouts/WorkspaceLayout'
-import { RestaurantListPage, RestaurantMenuPage, RestaurantSettingsPage, AdminRestaurantsPage, catalogApi } from './features/restaurants'
+import { RestaurantListPage, RestaurantMenuPage, RestaurantSettingsPage, OwnerDashboardPage, type OwnerDashboardSource, ownerAnalyticsApi, AdminRestaurantsPage, catalogApi } from './features/restaurants'
 import { CartProvider, CartDrawer, useCart } from './features/cart'
 import { ApplicationsPage,AdminApplicationsPage } from './features/onboarding'
 import { formatVnd } from './shared/lib/format'
 import { authApi, ApiError, AuthPage, CredentialRecoveryPage, ProfilePage, safeReturnPath, type User } from './features/auth'
+
+const ownerDashboardSource:OwnerDashboardSource={analytics:ownerAnalyticsApi,orders:ordersApi.list,dishes:dishesApi.list,guide:notificationsApi.guide}
 
 const recommendationOptions=async()=>{const [points,categories]=await Promise.all([deliveryApi.points(),catalogApi.categories()]);return {points,categories}}
 
@@ -36,13 +42,15 @@ function AppRoutes() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const sessionRequest = useRef(0)
   const [locationHref, setLocationHref] = useState(() => window.location.href)
+  const locationHrefRef=useRef(locationHref)
+  useEffect(()=>{locationHrefRef.current=locationHref},[locationHref])
   const path = new URL(locationHref).pathname
   const [session, setSession] = useState<{ status: 'loading' | 'ready' | 'anonymous' | 'error'; user: User | null }>(
     { status: 'loading', user: null })
 
   useEffect(() => {
     let active = true
-    const onPopState = () => setLocationHref(window.location.href)
+    const onPopState = () => {const target=new URL(window.location.href),previous=new URL(locationHrefRef.current);const event=new Event('hlf:before-navigation',{cancelable:true});if((target.pathname!==previous.pathname||target.search!==previous.search)&&!window.dispatchEvent(event)){window.history.pushState(null,'',locationHrefRef.current);return}setLocationHref(window.location.href)}
     const checkSession = () => {
       if (import.meta.env.DEV && pathNow() === '/preview') return
       const token = ++sessionRequest.current
@@ -59,6 +67,8 @@ function AppRoutes() {
     checkSession()
     return () => { active = false; window.removeEventListener('popstate', onPopState); window.removeEventListener('hashchange', onPopState); window.removeEventListener('focus', checkSession); document.removeEventListener('visibilitychange', onVisible) }
   }, [])
+  const reorder=useReorder(session.user?.id??'')
+  const orderImages=useOrderImages(session.user?.id??'')
   const onboardingAccountId=session.user?.id
   useEffect(() => { if (onboardingAccountId) { const own='hlf.onboarding.'+onboardingAccountId; try { for (const key of Object.keys(sessionStorage)) if (key.startsWith('hlf.setup.')&&!key.endsWith('.administration')&&!key.startsWith('hlf.setup.'+onboardingAccountId+'.')) sessionStorage.removeItem(key); else if (key.startsWith('hlf.onboarding.') && key!==own && !key.startsWith(own+'.')) sessionStorage.removeItem(key) } catch { /* storage unavailable */ } } }, [onboardingAccountId])
   const refreshCart = cart.refresh
@@ -77,6 +87,7 @@ function AppRoutes() {
     navigate('/login')
   }
   async function logout() {
+    if(!window.dispatchEvent(new Event('hlf:before-navigation',{cancelable:true})))return
     try { await authApi.logout() } catch (error) { if (!(error instanceof ApiError) || error.status !== 401) throw error }
     endSession()
   }
@@ -89,7 +100,7 @@ function AppRoutes() {
     {import.meta.env.DEV && import.meta.env.VITE_LOCAL_DEMO === 'true' && <p className="form-notice" role="note">Môi trường local có dữ liệu giả lập. Quán và món có nhãn “Mẫu” chỉ dùng để trải nghiệm, không phải đối tác đang bán thật.</p>}
     {cart.storageWarning && <p className="form-notice" role="alert">{cart.storageWarning}</p>}
     <p className={`cart-notice${cart.notice && !cart.notice.startsWith('Đã') ? ' form-error' : ''}`} role={cart.notice && !cart.notice.startsWith('Đã') ? 'alert' : 'status'} aria-live="polite">{cart.notice}{cart.notice.startsWith('Đã thêm') && <> <a href="/cart">Xem giỏ · {cart.count} phần · {formatVnd(cart.subtotal)}</a></>}</p>
-    {path === '/cart' ? <CartRoutePage key={cart.draft?.restaurant.id+':'+(publicUser?.id??'guest')} accountId={publicUser?.id??null} sessionPending={session.status === 'loading'} canQuote={Boolean(publicUser?.capabilities.includes('buy'))} /> : path.startsWith('/restaurants/') ? <RestaurantMenuPage key={path} restaurantId={path.split('/')[2]} onAddDish={cart.add} cartSummary={cart} onOpenCart={() => setDrawerOpen(true)} /> : <RestaurantListPage preview={path === '/preview'} /> }
+    {path === '/cart' ? <CartRoutePage key={publicUser?.id??'guest'} accountId={publicUser?.id??null} sessionPending={session.status === 'loading'} isAdmin={Boolean(publicUser?.capabilities.includes('admin'))} canQuote={Boolean(publicUser?.capabilities.includes('buy')&&!publicUser?.capabilities.includes('admin'))} /> : path.startsWith('/restaurants/') ? <RestaurantMenuPage key={path} restaurantId={path.split('/')[2]} onAddDish={cart.add} cartSummary={cart} onOpenCart={() => setDrawerOpen(true)} /> : <RestaurantListPage preview={path === '/preview'} /> }
   </StudentLayout>
   if (session.status === 'loading') return <main id="main-content" tabIndex={-1} className="route-state" role="status">Đang kiểm tra phiên đăng nhập…</main>
   if(path==='/recover-access')return <CredentialRecoveryPage/>
@@ -106,20 +117,22 @@ function AppRoutes() {
   const personal = (content: ReactNode) => <WorkspaceLayout user={user} path={path}>{content}</WorkspaceLayout>
   if(path==='/support'||path==='/admin/support'&&user.capabilities.includes('admin')||path==='/privacy'){
     const content=path==='/privacy'?<PrivacyPage key={user.id} actor={user.id} protectedAccount={user.capabilities.includes('admin')}/>:<SupportPage key={user.id} actor={user.id} admin={user.capabilities.includes('admin')}/>
-    return user.capabilities.includes('admin') || path === '/support' && user.managed_restaurant_id && new URLSearchParams(window.location.search).get('workspace') === 'owner' ? <RoleLayout user={user} title={user.capabilities.includes('admin')?'Quản trị':'Chủ quán'} path={path}>{content}</RoleLayout> : personal(content)
+    return path === '/admin/support' || path === '/support' && user.managed_restaurant_id && new URLSearchParams(window.location.search).get('workspace') === 'owner' ? <RoleLayout user={user} title={user.capabilities.includes('admin')?'Quản trị':'Chủ quán'} path={path}>{content}</RoleLayout> : personal(content)
   }
   if(path==='/admin/users'&&user.capabilities.includes('admin'))return <RoleLayout user={user} title="Quản trị" path={path}><UsersPage key={user.id} actor={user.id}/></RoleLayout>
   if(path==='/admin/audit'&&user.capabilities.includes('admin'))return <RoleLayout user={user} title="Quản trị" path={path}><AuditPage key={user.id} actor={user.id}/></RoleLayout>
   if(!user.is_active&&!['/orders','/account','/owner/finance'].includes(path)&&!/^\/orders\/[1-9][0-9]*$/.test(path)&&path!=='/owner/restaurants/'+user.managed_restaurant_id+'/orders')return <RoleLayout user={user} title="Quyền truy cập giới hạn" path={path}><p role="alert">Tài khoản đã đình chỉ. Chỉ xử lý nghĩa vụ cũ.</p><a href="/support">Mở hỗ trợ</a></RoleLayout>
-  if (path === '/orders' && (user.capabilities.includes('buy')||user.capabilities.includes('obligations'))) return personal(<HistoryPage key={user.id} accountId={user.id}/>)
-  if (/^\/orders\/[1-9][0-9]*$/.test(path) && (user.capabilities.includes('buy')||user.capabilities.includes('obligations'))) return personal(<OrderPage key={user.id+path} id={path.split('/')[2]} accountId={user.id} renderPayment={(o,apply)=>o.payment?.method==='qr'?<PaymentPanel key={user.id+':'+o.id} actor={user.id} restaurant={o.restaurant_id} orderId={o.id} orderStatus={o.status} payment={o.payment} onPayment={apply}/>:null}/>)
-  if (user.managed_restaurant_id&&path==='/owner/restaurants/'+user.managed_restaurant_id+'/orders') return <RoleLayout user={user} title="Chủ quán" path={path}><OwnerOrdersPage restricted={!user.is_active} key={user.id} restaurantId={user.managed_restaurant_id} accountId={user.id} renderPayment={(o,apply)=>o.payment?.method==='qr'?<PaymentPanel key={user.id+':'+o.id} actor={user.id} restaurant={o.restaurant_id} orderId={o.id} orderStatus={o.status} payment={o.payment} owner onPayment={apply}/>:null}/></RoleLayout>
+  if (path === '/orders' && (user.capabilities.includes('buy')||user.capabilities.includes('obligations'))) return personal(<HistoryPage key={user.id} accountId={user.id} imageSource={orderImages} onReorder={user.is_active&&user.capabilities.includes('buy')?reorder:undefined}/>)
+  if (/^\/orders\/[1-9][0-9]*$/.test(path) && (user.capabilities.includes('buy')||user.capabilities.includes('obligations'))) return personal(<OrderPage key={user.id+path} id={path.split('/')[2]} accountId={user.id} renderPayment={(o,apply)=>o.payment?.method==='qr'&&o.payment.status!=='not_required'?<PaymentPanel key={user.id+':'+o.id} actor={user.id} restaurant={o.restaurant_id} orderId={o.id} orderStatus={o.status} payment={o.payment} onPayment={apply}/>:null}/>)
+  if (user.managed_restaurant_id&&path==='/owner/restaurants/'+user.managed_restaurant_id+'/orders') return <RoleLayout user={user} title="Chủ quán" path={path}><OwnerOrdersPage restricted={!user.is_active} key={user.id} restaurantId={user.managed_restaurant_id} accountId={user.id} renderPayment={(o,apply)=>o.payment?.method==='qr'&&o.payment.status!=='not_required'?<PaymentPanel key={user.id+':'+o.id} actor={user.id} restaurant={o.restaurant_id} orderId={o.id} orderStatus={o.status} payment={o.payment} owner onPayment={apply}/>:null}/></RoleLayout>
   if (path === '/recommendations' && user.capabilities.includes('buy') && !user.capabilities.includes('admin')) return <StudentLayout path={path}><RecommendationsPage key={user.id} actor={user.id} loadOptions={recommendationOptions} onSelect={async(row:Recommendation)=>{const [restaurant,dish]=await Promise.all([catalogApi.restaurant(row.restaurant_id),catalogApi.dish(row.dish_id)]);if(!restaurant.is_active||!restaurant.is_open||!restaurant.is_accepting_orders||!dish.is_available||dish.restaurant_id!==restaurant.id||dish.price_vnd!==row.unit_price_vnd)throw new Error('Changed catalog');cart.add(restaurant,dish)}}/></StudentLayout>
-  if (path === '/checkout'  && user.capabilities.includes('buy')) return <StudentLayout path={path}><CheckoutPage key={user.id} accountId={user.id}/></StudentLayout>
+  if (path === '/checkout'  && user.capabilities.includes('buy')) return <StudentLayout path={path}><CheckoutPage key={user.id} user={user}/></StudentLayout>
   if (path === '/open-restaurant') return <StudentLayout path={path}><ApplicationsPage renderSetup={id=><SetupChecklist key={id} restaurantId={id}/>} key={user.id} userId={user.id} canApply={user.capabilities.includes('apply_for_restaurant')&&!user.capabilities.includes('admin')} /></StudentLayout>
-  if (path === '/account') return user.capabilities.includes('admin') ? <RoleLayout user={user} title="Quản trị" path={path}>{profile}</RoleLayout> : personal(profile)
+  if (path === '/account') return personal(profile)
 
-  if(path==='/notifications'&&user.is_active)return user.capabilities.includes('admin')?<RoleLayout user={user} title="Quản trị" path={path}><InboxPage/></RoleLayout>:personal(<InboxPage/>)
+  if(path==='/admin/vouchers'&&user.capabilities.includes('admin'))return <RoleLayout user={user} title="Quản trị" path={path}><section className="settings-page"><h1>Mã ưu đãi</h1><p>Chỉ quán tạo và tài trợ mã ưu đãi. Ưu đãi của các đơn cũ vẫn được giữ trong lịch sử và đối soát.</p></section></RoleLayout>
+  if(path==='/owner/vouchers'&&user.managed_restaurant_id&&user.capabilities.includes('manage_restaurant'))return <RoleLayout user={user} title="Chủ quán" path={path}><VouchersPage key={user.id+':'+user.managed_restaurant_id} actor={user.id} restaurant={user.managed_restaurant_id}/></RoleLayout>
+  if(path==='/notifications'&&user.is_active)return <InboxPage/>
   if(path==='/admin'&&user.capabilities.includes('admin'))return <RoleLayout user={user} title="Quản trị" path={path}><AdminTasksPage/></RoleLayout>
   if(path==='/owner/payments'&&user.managed_restaurant_id)return <RoleLayout user={user} title="Chủ quán" path={path}><PaymentsPage key={user.id} actor={user.id} restaurant={user.managed_restaurant_id}/></RoleLayout>
   if(path==='/admin/payments'&&user.capabilities.includes('admin'))return <RoleLayout user={user} title="Quản trị" path={path}><PaymentsPage key={user.id} actor={user.id} admin/></RoleLayout>
@@ -134,10 +147,10 @@ function AppRoutes() {
   if (path === '/owner/delivery' && user.managed_restaurant_id) return <RoleLayout user={user} title="Chủ quán" path={path}><OwnerDeliveryPage key={user.id} actor={user.id} restaurantId={user.managed_restaurant_id}/></RoleLayout>
   if (path === '/admin/delivery' && user.capabilities.includes('admin')) return <RoleLayout user={user} title="Quản trị" path={path}><AdminDeliveryPage key={user.id} actor={user.id}/></RoleLayout>
   if (path === '/owner' && user.capabilities.includes('manage_restaurant') && user.managed_restaurant_id) {
-    if (['#profile', '#hours', '#accepting'].includes(window.location.hash)) return <Redirect to={'/owner/settings' + window.location.hash} />
-    return <RoleLayout user={user} title="Chủ quán" path={path}><SetupChecklist key={user.id+user.managed_restaurant_id} restaurantId={user.managed_restaurant_id} variant="overview" /></RoleLayout>
+    if (['#profile', '#hours', '#accepting', '#readiness'].includes(window.location.hash)) return <Redirect to={'/owner/settings' + window.location.hash} />
+    return <RoleLayout user={user} title="Chủ quán" path={path}><OwnerDashboardPage key={user.id+user.managed_restaurant_id} actor={user.id} restaurantId={user.managed_restaurant_id} source={ownerDashboardSource} /></RoleLayout>
   }
-  if (path === '/owner/settings' && user.capabilities.includes('manage_restaurant') && user.managed_restaurant_id) return <RoleLayout user={user} title="Chủ quán" path={path}><RestaurantSettingsPage key={user.id} renderSetup={(id,version)=><SetupChecklist key={id} restaurantId={id} version={version}/>}/></RoleLayout>
+  if (path === '/owner/settings' && user.capabilities.includes('manage_restaurant') && user.managed_restaurant_id) return <RoleLayout user={user} title="Chủ quán" path={path}><RestaurantSettingsPage key={user.id+user.managed_restaurant_id} renderSetup={(id,version)=><SetupChecklist key={id} restaurantId={id} version={version}/>}/></RoleLayout>
   if ((path === '/owner' && user.capabilities.includes('manage_restaurant')) || (path === '/admin' && user.capabilities.includes('admin'))) {
     return <RoleLayout user={user} title={user.capabilities.includes('admin') ? 'Quản trị' : 'Chủ quán'} path={path}>
       <h1>Xin chào, {user.display_name}</h1>
@@ -148,4 +161,4 @@ function AppRoutes() {
   }
 }
 
-export default function App() { return <CartProvider catalog={catalogApi}><AppRoutes /></CartProvider> }
+export default function App() { return <><FeedbackViewport/><CartProvider catalog={catalogApi}><AppRoutes /></CartProvider></> }

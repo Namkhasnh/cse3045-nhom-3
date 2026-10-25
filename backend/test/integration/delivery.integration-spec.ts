@@ -14,6 +14,8 @@ test('P12 DEL-01 PRICE-01 DATA-01 real MySQL proposals/zero/quote/tamper/expiry/
  assert.equal((await req('/admin/pickup-points','POST',{name:'Denied',latitude:'21.000000',longitude:'105.000000',is_active:true},'deny')).status,403);
  const point=(await req('/admin/pickup-points','POST',{name:'Synthetic VJU '+nonce,latitude:'21.000000',longitude:'105.000000',is_active:true},'point',admin)).body.data;assert.ok(point.id);
  assert.equal((await req('/delivery-quotes','POST',{restaurant_id:r,pickup_point_id:point.id},undefined,admin)).status,403,'Admin has no implicit buyer capability');
+ assert.deepEqual((await req('/auth/me','GET',undefined,undefined,admin)).body.data.capabilities,['admin'],'Self DTO must not advertise rejected buyer actions');
+ assert.ok((await req('/auth/me','GET',undefined,undefined,owner)).body.data.capabilities.includes('buy'),'Manager retains buyer rights');
  const missing=await req('/delivery-quotes','POST',{restaurant_id:r,pickup_point_id:point.id},undefined,buyer);assert.equal(missing.status,422);
  const input={expected_version:0,pickup_rates:[{pickup_point_id:point.id,distance_m:450,delivery_fee_vnd:'0',is_enabled:true}]};
  const props=await Promise.all([req(path,'PUT',input,'proposal'),req(path,'PUT',input,'proposal')]);assert.ok(props.every(x=>x.status===200));assert.equal(props[0].body.data.id,props[1].body.data.id);const proposal=props[0].body.data;

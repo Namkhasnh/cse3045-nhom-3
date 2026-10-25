@@ -1,0 +1,85 @@
+{
+  "scope": "Academic demo code/schema only; no local business data import",
+  "candidate": "20261025-c4c7172",
+  "source_commit": "a53a150e65e04edbac67b5687761d7bfe32fec47",
+  "source_worktree": true,
+  "source_snapshot_sha256": "c4c717291b5e71247eb0400281c5288cd48c79bc442ca41cdf5e166af1495270",
+  "backend_image_id": "sha256:3e406cc2ee20160994e7c2e5e8c8645b5bad0b7b82679652e282986e1228fdb0",
+  "schema_image_id": "sha256:4da8c5b40739578d58b5834fc9cee32190e83b2c2c901631cc60d27594c9523f",
+  "delivery_sha256": "3a8ccad4fcf6da6159e2b4b21d136177e741353d60614e69935b7da8f04610e2",
+  "delivery_bytes": 492700887,
+  "decryption": "PASS exact archive",
+  "local_probe": {
+    "result": "PASS",
+    "mysql": "9.2.0",
+    "proof": {
+      "result": "PASS",
+      "stage": "verify",
+      "preserved_tables": 62
+    },
+    "checks": [
+      "previous 29 migrations + original QR/cash/zero-total orders, events and key",
+      "Linux operator migration and all-original-row preservation",
+      "mysqldump isolated restore with exact all-table schema/row hashes",
+      "narrow runtime grant execution",
+      "already-applied migration repeat",
+      "exact Linux runtime catalog/category200 and anonymous401",
+      "changed retained row rejected"
+    ],
+    "scope": "Disposable local database only; no VPS or retained local DB touched"
+  },
+  "remote_status": "PASS by user-provided systemd completion journal",
+  "transfer_status": "CLOSED: temporary Cloudflare tunnel and loopback file server stopped after user confirmed authenticated bundle",
+  "runtime_keys": "Existing VPS keys retained; no source env in artifact",
+  "bootstrap_syntax": "PASS; delivery key separate",
+  "remote_execution": {
+    "unit": "hlf-demo-update-20261025-c4c7172.service",
+    "started_at_utc": "2026-10-25T16:45:49Z",
+    "completed_at_utc": "2026-10-25T16:46:10Z",
+    "completed_at_vietnam": "2026-10-25T23:46:10+07:00",
+    "stages": [
+      "backup with maintenance",
+      "isolated MySQL restore and migration rehearsal",
+      "forward migration with original rows verified",
+      "complete/PASS"
+    ],
+    "data": "server DB/objects/vault/keys preserved",
+    "protected_backup": "/opt/hlf-update-20261025-c4c7172/state",
+    "evidence_source": "User-provided journal; no direct agent SSH authentication"
+  },
+  "independent_public_https": {
+    "candidate": "20261025-c4c7172",
+    "checks": {
+      "/login": {
+        "http_status": 200,
+        "pass": true,
+        "candidate_asset_references": true
+      },
+      "/api/v1/restaurants": {
+        "http_status": 200,
+        "pass": true,
+        "public_count": 2
+      },
+      "/api/v1/dishes": {
+        "http_status": 200,
+        "pass": true,
+        "public_count": 6
+      },
+      "/api/v1/auth/me": {
+        "http_status": 401,
+        "pass": true
+      },
+      "frontend/assets/index-Bc7HpWEg.css": {
+        "http_status": 200,
+        "candidate_sha256_match": true
+      },
+      "frontend/assets/index-CwBn-6L1.js": {
+        "http_status": 200,
+        "candidate_sha256_match": true
+      }
+    },
+    "scope": "Read-only public HTTPS via curl; Python urllib403 recorded separately; no authenticated/business mutations"
+  },
+  "authenticated_remote_journeys": "NOT RUN",
+  "public_probe_limitation": "Python urllib received403 from edge; curl requests passed expected statuses and exact candidate hashes. No Cloudflare settings changed."
+}

@@ -117,7 +117,27 @@ def restore_route(state):
 
 
 def rollback(release, state):
-    # Additive migration remains; never restore an old DB over subsequent writes.
+    require(state.get('stage') != 'forward-migration' or state.get('schema_verified'), 'Unverified migration; keep maintenance and inspect forward repair')
+    # Freeze before checking compatibility: COD/voucher facts cannot go back to old readers.
+    if state.get('schema_verified'):
+        target = Path(state['nginx_target'])
+        require(sha(target) in state['owned_nginx_hashes'], 'Nginx changed externally; rollback refused')
+        maintenance = state['nginx_previous'].replace('server_name ' + HOST + ';', 'server_name ' + HOST + ';\n    return 503;', 1)
+        state['owned_nginx_hashes'].append(hashlib.sha256(maintenance.encode()).hexdigest())
+        save(release / 'state' / 'update-state.json', state)
+        target.write_text(maintenance)
+        reload_nginx()
+        probe = subprocess.run(['docker', 'inspect', API], capture_output=True)
+        if probe.returncode == 0:
+            current = json.loads(probe.stdout)[0]
+            if state.get('previous_api'):
+                require(current['Config']['Labels'].get('hlf.demo.update') == state['id'], 'Unowned new API')
+            else:
+                require(current['Image'] == state['previous_image'], 'Original API changed externally')
+            docker('stop', '-t', '30', API)
+        count = mysql(DB, "SELECT (SELECT COUNT(*) FROM test_hlf_demo.order_payments WHERE method='cod') + (SELECT COUNT(*) FROM test_hlf_demo.orders WHERE discount_vnd<>0) + (SELECT COUNT(*) FROM test_hlf_demo.commission_entries WHERE kind='voucher_subsidy');")
+        require(count.strip() == b'0', 'New COD/voucher facts exist; keep maintenance and use forward repair')
+    # Never restore an old dump over subsequent writes.
     renamed = state.get('previous_api')
     if renamed:
         probe = subprocess.run(['docker', 'inspect', API], capture_output=True)
@@ -132,6 +152,24 @@ def rollback(release, state):
     state['result'] = 'ROLLED BACK'
     save(release / 'state' / 'update-state.json', state)
     print('PASS: previous application restored; current DB and all volumes retained', flush=True)
+
+
+def previous_frontend():
+    # Follow only the two recorded successful updates; unknown route edits stop preflight.
+    frontend_release = Path('/opt/hlf-frontend-20261024-a53a150')
+    full_release = Path('/opt/hlf-update-20261024-36e01f1')
+    if (frontend_release / 'state.json').exists():
+        previous = json.loads((frontend_release / 'state.json').read_text())
+        root = frontend_release / 'frontend'
+        require(previous['result'] == 'PASS', 'Previous frontend update not complete')
+    else:
+        previous = json.loads((full_release / 'state/update-state.json').read_text())
+        root = full_release / 'frontend'
+        require(previous['result'] == 'PASS' and previous['stage'] == 'complete', 'Previous update not complete')
+    target = Path(previous['nginx_target'])
+    require(target.resolve() == Path('/etc/nginx/sites-enabled/hlf').resolve(), 'Unexpected nginx target')
+    require(sha(target) == previous['owned_nginx_hashes'][-1], 'Nginx ownership changed')
+    return target, root
 
 
 def deploy(release):
@@ -149,6 +187,7 @@ def deploy(release):
     try:
         require(shutil.disk_usage('/opt').free >= 2 * 1024**3, 'At least 2 GiB free disk required')
         for relative, expected in manifest['files'].items():
+            require(not Path(relative).is_absolute() and '..' not in Path(relative).parts, 'Unsafe artifact path')
             require(sha(release / relative) == expected, 'Artifact checksum mismatch')
         original = json.loads((OLD / 'release.json').read_text())['id']
         api, storage, database = inspect(API), inspect(STORAGE), inspect(DB)
@@ -168,11 +207,9 @@ def deploy(release):
         require(all(actual.get(k) == v for k, v in values.items()), 'Runtime env drift; inspect before update')
         shutil.copyfile(runtime_file, work / 'runtime.env')
         (work / 'runtime.env').chmod(0o600)
-        nginx = json.loads((OLD / 'nginx-rollback.json').read_text())
-        target = Path(nginx['target'])
-        require(sha(target) == nginx['installed_sha256'], 'Nginx ownership changed')
+        target, previous_root = previous_frontend()
         previous = target.read_text()
-        old_root = 'root ' + str(OLD / 'frontend') + ';'
+        old_root = 'root ' + str(previous_root) + ';'
         require(previous.count(old_root) == 1, 'Unexpected frontend route')
         state.update(nginx_target=str(target), nginx_previous=previous,
                      previous_image=api['Image'], owned_nginx_hashes=[sha(target)])
@@ -182,13 +219,16 @@ def deploy(release):
             require(image['Os'] == 'linux' and image['Architecture'] == 'amd64', 'Image platform mismatch')
             require(image['Id'] == manifest[key + '_id'], 'Image identity mismatch')
         # Keep old asset URLs available for already-open browser tabs.
-        for asset in (OLD / 'frontend' / 'assets').iterdir():
+        for asset in (previous_root / 'assets').iterdir():
             destination = release / 'frontend' / 'assets' / asset.name
             if destination.exists():
                 require(sha(destination) == sha(asset), 'Asset hash-name collision')
             else:
                 shutil.copyfile(asset, destination)
-        for path in [release, release / 'frontend', *list((release / 'frontend').rglob('*'))]:
+        # Only frontend files are web-readable; operator archives/state remain private.
+        release.chmod(0o711)
+        for path in [release / 'frontend', *list((release / 'frontend').rglob('*'))]:
+            require(not path.is_symlink(), 'Unexpected frontend symlink')
             path.chmod(0o755 if path.is_dir() else 0o644)
         # Short maintenance window freezes all app writers before the recovery point.
         maintenance = previous.replace('server_name ' + HOST + ';', 'server_name ' + HOST + ';\n    return 503;', 1)
@@ -199,6 +239,7 @@ def deploy(release):
         reload_nginx()
         docker('stop', '-t', '30', API, STORAGE)
         state['stage'] = 'backup'
+        save(work / 'update-state.json', state)
         print('STAGE: backup (maintenance active)', flush=True)
         operator(release, manifest, DB, root_file, work, 'inventory')
         dump_args = ['docker', 'exec', DB, 'sh', '-c', 'export MYSQL_PWD="$(cat /run/secrets/mysql-root)"; exec mysqldump -uroot --single-transaction --routines --events --triggers --hex-blob --no-tablespaces --set-gtid-purged=OFF --column-statistics=0 --databases test_hlf_demo']
@@ -228,6 +269,7 @@ def deploy(release):
             archive_hashes[archive.name] = sha(archive)
             shutil.rmtree(restored)
         state['stage'] = 'restore-rehearsal'
+        save(work / 'update-state.json', state)
         print('STAGE: isolated MySQL restore and migration rehearsal', flush=True)
         restore_name = 'hlf-update-check-' + manifest['id']
         require(subprocess.run(['docker', 'inspect', restore_name], capture_output=True).returncode != 0, 'Restore container exists')
@@ -249,11 +291,14 @@ def deploy(release):
         restore_name = None
         save(work / 'backup-evidence.json', {'result': 'PASS', 'database_sha256': sha(work / 'database.sql.gz'), 'assets': archive_hashes, 'rehearsal': proof})
         state['stage'] = 'forward-migration'
+        save(work / 'update-state.json', state)
         print('STAGE: forward migration (original rows verified)', flush=True)
         operator(release, manifest, DB, root_file, work, 'migrate')
         operator(release, manifest, DB, root_file, work, 'verify')
         operator(release, manifest, DB, root_file, work, 'grant')
+        state['schema_verified'] = True
         state['stage'] = 'application'
+        save(work / 'update-state.json', state)
         previous_api = 'hlf-demo-api-before-' + manifest['id']
         require(subprocess.run(['docker', 'inspect', previous_api], capture_output=True).returncode != 0, 'Previous API name exists')
         docker('rename', API, previous_api)
@@ -279,11 +324,13 @@ def deploy(release):
         # Suppress subprocess diagnostics and credential-bearing exception payloads.
         print('FAIL: update at ' + state['stage'] + ' (' + type(error).__name__ + ')', flush=True)
         save(work / 'update-state.json', state)
-        if frozen:
+        if frozen and (state['stage'] != 'forward-migration' or state.get('schema_verified')):
             try:
                 rollback(release, state)
             except Exception:
                 print('BLOCKED: automatic app rollback needs inspection; all DB/volumes retained', flush=True)
+        elif frozen:
+            print('BLOCKED: migration failed; maintenance retained, inspect protected state before forward repair', flush=True)
         raise SystemExit(1) from None
     finally:
         if restore_name:
@@ -299,7 +346,9 @@ if __name__ == '__main__':
     release = Path(__file__).resolve().parent
     if sys.argv[1:] == ['--rollback']:
         require(os.geteuid() == 0, 'Run with sudo')
-        rollback(release, json.loads((release / 'state' / 'update-state.json').read_text()))
+        with open('/run/lock/hlf-demo-update.lock', 'w') as lock:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            rollback(release, json.loads((release / 'state' / 'update-state.json').read_text()))
     else:
         require(sys.argv[1:] == ['--deploy'], 'Expected --deploy or --rollback')
         deploy(release)
