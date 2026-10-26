@@ -50,7 +50,7 @@ try {
      if(mode==='empty')return page([]);
      if(url.searchParams.get('q')==='Không tồn tại')return page([]);
      const dish=url.pathname.endsWith('/dishes');
-     return page(dish?[{id:'1',restaurant_id:'1',restaurant_name:'Quán kiểm thử VJU',name:'Cơm gà kiểm thử với tên món dài đầy đủ dấu tiếng Việt',price_vnd:'35000',description:'',is_available:true,image_reference:'/images/home/photo-1603133872878-684f208fb84b.jpg'},{id:'2',restaurant_id:'1',restaurant_name:'Quán kiểm thử VJU',name:'Món đã hết',price_vnd:'50000',description:'',is_available:false,image_reference:'/images/missing-ui-test.jpg'},{id:'3',restaurant_id:'2',restaurant_name:'Bếp cộng đồng',name:'Bánh mì trứng',price_vnd:'20000',description:'',is_available:true,image_reference:'/images/home/photo-1715925717150-2a6d181d8846.jpg'}]:[1,2,3].map(id=>({id:String(id),name:id===1?'Quán kiểm thử VJU':'Bếp cộng đồng '+id,address:'VJU',cover_image_reference:id===1?'/images/restaurant/default-cover.jpg':id===2?'/images/missing-restaurant-cover.jpg':null,is_active:true,is_open:true,is_accepting_orders:id!==3,min_price_vnd:'20000',max_price_vnd:'50000',hours:[{weekday:1,opens_at:'09:00:00',closes_at:'20:00:00',closes_next_day:false}]})));
+     return page(dish?[{id:'1',restaurant_id:'1',restaurant_name:'Quán kiểm thử VJU',name:'Cơm gà kiểm thử với tên món dài đầy đủ dấu tiếng Việt',price_vnd:'35000',description:'',is_available:true,image_reference:'/images/home/photo-1603133872878-684f208fb84b.jpg'},{id:'2',restaurant_id:'1',restaurant_name:'Quán kiểm thử VJU',name:'Món đã hết',price_vnd:'50000',description:'',is_available:false,image_reference:'/images/missing-ui-test.jpg'},{id:'3',restaurant_id:'2',restaurant_name:'Bếp cộng đồng',name:'Bánh mì trứng',price_vnd:'20000',description:'',is_available:true,image_reference:'/images/home/photo-1715925717150-2a6d181d8846.jpg'}].flatMap((dish,index)=>[dish,{...dish,id:String(index+4)}]):[1,2,3].map(id=>({id:String(id),name:id===1?'Quán kiểm thử VJU':'Bếp cộng đồng '+id,address:'VJU',avatar_image_reference:id===1?'/fixtures/rice.svg':id===2?'/images/missing-avatar.jpg':null,cover_image_reference:id===1?'/images/restaurant/default-cover.jpg':id===2?'/images/missing-restaurant-cover.jpg':null,is_active:true,is_open:true,is_accepting_orders:id!==3,min_price_vnd:'20000',max_price_vnd:'50000',hours:[{weekday:1,opens_at:'09:00:00',closes_at:'20:00:00',closes_next_day:false}]})));
     }
     return response({error:{code:'CONTROLLED_UNAVAILABLE'}},503);
    };`});
@@ -70,15 +70,20 @@ try {
   assert(!await evaluate("Boolean(document.querySelector('.student-nav'))"),'Old mobile navigation remains');
  }
  await mock();
- for(const width of [360,390,768,1024,1440]){
+ for(const width of [360,390,768,1024,1280,1440,1920]){
   await call('Emulation.setDeviceMetricsOverride',{width,height:900,deviceScaleFactor:1,mobile:width<768});
   await navigate();await waitText('Quán kiểm thử VJU');await shellCheck(width);
   await until(()=>evaluate("[...document.querySelectorAll('.hero img,.category img')].every(i=>i.complete&&i.naturalWidth>0)"),'Static image failed');
-  await evaluate("document.querySelectorAll('.home-restaurant-card > img').forEach(img=>{img.loading='eager'})");
-  await until(()=>evaluate("document.querySelector('.home-restaurant-card > img')?.naturalWidth>0"),'Saved restaurant cover missing');
-  assert(await evaluate("document.querySelector('.home-restaurant-card > img').getAttribute('src')==='/images/restaurant/default-cover.jpg'"),'Restaurant cover reference lost');
-  await until(()=>evaluate("document.querySelectorAll('.home-restaurant-placeholder').length===2"),'Missing/broken restaurant cover fallback failed');
-  assert(await evaluate("(()=>{const card=document.querySelector('.home-restaurant-card'),img=card.querySelector('img'),a=card.getBoundingClientRect(),b=img.getBoundingClientRect();return Math.abs(a.width-b.width)<2&&Math.abs(a.height-b.height)<2})()"),'Restaurant cover does not fill card');
+  await until(()=>evaluate("document.querySelector('.home-restaurant-identity .restaurant-avatar img')?.naturalWidth>0"),'Saved restaurant avatar missing');
+  assert(await evaluate("document.querySelector('.home-restaurant-identity img').getAttribute('src')==='/fixtures/rice.svg'"),'Avatar reference lost');
+  await until(()=>evaluate("document.querySelectorAll('.home-restaurant-identity [aria-label^=\"Chưa có avatar\"]').length===2"),'Missing/broken avatar fallback failed');
+  assert(await evaluate("!document.querySelector('.home-restaurant-card > img,.home-restaurant-shade,.home-restaurant-placeholder,.home-restaurant-content')"),'Homepage still displays cover content');
+  assert(await evaluate("document.querySelector('.home-restaurant-identity').getAttribute('href')==='/restaurants/1'"),'Restaurant destination lost');
+  assert(await evaluate("(()=>{const r=document.querySelector('.home-restaurant-identity .restaurant-avatar').getBoundingClientRect();return Math.abs(r.width-r.height)<1&&r.width>=64})()"),'Avatar must stay square');
+  const expectedColumns=width<=760?2:width<=1024?3:width<1440?5:6;
+  assert(await evaluate(`getComputedStyle(document.querySelector('.dish-grid')).gridTemplateColumns.split(' ').length===${expectedColumns}`),`Dish columns at ${width}`);
+  assert(await evaluate("[...document.querySelectorAll('.dish-card')].every(card=>card.scrollWidth<=card.clientWidth&&card.querySelector('.dish-content').scrollWidth<=card.querySelector('.dish-content').clientWidth)"),`Dish content overflow at ${width}`);
+  assert(await evaluate("[...document.querySelectorAll('.dish-footer a')].every(a=>a.getBoundingClientRect().height>=44)"),'Dish touch target too short');
   await shot('home-'+width);
  }
  await call('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});
@@ -115,7 +120,7 @@ try {
  assert(await evaluate("getComputedStyle(document.querySelector('.mini-dish')).animationName==='none'&&getComputedStyle(document.documentElement).scrollBehavior==='auto'"),'Reduced motion failed');
  await call('Emulation.setDeviceMetricsOverride',{width:720,height:900,deviceScaleFactor:1,mobile:false});await evaluate("document.documentElement.style.zoom='2'");await shellCheck('200% zoom');await shot('home-zoom');
  assert(errors.length===0,'Uncaught runtime exception: '+errors.join(', '));
- console.log('PASS: five widths, static images, API filters, header/footer geometry, guest/buyer/owner/Admin, auth screens, mobile Escape/focus, empty/errors, reduced motion and 200% zoom. Frontend API responses are mocked.');
+ console.log('PASS: seven widths, compact dish columns/content/touch targets, static images, API filters, header/footer geometry, guest/buyer/owner/Admin, auth screens, mobile Escape/focus, empty/errors, reduced motion and 200% zoom. Frontend API responses are mocked.');
  console.log('Screenshots: '+evidence);
 } finally {
  socket?.close();for(const child of children)child.kill('SIGTERM');await delay(300);await rm(profile,{recursive:true,force:true});

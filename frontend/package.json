@@ -40,7 +40,9 @@
     "test:vouchers": "node --test test/vouchers.test.mjs",
     "test:buyer-order": "node scripts/browser-buyer-order.mjs",
     "test:basket": "node --test test/basket.test.mjs",
-    "test:purchase": "node scripts/browser-purchase.mjs"
+    "test:purchase": "node scripts/browser-purchase.mjs",
+    "test:delivery-ui": "node scripts/browser-owner-delivery.mjs",
+    "test:delivery-unit": "node --test test/delivery-draft.test.mjs"
   },
   "dependencies": {
     "@fontsource/be-vietnam-pro": "5.3.0",

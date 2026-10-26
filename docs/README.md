@@ -33,6 +33,7 @@ Current ordering/payment policy: [COD and owner-only vouchers](cod-ordering.md);
 | Why does the local homepage now show sample dishes? | [Local demo adoption and recovery](local-demo-adoption.md) |
 | How were local sample accounts/catalog/points removed from active use? | [Local demo cleanup and recovery](local-demo-cleanup.md); history retained, real selling setup still required |
 | How is sell readiness configured? | [V0.4 setup contract](restaurant-setup-v04-contract.md), [local verification](setup-local-verification.md) |
+| How does the redesigned owner VJU delivery page work? | [Delivery dashboard, drafts and verification](ui/owner-delivery-figma.md) |
 | How do restaurant cover/avatar, crop selection and the detail page work? | [Approved Figma storefront and interfaces](ui/restaurant-detail-figma.md), [verification](ui/restaurant-detail-verification.md), [cover/avatar and crop editor](ui/restaurant-images.md) |
 | What governs checkout, vouchers and subsidy reconciliation? | [Approved checkout/voucher contract](checkout-vouchers.md), [implementation/verification](ui/checkout-verification.md) |
 | How does the redesigned cart handle real fees, undo and checkout handoff? | [Cart design and verification](ui/cart-figma.md), [transient action feedback](ui/action-feedback.md) |

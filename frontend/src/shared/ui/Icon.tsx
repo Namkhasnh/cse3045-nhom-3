@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react'
 
 const paths = {
+  copy: <><rect x="8" y="8" width="12" height="13" rx="2" /><path d="M16 8V3H3v13h5" /></>,
   shop: <><path d="M4 10v11h16V10M3 4h18l-2 6H5Z" /><path d="M9 21v-6h6v6" /></>,
   check: <path d="m5 12 4 4L19 6" />,
   chevron: <path d="m9 18 6-6-6-6" />,

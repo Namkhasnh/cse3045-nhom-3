@@ -85,19 +85,28 @@
 .home-design .view-all, .home-design .dish-footer a, .home-design .home-restaurant-content a, .home-design .recommendation-content a { display: inline-flex; align-items: center; gap: 8px; color: var(--orange); font-size: 13px; font-weight: 700; }
 .home-design .view-all svg, .home-design .dish-footer a svg, .home-design .home-restaurant-content a svg, .home-design .recommendation-content a svg { transition: transform 180ms ease; }@media (hover: hover) and (pointer: fine) {
 .home-design .view-all:hover svg, .home-design .dish-footer a:hover svg, .home-design .home-restaurant-content a:hover svg, .home-design .recommendation-content a:hover svg { transform: translateX(4px); }}
-.home-design .dish-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
-.home-design .dish-card { overflow: hidden; border: 1px solid #eee5dc; border-radius: var(--radius-md); background: var(--white); transition: transform 250ms ease, box-shadow 250ms ease, border-color 250ms ease; }@media (hover: hover) and (pointer: fine) {
+.home-design .dish-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; }
+.home-design .dish-card { min-width: 0; display: flex; flex-direction: column; overflow: hidden; border: 1px solid #eee5dc; border-radius: var(--radius-md); background: var(--white); transition: transform 250ms ease, box-shadow 250ms ease, border-color 250ms ease; }@media (hover: hover) and (pointer: fine) {
 .home-design .dish-card:hover { transform: translateY(-7px); border-color: transparent; box-shadow: 0 22px 45px rgba(68,43,27,.12); }}
 .home-design .home-dish-image { position: relative; display: block; aspect-ratio: 1.38; overflow: hidden; background: var(--cream-dark); }
 .home-design .home-dish-image img { width: 100%; height: 100%; object-fit: cover; transition: transform .45s cubic-bezier(.2,.7,.2,1); }@media (hover: hover) and (pointer: fine) {
 .home-design .dish-card:hover .home-dish-image img { transform: scale(1.055); }}
 .home-design .dish-tag { position: absolute; top: 13px; left: 13px; padding: 8px 10px; border-radius: 9px; background: rgba(255,250,245,.93); color: var(--espresso); backdrop-filter: blur(8px); font-size: 9px; font-weight: 700; }
-.home-design .dish-content { padding: 19px 19px 18px; }
-.home-design .dish-title-row { display: flex; align-items: start; justify-content: space-between; gap: 15px; }
-.home-design .dish-title-row h3, .home-design .recommendation-content h3 { margin: 0; font-size: 18px; letter-spacing: -.04em; }
+.home-design .dish-content { flex: 1; min-width: 0; display: flex; flex-direction: column; padding: 12px; overflow-wrap: anywhere; }
+.home-design .dish-title-row { display: flex; flex-direction: column; align-items: start; gap: 6px; }
+.home-design .dish-title-row h3 { font-size: 14px; line-height: 1.5; }
+.home-design .dish-title-row h3, .home-design .recommendation-content h3 { margin: 0; letter-spacing: -.04em; }
+.home-design .recommendation-content h3 { font-size: 18px; }
 .home-design .dish-title-row strong { white-space: nowrap; color: var(--orange); font-size: 15px; }
-.home-design .dish-content > p { margin: 8px 0 19px; color: var(--muted); font-size: 11px; }
-.home-design .dish-footer { padding-top: 15px; border-top: 1px solid #f0e9e2; display: flex; align-items: center; justify-content: space-between; }
+.home-design .dish-content > p { margin: 8px 0 12px; color: var(--muted); font-size: 11px; }
+.home-design .dish-footer { margin-top: auto; padding-top: 10px; border-top: 1px solid #f0e9e2; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+.home-design .dish-footer a { min-height: 44px; font-size: 12px; }
+@media (min-width: 1440px) {
+  .home-design .dish-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+}
+@media (min-width: 1025px) and (max-width: 1199px) {
+  .home-design .dish-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
 .home-design .status { display: inline-flex; align-items: center; gap: 7px; color: var(--herb); font-size: 10px; font-weight: 700; }
 .home-design .status i, .home-design .home-restaurant-meta i { width: 7px; height: 7px; border-radius: 50%; background: #64a36a; box-shadow: 0 0 0 3px rgba(88,134,91,.12); }
 .home-design .empty-state { min-height: 330px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px dashed #ddcfc3; border-radius: var(--radius-md); text-align: center; }
@@ -177,7 +186,7 @@
   .home-design .hero-visual { height: 500px; }
   .home-design .hero-photo { left: 20px; border-radius: 130px 25px 130px 25px; }
   .home-design .fresh-stamp { right: -8px; }
-  .home-design .dish-grid { grid-template-columns: repeat(2, 1fr); }
+  .home-design .dish-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .home-design .home-restaurant-grid { grid-template-columns: 1fr 1fr; grid-template-rows: 390px 350px; }
   .home-design .home-restaurant-card--1 { grid-column: 1 / -1; }
   .home-design .ai-panel { gap: 40px; padding: 55px 45px; }
@@ -221,7 +230,7 @@
   .home-design .category { flex-basis: 118px; }
   .home-design .category-image { height: 90px; }
   .home-design .dishes-section { margin-top: 70px; padding: 76px 0 82px; }
-  .home-design .dish-grid { grid-template-columns: 1fr; gap: 18px; }
+  .home-design .dish-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
   .home-design .home-dish-image { aspect-ratio: 1.55; }
   .home-design .home-restaurant-section { padding-top: 80px; }
   .home-design .home-restaurant-grid { display: flex; overflow-x: auto; margin-right: -16px; padding: 0 16px 10px 0; scrollbar-width: none; }
