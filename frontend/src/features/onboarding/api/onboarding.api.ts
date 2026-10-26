@@ -1,3 +1,4 @@
+import {mutationFeedback,showFeedback} from '../../../shared/lib/feedback'
 export type Terms = {version:string;hash:string;content:string}
 export type Fields = {restaurant_name:string;address:string;contact_name:string;contact_phone:string;front_image_id:string;business_document_id:string;terms_version:string;terms_hash:string}
 export type Application = {id:string;applicant_id?:string;kind:string;status:string;version:number;payload:Fields;terms_version:string;terms_hash:string;consent_at:string|null;created_at:string;restaurant_id:string|null;review:{decision:string;reason:string|null;created_at:string}|null}
@@ -7,7 +8,9 @@ async function request<T>(path:string,method='GET',body?:object,key?:string,sign
  const csrf=document.cookie.split(';').map(v=>v.trim()).find(v=>v.startsWith('__Host-hlf_csrf='))?.slice('__Host-hlf_csrf='.length)
  const response=await fetch(`/api/v1${path}`,{method,signal,credentials:'same-origin',cache:'no-store',headers:{...(body?{'Content-Type':'application/json'}:{}),...(csrf&&method!=='GET'?{'X-CSRF-Token':csrf}:{}),...(key?{'Idempotency-Key':key}:{})},body:body?JSON.stringify(body):undefined})
  const payload=await response.json().catch(()=>null)
- if(!response.ok)throw new OnboardingError(response.status,payload?.error?.code??'NETWORK_ERROR')
+ if(!response.ok){const error=new OnboardingError(response.status,payload?.error?.code??'NETWORK_ERROR');if(mutationFeedback(path,method,null))showFeedback(errorMessage(error),'error');throw error}
+ const feedback=mutationFeedback(path,method,payload?.data)
+ if(feedback&&payload?.data!==undefined)showFeedback(feedback)
  return payload?.page?payload:payload.data
 }
 export const onboardingApi={

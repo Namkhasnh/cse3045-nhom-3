@@ -1,5 +1,7 @@
 # Commercial Roadmap to V1.0
 
+> October25 COD cutover: [approved operating/API/history contract](cod-ordering.md) supersedes new-order cash/QR selection, QR authoring/review and platform voucher issuance/redemption. Legacy payment/refund and accepted voucher subsidy obligations remain. Prior verification is historical.
+
 Canonical version/dependency/completion/release source, revised October 18, 2026. [Requirements](requirements.md) own behavior; [decision register](decisions.md) owns unresolved choices; [implementation status](implementation-status.md) distinguishes source and evidence. No version is certified complete by this documentation change.
 
 ## Execution rules
@@ -18,8 +20,8 @@ A version closes only after behavior, required decisions, current source/API/sch
 | V0.2 — Public discovery | Real anonymous homepage/catalog/menu; guest cart survives login without automatic submission; privacy/mobile evidence. | P04–P06 | Accepted P03 and prior version; decision gates below |
 | V0.3 — Restaurant opening applications | Approved terms/form, protected applications/history, atomic approval/manual create and one-restaurant races; setup-required initial state. | P07–P10 | Accepted P06 and prior version; decision gates below |
 | V0.4 — Restaurants ready to sell | Profile/hours/menu/images, verified VJU pair quotes, explicit commission and exact arithmetic; readiness enforced. | P11–P14 | Accepted P10 and prior version; decision gates below |
-| V0.5 — Cash ordering | Durable cash order/snapshots/retries, independent cash receipt, history/tracking and MySQL race/rollback/browser recovery evidence. | P15–P18 | Accepted P14 and prior version; decision gates below |
-| V0.6 — QR and refunds | Approved direct QR/refund policy, verified instructions/receipt/refund lifecycle, independent facts and real race/browser evidence. | P19–P21 | Accepted P18 and prior version; decision gates below |
+| V0.5 — Ordering | COD order/snapshots/retries and history/tracking for new orders; independent cash receipts remain legacy-only. MySQL race/rollback/browser recovery evidence. | P15–P18 | Accepted P14 and prior version; decision gates below |
+| V0.6 — Legacy QR obligations | Retain existing verified instructions/receipt/refund lifecycle and independent facts; no new QR authoring/orders. Historic race/browser evidence remains dated. | P19–P21 | Accepted P18 and prior version; decision gates below |
 | V0.7 — Administration and reconciliation | Approved manual finance/corrections, authoritative reports, user/support/audit scope and retained history. | P22–P25 | Accepted P21 and prior version; decision gates below |
 | V0.8 — AI recommendations | Approved AI semantics/provider/privacy/limits; real candidate grounding, cost/latency evaluation and manual fallback. | P26–P28 | Accepted P25 and prior version; decision gates below |
 | V0.9 — Operational pilot | Selected services, staging CI/migration/restore, full quality evidence, approved real VJU pilot and blocking-defect closure. | P29–P33 | Accepted P28 and prior version; decision gates below |
@@ -72,7 +74,7 @@ Use [progress/Pxx.md handoffs](progress/README.md) for prompts actually worked o
 
 Record prompt/version, exact commit/dirty-worktree scope, approved decision versions, implemented behavior, migration compatibility, test case IDs and exact commands/environments/results, sanitized artifacts, residual defects and named reviewer/date. Use **IMPLEMENTED** only for inspected source; **TARGET** for design; **NOT CONFIGURED** for absent tooling; **NOT RUN** for an available check not executed; **BLOCKED** with the owning decision. A passing mock is never a passing MySQL/browser check.
 
-V0.9 and V1.0 require MySQL 9.2.0 empty/upgrade/constraint/race tests, real browser critical journeys, 360 px/mobile/accessibility, verified singleton MFA recovery, actual partner/survey/payment agreement data, direct QR/refund/manual finance evidence, measured NFRs, daily backup and isolated restore, support/incident ownership. Use [release checklist](release-checklist.md). P35 requires explicit approval of the concrete candidate; P36 verifies actual post-release operation. Documentation-only completion does not complete V1.0.
+V0.9 and V1.0 require MySQL 9.2.0 empty/upgrade/constraint/race tests, real browser critical journeys, 360 px/mobile/accessibility, verified singleton MFA recovery, actual partner/survey/payment agreement data, COD ordering, legacy QR/refund preservation and manual finance evidence, measured NFRs, daily backup and isolated restore, support/incident ownership. Use [release checklist](release-checklist.md). P35 requires explicit approval of the concrete candidate; P36 verifies actual post-release operation. Documentation-only completion does not complete V1.0.
 
 ## After V1.0
 

@@ -1,0 +1,37 @@
+.admin-overview-banner { display: flex; align-items: center; gap: 18px; padding: 26px; margin-bottom: 24px; border-radius: 23px; background: var(--color-admin-sidebar); color: var(--color-admin-sidebar-ink); box-shadow: 0 16px 32px rgb(31 42 68 / .12); }
+.admin-overview-banner > span { display: grid; place-items: center; flex: 0 0 52px; height: 52px; border: 1px solid rgb(255 255 255 / .2); border-radius: 16px; background: rgb(255 255 255 / .08); }
+.admin-overview-banner .icon { width: 28px; height: 28px; }
+.admin-overview-banner h2 { font-size: 23px; font-weight: 500; margin-bottom: 8px; line-height: 1.35; }
+.admin-overview-banner p { font-size: 12px; line-height: 1.7; }
+.admin-overview-grid { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(265px, .7fr); gap: 22px; align-items: start; }
+.admin-task-card, .admin-quick-actions { padding: 26px; }
+.admin-task-controls { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 14px; padding-block: 24px; }
+.admin-task-controls label { flex: 1; min-width: min(100%, 220px); font-size: 12px; font-weight: 600; }
+.admin-task-controls select { display: block; width: 100%; min-height: 44px; margin-top: 8px; padding: 10px; border: 1px solid var(--color-surface-line); border-radius: 10px; background: var(--color-surface); font-size: 12px; }
+.admin-task-refresh { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 10px 12px; border: 1px solid var(--color-surface-line); border-radius: 10px; color: var(--color-admin-sidebar); background: var(--color-surface); font-size: 12px; font-weight: 600; }
+.admin-task-refresh:hover:not(:disabled) { background: var(--color-admin-sidebar-ink); }
+.admin-task-refresh:disabled { opacity: .6; }
+.admin-task-loading { color: var(--color-ink-muted); font-size: 13px; margin-bottom: 16px; }
+.admin-task-empty { display: grid; justify-items: center; padding: 32px 12px; text-align: center; gap: 10px; border-radius: 14px; background: var(--cream); }
+.admin-task-empty > .icon { width: 36px; height: 36px; padding: 8px; color: var(--color-fresh-ink); background: var(--color-fresh-tint); border-radius: 50%; }
+.admin-task-empty h3 { font-size: 14px; font-weight: 600; }
+.admin-task-empty p { font-size: 12px; color: var(--color-ink-muted); }
+.admin-task-list { list-style: none; padding: 0; margin: 0; }
+.admin-task-list li + li { border-top: 1px solid var(--color-surface-line); }
+.admin-task-list a { display: flex; align-items: flex-start; gap: 12px; padding: 20px 0; }
+.admin-task-list a > div { flex: 1; min-width: 0; }
+.admin-task-list h3 { font-size: 14px; font-weight: 600; }
+.admin-task-list p { margin-top: 6px; font-size: 12px; color: var(--color-ink-muted); line-height: 1.7; overflow-wrap: anywhere; }
+.admin-task-list a > .icon { width: 18px; height: 18px; margin-top: 8px; flex-shrink: 0; }
+.admin-task-icon, .admin-quick-actions > a > span { display: grid; place-items: center; flex: 0 0 38px; height: 38px; border-radius: 11px; color: var(--color-admin-sidebar); background: var(--color-admin-sidebar-ink); }
+.admin-task-list a:hover h3 { text-decoration: underline; }
+.admin-quick-actions > a { display: flex; align-items: center; gap: 12px; min-height: 70px; padding-block: 16px; border-bottom: 1px solid var(--color-surface-line); }
+.admin-quick-actions > a > div { min-width: 0; flex: 1; }
+.admin-quick-actions strong, .admin-quick-actions small { display: block; }
+.admin-quick-actions strong { font-size: 12px; }
+.admin-quick-actions small { margin-top: 5px; color: var(--color-ink-muted); font-size: 11px; }
+.admin-quick-actions > a > .icon { width: 16px; height: 16px; flex-shrink: 0; }
+.admin-quick-actions > a:hover > span { background: var(--color-admin-sidebar); color: var(--color-admin-sidebar-ink); }
+.admin-quick-actions > .admin-support-link { border-bottom: 0; }
+@media (max-width: 1279px) { .admin-overview-grid { grid-template-columns: minmax(0, 1fr); } .admin-quick-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 20px; } .admin-quick-actions .workspace-card-title { grid-column: 1/-1; } }
+@media (max-width: 767px) { .admin-overview-banner { padding: 22px; align-items: flex-start; flex-wrap: wrap; } .admin-overview-banner h2 { font-size: 21px; } .admin-task-card, .admin-quick-actions { padding: 22px; } .admin-task-refresh { width: 100%; } .admin-quick-actions { display: block; } }

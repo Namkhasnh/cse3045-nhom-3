@@ -20,9 +20,9 @@ export function openAt(hours:Hours[],instant=new Date()):boolean {
  return hours.some(h=>{const a=(h.weekday-1)*day+seconds(h.opens_at),b=(h.weekday-1)*day+seconds(h.closes_at)+(h.closes_next_day?day:0);return [n,n+week].some(x=>x>=a&&x<b);});
 }
 export function settingsInput(raw:unknown,admin=false) {
- const b=object(raw,['expected_version','name','address','contact_phone','latitude','longitude',...(admin?['is_active']:['hours','is_accepting_orders','description','cover_image_reference'])],['expected_version']);
+ const b=object(raw,['expected_version','name','address','contact_phone','latitude','longitude',...(admin?['is_active']:['hours','is_accepting_orders','description','cover_image_reference','avatar_image_reference'])],['expected_version']);
  if('description' in b&&b.description!==null){if(typeof b.description!=='string'||[...b.description].length>2000||Buffer.byteLength(b.description,'utf8')>8000)return invalid();if(b.description.trim())text(b.description,2000);}
- if('cover_image_reference' in b&&b.cover_image_reference!==null&&(typeof b.cover_image_reference!=='string'||!/^\/api\/v1\/restaurant-cover-media\/[1-9][0-9]{0,18}$/.test(b.cover_image_reference)))return invalid();
+ for(const key of ['cover_image_reference','avatar_image_reference'])if(key in b&&b[key]!==null&&(typeof b[key]!=='string'||!/^\/api\/v1\/restaurant-cover-media\/[1-9][0-9]{0,18}$/.test(b[key])))return invalid();
  const expected=version(b.expected_version);if(Object.keys(b).length<2)return invalid();
  const data:Record<string,string|boolean|null>={};
  for(const [key,max] of [['name',200],['address',1000],['contact_phone',32]] as const)if(key in b)data[key]=text(b[key],max);
@@ -32,7 +32,7 @@ export function settingsInput(raw:unknown,admin=false) {
  if('latitude' in b&&(b.latitude===null)!==(b.longitude===null))return invalid();
  for(const key of ['is_active','is_accepting_orders'])if(key in b)data[key]=bool(b[key]);
  if('description' in b)data.description=typeof b.description==='string'?b.description.trim()||null:null;
- return {expected,data,cover:'cover_image_reference' in b?b.cover_image_reference===null?null:(b.cover_image_reference as string):undefined,hours:'hours' in b?hoursInput(b.hours):undefined};
+ return {expected,data,avatar:'avatar_image_reference' in b?b.avatar_image_reference===null?null:(b.avatar_image_reference as string):undefined,cover:'cover_image_reference' in b?b.cover_image_reference===null?null:(b.cover_image_reference as string):undefined,hours:'hours' in b?hoursInput(b.hours):undefined};
 }
 export type Checklist={profile:boolean;hours:boolean;menu:boolean;delivery:boolean;commission:boolean};
 export const ready=(c:Checklist)=>Object.values(c).every(Boolean);

@@ -1,7 +1,7 @@
 import type { RestaurantFilterValues, RestaurantSummary } from '../types'
 export type Page<T> = { data: T[]; page: { has_more: boolean; next_cursor: string | null } }
 export type Category = { id: string; name: string }
-export type Restaurant = { description?: string | null; cover_image_reference?: string | null; id: string; name: string; address: string; is_active: boolean; is_open: boolean;
+export type Restaurant = { description?: string | null; avatar_image_reference?:string|null;cover_image_reference?: string | null; id: string; name: string; address: string; is_active: boolean; is_open: boolean;
   is_accepting_orders: boolean; min_price_vnd: string | null; max_price_vnd: string | null;
   hours: { weekday: number; opens_at: string; closes_at: string; closes_next_day: boolean }[] }
 export type Dish = { category_id?: string; id: string; restaurant_id: string; restaurant_name: string; name: string; description: string;
@@ -40,7 +40,7 @@ export function summary(r: Restaurant): RestaurantSummary {
   const weekday = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].indexOf(day) + 1
   const intervals = r.hours.filter(h => h.weekday === weekday)
   return { id: r.id, name: r.name, description: '', cuisine: '', isActive: r.is_active, isOpen: r.is_open,
-    isAcceptingOrders: r.is_accepting_orders, imageSrc: null, illustrationTone: 'rice',
+    isAcceptingOrders: r.is_accepting_orders, imageSrc: r.cover_image_reference ?? null, illustrationTone: 'rice',
     deliveryFeeVnd: null, distanceMetres: null, dishes: [], priceRange: { min: r.min_price_vnd, max: r.max_price_vnd },
     hours: intervals.length ? `Hôm nay: ${intervals.map(h => `${h.opens_at.slice(0, 5)}–${h.closes_at.slice(0, 5)}${h.closes_next_day ? ' (hôm sau)' : ''}`).join(', ')}` : 'Hôm nay không có giờ mở cửa' }
 }

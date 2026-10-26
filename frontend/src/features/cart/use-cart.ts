@@ -1,86 +1,47 @@
-import { createContext, useCallback, useContext, useEffect, useReducer, useState } from 'react'
-import { cartReducer, orderable, orderabilityReason, CART_STORAGE_KEY, itemCount, parseDraft, subtotal, type CartCatalog, type CartDish, type CartRestaurant } from './model'
-
-type Current<T> = { status: 'ready'; value: T } | { status: 'missing' | 'error' }
-type Validation = { key: string; status: 'ready'; restaurant: Current<CartRestaurant>; dishes: Record<string, Current<CartDish>> }
-function failure(error: unknown): { status: 'missing' | 'error' } {
-  return { status: typeof error === 'object' && error !== null && 'status' in error && error.status === 404 ? 'missing' : 'error' }
+import {createContext,useCallback,useContext,useEffect,useRef,useState} from 'react'
+import {showFeedback} from '../../shared/lib/feedback'
+import {orderable,orderabilityReason,CART_STORAGE_KEY,type CartCatalog,type CartDish,type CartRestaurant} from './model'
+import {BASKET_KEY,emptyBasket,parseBasket,migrateBasket,addBatch,quantityInBasket,removeFromBasket,selectedGroups,basketSubtotal,consumeOrder,type Basket,type BasketRecord} from './basket'
+type Current<T>={status:'ready';value:T}|{status:'missing'|'error'}
+type Validation={key:string;restaurants:Record<string,Current<CartRestaurant>>;dishes:Record<string,Current<CartDish>>}
+function initial():{record:BasketRecord;warning:string;blocked:boolean}{
+ let raw:string|null
+ try{raw=localStorage.getItem(BASKET_KEY)}catch{return {record:{basket:emptyBasket(),consumed:[]},warning:'Không thể lưu giỏ trên thiết bị. Giỏ chỉ giữ trong trang đang mở.',blocked:false}}
+ try{if(raw){const r=JSON.parse(raw),basket=parseBasket(JSON.stringify(r.basket));if(!basket||!Array.isArray(r.consumed)||r.consumed.some((k:unknown)=>typeof k!=='string'))throw new Error();return {record:{basket,consumed:r.consumed},warning:'',blocked:false}}
+ const old=localStorage.getItem(CART_STORAGE_KEY),basket=migrateBasket(old);return {record:{basket:basket??emptyBasket(),consumed:[]},warning:old&&!basket?'Giỏ đã lưu không hợp lệ. Giữ dữ liệu cũ để kiểm tra.':'',blocked:Boolean(old&&!basket)}
+ }catch{return {record:{basket:emptyBasket(),consumed:[]},warning:'Không đọc được giỏ đã lưu. Chưa ghi đè dữ liệu; hãy kiểm tra bộ nhớ trình duyệt.',blocked:true}}
 }
-function initialDraft() {
-  try { const raw = localStorage.getItem(CART_STORAGE_KEY); const draft = parseDraft(raw)
-    return { draft, warning: raw && !draft ? 'Giỏ đã lưu không hợp lệ. Bạn có thể chọn món lại.' : '' }
-  } catch { return { draft: null, warning: 'Không thể lưu giỏ trên thiết bị. Giỏ chỉ giữ trong trang đang mở.' } }
+const failure=(e:unknown):Current<never>=>({status:typeof e==='object'&&e!==null&&'status'in e&&e.status===404?'missing':'error'})
+export function useCartState(catalog:CartCatalog){
+ const [loaded]=useState(initial),[record,setRecord]=useState(loaded.record),latest=useRef(record),[storageWarning,setWarning]=useState(loaded.warning),[notice,setNotice]=useState(''),[attempt,setAttempt]=useState(0),[validation,setValidation]=useState<Validation|null>(null)
+ const [undo,setUndo]=useState<{record:BasketRecord;name:string;expiresAt:number}|null>(null)
+ const storageBlocked=useRef(loaded.blocked),memoryOnly=useRef(false)
+ const commit=useCallback((next:BasketRecord)=>{if(storageBlocked.current)throw new Error('Không đọc được giỏ cũ. Chưa thay đổi giỏ để tránh mất dữ liệu.');latest.current=next;setRecord(next);try{const raw=JSON.stringify(next);localStorage.setItem(BASKET_KEY,raw);if(localStorage.getItem(BASKET_KEY)!==raw)throw new Error();localStorage.removeItem(CART_STORAGE_KEY)}catch{memoryOnly.current=true;setWarning('Không thể lưu giỏ trên thiết bị. Giỏ chỉ giữ trong trang đang mở.')}},[])
+ const update=useCallback((f:(b:Basket)=>Basket,message='')=>{try{commit({...latest.current,basket:f(latest.current.basket)});setUndo(null);setNotice(message);if(message)showFeedback(message,'success');return true}catch(e){const message=e instanceof Error?e.message:'Chưa cập nhật được giỏ.';setNotice(message);showFeedback(message,'error');return false}},[commit])
+ const refresh=useCallback(()=>setAttempt(n=>n+1),[])
+ useEffect(()=>{if(!undo)return;const t=setTimeout(()=>setUndo(null),Math.max(0,undo.expiresAt-Date.now()));return()=>clearTimeout(t)},[undo])
+ useEffect(()=>{const storage=(e:StorageEvent)=>{if(e.key!==BASKET_KEY&&e.key!==null)return;const value=initial();if(value.warning){setWarning(value.warning);return}latest.current=value.record;setRecord(value.record);setUndo(null);refresh()};window.addEventListener('storage',storage);window.addEventListener('focus',refresh);return()=>{window.removeEventListener('storage',storage);window.removeEventListener('focus',refresh)}},[refresh])
+ const basket=record.basket,groups=basket.groups,draft=groups[0]??null,selected=selectedGroups(basket)
+ const signature=JSON.stringify(groups.map(g=>[g.restaurant.id,g.items.map(i=>i.id)])),key=signature+':'+attempt
+ useEffect(()=>{const c=new AbortController();Promise.all(groups.map(async g=>{const restaurant=await catalog.restaurant(g.restaurant.id,c.signal).then(value=>({status:'ready' as const,value}),failure);const dishes=await Promise.all(g.items.map(async i=>[i.id,await catalog.dish(i.id,c.signal).then(value=>value.restaurant_id===g.restaurant.id?{status:'ready' as const,value}:{status:'missing' as const},failure)] as const));return {id:g.restaurant.id,restaurant,dishes}})).then(rows=>{if(!c.signal.aborted)setValidation({key,restaurants:Object.fromEntries(rows.map(r=>[r.id,r.restaurant])),dishes:Object.fromEntries(rows.flatMap(r=>r.dishes))})});return()=>c.abort()
+ // Validation depends on identity/membership; quantity and selection do not change catalog reads.
+ // eslint-disable-next-line react-hooks/exhaustive-deps
+ },[catalog,key])
+ const current=validation?.key===key?validation:null
+ function groupIssue(id:string,onlySelected=true){const g=(onlySelected?selected:groups).find(g=>g.restaurant.id===id);if(!g)return '';if(!current)return 'Đang kiểm tra giá và tình trạng món…';const r=current.restaurants[id];if(r?.status!=='ready')return r?.status==='missing'?'Quán không còn công khai.':'Chưa kiểm tra được quán.';return orderabilityReason(r.value)||(g.items.some(i=>current.dishes[i.id]?.status!=='ready')?'Chưa xác minh được tất cả món.':g.items.some(i=>{const d=current.dishes[i.id];return d.status==='ready'&&!d.value.is_available})?'Có món đang tạm hết.':'')}
+ const issue=!selected.length?'Chọn món để tiếp tục.':selected.map(g=>groupIssue(g.restaurant.id)).find(Boolean)??''
+ function acceptPrices(){if(!current)return;update(b=>({...b,groups:b.groups.map(g=>({...g,items:g.items.map(i=>{const d=current.dishes[i.id],r=current.restaurants[g.restaurant.id];return b.selected.includes(i.id)&&d?.status==='ready'&&d.value.is_available&&r?.status==='ready'&&orderable(r.value)?{...i,acceptedPriceVnd:d.value.price_vnd}:i})}))}),'Đã xác nhận giá hiện tại. Chưa gửi đơn hàng.')}
+ return {basket,groups,selectedGroups:selected,draft,current,issue,groupIssue,storageWarning,notice,undo,refresh,acceptPrices,count:groups.reduce((n,g)=>n+g.items.reduce((s,i)=>s+i.quantity,0),0),subtotal:basketSubtotal(groups),selectedSubtotal:basketSubtotal(selected),
+ add:(restaurant:CartRestaurant,dish:CartDish)=>{update(b=>addBatch(b,restaurant,[{dish,quantity:1}]),`Đã thêm ${dish.name} vào giỏ.`)},
+ addMany:(restaurant:CartRestaurant,items:{dish:CartDish;quantity:number}[])=>update(b=>addBatch(b,restaurant,items),'Đã thêm món đặt lại vào giỏ. Vào giỏ để chọn món đặt.'),
+ quantity:(id:string,n:number)=>update(b=>quantityInBasket(b,id,n),'Đã cập nhật số lượng món trong giỏ.'),
+ select:(ids:string[],checked:boolean)=>update(b=>({...b,selected:checked?[...new Set([...b.selected,...ids])]:b.selected.filter(id=>!ids.includes(id))})),
+ remove:(id:string)=>{const before=latest.current,item=before.basket.groups.flatMap(g=>g.items).find(i=>i.id===id);if(item&&update(b=>removeFromBasket(b,id),`Đã xóa ${item.name} khỏi giỏ.`))setUndo({record:before,name:item.name,expiresAt:Date.now()+5000})},
+ undoRemove:()=>{if(undo&&undo.expiresAt>Date.now()){try{commit(undo.record);setUndo(null);refresh();showFeedback('Đã khôi phục món.','success')}catch(e){showFeedback(String(e),'error')}}},
+ clear:(_silent=false)=>update(()=>emptyBasket(),_silent?'':'Đã xóa giỏ.'),
+ consume:(key:string,restaurantId:string,items:{dish_id:string;quantity:number}[])=>{let base=latest.current;try{const raw=localStorage.getItem(BASKET_KEY);if(raw&&!memoryOnly.current){const stored=JSON.parse(raw),basket=parseBasket(JSON.stringify(stored.basket));if(basket&&Array.isArray(stored.consumed)&&stored.consumed.every((k:unknown)=>typeof k==='string'))base={basket,consumed:stored.consumed}}}catch{/* Keep the in-memory basket when storage is unavailable. */}const next=consumeOrder(base,key,restaurantId,items);commit(next);setUndo(null)}
+ }
 }
-export function useCartState(catalog: CartCatalog) {
-  const [initial] = useState(initialDraft)
-  const [{ draft, notice, pending, undo }, dispatch] = useReducer(cartReducer, { draft: initial.draft, notice: '', pending: null })
-  useEffect(() => {
-    if (!undo) return
-    const timer = setTimeout(() => dispatch({ type: 'expire-undo' }), Math.max(0, undo.expiresAt - Date.now()))
-    return () => clearTimeout(timer)
-  }, [undo])
-  const [storageWarning, setStorageWarning] = useState(initial.warning)
-  const [attempt, setAttempt] = useState(0)
-  const [validation, setValidation] = useState<Validation | null>(null)
-  const refresh = useCallback(() => setAttempt(v => v + 1), [])
-  const restaurantId = draft?.restaurant.id ?? ''
-  const ids = draft?.items.map(i => i.id).sort().join(',') ?? ''
-  const key = `${restaurantId}:${ids}:${attempt}`
-  useEffect(() => {
-    try { if (draft) localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(draft)); else localStorage.removeItem(CART_STORAGE_KEY) }
-    catch { queueMicrotask(() => setStorageWarning('Không thể lưu giỏ trên thiết bị. Giỏ chỉ giữ trong trang đang mở.')) }
-  }, [draft])
-  useEffect(() => {
-    const onStorage = (event: StorageEvent) => {
-      if (event.key === CART_STORAGE_KEY || event.key === null) {
-        const next = parseDraft(event.newValue)
-        if (event.newValue && !next) { setStorageWarning('Giỏ từ tab khác không hợp lệ. Giỏ hiện tại được giữ nguyên.'); return }
-        dispatch({ type: 'replace', draft: next }); refresh()
-      }
-    }
-    const onVisible = () => { if (document.visibilityState === 'visible') refresh() }
-    window.addEventListener('storage', onStorage); window.addEventListener('focus', refresh); document.addEventListener('visibilitychange', onVisible)
-    return () => { window.removeEventListener('storage', onStorage); window.removeEventListener('focus', refresh); document.removeEventListener('visibilitychange', onVisible) }
-  }, [refresh])
-  useEffect(() => {
-    if (!restaurantId) return
-    const c = new AbortController()
-    const readRestaurant = catalog.restaurant(restaurantId, c.signal).then(value => ({ status: 'ready' as const, value }), failure)
-    const readDishes = ids.split(',').map(async id => {
-      const value = await catalog.dish(id, c.signal).then(value => value.restaurant_id === restaurantId ? { status: 'ready' as const, value } : { status: 'missing' as const }, failure)
-      return [id, value] as const
-    })
-    Promise.all([readRestaurant, Promise.all(readDishes)]).then(([restaurant, dishes]) => {
-      if (!c.signal.aborted) setValidation({ key, status: 'ready', restaurant, dishes: Object.fromEntries(dishes) })
-    })
-    return () => c.abort()
-  }, [catalog, restaurantId, ids, key])
-  const current = validation?.key === key ? validation : null
-  function acceptPrices() {
-    if (!draft || !current || current.restaurant.status !== 'ready' || !orderable(current.restaurant.value)) return
-    const prices: Record<string, string> = {}
-    for (const item of draft.items) {
-      const result = current.dishes[item.id]
-      if (result?.status !== 'ready') return
-      if (result.value.is_available) prices[item.id] = result.value.price_vnd
-    }
-    dispatch({ type: 'accept-prices', restaurantId: draft.restaurant.id, prices })
-  }
-  const issue = !draft ? 'Giỏ hàng đang trống.' : !current ? 'Đang kiểm tra giá và tình trạng món…'
-    : current.restaurant.status === 'error' ? 'Chưa kiểm tra được quán. Hãy thử kiểm tra lại giỏ.'
-    : current.restaurant.status === 'missing' ? 'Quán không còn công khai. Giỏ hàng được giữ nguyên.'
-    : current.restaurant.status !== 'ready' ? 'Chưa kiểm tra được quán. Hãy thử kiểm tra lại giỏ.' : orderabilityReason(current.restaurant.value) || (draft.items.some(i => current.dishes[i.id]?.status !== 'ready') ? 'Chưa xác minh được tất cả món. Hãy kiểm tra lại giỏ.'
-      : draft.items.some(i => { const d = current.dishes[i.id]; return d.status === 'ready' && !d.value.is_available }) ? 'Có món đang tạm hết. Hãy xem lại giỏ.' : '')
-  return { draft, undo, undoRemove: () => { dispatch({ type: 'undo-remove' }); refresh() }, current, issue, storageWarning, notice, pending, count: itemCount(draft), subtotal: subtotal(draft), refresh,
-    add: (restaurant: CartRestaurant, dish: CartDish) => dispatch({ type: 'add', restaurant, dish }), acceptPrices,
-    quantity: (id: string, quantity: number) => dispatch({ type: 'quantity', id, quantity }),
-    remove: (id: string) => dispatch({ type: 'remove', id }), clear: () => dispatch({ type: 'clear' }),
-    cancelSwitch: () => dispatch({ type: 'cancel-switch' }), confirmSwitch: () => dispatch({ type: 'confirm-switch' }) }
-}
-type CartState = ReturnType<typeof useCartState>
-export const CartContext = createContext<CartState | null>(null)
-export function useCart() {
-  const cart = useContext(CartContext)
-  if (!cart) throw new Error('CartProvider required')
-  return cart
-}
+type CartState=ReturnType<typeof useCartState>
+export const CartContext=createContext<CartState|null>(null)
+export function useCart(){const cart=useContext(CartContext);if(!cart)throw new Error('CartProvider required');return cart}

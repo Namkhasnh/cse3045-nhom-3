@@ -1,5 +1,7 @@
 # Database Design — Hoa Lac Food Ordering Platform
 
+> October25 COD cutover: [approved operating/API/history contract](../cod-ordering.md) supersedes new-order cash/QR selection, QR authoring/review and platform voucher issuance/redemption. Legacy payment/refund and accepted voucher subsidy obligations remain. Prior verification is historical.
+
 ## 1. Authority, scope and implementation boundary
 
 - Business authority: [requirements.md](../requirements.md), especially §§6–7 and §9; architecture authority: [architecture.md](../architecture.md), especially §§3–7, §9 and §12.
@@ -177,7 +179,7 @@ A delivery quote is not a payment transaction. Approved DEC-05 uses a random opa
 
 ### 4.3. Orders, items, history and durable idempotency
 
-`orders` — common: `id`, `created_at`, `updated_at`, `version`.
+`orders` — common: `id`, `created_at`, `updated_at`, `version`. Public `order_code` is immutable VARCHAR(12), ASCII binary, NOT NULL/UNIQUE/CHECK `HLF-[2-9A-HJ-NP-Z]{8}`. Backend CSPRNG generation and bounded unique-collision retry occur inside order creation; a compatible random SQL default supports old INSERT clients. The forward migration assigns codes to legacy orders without changing IDs/snapshots/history; [contract and rehearsal](../ui/owner-orders-figma.md).
 
 | Column | Type | Null | Default | Meaning / keys |
 | --- | --- | --- | --- | --- |
@@ -239,8 +241,8 @@ Payment state lives in **`order_payments`**, not in `orders` and not in a platfo
 | Table.column | Type | Null | Default | Meaning / keys |
 | --- | --- | --- | --- | --- |
 | order_payments.order_id | ID | N | — | PK, FK → orders.id |
-| order_payments.method | ENUM(cash, qr) | N | — | Direct restaurant payment; cash V0.5, direct QR V0.6, both required V1.0 |
-| order_payments.status | ENUM(unpaid, paid, refund_pending, refunded) | N | unpaid | Independent payment lifecycle |
+| order_payments.method | ENUM(cash, qr, cod) | N | cod | New COD; cash/QR historical only |
+| order_payments.status | ENUM(unpaid, paid, refund_pending, refunded, not_required, not_tracked) | N | not_tracked | New COD untracked or zero-total not_required; historical payment facts preserved |
 | order_payments.confirmed_by | ID | Y | NULL | FK → accounts.id; actual restaurant confirmer |
 | order_payments.confirmed_at | DATETIME(3) | Y | NULL | Receipt confirmation instant |
 | order_payments.refunded_by | ID | Y | NULL | FK → accounts.id; restaurant actor recording refund |
@@ -325,10 +327,10 @@ Audit dish/restaurant edits and deletes, policy/rate/owner changes, order transi
 
 ## 5. Enums and permitted state changes
 
-Target ordinary identity is user; management derives from current unique ownership. Sole Admin derives from `admin_authority`. P01 retains the `student|restaurant_owner|admin` enum for expansion-window compatibility while explicitly mapping retained privileged accounts to student and revoking old sessions. Its values grant no authority in current code; future column removal requires a separate compatibility/retention review. Canonical methods “cash” and “QR transfer” map to `cash`, `qr`. SQL ENUM restricts values only; it cannot enforce actor permissions or transition paths.
+Target ordinary identity is user; management derives from current unique ownership. Sole Admin derives from `admin_authority`. P01 retains the `student|restaurant_owner|admin` enum for expansion-window compatibility while explicitly mapping retained privileged accounts to student and revoking old sessions. Its values grant no authority in current code; future column removal requires a separate compatibility/retention review. New pay-on-delivery maps to `cod`; historical “cash” and “QR transfer” map to `cash`, `qr`. SQL ENUM restricts values only; it cannot enforce actor permissions or transition paths.
 
 - Order: initial `pending`; `pending → accepted | rejected | cancelled`; `accepted → delivering`; `delivering → completed`. Rejected/cancelled/completed are terminal. Student cancellation is limited to their own pending order; the owner handles acceptance/rejection/delivery/completion and supplies a rejection reason.
-- Payment: `unpaid`, `paid`, `refund_pending`, `refunded`, governed separately as in §4.4. Scanning QR or reporting a transfer is never confirmation.
+- Payment: new COD `not_tracked`/zero-total `not_required`; legacy `unpaid`, `paid`, `refund_pending`, `refunded`, governed separately as in §4.4. Scanning QR or reporting a transfer is never confirmation.
 - Base/adjustment are entry kinds, not payment statuses. Available/sold-out/hidden menu display derives from booleans; no invented order statuses such as preparing, shipping or failed.
 - **BE:** authorize first; requesting the current status is a no-op with no extra history/audit/commission. Requesting an older status after progress is a conflict. Admin has no implicit owner permission to transition orders or confirm payments.
 
@@ -486,3 +488,12 @@ The approved [notification contract](../notifications-contract.md) adds `notific
 ## Optional restaurant storefront extension — October 24
 
 User-approved nullable introduction/current-cover pointer and separate same-restaurant cover metadata use the forward migration and constraints documented in the [storefront persistence contract](../ui/restaurant-detail-figma.md#persistence-and-storage). Cover lifecycle cleanup is independent of dish media; immutable snapshots/readiness criteria are unchanged. Runtime grant additions are reviewable SQL only, not proof of retained adoption.
+
+### Owner analytics read index — October 24
+
+[Additive migration](../../backend/prisma/migrations/20261024020000_owner_analytics/migration.sql) adds `orders_owner_analytics_idx(restaurant_id,status,completed_at,id)`. The bounded owner dashboard aggregates completed-order subtotal and immutable order-item snapshots in one account→restaurant-locked transaction; no analytics table, cached financial fact or new runtime table grant is introduced. [Analytics contract and verification](../ui/owner-analytics.md).
+
+## Checkout/voucher storage extension
+
+The October 25, 2026 user-approved [checkout/voucher contract](../checkout-vouchers.md) extends this specification: owner-funded restaurant codes, historical platform-funded global codes (no new issuance/redemption), pre-discount commission, preserved legacy completion subsidies, exact discounted totals and independent `not_required` payment for new zero-total orders. It supersedes earlier conflicting no-discount formulas only within this capability. Vouchers own definitions/redemptions; orders own immutable discount snapshots; commissions own subsidy ledger entries.
+Optional restaurant imagery: [cover/avatar contract](../ui/restaurant-images.md) defines `restaurants.avatar_media_asset_id`, its same-restaurant composite FK to existing sanitized media, and lifecycle checks across both image references. Migration `20261025020000_restaurant_avatar` preserves existing cover/content and initializes avatar to NULL.

@@ -1,5 +1,7 @@
 # Implementation and Evidence Status
 
+Current scoped COD/owner-only-voucher changes and measured verification: [COD evidence](cod-verification.md). Earlier cash/QR implementation evidence remains historical; no retained/production cutover is implied.
+
 ## Accepted P25 account/support/audit — October21,2026
 
 [Approved DEC-08](account-support-policy-proposal.md) and [P25 self-review/evidence](progress/P25.md) accept isolated synthetic account suspension/restricted obligations, compromised-password recovery, six-state scoped support, protected holds/retention and bounded redacted audit. Backend lint/49unit/8HTTP/build/Prisma,18real-MySQL cases,14P25 SQL denials,12legacy restricted-runtime cases and forward upgrade preservation PASS. Frontend lint/build/cart6/orders10/finance3 and actual Chrome response-loss/account-switch/foreign-ID/self-suspension/recovery/keyboard/five-width checks PASS; selected screenshots visually inspected. [Reproduction and adoption boundary](account-support-local-verification.md).
@@ -259,3 +261,29 @@ October23 P29 independent Linux preparation: [handoff](staging-next-step.md)/[re
 ## October24 scoped restaurant storefront
 
 [Implemented storefront and content interfaces](ui/restaurant-detail-figma.md) and [self-review evidence](ui/restaurant-detail-verification.md) cover restaurant detail, buyer compact footer, shared-cart drawer and owner cover/introduction management. Isolated MySQL9.2.0/MinIO/Chrome verification passed; retained migration/VPS adoption was not run.
+
+## Owner analytics extension — October 24, 2026
+
+The owner dashboard now connects today's completed-order dish revenue, dense 7/30-day chart and top3 historical dish rankings to an owner-only backend read API. [Scoped implementation and evidence](ui/owner-analytics.md) distinguish MySQL/HTTP/browser checks and the additive index from retained/production migration or release acceptance. Monthly financial policy and existing fulfillment/payment writes remain unchanged.
+
+## Owner order redesign and public references — October 24, 2026
+
+IMPLEMENTED: Figma-style owner Kanban/list/drawer with server-side filters/counts and the existing acceptance/food-ready/delivery/payment workflow. Shared immutable public order codes now appear in buyer checkout/history/tracking, owner dashboard/orders, new notifications and ledger reconciliation. [Scoped verification](ui/owner-orders-figma.md) records synthetic MySQL9.2.0 migration/rollback/race, automated and Chrome evidence separately. Retained development/VPS migration and deployment remain NOT RUN; this is not a version/release acceptance claim.
+
+## Local order API schema repair — October 24, 2026
+
+IMPLEMENTED/VERIFIED: retained local owner-list500s came from the absent `orders.order_code` column. Backed-up forward adoption now applies the analytics/code migrations, preserving62original business tables and all original order/payment/financial facts; all6orders have unique public codes. [Receipt](local-runtime-order-code-repair.md) records actual signed-in owner views,71unit/9HTTP E2E/22real-MySQL integration and34frontend unit evidence. VPS/production remains NOT RUN.
+
+## Cart permissions and transient feedback — October 25, 2026
+
+IMPLEMENTED/VERIFIED: [Admin quote403 repair](ui/cart-figma.md#admin-quote403-repair--october-25-2026) aligns self capabilities with existing buyer denial and explains the restriction while retaining the cart. [Action feedback](ui/action-feedback.md) adds local floating acknowledgements without inbox persistence. Backend72unit/9HTTP E2E/real-MySQL delivery checks and frontend37unit/controlled cart/connected checkout checks pass; lint/build pass. Actual Edge cart shows the corrected Admin state. VPS deployment is on hold at the user's request; no remote update has occurred.
+
+## Scoped checkout/voucher extension — October25,2026
+
+Implemented profile-driven checkout review, inherited cart quote/point, dedicated acknowledged success, owner/platform vouchers, exact discounted order snapshots, independent zero-total payment and completion subsidy reconciliation. See [contract](checkout-vouchers.md) and [measured verification](ui/checkout-verification.md) for current evidence and migration boundaries. No retained adoption, real partner publication, release or deployment is claimed.
+
+Subsequent local502repair: [backed-up checkout schema adoption](local-checkout-runtime-repair.md) now verifies32applied migrations, unchanged original62business tables, restricted grants, restored API availability and actual Edge login/cart rendering on `hlf_dev_flow`. This supersedes the retained local boundary above for that target only; no production deployment or retained financial mutation is claimed.
+
+## Purchase history, reorder and grouped checkout — October25,2026
+
+IMPLEMENTED/VERIFIED: [approved extension and evidence](ui/purchase-history-figma.md) redesigns buyer history with server search/counts and current public imagery, enables direct reorder, grouped checkbox carts and one confirmation for independent per-restaurant orders/fees. Existing order snapshots, per-order idempotency and legacy recovery remain. Frontend/backend lint/build,76backend unit/9HTTP E2E, real-MySQL order/query/privacy checks,25frontend unit cases, controlled multi-restaurant Chrome and connected delivery/checkout checks pass. Local browser observation confirms actual dish photos; the local restaurant has no cover image. No new database migration or deployment; existing unrelated workspace work is preserved.

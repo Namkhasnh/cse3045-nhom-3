@@ -40,6 +40,43 @@ class RollbackTests(unittest.TestCase):
             self.assertEqual([c.args for c in docker.call_args_list], [('rename', 'old-api', updater.API), ('start', updater.API), ('start', updater.STORAGE)])
             self.assertEqual(json.loads((release / 'state/update-state.json').read_text())['result'], 'ROLLED BACK')
 
+    def test_new_cod_facts_block_rollback_and_keep_maintenance(self):
+        with tempfile.TemporaryDirectory() as folder:
+            release = Path(folder)
+            (release / 'state').mkdir()
+            target = release / 'nginx.conf'
+            target.write_text('server_name ' + updater.HOST + '; root new;')
+            state = {'id': 'ours', 'schema_verified': True, 'nginx_target': str(target),
+                     'nginx_previous': 'server_name ' + updater.HOST + '; root old;',
+                     'owned_nginx_hashes': [updater.sha(target)]}
+            missing = type('Result', (), {'returncode': 1})()
+            with patch.object(updater.subprocess, 'run', return_value=missing), patch.object(updater, 'mysql', return_value=b'1\n'), patch.object(updater, 'docker') as docker, patch.object(updater, 'reload_nginx'):
+                with self.assertRaisesRegex(RuntimeError, 'forward repair'):
+                    updater.rollback(release, state)
+            self.assertIn('return 503;', target.read_text())
+            docker.assert_not_called()
+
+    def test_verified_schema_missing_new_api_can_restore_previous(self):
+        with tempfile.TemporaryDirectory() as folder:
+            release = Path(folder)
+            (release / 'state').mkdir()
+            target = release / 'nginx.conf'
+            target.write_text('server_name ' + updater.HOST + '; root new;')
+            state = {'id': 'ours', 'schema_verified': True, 'previous_api': 'old-api',
+                     'nginx_target': str(target), 'nginx_previous': 'server_name ' + updater.HOST + '; root old;',
+                     'owned_nginx_hashes': [updater.sha(target)]}
+            missing = type('Result', (), {'returncode': 1})()
+            with patch.object(updater.subprocess, 'run', return_value=missing), patch.object(updater, 'mysql', return_value=b'0\n'), patch.object(updater, 'docker') as docker, patch.object(updater, 'reload_nginx'):
+                updater.rollback(release, state)
+            self.assertEqual([c.args for c in docker.call_args_list], [('rename', 'old-api', updater.API), ('start', updater.API), ('start', updater.STORAGE)])
+            self.assertEqual(target.read_text(), state['nginx_previous'])
+
+    def test_unverified_migration_blocks_manual_rollback(self):
+        with patch.object(updater, 'docker') as docker:
+            with self.assertRaisesRegex(RuntimeError, 'Unverified migration'):
+                updater.rollback(Path('/unused'), {'stage': 'forward-migration'})
+            docker.assert_not_called()
+
     def test_unowned_api_is_never_removed(self):
         state = {'id': 'ours', 'previous_api': 'old-api'}
         result = type('Result', (), {'returncode': 0, 'stdout': json.dumps([{'Config': {'Labels': {'hlf.demo.update': 'someone-else'}}}]).encode()})()

@@ -50,7 +50,7 @@ try {
      if(mode==='empty')return page([]);
      if(url.searchParams.get('q')==='Không tồn tại')return page([]);
      const dish=url.pathname.endsWith('/dishes');
-     return page(dish?[{id:'1',restaurant_id:'1',restaurant_name:'Quán kiểm thử VJU',name:'Cơm gà kiểm thử với tên món dài đầy đủ dấu tiếng Việt',price_vnd:'35000',description:'',is_available:true,image_reference:'/images/home/photo-1603133872878-684f208fb84b.jpg'},{id:'2',restaurant_id:'1',restaurant_name:'Quán kiểm thử VJU',name:'Món đã hết',price_vnd:'50000',description:'',is_available:false,image_reference:'/images/missing-ui-test.jpg'},{id:'3',restaurant_id:'2',restaurant_name:'Bếp cộng đồng',name:'Bánh mì trứng',price_vnd:'20000',description:'',is_available:true,image_reference:'/images/home/photo-1715925717150-2a6d181d8846.jpg'}]:[1,2,3].map(id=>({id:String(id),name:id===1?'Quán kiểm thử VJU':'Bếp cộng đồng '+id,address:'VJU',is_active:true,is_open:true,is_accepting_orders:id!==3,min_price_vnd:'20000',max_price_vnd:'50000',hours:[{weekday:1,opens_at:'09:00:00',closes_at:'20:00:00',closes_next_day:false}]})));
+     return page(dish?[{id:'1',restaurant_id:'1',restaurant_name:'Quán kiểm thử VJU',name:'Cơm gà kiểm thử với tên món dài đầy đủ dấu tiếng Việt',price_vnd:'35000',description:'',is_available:true,image_reference:'/images/home/photo-1603133872878-684f208fb84b.jpg'},{id:'2',restaurant_id:'1',restaurant_name:'Quán kiểm thử VJU',name:'Món đã hết',price_vnd:'50000',description:'',is_available:false,image_reference:'/images/missing-ui-test.jpg'},{id:'3',restaurant_id:'2',restaurant_name:'Bếp cộng đồng',name:'Bánh mì trứng',price_vnd:'20000',description:'',is_available:true,image_reference:'/images/home/photo-1715925717150-2a6d181d8846.jpg'}]:[1,2,3].map(id=>({id:String(id),name:id===1?'Quán kiểm thử VJU':'Bếp cộng đồng '+id,address:'VJU',cover_image_reference:id===1?'/images/restaurant/default-cover.jpg':id===2?'/images/missing-restaurant-cover.jpg':null,is_active:true,is_open:true,is_accepting_orders:id!==3,min_price_vnd:'20000',max_price_vnd:'50000',hours:[{weekday:1,opens_at:'09:00:00',closes_at:'20:00:00',closes_next_day:false}]})));
     }
     return response({error:{code:'CONTROLLED_UNAVAILABLE'}},503);
    };`});
@@ -74,6 +74,11 @@ try {
   await call('Emulation.setDeviceMetricsOverride',{width,height:900,deviceScaleFactor:1,mobile:width<768});
   await navigate();await waitText('Quán kiểm thử VJU');await shellCheck(width);
   await until(()=>evaluate("[...document.querySelectorAll('.hero img,.category img')].every(i=>i.complete&&i.naturalWidth>0)"),'Static image failed');
+  await evaluate("document.querySelectorAll('.home-restaurant-card > img').forEach(img=>{img.loading='eager'})");
+  await until(()=>evaluate("document.querySelector('.home-restaurant-card > img')?.naturalWidth>0"),'Saved restaurant cover missing');
+  assert(await evaluate("document.querySelector('.home-restaurant-card > img').getAttribute('src')==='/images/restaurant/default-cover.jpg'"),'Restaurant cover reference lost');
+  await until(()=>evaluate("document.querySelectorAll('.home-restaurant-placeholder').length===2"),'Missing/broken restaurant cover fallback failed');
+  assert(await evaluate("(()=>{const card=document.querySelector('.home-restaurant-card'),img=card.querySelector('img'),a=card.getBoundingClientRect(),b=img.getBoundingClientRect();return Math.abs(a.width-b.width)<2&&Math.abs(a.height-b.height)<2})()"),'Restaurant cover does not fill card');
   await shot('home-'+width);
  }
  await call('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});
@@ -90,11 +95,11 @@ try {
  assert(await evaluate("Math.abs(document.querySelector('.nav-shell').getBoundingClientRect().top)<1"),'Header not sticky');
  await evaluate("window.scrollTo({top:document.body.scrollHeight,behavior:'instant'})");
  assert(await evaluate("document.querySelector('.footer').getBoundingClientRect().bottom<=innerHeight+1"),'Long footer unreachable');
- await mock(user);await navigate();await waitText('Quán kiểm thử VJU');await shellCheck(390);await click('.mobile-menu-button');await waitText('Mở quán ăn');await waitText('Lịch sử mua hàng');await click('.mobile-menu-button');await click('.notification-bell summary');assert(await evaluate("(()=>{const r=document.querySelector('.notification-preview').getBoundingClientRect();return r.left>=0&&r.right<=innerWidth&&r.bottom<=innerHeight})()"),'Notification preview clipped on mobile');await click('.notification-bell summary');await click('.mobile-menu-button');
+ await mock(user);await navigate();await waitText('Quán kiểm thử VJU');await shellCheck(390);await click('.mobile-menu-button');await waitText('Mở quán ăn');await waitText('Lịch sử mua hàng');await click('.mobile-menu-button');await click('.notification-trigger');assert(await evaluate("(()=>{const r=document.querySelector('.notification-popover').getBoundingClientRect();return r.left>=0&&r.right<=innerWidth&&r.bottom<=innerHeight})()"),'Notification preview clipped on mobile');await click('.notification-trigger');await click('.mobile-menu-button');
  assert(await evaluate("document.querySelector('#site-mobile-menu a[href=\"/orders\"]')!==null"),'History destination wrong');
  await mock({...user,managed_restaurant_id:'1',capabilities:['buy','manage_restaurant']});await navigate();await waitText('Quán kiểm thử VJU');await click('.mobile-menu-button');await waitText('Quán của tôi');
  assert(!await evaluate("document.querySelector('#site-mobile-menu').innerText.includes('Mở quán ăn')"),'Owner offered second restaurant');
- await navigate('/owner');await waitText('Tổng quan quán');await shellCheck(390);await shot('owner-390');
+ await navigate('/owner');await waitText('Chào bạn, chủ quán!');await shellCheck(390);await shot('owner-390');
  await mock({...user,capabilities:['admin']});await navigate('/admin');await waitText('Quản trị');await shellCheck(390);
  assert(await evaluate("document.querySelectorAll('.notification-bell').length===1"),'Missing or duplicate bells');await shot('admin-390');
  await call('Emulation.setDeviceMetricsOverride',{width:1440,height:900,deviceScaleFactor:1,mobile:false});await navigate('/admin');await shellCheck(1440);await shot('admin-1440');

@@ -1,28 +1,60 @@
 import {useEffect,useRef,useState,type ReactNode} from 'react'
 import {startPolling} from '../../shared/hooks/polling'
 import {RequestError,requestMessage} from '../../shared/api/request'
-import {NotificationContext,useNotifications} from './context'
+import {NotificationContext} from './context'
 import {notificationsApi,type Notice} from './api'
+import {useNotificationAlerts} from './use-notification-alerts'
+import {NotificationToast} from './NotificationToast'
+import './notifications.css'
 export function NotificationProvider({actor,children}:{actor:string|null;children:ReactNode}){
- const [recent,setRecent]=useState<Notice[]>([]),[unread,setUnread]=useState(0),[error,setError]=useState(''),[ready,setReady]=useState(false)
- const refresh=useRef(()=>{})
+ return <SessionNotificationProvider key={actor??'guest'} actor={actor}>{children}</SessionNotificationProvider>
+}
+function SessionNotificationProvider({actor,children}:{actor:string|null;children:ReactNode}){
+ const [recent,setRecent]=useState<Notice[]>([]),[unread,setUnread]=useState(0),[error,setError]=useState(''),[mutationFailure,setMutationFailure]=useState(''),[ready,setReady]=useState(false),[busy,setBusy]=useState(false),[revision,setRevision]=useState(0),[readIds,setReadIds]=useState<Record<string,string>>({}),[readThrough,setReadThrough]=useState<{id:string;at:string}|null>(null)
+ const {alerts,batches,receive,resetAlerts}=useNotificationAlerts(actor)
+ const refresh=useRef(()=>{}),epoch=useRef(0),locked=useRef(false),alive=useRef(false),fingerprint=useRef('')
  useEffect(()=>{
   if(!actor)return
-  let alive=true,expired=false
-  const polling=startPolling(async signal=>{try{
-   const [summary,page]=await Promise.all([notificationsApi.summary(actor,signal),notificationsApi.list(actor,false,undefined,signal)])
-   if(alive&&!signal.aborted){setUnread(summary.unread_count);setRecent(page.data);setReady(true);setError('')}
-  }catch(e){if(alive&&!signal.aborted){setError(requestMessage(e));if(e instanceof RequestError&&[401,403].includes(e.status)){expired=true;setRecent([]);setUnread(0);setReady(false)}}throw e}}, {enabled:()=>!expired})
+  alive.current=true;let expired=false
+  const polling=startPolling(async signal=>{const token=epoch.current;try{
+   const [summary,page]=await Promise.all([notificationsApi.summary(actor,signal),notificationsApi.list(actor,'all',undefined,signal)])
+   if(alive.current&&!signal.aborted&&token===epoch.current&&!locked.current){
+    receive(page.data)
+    setUnread(summary.unread_count);setRecent(page.data);setReady(true);setError('')
+    const next=JSON.stringify(page.data);if(next!==fingerprint.current){fingerprint.current=next;setRevision(v=>v+1)}
+   }
+  }catch(e){if(alive.current&&!signal.aborted&&token===epoch.current){setError(requestMessage(e));if(e instanceof RequestError&&[401,403].includes(e.status)){expired=true;resetAlerts();setRecent([]);setUnread(0);setReady(false)}}throw e}}, {enabled:()=>!expired})
   refresh.current=()=>{if(!expired)polling.refresh()}
-  return()=>{alive=false;polling.stop();refresh.current=()=>{}}
- },[actor])
- return <NotificationContext.Provider value={{actor,recent,unread,error,ready,refresh:()=>refresh.current()}}>{children}</NotificationContext.Provider>
+  return()=>{alive.current=false;polling.stop();refresh.current=()=>{}}
+ },[actor,receive,resetAlerts])
+ async function mutate<T,>(operation:()=>Promise<T>):Promise<T|null>{
+  if(!actor||locked.current)return null
+  locked.current=true;epoch.current++;setBusy(true);setMutationFailure('')
+  try{return await operation()}catch(e){if(alive.current){setMutationFailure(requestMessage(e));if(e instanceof RequestError&&[401,403].includes(e.status))resetAlerts()}throw e}
+  finally{locked.current=false;epoch.current++;if(alive.current){setBusy(false);refresh.current()}}
+ }
+ async function open(notice:Notice){return mutate(async()=>{
+  if(!actor)return null
+  const read=await notificationsApi.read(actor,notice.id)
+  if(!alive.current)return null
+  setRecent(rows=>rows.map(n=>n.id===read.id?{...n,read_at:read.read_at}:n));setRevision(v=>v+1)
+  if(read.read_at)setReadIds(ids=>({...ids,[read.id]:read.read_at!}))
+  if(read.unread_count!==undefined)setUnread(read.unread_count)
+  const detail=await notificationsApi.detail(actor,notice.id)
+  return alive.current?detail:null
+ })}
+ async function readAll(){return (await mutate(async()=>{
+  if(!actor)return
+  const result=await notificationsApi.readAll(actor)
+  if(!alive.current)return
+  if(result.read_through_id&&result.read_at)setReadThrough({id:result.read_through_id,at:result.read_at})
+  setUnread(result.unread_count);setRevision(v=>v+1)
+  // Refetch authoritative timestamps and any messages arriving after the server cutoff.
+  const page=await notificationsApi.list(actor).catch(()=>null)
+  if(alive.current&&page)setRecent(page.data)
+  return true
+ }))===true}
+ function applyRead(n:Notice):Notice{const at=readIds[n.id]??(readThrough&&BigInt(n.id)<=BigInt(readThrough.id)?readThrough.at:null);return !n.read_at&&at?{...n,read_at:at}:n}
+ return <NotificationContext.Provider value={{alerts,actor,recent:recent.map(applyRead),applyRead,unread,error:error||mutationFailure,ready,busy,revision,refresh:()=>{setMutationFailure('');refresh.current()},open,readAll}}>{children}{actor&&batches.map(batch=><NotificationToast key={batch.notice.id} batch={batch} onClose={()=>alerts.dismissAlert(batch.notice.id)} onOpen={open}/>)}</NotificationContext.Provider>
 }
-export function NotificationBell(){
- const {actor,recent,unread,error,ready,refresh}=useNotifications(),details=useRef<HTMLDetailsElement>(null)
- if(!actor)return null
- return <details className="notification-bell" ref={details} onKeyDown={e=>{if(e.key==='Escape'&&details.current){details.current.open=false;details.current.querySelector('summary')?.focus()}}}>
-  <summary aria-label={'Thông báo, '+unread+' chưa đọc'} onClick={refresh}><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><span>Thông báo</span>{unread>0&&<span className="notification-count">{unread>99?'99+':unread}</span>}</summary>
-  <section className="notification-preview" aria-label="Thông báo mới nhất"><h2>Thông báo</h2>{error&&<p role="alert">{error} <button onClick={refresh}>Thử lại</button></p>}{!ready&&!error?<p role="status">Đang tải thông báo…</p>:!recent.length&&!error?<p>Bạn chưa có thông báo.</p>:<ul>{recent.slice(0,5).map(n=><li key={n.id}><a href={'/notifications?message='+n.id}>{!n.read_at&&<span className="notification-dot" aria-label="Chưa đọc"/>}{n.title}</a><small>{new Date(n.created_at).toLocaleString('vi-VN')}</small></li>)}</ul>}<a href="/notifications">Xem hộp thư</a></section>
- </details>
-}
+export {NotificationBell} from './NotificationBell'

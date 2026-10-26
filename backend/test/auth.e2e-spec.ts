@@ -110,6 +110,7 @@ test('Student auth HTTP journey checks cookie, CSRF, profile version and logout 
     const csrf = cookies.find(value => value.startsWith('__Host-hlf_csrf='))?.split(';')[0];
     assert.ok(access && csrf);
     assert.match(cookies[0], /Secure/);
+    for (const value of cookies) assert.doesNotMatch(value, /(?:Max-Age|Expires)=/i);
     const cookie = `${access}; ${csrf}`;
     const me = await contractFetch(base, '/auth/me', { headers: { cookie } });
     assert.equal(me.status, 200);

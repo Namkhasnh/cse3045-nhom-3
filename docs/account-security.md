@@ -8,7 +8,9 @@ Public registration accepts username, email, password, display name and optional
 
 Account authority is ordinary user or singleton Admin; P01 retains the old role enum as compatibility storage and maps cutover identities to student. That enum grants no authority. Management derives from current unique ownership. Target self DTO contains account-safe fields plus `capabilities` and nullable `managed_restaurant_id`; these are computed server-side and never accepted as input or treated as lasting token authority. `/auth/me` is private, not a public account directory.
 
-Preserve API §2 username/password/hash, 15-minute cookie JWT, origin/CSRF, login limits, key rotation and auth-version revocation. Every protected request rechecks current availability/ownership. Existing session claims are not sufficient after migration or reassignment.
+The sole authority receives only `admin` when active and MFA-enrolled, never `buy`, `apply_for_restaurant` or inherited management. Before MFA enrollment it receives no ordinary capabilities. Its self DTO has a null `managed_restaurant_id` even if inconsistent legacy ownership exists; ordinary managers keep `buy` plus their one-restaurant management capability. Cart UI explains this restriction and preserves the local draft instead of attempting forbidden quote requests. This implements requirements §4.1; it grants no new Admin powers.
+
+Preserve API §2 username/password/hash, browser-session cookie JWT without an elapsed-time/inactivity timeout, origin/CSRF, login limits, key rotation and auth-version revocation. Every protected request rechecks current availability/ownership. Existing session claims are not sufficient after migration or reassignment.
 
 ## 2. Exactly one Admin
 

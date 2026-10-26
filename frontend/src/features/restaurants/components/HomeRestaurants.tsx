@@ -1,3 +1,5 @@
+import { useState } from 'react'
+import { RestaurantAvatar } from './RestaurantAvatar'
 import { Icon } from '../../../shared/ui/Icon'
 import { Button } from '../../../shared/ui/Button'
 import { ListState } from '../../../shared/ui/ListState'
@@ -5,6 +7,12 @@ import { formatVnd } from '../../../shared/lib/format'
 import { summary, type Restaurant } from '../api/catalog.api'
 import { useCatalog } from '../hooks/use-catalog'
 import type { RestaurantFilterValues } from '../types'
+function HomeRestaurantImage({ source, name }: { source?: string | null; name: string }) {
+  const [failed, setFailed] = useState(false)
+  return source && !failed
+    ? <img src={source} alt={`Ảnh bìa ${name}`} loading="lazy" onError={() => setFailed(true)} />
+    : <div className="home-restaurant-placeholder" role="img" aria-label={`Chưa có ảnh quán ${name}`}><Icon name="bowl" /><span>Chưa có ảnh quán</span></div>
+}
 export function HomeRestaurants({ filters, onReset }: { filters: RestaurantFilterValues; onReset: () => void }) {
   const catalog = useCatalog<Restaurant>(filters)
   const hasFilters = Boolean(filters.query || filters.category !== 'all' || filters.priceRange !== 'all')
@@ -17,10 +25,10 @@ export function HomeRestaurants({ filters, onReset }: { filters: RestaurantFilte
       : <div className="home-restaurant-grid" tabIndex={0} aria-label="Danh sách quán ăn, có thể cuộn ngang trên điện thoại">{catalog.data.map(restaurant => {
         const row = summary(restaurant)
         return <article className="home-restaurant-card" key={restaurant.id}>
-          <div className="home-restaurant-placeholder" role="img" aria-label={`Chưa có ảnh quán ${restaurant.name}`}><Icon name="bowl" /><span>Chưa có ảnh quán</span></div>
+          <HomeRestaurantImage key={row.imageSrc} source={row.imageSrc} name={restaurant.name} />
           <div className="home-restaurant-shade" /><div className="home-restaurant-content">
             <div className="home-restaurant-meta"><span><i />{!restaurant.is_open ? 'Đã đóng cửa' : restaurant.is_accepting_orders ? 'Đang nhận đơn' : 'Tạm ngưng nhận đơn'}</span></div>
-            <h3><a href={`/restaurants/${restaurant.id}`}>{restaurant.name}</a></h3>
+            <div className="home-restaurant-identity"><RestaurantAvatar key={restaurant.avatar_image_reference} source={restaurant.avatar_image_reference} name={restaurant.name}/><h3><a href={`/restaurants/${restaurant.id}`}>{restaurant.name}</a></h3></div>
             <p>{row.hours}<br />{restaurant.min_price_vnd === null ? 'Chưa có giá món' : `Món: ${formatVnd(restaurant.min_price_vnd)}${restaurant.max_price_vnd && restaurant.max_price_vnd !== restaurant.min_price_vnd ? ` – ${formatVnd(restaurant.max_price_vnd)}` : ''}`}</p>
             <a href={`/restaurants/${restaurant.id}`}>Xem quán & thực đơn <Icon name="arrow" /></a>
           </div>

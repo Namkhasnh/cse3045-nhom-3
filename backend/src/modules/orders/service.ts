@@ -13,8 +13,10 @@ import {OrdersRepository} from './orders.repository.js';
  create(...a:Parameters<OrdersRepository['create']>){return this.repo.create(...a);}
  item(...a:Parameters<OrdersRepository['item']>){return this.repo.item(...a);}
  history(...a:Parameters<OrdersRepository['history']>){return this.repo.history(...a);}
+ notificationReference(...a:Parameters<OrdersRepository['notificationReference']>){return this.repo.notificationReference(...a);}
  read(...a:Parameters<OrdersRepository['read']>){return this.repo.read(...a);}
  restaurant(...a:Parameters<OrdersRepository['restaurant']>){return this.repo.restaurant(...a);}
+ counts(...a:Parameters<OrdersRepository['counts']>){return this.repo.counts(...a);}
  list(...a:Parameters<OrdersRepository['list']>){return this.repo.list(...a);}
 }
-export {orderInput,subtotal} from './policy.js';
+export {orderInput,requireCod,subtotal} from './policy.js';

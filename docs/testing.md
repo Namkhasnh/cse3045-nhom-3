@@ -123,7 +123,7 @@ US19–20 are Could: add detailed cases only when selected and specified. US21�
 - Verify `/api/v1`, `snake_case`, success/list/error envelopes, documented HTTP status and replay headers. Reject unknown fields, server-controlled totals/rates/status/actor fields, duplicate dish IDs and unsupported filters/sorts.
 - Preserve canonical string IDs/money, eight-decimal fraction rates, UTC instants and integer counts/metres/versions. Test negative/exponent/decimal/leading-zero IDs, bounds, rate excess precision and aggregate overflow. Signed adjustments/balances are valid; receipt amounts must be positive.
 - Verify stable keyset ordering/tie-breakers, limit 20/default and 100/max, scope/filter-bound cursors and 422 for invalid/mismatched cursors. Search collation expectations remain pending until deployment collation is recorded.
-- Validate enabled schemas/examples against [OpenAPI](data/openapi.yaml). V0.1 auth/profile examples/references and actual HTTP/SMTP exchanges are checked by `test:e2e`/`test:smtp` with Ajv. V0.2 adds public catalog schemas/examples and actual HTTP/MySQL response validation in `test:integration`. Client SDK generation and later endpoint contracts are not claimed. Auth tests follow API §2 username/Argon2id, 15-minute cookie JWT, versioned logout and bound CSRF protocol. Cover wrong Origin, missing/mismatched CSRF, expired/revoked JWT, key rotation and no refresh endpoint.
+- Validate enabled schemas/examples against [OpenAPI](data/openapi.yaml). V0.1 auth/profile examples/references and actual HTTP/SMTP exchanges are checked by `test:e2e`/`test:smtp` with Ajv. V0.2 adds public catalog schemas/examples and actual HTTP/MySQL response validation in `test:integration`. Client SDK generation and later endpoint contracts are not claimed. Auth tests follow API §2 username/Argon2id, browser-session cookie JWT without a time/inactivity timeout, versioned logout and bound CSRF protocol. Cover wrong Origin, missing/mismatched CSRF, expired legacy/revoked JWT, key rotation and no refresh endpoint. AUTH-01 must verify ordinary and MFA sessions after prolonged inactivity, cookies without Max-Age/Expires, and continued logout/account-version revocation.
 
 ## 6. Pricing, quotes and historical records
 
@@ -226,7 +226,7 @@ The requirement thresholds are proposed acceptance targets to measure, not achie
 | --- | --- |
 | NFR01 | In a documented staging-like environment run restaurant/dish list loads with 50 concurrent user sessions. Record dataset size, filter mix, browser/network/server/DB resources, polling background load, warm-up, measured duration, cache state, sample count and failures. Measure from user load action to usable rendered list; API/DB timings diagnose. At least 95% of measured loads finish successfully within 2 s; include errors/timeouts in denominator. Duration/dataset are agreed run parameters, not invented product thresholds. |
 | NFR02 | Measure recommendation request-to-result at client plus backend/provider stages. Report all requests, completion/error/timeout rates and latency distribution; target ≥95% within 5 s, visible retry/manual state at 10 s. Mock clocks verify control flow; selected live provider with synthetic fixtures establishes real latency/quality/cost. Record prompt/schema/model/config versions, workload and billed retries; rubric/cost limits remain TBD. |
-| NFR03 | Verify HTTPS deployment and redirects, approved password hash configuration (no plaintext), JWT signature/expiry/issuer/audience, active-account/ownership checks and no backend secrets in bundle. Verify `__Host-` cookie flags, exact Origin and session-bound CSRF rejection, versioned logout, and no refresh endpoint; no permissive credentialed CORS. |
+| NFR03 | Verify HTTPS deployment and redirects, approved password hash configuration (no plaintext), JWT signature/issuer/audience and legacy expiry, active-account/ownership checks and no backend secrets in bundle. Verify `__Host-` cookie flags, exact Origin and session-bound CSRF rejection, versioned logout, and no refresh endpoint; no permissive credentialed CORS. |
 | NFR04/05 | PRICE, HIST, IDEM, STATE and FIN suites supply exact arithmetic, durable recovery and repeat/race evidence; retain invariant assertions and safe response references. |
 | NFR06 | Record viewport/browser and screenshots for complete browse → point → order → track at 360 px with no full-page horizontal scroll. |
 | NFR07 | Inspect redacted audit facts for actor/time/target/change content and injected audit rollback. Operational telemetry does not replace business audit. |
@@ -349,3 +349,35 @@ NOTIFY-01 covers real MySQL9.2.0 scoped inbox/read-loaded races, bootstrap dedup
 ## Scoped account and owner workspace evidence
 
 [Account/owner verification](ui/workspaces-figma.md) covers the separated shells, five-width rendering, profile validation/save/conflict, checklist refresh, native mobile drawer, safe return and legacy settings anchors. `npm --prefix frontend run test:workspaces` uses isolated Chrome with controlled API responses. Existing `test:settings` additionally checks actual account-profile save/reload against its disposable MySQL backend; `test:setup` verifies readiness and explicit receiving through real APIs. These are scoped UI checks, not release acceptance.
+
+## Notification redesign regression — October 24
+
+NOTIFY-01 additionally covers All/Unread/Read and category filters, legacy loaded-ID compatibility, full-mailbox idempotency, independent-connection insertion between cutoff and update, persisted timestamps/counts, foreign mailbox isolation, rejected arbitrary destinations and buyer/current-owner/removed-owner routes. Order integration asserts that reading leaves order/payment/commission data unchanged.
+
+NOTIFY-02: `npm --prefix frontend run test:notifications` uses controlled transport fixtures and real Chrome for standalone layout, five widths, loading/empty/failure/retry, read-state persistence across reload, synchronized counters, read-all beyond the first page, keyboard/Escape/focus, scrolling bounds, reduced motion and destination navigation. These fixtures do not prove backend persistence. `test:setup` retains real authenticated MySQL/HTTP browser evidence for read-on-click and current guidance. See [redesign reference](ui/notifications-figma.md) and [actual verification](notifications-verification.md).
+
+### Incoming notification alert regression — October 24
+
+NOTIFY-02 also covers popup/sound defaults and independent toggles, account/browser preference persistence and blocked-storage fallback, initial-load suppression, exact new IDs, burst/poll deduplication, auto-expiry and hover/focus pausing, failed read/detail retry, authorized detail routing, bell dismissal and session/account/logout cleanup. Real Chrome Web Audio nodes verify explicit activation, controlled blocked resume, one chime per batch, reload reactivation and stopping. Subjective listening remains separate from automated audio scheduling evidence; see [actual results](notifications-verification.md#october-24-incoming-popup-and-optional-chime).
+
+## Local website regression — October 24
+
+[Runtime repair and regression evidence](website-local-verification.md) separates retained-local migration preservation, startup schema-gate tests, actual signed-in read-only observation, controlled browser fixtures and fresh-database connected journeys. Connectivity alone is not schema readiness; the current startup gate does not automatically migrate.
+
+## Owner dashboard analytics — October 24
+
+`DASH-01` (US15; BR20–22; U/I/E) covers completed_at-based Vietnam-day windows, exact dish-only revenue regardless of receipt state, dense zero days, snapshot rankings, owner isolation, invalid queries, stale/aborted UI responses and consistent aggregate reads. `npm --prefix backend run test:owner-analytics` requires a fresh/disposable loopback test database with reviewed migrations; `npm --prefix frontend run test:owner-analytics` runs connected Chrome against that test backend. `test:workspaces` also covers 7/30 switches, delayed responses, exact large money, errors/forbidden clearing and the daily table with controlled responses. [Contract, commands and measured evidence](ui/owner-analytics.md).
+
+## Owner order redesign checks
+
+[Scoped evidence](ui/owner-orders-figma.md) covers STATE-01, AUTH-02, IDEM-01, HIST-01, RACE-01, PAY-01/02 and FIN-02. `node --test frontend/test/owner-orders.test.mjs` checks Vietnam filter bounds and the separate food-ready action. `frontend/scripts/browser-owner-orders.mjs` exercises controlled API states in real Chrome; connected fulfillment/tracking/payments remain separate real API journeys. `backend/scripts/verify-order-code-upgrade.mjs` requires an explicitly created empty loopback `test_*` MySQL9.2.0 target and preserves 25 pre-code order snapshots/history through upgrade. Never run it on retained/shared data.
+
+## Retained local order-code repair regression
+
+[Local repair receipt](local-runtime-order-code-repair.md) separates retained backup/restore/adoption and actual page observation from71backend units,9HTTP E2E,22disposable-MySQL integration,34frontend units and9browser suites. It also records the startup-gate regression for the pre-code schema and incomplete release marker. Tests never reset retained data; browser mutations remain synthetic.
+
+Checkout/vouchers: [approved contract](checkout-vouchers.md) and [scoped verification](ui/checkout-verification.md) add VOUCHER-01/VOUCHER-RACE-01, zero-total payment, profile binding, inherited quote consent, quota races, unique subsidies and forward-upgrade preservation. `test:voucher-upgrade` requires a new empty local `test_*` target; browser scripts share ports and must run sequentially.
+
+## COD and owner-only voucher cutover — October25
+
+[Policy](cod-ordering.md) and [measured verification](cod-verification.md) own COD-01 and updated VOUCHER-01/RACE-01/FIN-01/02/PAY-02 evidence. New orders use COD/not_tracked (zero totals not_required); cash collection and QR cases now use explicit synthetic historical fixtures. `npm --prefix backend run test:cod-upgrade` requires a new empty loopback test_* MySQL9.2.0 database and verifies legacy QR receipts/refunds, voucher snapshots/redemptions, signed ledger and checksums. Browser checkout/fulfillment/tracking/payments/finance suites share ports and run sequentially on a separate disposable database.

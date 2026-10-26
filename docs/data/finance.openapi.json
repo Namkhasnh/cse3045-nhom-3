@@ -16,7 +16,7 @@
         "tags": [
           "V0.7 finance"
         ],
-        "description": "Approved DEC-07.2026-10-21.v1. Current owner reads own restaurant; sole MFA Admin writes. Append-only facts and signed exact balances. Lists ascending numeric ID; report rows ascending month. Statement create category C requires unique-month/entry-set recovery before another create. Supporting evidence is Admin-only; all writes commit required audit/result atomically.",
+        "description": "Approved DEC-07.2026-10-21.v1 baseline with October25 voucher extension DEC-07.2026-10-25.v2. Signed voucher_subsidy entries are included in balances and shown separately. Current owner reads own restaurant; sole MFA Admin writes. Append-only facts and signed exact balances. Lists ascending numeric ID; report rows ascending month. Statement create category C requires unique-month/entry-set recovery before another create. Supporting evidence is Admin-only; all writes commit required audit/result atomically.",
         "parameters": [
           {
             "in": "header",
@@ -100,6 +100,15 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "order_code",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "pattern": "^HLF-[2-9A-HJ-NP-Z]{8}$"
+            },
+            "description": "Exact public code scoped to the authorized restaurant."
           }
         ],
         "security": [
@@ -177,7 +186,7 @@
         "tags": [
           "V0.7 finance"
         ],
-        "description": "Approved DEC-07.2026-10-21.v1. Current owner reads own restaurant; sole MFA Admin writes. Append-only facts and signed exact balances. Lists ascending numeric ID; report rows ascending month. Statement create category C requires unique-month/entry-set recovery before another create. Supporting evidence is Admin-only; all writes commit required audit/result atomically.",
+        "description": "Approved DEC-07.2026-10-21.v1 baseline with October25 voucher extension DEC-07.2026-10-25.v2. Signed voucher_subsidy entries are included in balances and shown separately. Current owner reads own restaurant; sole MFA Admin writes. Append-only facts and signed exact balances. Lists ascending numeric ID; report rows ascending month. Statement create category C requires unique-month/entry-set recovery before another create. Supporting evidence is Admin-only; all writes commit required audit/result atomically.",
         "parameters": [
           {
             "in": "header",
@@ -304,7 +313,7 @@
         "tags": [
           "V0.7 finance"
         ],
-        "description": "Approved DEC-07.2026-10-21.v1. Current owner reads own restaurant; sole MFA Admin writes. Append-only facts and signed exact balances. Lists ascending numeric ID; report rows ascending month. Statement create category C requires unique-month/entry-set recovery before another create. Supporting evidence is Admin-only; all writes commit required audit/result atomically.",
+        "description": "Approved DEC-07.2026-10-21.v1 baseline with October25 voucher extension DEC-07.2026-10-25.v2. Signed voucher_subsidy entries are included in balances and shown separately. Current owner reads own restaurant; sole MFA Admin writes. Append-only facts and signed exact balances. Lists ascending numeric ID; report rows ascending month. Statement create category C requires unique-month/entry-set recovery before another create. Supporting evidence is Admin-only; all writes commit required audit/result atomically.",
         "parameters": [
           {
             "in": "header",
@@ -431,7 +440,7 @@
         "tags": [
           "V0.7 finance"
         ],
-        "description": "Approved DEC-07.2026-10-21.v1. Current owner reads own restaurant; sole MFA Admin writes. Append-only facts and signed exact balances. Lists ascending numeric ID; report rows ascending month. Statement create category C requires unique-month/entry-set recovery before another create. Supporting evidence is Admin-only; all writes commit required audit/result atomically.",
+        "description": "Approved DEC-07.2026-10-21.v1 baseline with October25 voucher extension DEC-07.2026-10-25.v2. Signed voucher_subsidy entries are included in balances and shown separately. Current owner reads own restaurant; sole MFA Admin writes. Append-only facts and signed exact balances. Lists ascending numeric ID; report rows ascending month. Statement create category C requires unique-month/entry-set recovery before another create. Supporting evidence is Admin-only; all writes commit required audit/result atomically.",
         "parameters": [
           {
             "in": "header",
@@ -522,7 +531,7 @@
         "tags": [
           "V0.7 finance"
         ],
-        "description": "Approved DEC-07.2026-10-21.v1. Current owner reads own restaurant; sole MFA Admin writes. Append-only facts and signed exact balances. Lists ascending numeric ID; report rows ascending month. Statement create category C requires unique-month/entry-set recovery before another create. Supporting evidence is Admin-only; all writes commit required audit/result atomically.",
+        "description": "Approved DEC-07.2026-10-21.v1 baseline with October25 voucher extension DEC-07.2026-10-25.v2. Signed voucher_subsidy entries are included in balances and shown separately. Current owner reads own restaurant; sole MFA Admin writes. Append-only facts and signed exact balances. Lists ascending numeric ID; report rows ascending month. Statement create category C requires unique-month/entry-set recovery before another create. Supporting evidence is Admin-only; all writes commit required audit/result atomically.",
         "parameters": [
           {
             "in": "path",
@@ -611,7 +620,7 @@
         "tags": [
           "V0.7 finance"
         ],
-        "description": "Approved DEC-07.2026-10-21.v1. Current owner reads own restaurant; sole MFA Admin writes. Append-only facts and signed exact balances. Lists ascending numeric ID; report rows ascending month. Statement create category C requires unique-month/entry-set recovery before another create. Supporting evidence is Admin-only; all writes commit required audit/result atomically.",
+        "description": "Approved DEC-07.2026-10-21.v1 baseline with October25 voucher extension DEC-07.2026-10-25.v2. Signed voucher_subsidy entries are included in balances and shown separately. Current owner reads own restaurant; sole MFA Admin writes. Append-only facts and signed exact balances. Lists ascending numeric ID; report rows ascending month. Statement create category C requires unique-month/entry-set recovery before another create. Supporting evidence is Admin-only; all writes commit required audit/result atomically.",
         "parameters": [
           {
             "in": "path",
@@ -731,7 +740,7 @@
         "tags": [
           "V0.7 finance"
         ],
-        "description": "Approved DEC-07.2026-10-21.v1. Current owner reads own restaurant; sole MFA Admin writes. Append-only facts and signed exact balances. Lists ascending numeric ID; report rows ascending month. Statement create category C requires unique-month/entry-set recovery before another create. Supporting evidence is Admin-only; all writes commit required audit/result atomically.",
+        "description": "Approved DEC-07.2026-10-21.v1 baseline with October25 voucher extension DEC-07.2026-10-25.v2. Signed voucher_subsidy entries are included in balances and shown separately. Current owner reads own restaurant; sole MFA Admin writes. Append-only facts and signed exact balances. Lists ascending numeric ID; report rows ascending month. Statement create category C requires unique-month/entry-set recovery before another create. Supporting evidence is Admin-only; all writes commit required audit/result atomically.",
         "parameters": [
           {
             "in": "path",
@@ -867,7 +876,7 @@
         "tags": [
           "V0.7 finance"
         ],
-        "description": "Approved DEC-07.2026-10-21.v1. Current owner reads own restaurant; sole MFA Admin writes. Append-only facts and signed exact balances. Lists ascending numeric ID; report rows ascending month. Statement create category C requires unique-month/entry-set recovery before another create. Supporting evidence is Admin-only; all writes commit required audit/result atomically.",
+        "description": "Approved DEC-07.2026-10-21.v1 baseline with October25 voucher extension DEC-07.2026-10-25.v2. Signed voucher_subsidy entries are included in balances and shown separately. Current owner reads own restaurant; sole MFA Admin writes. Append-only facts and signed exact balances. Lists ascending numeric ID; report rows ascending month. Statement create category C requires unique-month/entry-set recovery before another create. Supporting evidence is Admin-only; all writes commit required audit/result atomically.",
         "parameters": [
           {
             "in": "path",
@@ -1012,7 +1021,7 @@
         "tags": [
           "V0.7 finance"
         ],
-        "description": "Approved DEC-07.2026-10-21.v1. Current owner reads own restaurant; sole MFA Admin writes. Append-only facts and signed exact balances. Lists ascending numeric ID; report rows ascending month. Statement create category C requires unique-month/entry-set recovery before another create. Supporting evidence is Admin-only; all writes commit required audit/result atomically.",
+        "description": "Approved DEC-07.2026-10-21.v1 baseline with October25 voucher extension DEC-07.2026-10-25.v2. Signed voucher_subsidy entries are included in balances and shown separately. Current owner reads own restaurant; sole MFA Admin writes. Append-only facts and signed exact balances. Lists ascending numeric ID; report rows ascending month. Statement create category C requires unique-month/entry-set recovery before another create. Supporting evidence is Admin-only; all writes commit required audit/result atomically.",
         "parameters": [
           {
             "in": "header",
@@ -1324,7 +1333,8 @@
           "kind": {
             "enum": [
               "base",
-              "adjustment"
+              "adjustment",
+              "voucher_subsidy"
             ]
           },
           "amount_vnd": {
@@ -1380,7 +1390,10 @@
           "policy_version": {
             "anyOf": [
               {
-                "const": "DEC-07.2026-10-21.v1"
+                "enum": [
+                  "DEC-07.2026-10-21.v1",
+                  "DEC-07.2026-10-25.v2"
+                ]
               },
               {
                 "type": "null"
@@ -1397,6 +1410,11 @@
                 "type": "null"
               }
             ]
+          },
+          "order_code": {
+            "type": "string",
+            "pattern": "^HLF-[2-9A-HJ-NP-Z]{8}$",
+            "description": "Included by ledger list; technical order_id remains the write reference."
           }
         },
         "required": [
@@ -1443,7 +1461,10 @@
             "format": "date-time"
           },
           "policy_version": {
-            "const": "DEC-07.2026-10-21.v1"
+            "enum": [
+              "DEC-07.2026-10-21.v1",
+              "DEC-07.2026-10-25.v2"
+            ]
           }
         },
         "required": [
@@ -1485,7 +1506,10 @@
             "format": "date-time"
           },
           "policy_version": {
-            "const": "DEC-07.2026-10-21.v1"
+            "enum": [
+              "DEC-07.2026-10-21.v1",
+              "DEC-07.2026-10-25.v2"
+            ]
           },
           "entry_ids": {
             "type": "array",
@@ -1558,7 +1582,10 @@
             "format": "date-time"
           },
           "policy_version": {
-            "const": "DEC-07.2026-10-21.v1"
+            "enum": [
+              "DEC-07.2026-10-21.v1",
+              "DEC-07.2026-10-25.v2"
+            ]
           },
           "entry_ids": {
             "type": "array",
@@ -1610,6 +1637,10 @@
           "entry_count": {
             "type": "integer",
             "minimum": 0
+          },
+          "subsidy_vnd": {
+            "type": "string",
+            "pattern": "^-?(0|[1-9][0-9]{0,18})$"
           }
         },
         "required": [
@@ -1849,7 +1880,10 @@
         "additionalProperties": false,
         "properties": {
           "policy_version": {
-            "const": "DEC-07.2026-10-21.v1"
+            "enum": [
+              "DEC-07.2026-10-21.v1",
+              "DEC-07.2026-10-25.v2"
+            ]
           },
           "timezone": {
             "const": "Asia/Ho_Chi_Minh"
@@ -1939,6 +1973,10 @@
           "entry_count": {
             "type": "integer",
             "minimum": 0
+          },
+          "subsidy_vnd": {
+            "type": "string",
+            "pattern": "^-?(0|[1-9][0-9]{0,18})$"
           }
         },
         "required": [

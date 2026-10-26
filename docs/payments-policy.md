@@ -1,5 +1,7 @@
 # Direct QR Payment and Refund Policy
 
+> October25 COD cutover: [approved operating/API/history contract](cod-ordering.md) supersedes new-order cash/QR selection, QR authoring/review and platform voucher issuance/redemption. Legacy payment/refund and accepted voucher subsidy obligations remain. Prior verification is historical.
+
 Authority: requirements BR11–14; API §§7.4/9/11; database §4.4. DEC-06 approved by the repository operator/user on October 20, 2026 through explicit policy answers, full contract approval and implementation request. Local synthetic implementation only; no production/retained-data adoption or DEC-08 general support authorization.
 
 ## Approved choices and invariants
@@ -61,3 +63,7 @@ Cleanup claims metadata under the same authority/restaurant/order/payment locks;
 PAY-02:50000 matched→cancel creates50000 due24h; cancel→late50000 creates the same obligation without reopening.49000/51000 wrong amount each fully refundable, never pays50000 order; a second genuine50000 after payment is a separate duplicate receipt/refund. Same bank event replay never creates a second receipt. Refunded duplicate plus retained matched receipt projects paid. Audit outage rolls back receipt/refund/cancel and successful key. Cash remains unaffected.
 
 P20 verifies both serial orders and actual races on disposable MySQL9.2.0, independent pools/processes, ownership, evidence privacy/cleanup, immutable QR versions and audit rollback. P21 verifies real APIs/cash/QR/claims/refunds/retry/reload/account switch, stale responses and five widths. Fixtures are synthetic, never real partner/survey/consent/transaction evidence. No P20/P21 acceptance from this policy document.
+
+## Zero-total checkout extension
+
+The October 25, 2026 user-approved [checkout/voucher contract](checkout-vouchers.md) extends this specification: owner-funded restaurant codes, historical platform-funded global codes (no new issuance/redemption), pre-discount commission, preserved legacy completion subsidies, exact discounted totals and independent `not_required` payment for new zero-total orders. It supersedes earlier conflicting no-discount formulas only within this capability. Vouchers own definitions/redemptions; orders own immutable discount snapshots; commissions own subsidy ledger entries.

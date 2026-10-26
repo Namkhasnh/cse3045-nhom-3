@@ -63,7 +63,7 @@ export type CartState = { draft: CartDraft | null; notice: string; pending: { re
 export type CartAction = { type: 'add'; restaurant: CartRestaurant; dish: CartDish }
   | { type: 'undo-remove' | 'expire-undo'; now?: number }
   | { type: 'quantity'; id: string; quantity: number } | { type: 'remove'; id: string; now?: number }
-  | { type: 'replace'; draft: CartDraft | null } | { type: 'clear' | 'cancel-switch' | 'confirm-switch' }
+  | { type: 'replace'; draft: CartDraft | null } | { type: 'clear'; silent?: boolean } | { type: 'cancel-switch' | 'confirm-switch' }
   | { type: 'accept-prices'; restaurantId: string; prices: Record<string, string> }
 // Resolve queued actions against the latest state, including rapid repeated clicks.
 export function cartReducer(state: CartState, action: CartAction): CartState {

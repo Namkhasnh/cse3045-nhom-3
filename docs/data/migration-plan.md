@@ -1,5 +1,7 @@
 # Forward Migration and Legacy Data Compatibility
 
+> October25 COD cutover: [approved operating/API/history contract](../cod-ordering.md) supersedes new-order cash/QR selection, QR authoring/review and platform voucher issuance/redemption. Legacy payment/refund and accepted voucher subsidy obligations remain. Prior verification is historical.
+
 Authority: [database](database.md) §11; versions V0.1 P01 and V0.3 P10. The original documentation rewrite authorized no data changes. The October 19 scoped implementation and approved mapping are recorded in the [cutover handoff](../auth-discovery-cutover.md); that handoff distinguishes additive schema expansion from protected interactive account cutover.
 
 ## 1. Canonical target versus local legacy
@@ -56,3 +58,31 @@ The explicit notification implementation request adds `20261022000000_notificati
 ## October 24 authorized demo fork merge
 
 The user approved target-first three-way merging of the local and SSH academic demo forks, including verified local orders/finance, with explicit demo suspension/hiding and retained history. [Operator tooling and recovery](../demo-database-merge.md) records the common-ancestor mapping, conflict gates, exact-copy rehearsal and current evidence boundary. This exception does not authorize replacing the SSH database or importing invented survey, consent or financial facts.
+
+## October 24 local website repair adoption
+
+The subsequent user request to fix reported order/history500 errors and recheck the local website required the existing storefront forward migration on the retained local database. Protected backup, verified restore, exact prior-checksum review, clone rehearsal, pre-adoption recheck and post-adoption original-row comparison passed; all61 original business tables were preserved. Narrow storefront runtime grants and a read-only HTTP startup gate accompany adoption. [Receipt and boundaries](../website-local-verification.md) supersede the earlier local NOT RUN boundary only for this migration/target; no VPS deployment, reset or reseed occurred.
+
+## Owner analytics index — October 24
+
+`20261024020000_owner_analytics` adds only `orders_owner_analytics_idx(restaurant_id,status,completed_at,id)` for bounded completed-order aggregates. No rows or historical snapshots change. Apply through the normal migration operator, never runtime credentials or destructive push. Actual application/verification in this task is restricted to new disposable `test_owner_analytics_20261024` on MySQL9.2.0; retained/production application is NOT RUN. See [analytics handoff](../ui/owner-analytics.md).
+
+## Public order references — October 24
+
+`20261024030000_order_codes` adds nullable/unique ASCII order codes, fills only missing codes with collision retry, checks completion, then enforces NOT NULL/format with a compatible SQL default. No accepted monetary, contact, lifecycle or historical facts are invented. Runtime creation generates its code within the existing transaction; unique collisions retry at most five attempts. Existing IDs and references survive. A dedicated MySQL9.2.0 upgrade rehearsal compares every original column/history for 25 pre-code orders and rejects duplicate/invalid codes. Retained local/VPS application is NOT RUN and outside this task. See [owner order evidence](../ui/owner-orders-figma.md).
+
+## Retained local order-code repair — October 24
+
+The subsequent user request to repair owner-list500s and recheck the project authorized the backed-up local adoption of the analytics index and public-code migrations. Verified restore/clone rehearsal,29prior checksums,62preserved original business tables and6unique codes precede/confirm31applied migrations. [Receipt](../local-runtime-order-code-repair.md) supersedes the local NOT RUN statements above only for `hlf_dev_flow` on loopback3307. VPS/production remains separate.
+
+## Checkout voucher expansion — October 25, 2026
+
+The [approved scoped contract](../checkout-vouchers.md) uses forward migration `20261025000000_checkout_vouchers`. Existing totals, recipients, payment statuses, item/history/key and ledger facts are preserved; discount defaults to zero and voucher snapshot is null. Even historical zero-total payments remain unchanged. New voucher/redemption facts and unique subsidy linkage extend exact constraints; runtime grants permit only voucher active/version updates and immutable redemption inserts. Runtime startup requires this migration and never applies it itself. Disposable upgrade verification: `npm --prefix backend run test:voucher-upgrade` with a fresh empty loopback `test_*` MySQL9.2.0 target. The subsequent user request to repair local login502authorized [local adoption](../local-checkout-runtime-repair.md) on `hlf_dev_flow`/3307: backup restoration, exact clone rehearsal, original62table data preservation,32migration checksums and runtime grants/gate pass. Other retained targets and production deployment remain outside this authorization.
+
+## October25 retained-local COD runtime repair
+
+The subsequent reported502 repair authorized local adoption of20261025010000_cod_ordering on hlf_dev_flow/loopback3307. [Receipt](../local-cod-runtime-repair.md) records protected backup/verified restore, clone rehearsal,32prior/33final checksums, unchanged original columns/rows across64business tables, unchanged runtime grants and successful startup/actual5173Chrome reads. No historical payment/voucher/ledger state was rewritten; VPS/production remains separate.
+
+## October25 authorized academic VPS code/schema update
+
+The user explicitly selected deployment of current local code and schema while preserving VPS data; local business-data import is excluded. [Update handoff](../demo-cod-update.md) owns the reviewed migration allowlist, exact-clone rehearsal, old-column/row comparisons, protected SQL/object/vault recovery point, restricted grants and compatibility-gated application recovery. Preparation does not prove remote adoption; actual deployment evidence is recorded separately.

@@ -1,3 +1,4 @@
+import {mutationFeedback,showFeedback} from '../../../shared/lib/feedback'
 export type User = { id: string; login_identifier: string; display_name: string; phone: string | null;
   email: string | null; email_verified: boolean;
   capabilities: string[]; managed_restaurant_id: string | null; is_active: boolean; version: number; updated_at: string }
@@ -27,6 +28,8 @@ async function request<T = User>(path: string, method = 'GET', body?: object, ti
     const payload = await response.json().catch(() => null) as { data?: T; error?: { code?: string; message?: string } } | null
     if (!response.ok || !payload?.data) throw new ApiError(response.status,
       payload?.error?.code ?? 'NETWORK_ERROR', payload?.error?.message)
+    const feedback=mutationFeedback(path,method,payload.data)
+    if(feedback)showFeedback(feedback)
     return payload.data
   }
   try {
@@ -55,6 +58,7 @@ export const authApi = {
       const payload = await response.json().catch(() => null) as { error?: { code?: string; message?: string } } | null
       throw new ApiError(response.status, payload?.error?.code ?? 'NETWORK_ERROR', payload?.error?.message)
     }
+    showFeedback('Đã tiếp nhận yêu cầu gửi lại mã xác minh. Hãy kiểm tra email.')
   },
   logout: () => request('/auth/logout', 'POST', {}),
   profile: (input: { expected_version: number; display_name: string; phone: string | null }) =>

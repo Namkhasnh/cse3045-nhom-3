@@ -190,3 +190,7 @@ Before coding: identify version/prompt/IDs, read owning contracts, inspect curre
 ## 18. Setup decisions still TBD
 
 [Decision register](decisions.md) owns factor/recovery (DEC-02), onboarding/partnership (03), commission (04), surveys/quotes (05), QR/refunds (06), finance (07), user/support/retention (08), AI (09), infrastructure/services (10), backups/RPO/RTO (11), launch policies/authority (12). Providers, budgets and hosting are not chosen by this guide. Update exact config/runbooks after approval, then prove them under [release checklist](release-checklist.md).
+
+## Runtime schema readiness
+
+HTTP startup checks the current required migration marker and cutover columns before listening. If it refuses a stale database, use the reviewed operator backup/restore/rehearsal and forward-migration workflow; never reset retained data. Advance `backend/src/prisma/runtime-schema.ts` with future schema-dependent releases. `db:check` still means connectivity only. See [local repair evidence](website-local-verification.md).

@@ -7,6 +7,7 @@ export const commissionProposalDto=(p:{id:bigint;restaurant_id:bigint;base_polic
 @Injectable()
 export class CommissionPolicyService {
  constructor(private readonly repo:CommissionRepository){}
+ subsidy(...a:Parameters<CommissionRepository['subsidy']>){return this.repo.subsidy(...a);}
  async base(...a:Parameters<CommissionRepository['base']>){return await this.repo.base(...a);}
  policy(...a:Parameters<CommissionRepository['policy']>){return this.repo.policy(...a);}
  proposal(...a:Parameters<CommissionRepository['proposal']>){return this.repo.proposal(...a);}

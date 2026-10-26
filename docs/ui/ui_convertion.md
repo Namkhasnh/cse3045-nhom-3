@@ -1,4 +1,6 @@
 # UI Conversion & Design Consistency — Hòa Lạc Food
+
+> October25 COD cutover: [approved operating/API/history contract](../cod-ordering.md) supersedes new-order cash/QR selection, QR authoring/review and platform voucher issuance/redemption. Legacy payment/refund and accepted voucher subsidy obligations remain. Prior verification is historical.
 > **File name:** [ui_convertion.md](ui_convertion.md) — keep the exact requested name.
 > **Purpose:** guide AI assistants and developers in converting the reference HTML UI into a production-usable React application following the approved design direction when adding pages, states, or features.
 > **Document scope:** UI conversion and extension standards; this document does not claim that the frontend, backend, or listed features have already been implemented.
@@ -32,12 +34,12 @@ The dimensions, colors, and typography marked as “original” below are extrac
 Hòa Lạc Food helps students discover restaurants, browse dishes, receive AI recommendations, place orders, and track food delivery in the Hòa Lạc area. The V1.0 is initially deployed at Vietnam Japan University (VJU).
 - Ordinary users may buy and manage at most one restaurant through current ownership. The single operator-owned Admin uses MFA/recovery. Student/Owner names describe buyer/management layouts, not exclusive account roles. There is no delivery-driver account.
 - Restaurants deliver orders themselves; students pay restaurants directly. The platform tracks commission and supports manual settlement/reconciliation.
-- One order and one cart belong to exactly one restaurant. Each restaurant has one responsible current manager; each account manages at most one restaurant, including setup-required/inactive partners.
+- One order belongs to exactly one restaurant. The [October25 purchase extension](purchase-history-figma.md) allows a grouped multi-restaurant cart and one confirmation for independent per-restaurant orders. Each restaurant has one responsible current manager; each account manages at most one restaurant, including setup-required/inactive partners.
 - The frontend presents data, keeps drafts, and submits user intent. The backend determines final prices/fees, authorization, state transitions, and financial data.
 - AI recommendations may reference only real, currently available, deliverable dishes. AI does not create orders or determine authoritative monetary values.
 | Scope | UI handling |
 | --- | --- |
-| V1.0 | Public homepage/list/menu and guest cart; ordinary signup, sole MFA Admin, opening applications/terms, fixed surveyed points, cash+direct QR/refunds, history/recovery, menu/partner management, AI, finance/reports, support/users/audit |
+| V1.0 | Public homepage/list/menu and guest cart; ordinary signup, sole MFA Admin, opening applications/terms, fixed surveyed points, COD with legacy QR/refund obligations, history/recovery, menu/partner management, AI, finance/reports, support/users/audit |
 | V1.2 | Area expansion, free-form addresses/map pins and route-based fees after finalized provider/quote policies |
 | V1.1 | Random selection, reorder, favorites/reviews after finalized contracts; durable history and support are already V1.0 |
 | Could | Reviews and favorites; enable only after data design and backend support exist |
@@ -51,7 +53,7 @@ The source file is a **packaged collection of design boards**, not a normal appl
 | 00 | Design system | Tokens, typography, buttons, inputs, cards, badges, alerts, dialogs, skeletons |
 | 01 | Student · Login, Register, Home | Auth, current pickup point, search/filter, restaurants, and dishes |
 | 02 | Student · Restaurant, Cart | Menu, quantity controls, totals, restaurant-switch warning |
-| 03 | Student · Pickup Point, Price Conflict, Checkout | Pickup selection, fee errors, price re-confirmation, cash/QR |
+| 03 | Student · Pickup Point, Price Conflict, Checkout | Pickup selection, fee errors, price re-confirmation, pay on delivery |
 | 04 | Student · Order Tracking, History | Timeline, two state lifecycles, rejection/refund, reorder |
 | 05 | Student · AI Recommendations, Random Pick | Preference input, loading, results, fallback, random |
 | 06 | Student · System States | Skeleton, empty search, offline, unauthorized |
@@ -148,11 +150,14 @@ The user selected direction 1, a compact restaurant list for students. This over
 - Public `/` renders independently of auth/me loading/failure for every actor; this UI change alone does not implement the public catalog API, guest cart or new identity. Fixture notices stay visible until real catalog integration. Mobile retains fixed bottom navigation; at 1024 px and above it follows the content without an overlay.
 ### 5.7. Approved Figma Homepage and Shared Chrome — October 24, 2026
 The user approved the linked Figma Make homepage and its desktop/mobile CSS motion, plus shared header/footer across all pages. [Implementation contract and verification](homepage-figma.md) supersedes §5.6's compact homepage, Student bottom navigation, and standalone auth chrome for this scoped change. Preserve the existing business capabilities and distinct owner/Admin sidebars. The shared header is sticky; the footer follows long content and reaches the viewport bottom on short pages without an overlay. Actual catalog data and existing history/AI workflows replace prototype-only behavior.
-
 ### 5.8. Approved Figma Restaurant Detail — October 24, 2026
-The user approved the [restaurant storefront, owner content and compact buyer-footer contract](restaurant-detail-figma.md), including the shared-cart drawer. It supersedes the previous menu presentation and buyer footer only; public data, explicit consent, existing header and management identity remain authoritative. The [approved cart redesign and verification](cart-figma.md) extends `/cart` with the matching layout, real fee lookup, account-scoped point handoff and five-second undo; checkout consent remains explicit.
+The user approved the [restaurant storefront, owner content and compact buyer-footer contract](restaurant-detail-figma.md), including the shared-cart drawer. It supersedes the previous menu presentation and buyer footer only; public data, explicit consent, existing header and management identity remain authoritative. The [approved cart redesign and verification](cart-figma.md) extends `/cart` with the matching layout, real fee lookup, account-scoped point handoff and five-second undo; checkout consent remains explicit. The [October25 checkout/voucher extension](../checkout-vouchers.md) replaces checkout with profile-driven review, inherited quote consent, real vouchers and a dedicated success screen.
 ### 5.9. Approved Personal and Owner Workspaces — October 24, 2026
-The user approved separate `/account` and `/owner` workspaces from Figma Make, with shared navigation changes and existing business-page contents retained. [Workspace design and verification](workspaces-figma.md) owns the scoped implementation. It supersedes §6.2's dark owner sidebar with a light, grouped, collapsible sidebar, a dark operational banner, and separate personal navigation. Admin keeps its existing shell. Configuration forms move to `/owner/settings`; original setup anchors remain compatible. Progress and status come from the current backend guide; the one-restaurant limit remains authoritative.
+The subsequent [owner dashboard and four-tab settings contract](owner-dashboard-figma.md) supersedes the owner overview/checklist presentation; personal and Admin workspace rules remain.
+
+The user approved separate `/account` and `/owner` workspaces from Figma Make, with shared navigation changes and existing business-page contents retained. [Workspace design and verification](workspaces-figma.md) owns the scoped implementation. It supersedes §6.2's dark owner sidebar with a light, grouped, collapsible sidebar, a dark operational banner, and separate personal navigation. The subsequent user request extends the same workspace layout to Admin, with navy identity/active accents, separate personal-account navigation, and the existing administrative capabilities. Configuration forms move to `/owner/settings`; original setup anchors remain compatible. Progress and status come from the current backend guide; the one-restaurant limit remains authoritative.
+
+The user-approved [owner menu redesign](owner-menu-figma.md) replaces the inline menu form with status cards, local search/filter/sort, grid/list views and an accessible add/edit drawer at `/owner/menu`; existing dish/media/version/recovery contracts remain authoritative.
 
 ## 6. Layout and Responsive Behavior
 The visual treatments below describe the current baseline; approved identity revisions must retain role clarity, responsive behavior and accessible navigation.
@@ -168,8 +173,8 @@ Keep mobile content padding close to the reference, approximately 16–20 px. Do
 - The incoming-orders page keeps a list-left/detail-right layout when enough width is available. On narrow screens, switch to list then detail instead of forcing two columns.
 - Ownership change/session expiry must stop stale private queries and prevent mutations using a former management context.
 ### 6.3. Admin — `AdminLayout`
-- Desktop sidebar width: **240 px**, navy background `#1F2A44`, text `#E8ECF5`; active item uses white background and navy text.
-- Navigation: **Restaurant Management, Commission and Settlement, Audit Log**.
+- The October 24 user-approved extension uses the shared light workspace sidebar: **256 px** expanded, **76 px** collapsed, mobile drawer below 1024 px. Navy `#1F2A44` identity/active accents and `#E8ECF5` selected surface distinguish Admin from Owner.
+- Group existing navigation into **Overview, Partners and Catalog, Operations, Finance, Administration**. Personal `/account` navigation is separate and includes a return to `/admin`.
 - Keep the cream main background, white cards, orange CTAs, and warm table dividers used across the rest of the product.
 - Do not make the admin sidebar identical to the restaurant-owner sidebar; the difference is intentional.
 ### 6.4. Additional Responsive Conventions
@@ -196,6 +201,8 @@ Appearance follows the approved identity; accessibility, data and interaction co
 | `DataTable`, `Pagination` | Light-cream header, 12 px header text, 14 px body text, right-aligned monetary values, pagination according to API capability |
 Primary mobile buttons are at least **48 px** high in student boards; dashboard controls at least **44 px**. Mobile inputs are 48 px, dashboard inputs 44 px. Icon buttons and quantity controls require at least a 44 × 44 px hit area. Some design-system examples use 36 px small buttons or 40 px chips; when converted into touch controls, expand the hit area to at least 44 px.
 Use one primary CTA for the focused task. Lists may have per-item “add” buttons, but secondary actions should not all receive equal visual emphasis. `loading` should preserve button dimensions, show feedback, and prevent duplicate submission. `disabled` controls should show a visible nearby explanation when users need to understand why.
+
+October25 user request: meaningful local actions and acknowledged mutations display [transient floating feedback](action-feedback.md), including repeated cart additions and successful order creation with its public code. This UI feedback does not create inbox entries. The shared top-right viewport below navigation also presents important incoming events, with at most two visible cards and a waiting queue; only important server events belong in the bell. Background polling/quotes stay quiet; unknown results never announce success, and blocking/financial errors and recovery remain in context.
 ### 7.2. Business Components
 | Component | Rule |
 | --- | --- |
@@ -273,7 +280,6 @@ New pages such as account/profile editing should inherit existing form and layou
 ### 8.4. Current implementation boundary
 
 The [implementation status](../implementation-status.md) and [frontend guide](../../frontend/README.md) distinguish legacy auth/role navigation and fixture discovery from these targets. The unchanged [October 16 verification](student-discovery-verification.md) proves only its stated presentation checks. Old requested-role registration/review is superseded; it is not a new onboarding application or Admin-security acceptance.
-
 ### 8.5. Public routes, login return and new workflows
 
 Homepage/list/menu render without an auth/me gate. Guests can select dishes; checkout asks “Đăng nhập để đặt hàng”. On success restore the cart and a validated internal return path, refresh catalog/quote and ask explicit confirmation. Login never submits an order. Store no JWT in browser storage; isolate private checkout/recovery data by account and clear stale private views on account changes.
@@ -282,7 +288,7 @@ Signup has username/email/password/confirmation and ordinary profile fields, no 
 
 Opening form shows the approved Vietnamese terms/version and explicit consent, submission/history/rejection/conflict states. Approval shows “Cần hoàn thiện cấu hình”, not a selling success. One-restaurant limit includes inactive/setup-required partners. Admin manual-create selects an eligible ordinary user and records approved agreement evidence; no ownerless/extra-Admin flow.
 
-Admin UI needs MFA challenge/recovery guidance under approved DEC-02. No password-only privileged state, role grant or self-suspension control. User/support/audit screens follow the protected projections and finalized P25 contract. QR panels display approved payee/reference/amount, verified receipt and refund obligation separately; scan/customer claim never marks paid.
+Admin UI needs MFA challenge/recovery guidance under approved DEC-02. No password-only privileged state, role grant or self-suspension control. User/support/audit screens follow the protected projections and finalized P25 contract. Historical QR panels display approved payee/reference/amount, verified receipt and refund obligation separately; scan/customer claim never marks paid.
 
 ## 9. Data and Behavior That Must Not Be Implemented Incorrectly
 ### 9.1. Order and Payment Are Separate Lifecycles
@@ -300,7 +306,7 @@ Admin UI needs MFA challenge/recovery guidance under approved DEC-02. No passwor
 | `paid` | Paid | Success |
 | `refund_pending` | Refund pending | Danger |
 | `refunded` | Refunded | Neutral |
-Color mappings are standardized for shared badge components from the reference patterns; do not create new enums merely to match tab names. Always present “Order” and “Payment” clearly as separate concepts in order details.
+[Buyer order details](buyer-order-figma.md) documents the approved buyer-only Figma composition, server-history progress, COD summary and responsive verification. Color mappings are standardized for shared badge components from the reference patterns; do not create new enums merely to match tab names. Always present “Order” and “Payment” clearly as separate concepts in order details.
 ```text
 pending → accepted → delivering → completed
 pending → rejected   (restaurant owner; reason required)
@@ -310,7 +316,7 @@ pending → cancelled  (student who owns the order)
 - Owners see only valid next actions for orders belonging to their restaurant. Admins do not implicitly receive permission to accept orders or confirm payments.
 - Do not add `preparing`, `shipping`, or `failed` to the enum; if “Preparing” appears as a tab label, map it to `accepted`.
 - `completed` does not imply `paid`, and `paid` does not automatically complete the order. Update states only according to successful backend responses.
-- Scanning a QR code or pressing “I transferred” must not change the status to `paid`. The restaurant must verify receipt. Refunds are performed by the restaurant; the system only records the state.
+- For historical QR orders, scanning a QR code or pressing “I transferred” must not change the status to `paid`. The restaurant must verify receipt. Refunds are performed by the restaurant; the system only records the state.
 ### 9.2. Cart, Pickup Point, and Pricing
 - Adding a dish from another restaurant opens a dialog explaining which previous restaurant/cart items will be removed, with two choices: “Keep current cart” and “Clear current cart and add dish.” If not confirmed, preserve the cart.
 - `is_visible=false`: dish is hidden from students. `is_visible=true` and `is_available=false`: show as unavailable and disable add. Do not infer a new database status enum from three form options.
@@ -323,7 +329,6 @@ pending → cancelled  (student who owns the order)
 - BIGINT IDs travel through REST as strings. Preserve monetary representations exactly according to the contract, especially money strings in quotes/snapshots; do not coerce all IDs/money to JavaScript `Number` or serialize `BigInt` directly to JSON. Database rates are fractions, e.g. `0.10000000` = 10%; percentage forms must convert precisely at the contract boundary.
 - Use Vietnamese locale and timezone `Asia/Ho_Chi_Minh` for displayed dates/times; do not manually convert UTC by adding a fixed number of hours.
 V0.2 implements a non-sensitive local guest draft and explicit price acceptance; it keeps that draft on logout/account change. V0.5 adds separate authenticated cash checkout and account-scoped recovery; guest storage remains non-sensitive. See [frontend boundaries](../../frontend/README.md#guest-cart-boundary) for persistence, catalog revalidation and browser evidence.
-
 ### 9.3. Duplicate Submission, Concurrency, and Polling
 - One order-creation intent uses one stable idempotency key. Rerenders, retries after disconnection, or retries after a missing response must not generate a new key for the same intent.
 - When the client does not know whether an order was created, show a verification/recovery state according to the backend contract; do not immediately invite the user to place another order.
@@ -348,7 +353,7 @@ This table preserves the visual form while correcting content/behavior that is w
 | Admin creates restaurant: “One account can manage one restaurant” | Preserve the one-restaurant cap; choose an eligible ordinary user, record agreement and atomically create ownership; manager retains buyer rights |
 | “Preparing” tab | Map to `accepted` or label as “Accepted by restaurant”; do not add an enum |
 | Adjustment/audit: “order #1987 was cancelled after commission was calculated” | Remove this example: completed is terminal and cancelled orders do not generate base commission. Use an adjustment fixture with a valid reason; do not describe completed → cancelled |
-| QR, free-form address, map, fee tiers shown together | V1.0 requires cash plus direct QR/refunds at fixed surveyed points; free address/maps/route tiers are V1.2 |
+| QR, free-form address, map, fee tiers shown together | V1.0 uses COD at fixed surveyed points; legacy QR/refund history remains accessible; free address/maps/route tiers are V1.2 |
 | Map failure blocks every order | Block only when there is no valid quote; surveyed fixed points with valid data may still be ordered |
 | “Radius” in delivery UI | Express clearly as a route-distance limit when route delivery is enabled; do not interpret as straight-line circular radius |
 | Reviews, stars, review counts | Show only when the feature and real data exist; remove demo counts from production |
@@ -443,7 +448,7 @@ Version acceptance follows [roadmap](../roadmap.md); new journeys must cover PUB
 
 ## V0.3 onboarding and order privacy amendment
 
-Opening screens display immutable terms/version, explicit consent, private required evidence, own review history and setup-required approval. [Approved contract](../onboarding-v03-contract.md) owns limits. Owner order UI withholds recipient contact until “Đã xong món – chờ giao”; accepting alone reveals nothing. Backend projection must enforce this. The action does not mark delivering/completed. Never render buyer account identifiers/email. [P17](../progress/P17.md) implements this projection/milestone for local synthetic scope; [V0.5 verification](../cash-ordering-local-verification.md) owns reproducible browser evidence.
+Opening screens display immutable terms/version, explicit consent, private required evidence, own review history and setup-required approval. [Approved contract](../onboarding-v03-contract.md) owns limits. The [owner order dashboard](owner-orders-figma.md) uses four status cards, Kanban/list and a detail drawer with shared public order codes. Point labels are visible before acceptance. Owner order UI withholds recipient contact until “Đã xong món – chờ giao”; accepting alone reveals nothing. Backend projection must enforce this. The action does not mark delivering/completed. Never render buyer account identifiers/email. [P17](../progress/P17.md) implements this projection/milestone for local synthetic scope; [V0.5 verification](../cash-ordering-local-verification.md) owns reproducible browser evidence.
 
 ## V0.4 connected setup
 
@@ -478,3 +483,12 @@ Approved [DEC-07](../finance-policy-proposal.md) drives `/owner/finance` and sol
 ## Scoped MVP ordering UX follow-up
 
 Manager/Admin navigation marks matching routes with `aria-current=page`, treating `/admin/reports` as the finance alias. Owner order pagination includes “Về đơn mới nhất”; fixed pickup snapshot name/text display once when identical. [Three-role verification](../mvp-ordering-verification.md) records actual Chrome mobile/desktop/keyboard/dialog/native-submit evidence and accessibility limits; no theme/permission policy change.
+### Notification center — approved October 24
+
+The latest [Figma Make notification design](https://www.figma.com/make/xfAu5VZ9550JhtiOcKjCGA/Redesign-Notification-Experience) supersedes the sidebar mailbox composition: `/notifications` is standalone, with no personal-account sidebar. Header bell/recent dropdown remains shared. See [implementation mapping](notifications-figma.md) for card/filter/mobile states and the deliberate reuse of Be Vietnam Pro/semantic tokens instead of the prototype font.
+### Incoming notification popup and sound — October 24
+
+The approved incoming-alert extension adds independent popup/sound switches in the bell panel, defaulting to on/off. New unread messages may show a compact top-right popup and one short chime per received batch. Initial mailbox data never replays. Keep keyboard focus, hover/focus timer pausing, reduced motion and mobile bounds; read state changes only through existing explicit actions. See the [owning notification contract](../notifications-contract.md#incoming-popup-and-optional-sound--october-24).
+### Approved purchase history and grouped checkout — October25
+
+The [user-approved contract](purchase-history-figma.md) supersedes earlier single-restaurant cart/switch warnings and deferred reorder for this scoped extension. Each order remains single-restaurant. Keep personal workspace chrome and existing order detail; use Figma history cards, server filters/counts, direct reorder additions, grouped checkbox selection, a common pickup point and independent per-restaurant fees/results.

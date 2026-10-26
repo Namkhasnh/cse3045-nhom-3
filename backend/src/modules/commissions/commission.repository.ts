@@ -6,6 +6,7 @@ import {conflict,invalid} from '../../common/http/input.js';
 export class CommissionRepository {
  base(c:TransactionContext,data:{order_id:bigint;restaurant_id:bigint;amount_vnd:bigint;actor_id:bigint},completed_at:Date){return c.db.commission_entries.create({data:{...data,base_order_id:data.order_id,booking_month:monthStart(completed_at),policy_version:FINANCE_POLICY,kind:'base'}});}
 
+ subsidy(c:TransactionContext,data:{order_id:bigint;restaurant_id:bigint;amount_vnd:bigint;actor_id:bigint},completed:Date){return c.db.commission_entries.create({data:{...data,subsidy_order_id:data.order_id,kind:'voucher_subsidy',reason:'Platform voucher funding',booking_month:monthStart(completed),policy_version:FINANCE_POLICY}});}
  async policy(c:TransactionContext,r:bigint){await c.db.$queryRaw`SELECT restaurant_id FROM commission_policies WHERE restaurant_id=${r} FOR UPDATE`;return c.db.commission_policies.findUnique({where:{restaurant_id:r}});}
  proposals(c:TransactionContext,r:bigint){return c.db.commissionProposal.findMany({where:{restaurant_id:r},orderBy:{id:'desc'},take:100});}
  async proposal(c:TransactionContext,r:bigint,id:bigint){const p=await c.db.commissionProposal.findUnique({where:{id}});if(!p||p.restaurant_id!==r)throw new NotFoundException();return p;}

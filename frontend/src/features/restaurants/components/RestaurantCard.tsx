@@ -9,9 +9,9 @@ function RestaurantImage({ restaurant }: { restaurant: RestaurantSummary }) {
   const [failed, setFailed] = useState(false)
   return <div className={`restaurant-image restaurant-image--${restaurant.illustrationTone}`}>
     {restaurant.imageSrc && !failed
-      ? <img src={restaurant.imageSrc} alt={`Minh họa món ăn tại ${restaurant.name}`} onError={() => setFailed(true)} />
+      ? <img src={restaurant.imageSrc} alt={restaurant.fixture ? `Minh họa món ăn tại ${restaurant.name}` : `Ảnh bìa ${restaurant.name}`} onError={() => setFailed(true)} />
       : <div className="image-fallback" role="img" aria-label={`Chưa có ảnh quán ${restaurant.name}`}><span><Icon name="bowl" /></span><p>Chưa có ảnh quán</p></div>}
-    <span className="image-caption">{restaurant.imageSrc && !failed ? 'Ảnh minh họa' : 'Ảnh thay thế'}</span>
+    <span className="image-caption">{restaurant.imageSrc && !failed ? restaurant.fixture ? 'Ảnh minh họa' : 'Ảnh quán' : 'Ảnh thay thế'}</span>
   </div>
 }
 

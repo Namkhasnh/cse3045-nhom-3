@@ -30,7 +30,17 @@
     "test:storefront": "node scripts/browser-storefront.mjs",
     "test:storefront-connected": "node scripts/browser-storefront-connected.mjs",
     "test:cart-browser": "node scripts/browser-cart.mjs",
-    "test:workspaces": "node scripts/browser-workspaces.mjs"
+    "test:workspaces": "node scripts/browser-workspaces.mjs",
+    "test:notifications": "node scripts/browser-notifications.mjs",
+    "test:owner-analytics": "node scripts/browser-owner-analytics.mjs",
+    "test:menu": "node scripts/browser-owner-menu.mjs",
+    "test:menu-unit": "node --test test/owner-menu.test.mjs",
+    "test:owner-orders": "node scripts/browser-owner-orders.mjs",
+    "test:owner-orders-unit": "node --test test/owner-orders.test.mjs",
+    "test:vouchers": "node --test test/vouchers.test.mjs",
+    "test:buyer-order": "node scripts/browser-buyer-order.mjs",
+    "test:basket": "node --test test/basket.test.mjs",
+    "test:purchase": "node scripts/browser-purchase.mjs"
   },
   "dependencies": {
     "@fontsource/be-vietnam-pro": "5.3.0",

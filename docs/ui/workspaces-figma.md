@@ -1,26 +1,30 @@
-# Personal account and restaurant owner workspaces
+# Personal, restaurant owner and Admin workspaces
 
 Authority: [UI guide §5.9](ui_convertion.md#59-approved-personal-and-owner-workspaces--october-24-2026), [account security](../account-security.md), [restaurant setup](../restaurant-setup-v04-contract.md), and [notifications](../notifications-contract.md). The user explicitly approved this implementation plan on October 24, 2026.
 
+The later [owner dashboard/settings redesign](owner-dashboard-figma.md) replaces the owner checklist overview with operational KPIs and moves the full checklist into settings. Its data/verification rules supersede the owner-specific overview details below; historical evidence remains dated.
+
 ## Approved design and scope
 
-[Figma Make reference](https://www.figma.com/make/XymiDbnoGxZqEB2oY2bP45/Redesign-Restaurant-Detail-Page?preview-route=%2Fowner) supplies the account and owner composition: light grouped sidebar, cream content, white cards, orange active navigation, dark owner banner, progress/checklist and quick actions. Keep Be Vietnam Pro and semantic project colors. The existing header, cart and buyer rights remain available. Admin retains its navy shell.
+[Figma Make reference](https://www.figma.com/make/XymiDbnoGxZqEB2oY2bP45/Redesign-Restaurant-Detail-Page?preview-route=%2Fowner) supplies the account and owner composition: light grouped sidebar, cream content, white cards, orange active navigation, dark owner banner, progress/checklist and quick actions. Keep Be Vietnam Pro and semantic project colors. The existing header, cart and buyer rights remain available. The user subsequently requested the same layout for Admin: a light sidebar with navy identity/active accents keeps administrative context distinct.
 
 The Figma connector returned Make source resource links but could not read them or export a screenshot for this file type. The actual Make preview and its App.tsx/index.css were inspected through the browser. Neither screenshots nor unrelated Make bitmap resources are used as implementation assets. Icons compose the project's shared SVG component; the existing brand stays in the header.
 
-Only the personal profile, owner overview and navigation are redesigned. Existing menu, order, payment, delivery, finance, support and privacy page contents are retained. No backend, database, REST DTO or permission changes are introduced.
+The personal profile, owner overview, Admin overview and navigation are redesigned. Existing menu, order, payment, delivery, finance, support and privacy page contents are retained. No backend, database, REST DTO or permission changes are introduced.
 
 ## Routes and component boundaries
 
 | Destination | Behavior |
 | --- | --- |
-| `/account` | Personal shell for ordinary accounts, including owners; identity and verification come from the current user; login/email are read-only. |
-| `/orders`, `/orders/{id}`, `/notifications`, `/support`, `/privacy` | Personal navigation for non-Admin accounts; existing business contents remain. |
+| `/account` | Personal shell for all authenticated accounts, including owners and Admin; identity and verification come from the current user; login/email are read-only. |
+| `/orders`, `/orders/{id}`, `/notifications`, `/support`, `/privacy` | Personal navigation by default; existing business contents and capability gates remain. |
 | `/owner` | Owner-only overview using the existing setup guide, with no configuration forms or automatic writes. |
 | `/owner/settings` | Existing profile, cover/introduction, hours and receiving forms. Included in the safe login-return allowlist. |
 | `/owner#profile`, `#hours`, `#accepting` | Redirect to the matching `/owner/settings` anchor after current access checks. Loaded forms reveal/focus the target. |
 | `/support?workspace=owner` | Existing support workflow with owner navigation only when the current account manages a restaurant. Other accounts get personal navigation. |
-| `/admin` and Admin pages | Existing Admin layout and permissions. |
+| `/admin` and Admin pages | Shared light workspace layout with grouped Admin-only navigation; existing permissions and workflows. |
+| `/notifications?workspace=admin` | Admin workspace only for the current Admin; other accounts retain their personal layout. |
+| `/admin/support` | Existing administrative support workflow in the Admin workspace. |
 
 `WorkspaceLayout` owns desktop collapse/tooltips, navigation groups and the mobile modal drawer. App composition selects personal/owner/Admin contexts; domain widgets stay in their features. `SetupChecklist` has an optional `overview` presentation while its default compact variant remains usable by inbox, onboarding and Admin.
 
@@ -35,6 +39,20 @@ The owner sidebar groups overview, restaurant management, operations, finance an
 - Sidebar/content/dropdown/button transitions take 150–280 ms; CSS disables motion when reduced motion is requested. No animation delays business mutations.
 - At 1024 px and above, use a 256 px expanded sidebar or 76 px collapsed rail. Below 1024 px, use a native modal dialog drawer with backdrop, Escape, explicit Tab/Shift+Tab wrap, inert background, scroll lock and focus return. Resize to desktop closes it.
 - Profile and overview reflow into one column on narrow screens. Forms use visible labels and touch controls; the footer is a short copyright/location line. Existing business-page tables retain their own scrolling behavior.
+
+## Admin extension — October 24, 2026
+
+The user's follow-up explicitly extends the shared visual/interaction system to Admin. It supersedes the earlier instruction to retain the old navy sidebar shell. `/account` and `/privacy` now use personal navigation even for Admin; the personal sidebar provides a separate return to `/admin`. `/admin/*` uses grouped management navigation and the compact workspace footer. No buyer, owner-fulfillment or owner-payment rights are added.
+
+`AdminTasksPage` uses a navy guidance banner, current task list and quick actions to existing application, restaurant, delivery, user, audit and support pages. Group selection, refresh, pagination, loading/error/empty feedback and backend task links remain connected to the existing API. No total counts, revenue or pending statistics are invented. The shared desktop collapse/tooltips and mobile dialog/focus/reduced-motion behavior also apply to Admin.
+
+Follow-up verification:
+
+- Frontend lint/build: PASS; the existing bundle-size warning remains.
+- `test:workspaces`: PASS; includes Admin profile/overview at 360/390/768/1024/1440 px, management separation, task groups/pagination/empty/error/retry, report navigation alias, notifications/support context, non-Admin guards, collapsed tooltips, mobile focus/Escape and 200% zoom.
+- Admin overview, profile and mobile screenshots visually inspected: `hlf-workspaces-evidence-ZKfo2R` in the host temporary directory.
+- `test:homepage`: PASS; `hlf-home-evidence-YrdrGG`, controlled API responses.
+- Connected `test:setup`: PASS; `hlf-browser-evidence-tMykT7`, actual Admin activation/survey/rate and owner consent/explicit receiving on the existing dedicated test database below. Backend source/MFA/permission policies are unchanged.
 
 ## Verification — October 24, 2026
 

@@ -6,7 +6,11 @@ import {spawnSync} from 'node:child_process';
 import mariadb from 'mariadb';
 const [mode]=process.argv.slice(2);
 assert.ok(['inventory','migrate','verify','grant'].includes(mode));
-const database='test_hlf_demo', migration='20261024010000_restaurant_storefront';
+const database='test_hlf_demo';
+const allowedMigrations=['20261024010000_restaurant_storefront','20261024020000_owner_analytics',
+ '20261024030000_order_codes','20261025000000_checkout_vouchers','20261025010000_cod_ordering'];
+const changedTables=new Set(['restaurants','orders','order_payments','order_payment_history','commission_entries']);
+const newTables=new Set(['restaurant_cover_media','vouchers','voucher_redemptions']);
 const password=(await readFile('/run/secrets/mysql-root','utf8')).trim();
 const db=await mariadb.createConnection({host:'127.0.0.1',user:'root',password,database,allowPublicKeyRetrieval:true,dateStrings:true,timezone:'Z'});
 const digest=x=>createHash('sha256').update(x).digest('hex');
@@ -34,7 +38,7 @@ try{
   assert.equal(row.checksum,expected[row.migration_name],'Migration checksum mismatch: '+row.migration_name);
  }
  const pending=Object.keys(expected).filter(x=>!applied.some(r=>r.migration_name===x));
- assert.ok(pending.length===0||(pending.length===1&&pending[0]===migration),'Unexpected pending migrations');
+ assert.ok(pending.every(x=>allowedMigrations.includes(x)),'Unexpected pending migrations');
  if(mode==='inventory'){
   await writeFile('/work/inventory.json',json(await inventory()),{mode:0o600});
   console.log(json({result:'PASS',stage:mode,pending}));
@@ -54,13 +58,19 @@ try{
    if(name==='_prisma_migrations')continue;
    assert.equal(after[name].count,original.count,name+' row count changed');
    assert.equal(after[name].data_sha256,original.data_sha256,name+' original data changed');
-   if(name!=='restaurants')assert.equal(after[name].schema_sha256,original.schema_sha256,name+' schema changed');
+   if(!changedTables.has(name))assert.equal(after[name].schema_sha256,original.schema_sha256,name+' schema changed');
   }
-  assert.ok(Object.keys(after).every(x=>before[x]||x==='restaurant_cover_media'),'Unexpected new table');
+  assert.ok(Object.keys(after).every(x=>before[x]||newTables.has(x)),'Unexpected new table');
+  for(const table of newTables)if(!before[table])assert.equal(after[table].count,0,'Invented rows in '+table);
   if(!before.restaurant_cover_media){
    assert.equal(after.restaurant_cover_media.count,0);
    assert.equal(String((await db.query('SELECT COUNT(*) n FROM restaurants WHERE description IS NOT NULL OR cover_media_asset_id IS NOT NULL'))[0].n),'0');
   }
+  if(!before.orders.columns.includes('order_code')){
+   assert.equal(String((await db.query("SELECT COUNT(*) n FROM orders WHERE order_code IS NULL OR NOT REGEXP_LIKE(order_code,'^HLF-[2-9A-HJ-NP-Z]{8}$','c')"))[0].n),'0');
+  }
+  if(!before.orders.columns.includes('discount_vnd'))assert.equal(String((await db.query('SELECT COUNT(*) n FROM orders WHERE discount_vnd<>0 OR voucher_snapshot IS NOT NULL'))[0].n),'0');
+  if(!before.commission_entries.columns.includes('subsidy_order_id'))assert.equal(String((await db.query('SELECT COUNT(*) n FROM commission_entries WHERE subsidy_order_id IS NOT NULL'))[0].n),'0');
   console.log(json({result:'PASS',stage:mode,preserved_tables:Object.keys(before).length-1}));
  }else{
   assert.equal(pending.length,0);
@@ -71,6 +81,9 @@ try{
   await db.query('GRANT UPDATE (description,cover_media_asset_id) ON '+quote(database)+'.restaurants TO '+actor);
   await db.query('GRANT INSERT ON '+quote(database)+'.restaurant_cover_media TO '+actor);
   await db.query('GRANT UPDATE (cleanup_requested_at,deletion_requested_at,deleted_at) ON '+quote(database)+'.restaurant_cover_media TO '+actor);
+  await db.query('GRANT SELECT, INSERT ON '+quote(database)+'.vouchers TO '+actor);
+  await db.query('GRANT UPDATE (is_active,version) ON '+quote(database)+'.vouchers TO '+actor);
+  await db.query('GRANT SELECT, INSERT ON '+quote(database)+'.voucher_redemptions TO '+actor);
   console.log(json({result:'PASS',stage:mode}));
  }
 }finally{await db.end();}

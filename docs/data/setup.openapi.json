@@ -4410,6 +4410,14 @@
               "null"
             ],
             "pattern": "^/api/v1/restaurant-cover-media/[1-9][0-9]*$"
+          },
+          "avatar_image_reference": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^/api/v1/restaurant-cover-media/[1-9][0-9]*$",
+            "description": "Optional square restaurant avatar; same-restaurant platform media reference. PATCH rejects nonsquare assets."
           }
         },
         "required": [
@@ -4428,7 +4436,8 @@
           "hours",
           "checklist",
           "description",
-          "cover_image_reference"
+          "cover_image_reference",
+          "avatar_image_reference"
         ],
         "additionalProperties": false
       },
@@ -4514,6 +4523,14 @@
               "null"
             ],
             "pattern": "^/api/v1/restaurant-cover-media/[1-9][0-9]*$"
+          },
+          "avatar_image_reference": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^/api/v1/restaurant-cover-media/[1-9][0-9]*$",
+            "description": "Optional square restaurant avatar; same-restaurant platform media reference. PATCH rejects nonsquare assets."
           }
         },
         "required": [

@@ -71,7 +71,8 @@ test('NOTIFY-01 MySQL9.2 HTTP lifecycle, bootstrap/read races, isolation, idempo
   const publicDish=await req('/dishes?restaurant_id='+rid);assert.equal(publicDish.body.data.length,1);
   const q=await data('/delivery-quotes','POST',{restaurant_id:rid,pickup_point_id:point.id},other);
   const accepted_delivery_quote={quote_artifact:q.quote_artifact,policy_version:q.policy_version,pickup_point_version:q.pickup_point_version,survey_version:q.survey_version,distance_m:q.distance_m,delivery_fee_vnd:q.delivery_fee_vnd};
-  const order=await data('/orders','POST',{restaurant_id:rid,pickup_point_id:point.id,items:[{dish_id:publicDish.body.data[0].id,quantity:1,accepted_unit_price_vnd:'35000'}],recipient:{name:'Người mua giả lập',phone:'0900000000'},payment_method:'cash',accepted_delivery_quote},other,'actual-order');assert.equal(order.status,'pending');assert.equal(order.total_vnd,'35000');
+  await db.account.update({where:{id:other.id},data:{displayName:'Người mua giả lập',phone:'0900000000'}});
+  const order=await data('/orders','POST',{restaurant_id:rid,pickup_point_id:point.id,items:[{dish_id:publicDish.body.data[0].id,quantity:1,accepted_unit_price_vnd:'35000'}],recipient:{name:'Người mua giả lập',phone:'0900000000'},payment_method:'cod',accepted_delivery_quote},other,'actual-order');assert.equal(order.status,'pending');assert.equal(order.total_vnd,'35000');
   assert.equal(await db.notification.count({where:{recipient_key:'account:'+owner.id,type:'restaurant.readiness'}}),1);
   await data('/admin/pickup-points/'+point.id,'PATCH',{expected_version:point.version,name:'Điểm sửa '+nonce,latitude:'21.100000',longitude:'105.000000',is_active:true},admin,'point-change');
   guide=await data('/notifications/setup/'+rid);assert.equal(guide.public_visible,false);assert.equal(guide.steps.find((s:{key:string})=>s.key==='delivery').complete,false);assert.equal((await db.restaurants.findUniqueOrThrow({where:{id:restaurant.id}})).is_accepting_orders,false);
@@ -86,6 +87,38 @@ test('NOTIFY-01 MySQL9.2 HTTP lifecycle, bootstrap/read races, isolation, idempo
   await runner.run(async c=>{for(let i=0;i<25;i++)await notices.account(c,owner.id,'page:'+nonce+':'+i,{type:'test',title:'Synthetic '+i,body:'Synthetic',href:'/owner'});});
   const first=await req('/notifications');assert.equal(first.body.data.length,20);assert.ok(first.body.page.next_cursor);const second=await req('/notifications?cursor='+first.body.page.next_cursor);assert.ok(second.body.data.every((n:{id:string})=>BigInt(n.id)<BigInt(first.body.page.next_cursor)));
   assert.equal((await req('/notifications?unread=bad')).status,422);assert.equal((await fetch(origin+'/api/v1/notifications')).status,401);const identity=sessions.issue(owner);assert.equal((await fetch(origin+'/api/v1/notifications/summary',{headers:{Cookie:'__Host-hlf_access='+identity.jwt,'X-Account-Id':other.id.toString()}})).status,403);assert.equal((await fetch(origin+'/api/v1/notifications/'+approval.id+'/read',{method:'POST',headers:{Cookie:'__Host-hlf_access='+identity.jwt,Origin:process.env.PUBLIC_ORIGIN!,'Content-Type':'application/json'},body:'{}'})).status,403);assert.equal((await req('/notifications/read-all','POST',{ids:[]})).status,422);assert.equal((await req('/notifications/read-all','POST',{ids:Array(101).fill(approval.id.toString())})).status,422);const unread=await req('/notifications?unread=true');assert.ok(unread.body.data.every((n:{read_at:unknown})=>n.read_at===null));
+  // Redesign: read filters, persisted timestamps, full mailbox read and cutoff race.
+  assert.equal((await req('/notifications?read_state=bad')).status,422);
+  assert.equal((await req('/notifications?read_state=read&unread=true')).status,422);
+  assert.equal((await req('/notifications?category=bad')).status,422);
+  const readPage=await req('/notifications?read_state=read');assert.ok(readPage.body.data.length);assert.ok(readPage.body.data.every((n:{read_at:unknown})=>n.read_at));
+  const systemPage=await req('/notifications?category=system');assert.ok(systemPage.body.data.every((n:{type:string})=>!n.type.startsWith('order.')));
+  const readTimestamp=(await data('/notifications/'+approval.id)).read_at;
+  assert.equal((await data('/notifications/'+approval.id+'/read','POST',{})).read_at,readTimestamp);
+  assert.equal((await req('/notifications/'+approval.id+'/read','POST',{},other)).status,404);
+  await data('/notifications/read-all','POST',{ids:[approval.id.toString()]},other);
+  const otherNotice=await db.notification.create({data:{recipient_key:'account:'+other.id,event_key:'foreign:'+nonce,type:'system',title:'Synthetic foreign',body:'Private',href:'https://untrusted.invalid'}});
+  // Pause between cutoff lookup and UPDATE, inserting from an independent connection.
+  const originalAll=notices.readAll.bind(notices);let arriving:bigint|undefined;
+  notices.readAll=async(c,recipient)=>originalAll({...c,db:new Proxy(c.db,{get(target,property){
+   if(property!=='notification')return Reflect.get(target,property);
+   return new Proxy(target.notification,{get(model,method){
+    if(method!=='findFirst')return Reflect.get(model,method);
+    return async(args:Parameters<typeof model.findFirst>[0])=>{const cutoff=await model.findFirst(args);arriving=(await db.notification.create({data:{recipient_key:recipient,event_key:'cutoff:'+nonce,type:'system',title:'Thư sau mốc',body:'Synthetic',href:'/notifications'}})).id;return cutoff;};
+   }});
+  }})},recipient);
+  let all:{unread_count:number;read_through_id:string;read_at:string};
+  try{all=await data('/notifications/read-all','POST',{});}finally{notices.readAll=originalAll;}
+  assert.equal(all!.unread_count,1);assert.ok(arriving&&BigInt(all!.read_through_id)<arriving);
+  assert.equal((await db.notification.findUniqueOrThrow({where:{id:arriving!}})).read_at,null);
+  assert.equal((await db.notification.findUniqueOrThrow({where:{id:otherNotice.id}})).read_at,null);
+  assert.equal(await db.notification.count({where:{recipient_key:'account:'+owner.id,id:{lte:BigInt(all!.read_through_id)},read_at:null}}),0);
+  assert.equal((await data('/notifications/read-all','POST',{})).unread_count,0);
+  assert.equal((await data('/notifications/read-all','POST',{})).unread_count,0);
+  assert.equal((await data('/notifications/summary')).unread_count,0,'Fresh authenticated request sees persistent count');
+  assert.equal((await req('/notifications?read_state=unread')).body.data.length,0);
+  const arbitrary=await db.notification.create({data:{recipient_key:'account:'+other.id,event_key:'unsafe:'+nonce,type:'system',title:'Synthetic',body:'No destination',href:'https://untrusted.invalid'}});
+  assert.equal((await data('/notifications/'+arbitrary.id,'GET',undefined,other)).destination,null);
   console.log('NOTIFY-01 full setup event journey and real MySQL race/rollback checks passed');
  }finally{if(createdAdmin){await db.adminAuthority.deleteMany({where:{accountId:createdAdmin}});await db.adminFactor.deleteMany({where:{accountId:createdAdmin}});}await app.close();await db.$disconnect();}
 });

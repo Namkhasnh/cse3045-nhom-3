@@ -1,0 +1,41 @@
+{
+  "date_vietnam": "2026-10-24",
+  "source_commit": "a53a150e65e04edbac67b5687761d7bfe32fec47",
+  "release_id": "20261024-a53a150",
+  "selection": "User explicitly selected a53a150 from chore/setup-ci; fetched hw1 merge 59a4afe does not contain that commit.",
+  "scope": "Frontend only. Backend source unchanged from deployed36e01f1; no DB/migration/container/runtime key update.",
+  "delivery": {
+    "bytes": 2730849,
+    "ciphertext_sha256": "785bf3125d586a732a06ffa1d4d9a2581c935482979ecd7df0b9e65ff7eb895b",
+    "public_temporary_url": "Explicit user approval after automatic-review rejection; tunnel and loopback server now CLOSED",
+    "secrets_included": false
+  },
+  "local_checks": {
+    "frontend_lint": "PASS",
+    "frontend_clean_git_archive_build": "PASS; excludes local env and inherited VITE variables",
+    "operator_tests": 12,
+    "bootstrap_syntax": "PASS",
+    "authenticated_decryption": "PASS"
+  },
+  "remote_execution": {
+    "result": "PASS reported by user",
+    "journal_captured": false,
+    "ssh": "Agent noninteractive SSH denied; user ran prepared bootstrap in existing session"
+  },
+  "independent_https": {
+    "homepage": 200,
+    "login": 200,
+    "catalog": 200,
+    "public_restaurant_count": 2,
+    "anonymous_auth": 401,
+    "js_css_sha256_match_candidate": true,
+    "html": "Cloudflare injects challenge script; application HTML and candidate asset references otherwise match",
+    "authenticated_owner_admin_journey": "NOT RUN"
+  },
+  "assets": {
+    "frontend/assets/index-BvYWGyEr.css": "7153a81450947212e2d3c85ec5deefea5b91d936b6fb619d4726f03eec5f0b58",
+    "frontend/assets/index-D9QUgP7-.js": "a1fa4948f3deada5aa387d95f964dd6c3701495702fee931740f69cb41bce54c"
+  },
+  "rollback": "sudo python3 /opt/hlf-frontend-20261024-a53a150/update-frontend.py --rollback",
+  "completed_at_utc": "2026-10-24T06:58:25.467330+00:00"
+}

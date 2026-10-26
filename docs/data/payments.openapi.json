@@ -3,7 +3,7 @@
   "info": {
     "title": "Approved DEC-06 payment contract",
     "version": "0.6.0",
-    "description": "P19 design approved; runtime acceptance is separate. Synthetic examples only."
+    "description": "P19 design approved; runtime acceptance is separate. Synthetic examples only. October25 COD cutover: owner-only new vouchers; legacy facts retained. See docs/cod-ordering.md."
   },
   "servers": [
     {
@@ -383,7 +383,7 @@
       "put": {
         "operationId": "payment_put__owner_restaurants_id_qr-settings",
         "summary": "PUT /owner/restaurants/{id}/qr-settings",
-        "description": "Approved DEC-06; current ownership and MFA authority where applicable. Financial events/history/audit/key atomic; no bank calls. Private no-store projections. Cash confirmation keeps existing optional evidence body.",
+        "description": "COD cutover: new QR authoring/review/uploads and platform voucher mutations are retired (410). Authorized committed keyed replays remain recoverable where applicable. Historical reads/obligations survive.",
         "parameters": [
           {
             "name": "id",
@@ -572,6 +572,24 @@
                 }
               }
             }
+          },
+          "410": {
+            "description": "Standard API error; safe localized message; preserve original key on uncertain outcome",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "requestBody": {
@@ -583,7 +601,8 @@
               }
             }
           }
-        }
+        },
+        "deprecated": true
       }
     },
     "/owner/restaurants/{id}/qr-settings/suspend": {
@@ -984,7 +1003,7 @@
       "post": {
         "operationId": "payment_post__admin_restaurants_id_qr-settings_review",
         "summary": "POST /admin/restaurants/{id}/qr-settings/review",
-        "description": "Approved DEC-06; current ownership and MFA authority where applicable. Financial events/history/audit/key atomic; no bank calls. Private no-store projections. Cash confirmation keeps existing optional evidence body.",
+        "description": "COD cutover: new QR authoring/review/uploads and platform voucher mutations are retired (410). Authorized committed keyed replays remain recoverable where applicable. Historical reads/obligations survive.",
         "parameters": [
           {
             "name": "id",
@@ -1173,6 +1192,24 @@
                 }
               }
             }
+          },
+          "410": {
+            "description": "Standard API error; safe localized message; preserve original key on uncertain outcome",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "requestBody": {
@@ -1184,7 +1221,8 @@
               }
             }
           }
-        }
+        },
+        "deprecated": true
       }
     },
     "/admin/restaurants/{id}/qr-settings/suspend": {
@@ -2813,7 +2851,7 @@
       "post": {
         "operationId": "payment_post__owner_restaurants_id_payment-evidence",
         "summary": "POST /owner/restaurants/{id}/payment-evidence",
-        "description": "Approved DEC-06; current ownership and MFA authority where applicable. Financial events/history/audit/key atomic; no bank calls. Private no-store projections. Cash confirmation keeps existing optional evidence body.",
+        "description": "COD cutover: new QR authoring/review/uploads and platform voucher mutations are retired (410). Authorized committed keyed replays remain recoverable where applicable. Historical reads/obligations survive.",
         "parameters": [
           {
             "name": "id",
@@ -2986,6 +3024,24 @@
             }
           },
           "503": {
+            "description": "Standard API error; safe localized message; preserve original key on uncertain outcome",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "error"
+                  ],
+                  "properties": {
+                    "error": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "410": {
             "description": "Standard API error; safe localized message; preserve original key on uncertain outcome",
             "content": {
               "application/json": {
@@ -3776,7 +3832,8 @@
               "unpaid",
               "paid",
               "refund_pending",
-              "refunded"
+              "refunded",
+              "not_required"
             ]
           },
           "order_paid": {
@@ -3978,31 +4035,17 @@
         "type": "object",
         "properties": {
           "cash": {
-            "const": true
+            "const": false
           },
           "qr": {
-            "anyOf": [
-              {
-                "type": "object",
-                "properties": {
-                  "qr_version": {
-                    "type": "integer",
-                    "minimum": 1,
-                    "maximum": 2147483647
-                  }
-                },
-                "required": [
-                  "qr_version"
-                ],
-                "additionalProperties": false
-              },
-              {
-                "type": "null"
-              }
-            ]
+            "type": "null"
+          },
+          "cod": {
+            "const": true
           }
         },
         "required": [
+          "cod",
           "cash",
           "qr"
         ],

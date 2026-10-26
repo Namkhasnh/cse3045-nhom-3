@@ -72,6 +72,7 @@ cse3045-nhom-3/
 │   │   │   │   ├── types.ts
 │   │   │   │   └── index.ts
 │   │   │   ├── payments/                 # Display payment state and submit confirmations
+│   │   │   ├── vouchers/                 # Scoped voucher management and API hooks
 │   │   │   ├── commissions/              # Basic manual reconciliation
 │   │   │   ├── recommendations/
 │   │   │   └── support/                  # V0.7/V1.0; reviews/favorites V1.1
@@ -162,3 +163,5 @@ cse3045-nhom-3/
 [Roadmap](roadmap.md) owns version delivery; [implementation status](implementation-status.md) is the actual inventory. Add frontend onboarding application/terms/history/review under its feature; app composition preserves buyer navigation alongside the single managed restaurant. accounts owns MFA/authority and availability; onboarding owns submissions/terms/reviews; restaurants owns unique ownership/readiness. Workflows coordinate atomic approval/manual create through public services with account-first locks. Support/audit administration is required V0.7, QR/refunds V0.6, media P13; maps V1.2, reorder/random/reviews/favorites V1.1.
 
 The documentation tree now includes roadmap.md, decisions.md, implementation-status.md, documentation-verification.md, onboarding.md, account-security.md, payments-policy.md, release-checklist.md, data/migration-plan.md and prompts/README.md plus v0.1.md–v1.0.md. These are documentation paths; proposed source folders are not claimed present.
+
+Checkout/voucher extension: `backend/src/modules/vouchers` owns definitions/redemptions through `public.ts`; the HTTP/application layer composes it with orders, delivery and commissions. Frontend voucher requests/state live in its hook and presentation remains in `VouchersPage`. See [approved contract](checkout-vouchers.md).

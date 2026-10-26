@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "In-site onboarding notifications",
-    "version": "2026-10-22"
+    "version": "2026-10-24"
   },
   "servers": [
     {
@@ -91,6 +91,33 @@
               "enum": [
                 "true",
                 "false"
+              ]
+            }
+          },
+          {
+            "name": "read_state",
+            "in": "query",
+            "required": false,
+            "description": "Cannot be combined with legacy unread. unread=false retains all semantics.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "unread",
+                "read"
+              ]
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "order",
+                "system"
               ]
             }
           }
@@ -392,7 +419,7 @@
                   "additionalProperties": false,
                   "properties": {
                     "data": {
-                      "$ref": "#/components/schemas/Summary"
+                      "$ref": "#/components/schemas/ReadAllResult"
                     }
                   }
                 }
@@ -419,9 +446,7 @@
               "schema": {
                 "type": "object",
                 "additionalProperties": false,
-                "required": [
-                  "ids"
-                ],
+                "required": [],
                 "properties": {
                   "ids": {
                     "type": "array",
@@ -538,6 +563,38 @@
                 "type": "string"
               }
             }
+          },
+          "unread_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "destination": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "kind",
+                  "href"
+                ],
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "order",
+                      "task"
+                    ]
+                  },
+                  "href": {
+                    "type": "string",
+                    "pattern": "^/(?!/)"
+                  }
+                }
+              }
+            ]
           }
         }
       },
@@ -661,6 +718,29 @@
             "type": "string"
           },
           "href": {
+            "type": "string"
+          }
+        }
+      },
+      "ReadAllResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "unread_count"
+        ],
+        "properties": {
+          "unread_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "read_through_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "read_at": {
             "type": "string"
           }
         }

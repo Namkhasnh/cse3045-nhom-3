@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { DishImage } from '../components/DishImage'
 import { Button } from '../../../shared/ui/Button'
 import { Icon } from '../../../shared/ui/Icon'
+import { RestaurantAvatar } from '../components/RestaurantAvatar'
 import { RestaurantCover, defaultIntroduction } from '../components/RestaurantCover'
 import '../storefront.css'
 import { ListState } from '../../../shared/ui/ListState'
@@ -40,7 +41,7 @@ export function RestaurantMenuPage({ restaurantId, onAddDish, cartSummary, onOpe
       <RestaurantCover key={restaurant.cover_image_reference} source={restaurant.cover_image_reference} name={restaurant.name} />
       <div className="storefront-hero-content">
         <span className={`storefront-status${receiving ? '' : ' storefront-status--closed'}`}>{receiving ? 'Đang nhận đơn' : !restaurant.is_open ? 'Đã đóng cửa' : 'Tạm ngưng nhận đơn'}</span>
-        <h1 id="menu-title">{restaurant.name}</h1>
+        <div className="storefront-identity"><RestaurantAvatar key={restaurant.avatar_image_reference} source={restaurant.avatar_image_reference} name={restaurant.name}/><h1 id="menu-title">{restaurant.name}</h1></div>
         <p className="storefront-introduction">{restaurant.description?.trim() || defaultIntroduction}</p>
         <div className="storefront-meta">
           <div><Icon name="clock" /><span><small>Giờ Việt Nam</small>{summary(restaurant).hours}</span></div>

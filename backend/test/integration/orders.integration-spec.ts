@@ -1,3 +1,5 @@
+import {OrdersRepository} from '../../src/modules/orders/orders.repository.js';
+import {codeCollision} from '../../src/modules/orders/order-code.js';
 import type {Prisma} from '../../src/generated/prisma/client.js';
 import {NotificationsService} from '../../src/modules/notifications/public.js';
 import {OrdersWorkflow} from '../../src/workflows/orders.workflow.js';
@@ -36,22 +38,51 @@ test('P15 IDEM-01/02 PRICE-01 ELIG-01 HIST-01 DATA-01 actual MySQL cash aggregat
  const publicRestaurant=await(await fetch(origin+'/api/v1/restaurants/'+r)).json();assert.equal(publicRestaurant.data.id,r);assert.ok(!JSON.stringify(publicRestaurant).includes('commission'));assert.ok(!JSON.stringify(publicRestaurant).includes('owner_id'));
  assert.equal((await req('/delivery-quotes','POST',{restaurant_id:r,pickup_point_id:point.id},undefined,foreign)).status,200);
 
- const buyer=foreign;
+ const buyer=foreign;await db.account.update({where:{id:buyer.id},data:{displayName:'Synthetic recipient',phone:'0900000000'}});
  const q=(await req('/delivery-quotes','POST',{restaurant_id:r,pickup_point_id:point.id},undefined,buyer)).body.data;
  const accepted=({quote_artifact,policy_version,pickup_point_version,survey_version,distance_m,delivery_fee_vnd}:Record<string,unknown>)=>({quote_artifact,policy_version,pickup_point_version,survey_version,distance_m,delivery_fee_vnd});
- const intent={restaurant_id:r,items:[{dish_id:dish.id,quantity:2,accepted_unit_price_vnd:'45000'}],pickup_point_id:point.id,recipient:{name:'Synthetic recipient',phone:'0900000000'},payment_method:'cash',accepted_delivery_quote:accepted(q)};
+ const intent={restaurant_id:r,items:[{dish_id:dish.id,quantity:2,accepted_unit_price_vnd:'45000'}],pickup_point_id:point.id,recipient:{name:'Synthetic recipient',phone:'0900000000'},payment_method:'cod',accepted_delivery_quote:accepted(q)};
  const place=(body= intent,key='create')=>req('/orders','POST',body,key,buyer);
- const results=await Promise.all([place(),place()]);assert.deepEqual(results.map(x=>x.status).sort(),[200,201],JSON.stringify(results));const order=results[0].body.data,oid=BigInt(order.id);assert.equal(results[1].body.data.id,order.id);for(const response of results){assert.equal(response.replayed,String(response.status===200));assert.equal(response.location,response.status===201?'/api/v1/orders/'+order.id:null);}assert.ok(schema('CashOrder')(order));assert.equal(order.total_vnd,'90000');assert.equal(order.payment.status,'unpaid');
+ const results=await Promise.all([place(),place()]);assert.deepEqual(results.map(x=>x.status).sort(),[200,201],JSON.stringify(results));const order=results[0].body.data,oid=BigInt(order.id);assert.equal(results[1].body.data.id,order.id);for(const response of results){assert.equal(response.replayed,String(response.status===200));assert.equal(response.location,response.status===201?'/api/v1/orders/'+order.id:null);}assert.ok(schema('CashOrder')(order));assert.equal(order.total_vnd,'90000');assert.equal(order.payment.status,'not_tracked');
+ for(const method of ['cash','qr']){const legacy={...intent,payment_method:method,...(method==='qr'?{accepted_qr_version:1}:{})};for(const endpoint of ['/orders/preview','/orders'])assert.equal((await req(endpoint,'POST',legacy,'retired-'+method,buyer)).body.error.code,'PAYMENT_METHOD_RETIRED');}
+ assert.equal((await req('/restaurants/'+r+'/payment-options','GET',undefined,undefined,buyer)).body.data.cod,true);
+ assert.equal((await req('/orders/'+order.id+'/payment/confirm','POST',{},'cod-confirm')).body.error.code,'PAYMENT_NOT_TRACKED');
+ assert.equal((await req('/orders/'+order.id+'/payment/claims','POST',{instruction_version:1,reported_sent:true},'cod-claim',buyer)).body.error.code,'PAYMENT_NOT_TRACKED');
+ assert.equal((await req('/orders/'+order.id+'/payment/disputes','POST',{reason:'No platform money tracking'},'cod-dispute',buyer)).body.error.code,'PAYMENT_NOT_TRACKED');
+ assert.equal((await req('/owner/restaurants/'+r+'/orders?payment_method=cod&payment_status=not_tracked')).body.data.some((v:{id:string})=>v.id===order.id),true);
+
+ assert.match(order.order_code,/^HLF-[2-9A-HJ-NP-Z]{8}$/);assert.equal(results[1].body.data.order_code,order.order_code);
+ const ownerCards=await req(path+'/orders?code='+order.order_code);assert.equal(ownerCards.status,200);assert.equal(ownerCards.body.data.length,1);const card=ownerCards.body.data[0];assert.equal(card.order_code,order.order_code);assert.equal(card.recipient,undefined);assert.equal(card.destination.pickup_point_name,point.name);assert.equal(card.items.length,1);assert.equal(card.food_ready,null);assert.ok(schema('OwnerOrderCard')(card));assert.ok(!JSON.stringify(card).includes('student_id'));assert.ok(!JSON.stringify(card).includes('_personal'));
+ const byMethod=await req(path+'/orders?payment_method=qr');assert.equal(byMethod.body.data.length,0);
+ const counters=await req(path+'/orders/summary?code='+order.order_code);assert.equal(counters.body.data.counts.pending,1);assert.equal((await req(path+'/orders/summary?code='+order.order_code+'&status=completed')).body.data.counts.pending,1,'Counter ignores selected lane');assert.equal((await req(path+'/orders/summary','GET',undefined,undefined,buyer)).status,404);
+ assert.equal((await req('/orders/'+order.id+'?projection=owner','GET',undefined,undefined,buyer)).status,404);assert.equal((await req('/orders/'+order.id+'?projection=owner')).body.data.recipient,undefined);
+ assert.equal((await req(path+'/orders?created_from=2099-01-01T00%3A00%3A00.000Z')).body.data.length,0);
  assert.equal(await db.orders.count({where:{student_id:buyer.id,restaurant_id:restaurant.id}}),1);assert.equal(await db.order_status_history.count({where:{order_id:oid}}),1);assert.equal(await db.order_payment_history.count({where:{order_id:oid}}),1);assert.equal(await db.auditLog.count({where:{action:'order.created',targetId:oid}}),1);
  const noticeWhere={source_id:oid,type:'order.pending'};
  const notices=await db.notification.findMany({where:noticeWhere});assert.equal(notices.length,2,'Same-key concurrent create emits one message per mailbox');
  assert.deepEqual(notices.map(n=>n.recipient_key).sort(),['account:'+buyer.id,'account:'+owner.id].sort());
+ assert.ok(notices.every(n=>n.body.includes(order.order_code)));
  assert.ok(notices.every(n=>!n.body.includes(intent.recipient.name)&&!n.body.includes(intent.recipient.phone)));
  assert.equal(notices.find(n=>n.recipient_key==='account:'+owner.id)?.href,'/owner/restaurants/'+r+'/orders?order='+oid);
  const buyerNotice=notices.find(n=>n.recipient_key==='account:'+buyer.id)!;
  const detail=(await req('/notifications/'+buyerNotice.id,'GET',undefined,undefined,buyer)).body.data;
  assert.equal(detail.current_context.href,'/orders/'+oid);assert.equal(detail.current_context.status,'order');
  assert.equal((await req('/notifications/'+buyerNotice.id,'GET',undefined,undefined,owner)).status,404);
+ const ownerNotice=notices.find(n=>n.recipient_key==='account:'+owner.id)!;
+ const buyerDestination=(await req('/notifications/'+buyerNotice.id,'GET',undefined,undefined,buyer)).body.data.destination;
+ assert.equal(buyerDestination.href,'/orders/'+buyerNotice.source_id);
+ assert.equal((await req('/notifications/'+ownerNotice.id)).body.data.destination.href,'/owner/restaurants/'+r+'/orders?order='+ownerNotice.source_id);
+ const beforeReadOrder=await db.orders.findUniqueOrThrow({where:{id:buyerNotice.source_id!}}),beforeReadPayment=await db.order_payments.findUniqueOrThrow({where:{order_id:buyerNotice.source_id!}}),beforeReadCommission=await db.commission_entries.count({where:{order_id:buyerNotice.source_id!}});
+ await req('/notifications/'+buyerNotice.id+'/read','POST',{},undefined,buyer);
+ await req('/notifications/read-all','POST',{},undefined,buyer);
+ assert.deepEqual(await db.orders.findUniqueOrThrow({where:{id:buyerNotice.source_id!}}),beforeReadOrder);
+ assert.deepEqual(await db.order_payments.findUniqueOrThrow({where:{order_id:buyerNotice.source_id!}}),beforeReadPayment);
+ assert.equal(await db.commission_entries.count({where:{order_id:buyerNotice.source_id!}}),beforeReadCommission);
+ // A retained notice cannot grant a former owner access after reassignment.
+ const replacementOwner=await create('p15replacement');
+ await db.restaurants.update({where:{id:restaurant.id},data:{owner_id:replacementOwner.id}});
+ try{assert.equal((await req('/notifications/'+ownerNotice.id)).body.data.destination,null);}
+ finally{await db.restaurants.update({where:{id:restaurant.id},data:{owner_id:owner.id}});}
  const noticesService=app.get(NotificationsService),append=noticesService.account.bind(noticesService),beforeNotices=await db.notification.count({where:{type:'order.pending',restaurant_id:restaurant.id}});
  let appended=0;noticesService.account=async(...args)=>{await append(...args);if(++appended===2)throw new Error('Synthetic notice outage after insert');};
  assert.equal((await place(intent,'notice-rollback')).status,500);noticesService.account=append;
@@ -72,6 +103,27 @@ test('P15 IDEM-01/02 PRICE-01 ELIG-01 HIST-01 DATA-01 actual MySQL cash aggregat
  await db.dishes.update({where:{id:BigInt(dish.id)},data:{name:'Changed synthetic',is_visible:false}});await db.restaurants.update({where:{id:restaurant.id},data:{is_active:false}});const replay=await place();assert.equal(replay.status,200);assert.equal(replay.body.data.id,order.id);assert.deepEqual(replay.body.data.items,order.items);const closed=await place(intent,'closed');assert.equal(closed.status,422);assert.equal(closed.body.error.details.reason,'RESTAURANT_NOT_ORDERABLE');assert.equal(closed.body.error.details.current_delivery_quote,null);
  await assert.rejects(db.order_items.create({data:{order_id:oid,restaurant_id:legacy.id,dish_id:BigInt(dish.id),dish_name_snapshot:'Wrong restaurant',quantity:1,unit_price_vnd:1n,line_total_vnd:1n}}));
  assert.equal((await req('/orders','GET',undefined,undefined,buyer)).body.data.length,4);
- const historical=await db.orders.findUniqueOrThrow({where:{id:oid}});const incomplete=await db.orders.create({data:{...historical,id:undefined,delivery_quote_snapshot:historical.delivery_quote_snapshot as Prisma.InputJsonObject}});const unknown=await req('/orders/'+incomplete.id,'GET',undefined,undefined,buyer);assert.equal(unknown.status,200);assert.equal(unknown.body.data.payment,null);assert.ok(schema('CashBuyerOrder')(unknown.body.data));assert.equal((await req('/orders/'+incomplete.id+'/payment/confirm','POST',{})).status,422);assert.equal(await db.order_payments.count({where:{order_id:incomplete.id}}),0);
+ const buyerPage=await req('/orders?search='+encodeURIComponent('Changed')+'&limit=1','GET',undefined,undefined,buyer);
+ // Search uses current restaurant label, not dish labels or another buyer's rows.
+ assert.equal(buyerPage.body.data.length,0);assert.equal((await req('/orders?search=%25','GET',undefined,undefined,buyer)).body.data.length,0,'Search treats LIKE wildcards literally');
+ const restaurantName=(await db.restaurants.findUniqueOrThrow({where:{id:restaurant.id}})).name;
+ const searchPath='/orders?search='+encodeURIComponent(restaurantName)+'&limit=1';
+ const firstBuyer=(await req(searchPath,'GET',undefined,undefined,buyer)).body;assert.equal(firstBuyer.data.length,1);assert.equal(firstBuyer.page.has_more,true);
+ assert.equal(firstBuyer.data[0].items.length,1);assert.equal(firstBuyer.data[0].restaurant_name,restaurantName);assert.ok(schema('CashOrderSummary')(firstBuyer.data[0]));
+ for(const privateKey of ['recipient','destination','history','_personal'])assert.equal(firstBuyer.data[0][privateKey],undefined);
+ const secondBuyer=(await req(searchPath+'&cursor='+encodeURIComponent(firstBuyer.page.next_cursor),'GET',undefined,undefined,buyer)).body;assert.equal(secondBuyer.data.length,1);assert.notEqual(secondBuyer.data[0].id,firstBuyer.data[0].id);
+ assert.equal((await req('/orders?search=absent&limit=1&cursor='+encodeURIComponent(firstBuyer.page.next_cursor),'GET',undefined,undefined,buyer)).status,422);
+ assert.equal((await req('/orders?search='+order.order_code,'GET',undefined,undefined,buyer)).body.data[0].id,order.id);
+ const buyerCounts=(await req('/orders/summary?search='+encodeURIComponent(restaurantName)+'&status=completed','GET',undefined,undefined,buyer)).body.data.counts;assert.equal(buyerCounts.pending,4);assert.equal(buyerCounts.completed,0);
+ assert.equal((await req('/orders/summary?search='+order.order_code,'GET',undefined,undefined,owner)).body.data.counts.pending,0);
+ assert.equal((await req('/orders?search='+order.order_code,'GET',undefined,undefined,owner)).body.data.length,0);
+
+ const historical=await db.orders.findUniqueOrThrow({where:{id:oid}});const incomplete=await db.orders.create({data:{...historical,voucher_snapshot:(historical.voucher_snapshot??undefined) as Prisma.InputJsonObject|undefined,id:undefined,order_code:undefined,delivery_quote_snapshot:historical.delivery_quote_snapshot as Prisma.InputJsonObject}});const unknown=await req('/orders/'+incomplete.id,'GET',undefined,undefined,buyer);assert.equal(unknown.status,200);assert.equal(unknown.body.data.payment,null);assert.ok(schema('CashBuyerOrder')(unknown.body.data));assert.equal((await req('/orders/'+incomplete.id+'/payment/confirm','POST',{})).status,422);assert.equal(await db.order_payments.count({where:{order_id:incomplete.id}}),0);
+ // A real MySQL unique violation is recovered within the transaction, without losing the new intent.
+ const source=await db.orders.findUniqueOrThrow({where:{id:oid}});let collisionAttempts=0;
+ const collisionOrder=await db.$transaction(async tx=>{const proxy={orders:{create:async(args:Prisma.ordersCreateArgs)=>{collisionAttempts++;try{return await tx.orders.create(collisionAttempts===1?{...args,data:{...args.data,order_code:source.order_code}}:args);}catch(e){assert.equal(codeCollision(e),true);throw e;}}}} as unknown as Prisma.TransactionClient;return new OrdersRepository().create({db:proxy},{...source,voucher_snapshot:(source.voucher_snapshot??undefined) as Prisma.InputJsonObject|undefined,id:undefined,order_code:undefined,delivery_quote_snapshot:source.delivery_quote_snapshot as Prisma.InputJsonObject});});
+ assert.equal(collisionAttempts,2);assert.notEqual(collisionOrder.order_code,source.order_code);
+ const selfOrder=await db.orders.create({data:{...source,voucher_snapshot:(source.voucher_snapshot??undefined) as Prisma.InputJsonObject|undefined,id:undefined,order_code:undefined,student_id:owner.id,recipient_name_snapshot:'Self recipient',delivery_quote_snapshot:source.delivery_quote_snapshot as Prisma.InputJsonObject}});
+ assert.equal((await req('/orders/'+selfOrder.id)).body.data.recipient.name,'Self recipient');assert.equal((await req('/orders/'+selfOrder.id+'?projection=owner')).body.data.recipient,undefined);assert.equal((await req(path+'/orders?code='+selfOrder.order_code)).body.data[0].recipient,undefined);
  }finally{if(createdAdmin){await db.adminAuthority.deleteMany({where:{accountId:createdAdmin}});await db.adminFactor.deleteMany({where:{accountId:createdAdmin}});}await db.$disconnect();await app.close()}
 });
