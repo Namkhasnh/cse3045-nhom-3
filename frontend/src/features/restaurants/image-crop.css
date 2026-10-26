@@ -16,7 +16,3 @@
 .restaurant-avatar .icon { width: 36px; height: 36px; }
 .storefront-identity { display: flex; align-items: center; gap: 20px; }
 @media(max-width: 480px) { .restaurant-crop-dialog { padding: 16px; }.storefront-identity { gap: 12px; }.storefront-identity .restaurant-avatar { width: 64px; height: 64px; flex-basis: 64px; } }
-
-.home-restaurant-identity { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
-.home-restaurant-identity .restaurant-avatar { width: 48px; height: 48px; flex-basis: 48px; border-radius: 12px; }
-.home-restaurant-identity .restaurant-avatar .icon { width: 24px; height: 24px; }

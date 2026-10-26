@@ -54,3 +54,25 @@ The user requested redeployment and explicitly selected `a53a150e65e04edbac67b56
 Direct SSH still requires interactive password authentication. The user ran the prepared bootstrap in their existing VPS shell and reported **PASS**; the detailed VPS journal was not supplied. Independent HTTPS checks confirm homepage/login200, catalog200(two public restaurants), anonymous auth401, and exact candidate JS/CSS SHA256. Cloudflare injects a challenge script into HTML; application asset references match the candidate. Authenticated remote owner/Admin journey **NOT RUN**. [Sanitized receipt](evidence/demo-frontend-update-a53a150.json) separates these evidence boundaries.
 
 Automatic review initially rejected the public artifact tunnel for missing destination-specific approval. The user then explicitly approved a temporary Cloudflare URL for this encrypted2.7MBartifact, with its key transferred separately at a hidden prompt. After user-reported deployment success, the tunnel and loopback server were stopped: **CLOSED**. Application rollback for this refresh is `sudo python3 /opt/hlf-frontend-20261024-a53a150/update-frontend.py --rollback`; retained databases must not be restored as part of frontend rollback.
+
+## Frontend refresh 589af87 — October26,2026
+
+The user requested deployment of the latest local UI to the existing server. Direct authenticated SSH confirmed `student@192.168.2.216`, current frontend `/opt/hlf-update-20261025-c4c7172/frontend`, the completed update receipt and its exact owned nginx hash. The running API still uses image `sha256:3e406cc2ee20160994e7c2e5e8c8645b5bad0b7b82679652e282986e1228fdb0`. This refresh changes frontend assets only; it retains server business data, schema, API/storage containers and the activated Gemini configuration. Backend changes present locally are not deployed by this frontend refresh.
+
+Candidate source: `589af87ef6e2683dd4defc3090315f5df72d1fd9`. A clean Git archive build excludes local environment files and inherited `VITE_*` variables. The existing frontend updater was packaged with its previous-release pointer changed to the verified October25 release. It checks manifest hashes and nginx ownership, retains old immutable asset URLs, switches the static root, and restores the previous route if routed checks fail. The 2778441-byte archive SHA256 is `4504c160ea49ca73e2a45e18b64769caeed5dfd5e4fc9dedb17336f2acb59130`. Delivery used authenticated SSH with remote checksum verification; no public artifact tunnel was opened.
+
+Remote updater: **PASS**, observed directly in the SSH shell. Release and protected route recovery state: `/opt/hlf-frontend-20261026-589af87`. Application rollback:
+
+```sh
+sudo python3 /opt/hlf-frontend-20261026-589af87/update-frontend.py --rollback
+```
+
+Verification:
+
+- PASS frontend lint/build and clean-archive build; existing Vite chunk-size advisory remains.
+- PASS `test:delivery-unit` (3 cases), `test:purchase`, `test:delivery-ui`, and `test:homepage`. Chrome uses controlled API responses; these cover responsive layouts, keyboard/zoom/reduced motion, checkout results/recovery, delivery drafts and homepage discovery.
+- PASS 5 existing frontend-updater Python tests for asset checks, anonymous authentication and rollback ownership.
+- PASS direct remote routed checks of every packaged frontend file, catalog200 and anonymous401.
+- PASS independent public HTTPS homepage/login/orders/delivery routes200, catalog200, anonymous401 and exact new JS/CSS SHA256 matches (`index-RPO0xXn-.js`, `index-fkJKHTT8.css`). SPA route200 alone does not establish authenticated feature behavior.
+- Browser observation: public homepage renders the new discovery layout, six current dishes and two retained restaurants. Both restaurants currently show the missing-avatar fallback; avatar backend/schema adoption is outside this refresh.
+- Authenticated VPS buyer/owner/Admin journeys: **NOT RUN**. No order/account/payment mutations, migration, local database import or AI generation was performed. This remains an academic demo refresh, not commercial release acceptance.

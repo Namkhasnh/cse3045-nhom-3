@@ -33,6 +33,7 @@ Current ordering/payment policy: [COD and owner-only vouchers](cod-ordering.md);
 | Why does the local homepage now show sample dishes? | [Local demo adoption and recovery](local-demo-adoption.md) |
 | How were local sample accounts/catalog/points removed from active use? | [Local demo cleanup and recovery](local-demo-cleanup.md); history retained, real selling setup still required |
 | How is sell readiness configured? | [V0.4 setup contract](restaurant-setup-v04-contract.md), [local verification](setup-local-verification.md) |
+| How does the redesigned owner VJU delivery page work? | [Delivery dashboard, drafts and verification](ui/owner-delivery-figma.md) |
 | How do restaurant cover/avatar, crop selection and the detail page work? | [Approved Figma storefront and interfaces](ui/restaurant-detail-figma.md), [verification](ui/restaurant-detail-verification.md), [cover/avatar and crop editor](ui/restaurant-images.md) |
 | What governs checkout, vouchers and subsidy reconciliation? | [Approved checkout/voucher contract](checkout-vouchers.md), [implementation/verification](ui/checkout-verification.md) |
 | How does the redesigned cart handle real fees, undo and checkout handoff? | [Cart design and verification](ui/cart-figma.md), [transient action feedback](ui/action-feedback.md) |
@@ -43,6 +44,7 @@ Current ordering/payment policy: [COD and owner-only vouchers](cod-ordering.md);
 | How do the owner dashboard and four settings tabs work? | [Owner Figma implementation](ui/owner-dashboard-figma.md) and [backend analytics](ui/owner-analytics.md) |
 | How are personal, restaurant management and Admin workspaces separated? | [Approved account/owner workspaces and verification](ui/workspaces-figma.md) |
 | How does the standalone notification center behave? | [Approved notification redesign](ui/notifications-figma.md), [API/persistence contract](notifications-contract.md), [verification](notifications-verification.md) |
+| How does Login match Figma, including the food steam and real authentication? | [Login design and verification](ui/login-figma.md) |
 | How should screens look and behave? | UI §§1–13, [design coordination](ui/design-skills.md), [original HTML](ui/Hoa%20Lac%20Food%20Ordering%20Platform.html) |
 | How are the scoped UI/UX defect fixes reproduced? | [UI/UX fix verification](uiux-fixes-local-verification.md) |
 | What is implemented or tested? | [Implementation/evidence](implementation-status.md), [historical fixture report](ui/student-discovery-verification.md), [legacy verification archive](history/legacy-verification.md), [documentation checks](documentation-verification.md) |
@@ -51,6 +53,7 @@ Current ordering/payment policy: [COD and owner-only vouchers](cod-ordering.md);
 | Why did the local owner dashboard/orders return500 after the order redesign? | [Order-code schema adoption and full regression](local-runtime-order-code-repair.md) |
 | Why did local login/catalog return502 after checkout changes? | [Checkout schema adoption and runtime repair](local-checkout-runtime-repair.md) |
 | How is current local code/COD schema deployed while keeping VPS data? | [October25 code-only update](demo-cod-update.md) |
+| Is Gemini enabled on the demo VPS, and why can suggestions still time out? | [October26 activation and provider latency evidence](demo-ai-activation.md) |
 | How are retained local/SSH forks merged without replacing SSH data? | [Demo database merge and recovery](demo-database-merge.md); private manifests and exact-clone rehearsal |
 | How do we launch/recover/respond to incidents? | [Release checklist](release-checklist.md), deployment §§5–13, testing §§11–13 |
 

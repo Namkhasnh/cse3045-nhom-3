@@ -2,6 +2,10 @@ import { useState, type FormEvent } from 'react'
 import { authPath } from '../return-path'
 import { Button } from '../../../shared/ui/Button'
 import { Input } from '../../../shared/ui/Input'
+import { Icon } from '../../../shared/ui/Icon'
+import { LoginBrand } from '../../../shared/ui/LoginBrand'
+import { Photo } from '../../../shared/ui/Photo'
+import './login.css'
 import { authApi, ApiError, type User } from '../api/auth.api'
 
 const errorText: Record<string, string> = {
@@ -36,6 +40,7 @@ export function AuthPage({ mode, onLogin, onNavigate }: {
 }) {
   const [username, setUsername] = useState(new URLSearchParams(window.location.search).get('username') ?? '')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [passwordConfirmation, setPasswordConfirmation] = useState('')
   const [email, setEmail] = useState('')
   const [challenge, setChallenge] = useState<string | null>(null)
@@ -75,12 +80,12 @@ export function AuthPage({ mode, onLogin, onNavigate }: {
       } else if (challenge) {
         const result = await authApi.verifyMfa(challenge, recoveryMode ? { recovery_code: mfaCode } : { code: mfaCode })
         if ('re_enrollment_required' in result) {
-          setChallenge(null); setPassword(''); setMfaCode('')
+          setChallenge(null); setPassword(''); setShowPassword(false); setMfaCode('')
           setNotice('Mã phục hồi đã được dùng. Phiên cũ đã bị thu hồi. Hãy đăng ký lại TOTP qua CLI operator trước khi đăng nhập Admin.')
         } else onLogin(result)
       } else {
         const result = await authApi.login(username, password)
-        setPassword('')
+        setPassword(''); setShowPassword(false)
         if ('mfa_required' in result) { setChallenge(result.challenge_id); setMfaCode('') }
         else onLogin(result)
       }
@@ -98,48 +103,60 @@ export function AuthPage({ mode, onLogin, onNavigate }: {
           : ({ 'Invalid login identifier.': 'username', 'Invalid password.': 'password',
               'Invalid email address.': 'email', 'Invalid contact details.': 'display-name' } as Record<string, string>)[cause.message]
         if (field) fieldError(field, describeError(cause))
-        if (cause.code === 'REQUEST_TIMEOUT') { setPassword(''); setMfaCode('') }
+        if (cause.code === 'REQUEST_TIMEOUT') { setPassword(''); setShowPassword(false); setMfaCode('') }
       }
     } finally { setBusy(false) }
   }
 
   const register = mode === 'register'
   const verify = mode === 'verify'
-  return <div className={`auth-shell${mode === 'login' ? ' auth-shell--login' : ''}`}>
-    {mode === 'login' && <aside className="auth-story" aria-hidden="true">
-      <div className="auth-story__top">HÒA LẠC FOOD <span>•</span> VJU</div>
-      <div className="auth-story__plate"><span className="auth-story__plate-inner" /></div>
-      <div className="auth-story__bottom">
-        <p>Một điểm bắt đầu<br />cho bữa ăn quanh VJU.</p>
-        <span>Khám phá các quán ăn trong khuôn viên</span>
+  const login = mode === 'login'
+  return <div className={login ? 'login-page' : 'auth-shell'}><div className={login ? 'login-card' : 'auth-card--plain'}>
+    {login && <aside className="login-hero" aria-label="Khám phá ẩm thực quanh VJU">
+      <Photo src="/images/auth/login-rice.jpg" alt="Cơm gà nướng, trứng và rau ăn kèm" eager />
+      <div className="login-hero__overlay" />
+      <div className="login-hero__top">HOA LAC FOOD <i /> VJU</div>
+      <div className="login-hero__badge"><Icon name="sparkle" /><span><b>Gần bạn mỗi ngày</b>Món ngon, tiện lợi</span></div>
+      <div className="login-steam" aria-hidden="true"><i /><i /><i /></div>
+      <div className="login-hero__copy">
+        <span className="login-hero__kicker">BỮA NGON • NGÀY VUI</span>
+        <h2>Đói bụng rồi?<br />Món ngon đang chờ bạn!</h2>
+        <p>Khám phá món ngon quanh VJU và đặt món yêu thích chỉ trong vài bước.</p>
       </div>
+      <small>Ảnh: You Le / Unsplash</small>
     </aside>}
-    <main id="main-content" className={`auth-panel${mode === 'login' ? ' auth-panel--login' : ''}`}>
-      <a href="/" className="brand auth-brand" aria-label="Hòa Lạc Food — Trang chủ">Hòa Lạc <span className="text-brand">Food</span></a>
-      <h1>{verify ? 'Xác minh email' : register ? 'Tạo tài khoản' : 'Đăng nhập'}</h1>
-      <p className="auth-intro">{verify ? 'Nhập mã 6 số đã gửi tới email của bạn.' : register ? 'Tạo tài khoản để mua hàng và theo dõi thông tin của bạn.' : 'Chào mừng bạn trở lại. Dùng tên tài khoản để tiếp tục.'}</p>
+    <main id="main-content" tabIndex={-1} className={login ? 'login-panel' : 'auth-panel'}>
+      {login ? <div className="login-form-brand"><LoginBrand compact /><span>VJU</span></div> : <a href="/" className="brand auth-brand" aria-label="Hòa Lạc Food — Trang chủ">Hòa Lạc <span className="text-brand">Food</span></a>}
+      {login && <div className="login-welcome"><Icon name="sparkle" />Chào bạn trở lại</div>}
+      <div className={login ? 'login-heading' : 'auth-card--plain'}>
+        <h1>{verify ? 'Xác minh email' : register ? 'Tạo tài khoản' : <>Chào mừng bạn trở lại! <span aria-hidden="true">👋</span></>}</h1>
+        <p className="auth-intro">{verify ? 'Nhập mã 6 số đã gửi tới email của bạn.' : register ? 'Tạo tài khoản để mua hàng và theo dõi thông tin của bạn.' : 'Đăng nhập để tiếp tục khám phá những món ngon quanh bạn.'}</p>
+      </div>
       {verify && new URLSearchParams(window.location.search).has('delivery_failed') &&
         <p className="form-notice" role="status">Chưa gửi được mã. Hãy thử gửi lại sau ít phút.</p>}
       {new URLSearchParams(window.location.search).has('verified') && !register && !verify &&
         <p className="form-success" role="status">Email đã được xác minh. Hãy đăng nhập.</p>}
       {notice && <p className="form-success" role="status">{notice}</p>}
       {error && <p className="form-error" role="alert">{error}</p>}
-      {mode==='login'&&<p><a href="/recover-access">Khôi phục truy cập khi thông tin đăng nhập bị lộ</a></p>}<form onSubmit={submit} className="auth-form" onChange={event=>{
+      <form onSubmit={submit} className="auth-form" aria-busy={busy} onChange={event=>{
         if(event.target instanceof HTMLInputElement){const id=event.target.id;setFieldErrors(current=>{if(!current[id])return current;const next={...current};delete next[id];return next})}
       }}>
         {register && <Input id="display-name" error={fieldErrors['display-name']} label="Họ và tên" autoComplete="name" value={displayName}
           onChange={event => setDisplayName(event.target.value)} maxLength={200} required />}
-        <Input id="username" error={fieldErrors['username']} label="Tên đăng nhập" autoComplete="username" value={username}
+        <Input id="username" error={fieldErrors['username']} label="Tên đăng nhập" autoComplete="username" autoFocus={login} value={username}
+          icon={login ? <Icon name="user" /> : undefined} placeholder={login ? 'Nhập tên đăng nhập của bạn' : undefined}
           onChange={event => setUsername(event.target.value)} minLength={3} maxLength={32} required
           pattern="[A-Za-z0-9][A-Za-z0-9._\-]{2,31}"
-          title="3–32 ký tự ASCII: chữ, số, dấu chấm, gạch dưới hoặc gạch ngang; không dùng email" />
+          title={login ? undefined : '3–32 ký tự ASCII: chữ, số, dấu chấm, gạch dưới hoặc gạch ngang; không dùng email'} />
         {register && <p className="form-help">Dùng tên đăng nhập 3–32 ký tự, không dùng email.</p>}
         {register && <Input id="email" error={fieldErrors['email']} label="Email" type="email" autoComplete="email" value={email}
           onChange={event => setEmail(event.target.value)} maxLength={254} required />}
         {register && <Input id="phone" error={fieldErrors['phone']} label="Số điện thoại (không bắt buộc)" autoComplete="tel" value={phone}
           onChange={event => setPhone(event.target.value)} maxLength={16} pattern="\+?[0-9]{9,15}"
           title="9–15 chữ số, có thể bắt đầu bằng +" />}
-        {!verify && !challenge && <Input id="password" error={fieldErrors['password']} label="Mật khẩu" type="password" autoComplete={register ? 'new-password' : 'current-password'}
+        {!verify && !challenge && <Input id="password" error={fieldErrors['password']} label="Mật khẩu" type={login && showPassword ? 'text' : 'password'} autoComplete={register ? 'new-password' : 'current-password'}
+          icon={login ? <Icon name="lock" /> : undefined} placeholder={login ? 'Nhập mật khẩu' : undefined}
+          trailing={login ? <button type="button" className="login-password-toggle" aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'} aria-pressed={showPassword} aria-controls="password" onClick={() => setShowPassword(!showPassword)}><Icon name={showPassword ? 'eyeOff' : 'eye'} /></button> : undefined}
           value={password} onChange={event => setPassword(event.target.value)} minLength={register ? 12 : undefined} required />
         }
         {register && <Input id="password-confirmation" error={fieldErrors['password-confirmation']} label="Nhập lại mật khẩu" type="password" autoComplete="new-password"
@@ -156,9 +173,9 @@ export function AuthPage({ mode, onLogin, onNavigate }: {
           <Button type="button" variant="neutral" disabled={busy} onClick={() => { setRecoveryMode(!recoveryMode); setMfaCode(''); setFieldErrors({}); setError('') }}>
             {recoveryMode ? 'Dùng Authenticator' : 'Dùng mã phục hồi'}
           </Button>
-          <Button type="button" variant="neutral" disabled={busy} onClick={() => { setChallenge(null); setMfaCode(''); setPassword(''); setFieldErrors({}); setError('') }}>Đăng nhập lại</Button>
+          <Button type="button" variant="neutral" disabled={busy} onClick={() => { setChallenge(null); setMfaCode(''); setPassword(''); setShowPassword(false); setFieldErrors({}); setError('') }}>Đăng nhập lại</Button>
         </>}
-        <Button type="submit" disabled={busy}>{busy ? 'Đang xử lý…' : verify ? 'Xác minh email' : register ? 'Tạo tài khoản' : challenge ? 'Xác minh MFA' : 'Đăng nhập'}</Button>
+        <Button type="submit" className={login ? 'login-submit' : ''} disabled={busy}>{busy && login && <Icon name="spinner" className="login-spinner" />}{busy ? 'Đang xử lý…' : verify ? 'Xác minh email' : register ? 'Tạo tài khoản' : challenge ? 'Xác minh MFA' : 'Đăng nhập'}{login && !busy && <Icon name="arrow" />}</Button>
       </form>
       {verify && <Button type="button" disabled={busy} onClick={async () => {
         setBusy(true); setError(''); setNotice(''); setFieldErrors({})
@@ -166,9 +183,12 @@ export function AuthPage({ mode, onLogin, onNavigate }: {
         catch (cause) { setError(cause instanceof ApiError ? describeError(cause) : 'Không kết nối được máy chủ.') }
         finally { setBusy(false) }
       }}>Gửi lại mã</Button>}
-      {!register && !verify && <p className="auth-verify-link"><a href={authPath('/verify-email')}>Cần xác minh email? Nhập mã xác minh</a></p>}
       <p className="auth-switch">{register ? 'Đã có tài khoản?' : 'Chưa có tài khoản?'}{' '}
-        <a href={authPath(register || verify ? '/login' : '/register')}>{register || verify ? 'Đăng nhập' : 'Đăng ký'}</a></p>
+        <a href={authPath(register || verify ? '/login' : '/register')}>{register || verify ? 'Đăng nhập' : 'Đăng ký ngay'}</a></p>
+      {login && <>
+        <nav className="login-assistance" aria-label="Hỗ trợ đăng nhập"><a href={authPath('/verify-email')}>Cần xác minh email? Nhập mã xác minh</a><a href={authPath('/recover-access')}>Khôi phục truy cập khi thông tin đăng nhập bị lộ</a></nav>
+        <p className="login-note">Bằng việc tiếp tục, bạn đồng ý sử dụng Hoa Lac Food một cách văn minh.</p>
+      </>}
     </main>
-  </div>
+  </div></div>
 }

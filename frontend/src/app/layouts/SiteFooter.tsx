@@ -1,11 +1,13 @@
 import type { User } from '../../features/auth'
 import { Icon } from '../../shared/ui/Icon'
 import { SiteBrand } from './SiteBrand'
+import { LoginBrand } from '../../shared/ui/LoginBrand'
 const currentYear = new Date().getFullYear()
-export function SiteFooter({ user, compact = false }: { user: User | null; compact?: boolean }) {
+export function SiteFooter({ user, compact = false, login = false }: { user: User | null; compact?: boolean; login?: boolean }) {
   const management = user?.capabilities.includes('admin') ? { href: '/admin', label: 'Quản trị' }
     : user?.managed_restaurant_id ? { href: '/owner', label: 'Quán của tôi' }
     : { href: '/open-restaurant', label: 'Hợp tác mở quán' }
+  if (login) return <footer className="footer login-footer"><LoginBrand compact /><p>© {currentYear} Hoa Lac Food · Dành cho cộng đồng sinh viên VJU</p><nav aria-label="Liên kết cuối trang"><a href="/">Trang chủ</a><a href="/#dishes">Khám phá món</a><a href="/support">Trợ giúp</a></nav></footer>
   if (compact) return <footer className="footer footer--compact"><div className="design-container compact-footer-main"><div><SiteBrand light /><p>Món ngon gần bạn, ngày học vui hơn.</p></div><nav aria-label="Liên kết cuối trang"><a href="/">Trang chủ</a><a href="/#dishes">Khám phá món</a><a href="/#restaurants">Quán ăn</a><a href="/support">Trợ giúp</a></nav></div><div className="design-container compact-footer-bottom"><span>VJU · Hòa Lạc</span><span>© {currentYear} Hoa Lac Food</span><span>Dành cho cộng đồng sinh viên VJU</span></div></footer>
   return <footer className="footer">
     <div className="design-container footer-grid">

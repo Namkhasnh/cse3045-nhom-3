@@ -3,6 +3,7 @@ import { safeReturnPath, type User } from '../../features/auth'
 import { NotificationBell } from '../../features/notifications'
 import { Icon } from '../../shared/ui/Icon'
 import { SiteBrand } from './SiteBrand'
+import { LoginBrand } from '../../shared/ui/LoginBrand'
 import { initials } from '../../shared/lib/initials'
 
 type Props = { user: User | null; pending: boolean; cartCount: number; path: string; onOpenCart?: () => void; onLogout: () => Promise<void> }
@@ -36,11 +37,11 @@ export function SiteHeader({ user, pending, cartCount, path, onOpenCart, onLogou
     }
     document.addEventListener('keydown', onKey)
     document.addEventListener('pointerdown', outside)
-    const query = window.matchMedia('(min-width: 1181px)')
+    const query = window.matchMedia(path === '/login' ? '(min-width: 901px)' : '(min-width: 1181px)')
     const closeMobile = () => { if (query.matches) setMobileOpen(false) }
     query.addEventListener('change', closeMobile)
     return () => { document.removeEventListener('keydown', onKey); document.removeEventListener('pointerdown', outside); query.removeEventListener('change', closeMobile) }
-  }, [accountOpen, mobileOpen])
+  }, [accountOpen, mobileOpen, path])
   const links = <><a href="/" aria-current={path === '/' && !window.location.hash ? 'page' : undefined}>Trang chủ</a><a href="/#dishes">Khám phá món ăn</a><a href="/#restaurants">Quán ăn</a></>
   const accountLinks = <>
     <div className="account-links-identity"><strong>{user?.display_name}</strong><span>{user?.login_identifier}</span></div>
@@ -57,7 +58,7 @@ export function SiteHeader({ user, pending, cartCount, path, onOpenCart, onLogou
     if (event.target instanceof Element && event.target.closest('a')) { setMobileOpen(false); setAccountOpen(false) }
   }}>
     <div className="nav design-container">
-      <SiteBrand />
+      {path === '/login' ? <LoginBrand /> : <SiteBrand />}
       <nav className="nav-links" aria-label="Điều hướng chính">{links}</nav>
       <div className="nav-utilities">
         <a className="nav-search" href="/#hero-search" aria-label="Tìm kiếm món ăn"><Icon name="search" /></a>
@@ -71,7 +72,7 @@ export function SiteHeader({ user, pending, cartCount, path, onOpenCart, onLogou
             <button className="account-toggle" ref={accountButton} aria-label={'Menu tài khoản ' + user.display_name} aria-expanded={accountOpen} aria-controls="account-links" onClick={() => setAccountOpen(!accountOpen)}><span className="header-avatar" aria-hidden="true">{initials(user.display_name)}</span><span>{user.display_name}</span><span aria-hidden="true">⌄</span></button>
             {accountOpen && <nav id="account-links" className="account-links" aria-label="Tài khoản">{accountLinks}</nav>}
           </div>
-        </> : <><a className="header-link login" href={authLink('/login')}>Đăng nhập</a><a className="design-button design-button--small" href={authLink('/register')}>Đăng ký <Icon name="arrow" /></a></>}
+        </> : <><a className="header-link login" aria-current={path === '/login' ? 'page' : undefined} href={authLink('/login')}>Đăng nhập</a><a className="design-button design-button--small" href={authLink('/register')}>Đăng ký <Icon name="arrow" /></a></>}
       </div>
       <button className="mobile-menu-button" ref={mobileButton} aria-controls="site-mobile-menu" aria-expanded={mobileOpen} aria-label={mobileOpen ? 'Đóng menu' : 'Mở menu'} onClick={() => setMobileOpen(!mobileOpen)}><Icon name={mobileOpen ? 'close' : 'menu'} /></button>
     </div>

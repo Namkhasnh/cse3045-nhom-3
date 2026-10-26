@@ -1,6 +1,12 @@
 import type { CSSProperties } from 'react'
 
 const paths = {
+  utensils: <><path d="m16 2-2.3 2.3a3 3 0 0 0 0 4.2l1.8 1.8a3 3 0 0 0 4.2 0L22 8M15 15 3.3 3.3a1 1 0 0 0-1.4 0 1 1 0 0 0 0 1.4l7.5 7.5a3 3 0 0 0 4.2 0L15 11M2 22l7.5-7.5M22 22l-7-7M17 3l-4 4M21 7l-4 4" /></>,
+  lock: <><rect x="4" y="10" width="16" height="11" rx="2" /><path d="M8 10V6a4 4 0 0 1 8 0v4M12 15v2" /></>,
+  eye: <><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" /><circle cx="12" cy="12" r="3" /></>,
+  eyeOff: <><path d="m3 3 18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 5.2A11 11 0 0 1 12 5c6.5 0 10 7 10 7a18 18 0 0 1-3 3.8M6.5 6.5A19 19 0 0 0 2 12s3.5 7 10 7a12 12 0 0 0 5.5-1.5" /></>,
+  spinner: <path d="M21 12a9 9 0 1 1-6.2-8.5" />,
+  copy: <><rect x="8" y="8" width="12" height="13" rx="2" /><path d="M16 8V3H3v13h5" /></>,
   shop: <><path d="M4 10v11h16V10M3 4h18l-2 6H5Z" /><path d="M9 21v-6h6v6" /></>,
   check: <path d="m5 12 4 4L19 6" />,
   chevron: <path d="m9 18 6-6-6-6" />,
