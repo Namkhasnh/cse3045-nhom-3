@@ -133,7 +133,7 @@ try {
  await call('Network.setBlockedURLs',{urls:[]});await evaluate("Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Kiểm tra lại giỏ').click()");await cartReady();
  stage='login-price';
  await snapshot('cart-guest-1440');
- await navigate('/login?returnTo=%2Fcart');await waitText('Chào mừng bạn trở lại.');
+ await navigate('/login?returnTo=%2Fcart');await waitText('Chào mừng bạn trở lại!');
  await db.query('UPDATE dishes SET price_vnd=35000 WHERE id=?',[dishId]);
  await fill('#username','browser_manager');await fill('#password','synthetic browser passphrase');await submit();await waitText('Giá thay đổi');await waitText('Cần xác nhận giá mới');assert(await evaluate("Array.from(document.querySelectorAll('button')).some(b=>b.textContent.includes('Cần xác nhận giá mới')&&b.disabled)"),'Price reconfirmation must block checkout');assert(!(await text()).includes('Tiếp tục đặt món tiền mặt')&&!(await text()).includes('Thanh toán tiền mặt trực tiếp cho quán.'),'Cash-only copy remains');
  assert(await evaluate('location.pathname')==='/cart','Login lost cart return');assert((await cartValue()).items[0].acceptedPriceVnd==='30000','Login silently accepted new price');assert((await cartValue()).items[0].quantity===2,'Login lost quantity');
@@ -146,7 +146,7 @@ try {
  await evaluate("window.dispatchEvent(new Event('focus'))");await waitText('Đăng nhập để đặt hàng');assert((await cartValue()).items[0].quantity===2,'Expired session lost guest cart');
  assert((await db.query('SELECT COUNT(*) AS n FROM orders'))[0].n===orderCount,'Login created an order');assert(orderRequests.length===0,'Cart/login sent an order request');
  await navigate(menuPath);await waitText('Cơm kiểm thử');
- await click('.mobile-menu-button');await click('#site-mobile-menu a[href*="/login"]');await waitText('Chào mừng bạn trở lại.');
+ await click('.mobile-menu-button');await click('#site-mobile-menu a[href*="/login"]');await waitText('Chào mừng bạn trở lại!');
  assert(await evaluate("new URLSearchParams(location.search).get('returnTo')")===menuPath,'Menu login link lost destination');
  stage='expired-email';
  await navigate('/verify-email?username=browser_expired&returnTo=%2Faccount%3Ftab%3Dprofile%23details');
@@ -170,25 +170,25 @@ try {
  await navigate('/cart');await waitText('2 phần');await waitText('Chọn điểm nhận để tiếp tục');assert(await evaluate("Array.from(document.querySelectorAll('button')).some(b=>b.textContent.includes('Chọn điểm nhận để tiếp tục')&&b.disabled)"),'Missing pickup quote must block checkout');assert(!(await text()).includes('Tiếp tục đặt món tiền mặt')&&!(await text()).includes('Thanh toán tiền mặt trực tiếp cho quán.'),'Cash-only copy remains');
  assert((await cartValue()).items[0].acceptedPriceVnd==='35000','Account switch lost public draft');
  assert(!JSON.stringify(await cartValue()).includes('browser_manager'),'Prior account leaked into guest intent');
- await navigate('/account');await waitText('Đăng xuất');await evaluate("Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Đăng xuất').click()");await waitText('Chào mừng bạn trở lại.');
- await navigate('/account?tab=profile#details');await waitText('Chào mừng bạn trở lại.');
+ await navigate('/account');await waitText('Đăng xuất');await evaluate("Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Đăng xuất').click()");await waitText('Chào mừng bạn trở lại!');
+ await navigate('/account?tab=profile#details');await waitText('Chào mừng bạn trở lại!');
  assert(await evaluate("new URLSearchParams(location.search).get('returnTo')")==='/account?tab=profile#details','Protected redirect lost destination');
  await fill('#username','browser_manager');await fill('#password','synthetic browser passphrase');await submit();await waitText('Đăng xuất');
  assert(await evaluate('location.pathname')==='/account','Manager return failed');
  await navigate('/');await waitText('Quán kiểm thử VJU');await click('.mobile-menu-button');await waitText('Quán của tôi');
- await navigate('/account');await waitText('Đăng xuất');await evaluate("Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Đăng xuất').click()");await waitText('Chào mừng bạn trở lại.');
+ await navigate('/account');await waitText('Đăng xuất');await evaluate("Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Đăng xuất').click()");await waitText('Chào mừng bạn trở lại!');
  for (const unsafe of ['//evil.example','/\\evil.example','/login','/unknown','/%2f%2fevil.example','/account\n']) {
-  await navigate('/login?returnTo='+encodeURIComponent(unsafe));await waitText('Chào mừng bạn trở lại.');
+  await navigate('/login?returnTo='+encodeURIComponent(unsafe));await waitText('Chào mừng bạn trở lại!');
   assert(await evaluate("document.querySelector('.auth-switch a').getAttribute('href')")==='/register','Unsafe return propagated: '+JSON.stringify(unsafe));
  }
- await navigate('/login?returnTo=https%3A%2F%2Fevil.example');await waitText('Chào mừng bạn trở lại.');
+ await navigate('/login?returnTo=https%3A%2F%2Fevil.example');await waitText('Chào mừng bạn trở lại!');
  stage='uiux-login-timeout';
  await evaluate(`(()=>{const original=window.fetch;window.timeoutPosts=0;window.releaseLateLogin=null;window.fetch=(input,init)=>{if(String(input).endsWith('/auth/login')){window.timeoutPosts++;return new Promise(resolve=>{window.releaseLateLogin=()=>resolve(new Response(JSON.stringify({data:{mfa_required:true,challenge_id:'synthetic-late-challenge',expires_in:300}}),{status:200,headers:{'Content-Type':'application/json'}}))})}return original(input,init)}})()`);
  await fill('#username','browser_manager');await fill('#password','synthetic browser passphrase');await submit();
  await until(()=>evaluate("document.body.innerText.includes('Máy chủ phản hồi quá lâu.')"),'Login did not time out',18000);
  assert(await evaluate("!document.querySelector('button[type=submit]').disabled&&document.querySelector('#username').value==='browser_manager'&&document.querySelector('#password').value===''&&window.timeoutPosts===1"),'Login timeout lost username, kept secret or retried automatically');
  await evaluate('window.releaseLateLogin()');await delay(250);assert(await evaluate("!document.querySelector('#mfa-code')&&location.pathname==='/login'"),'Late login reply replaced timed-out state');await snapshot('uiux-login-timeout-360');
- await navigate('/login?returnTo=https%3A%2F%2Fevil.example');await waitText('Chào mừng bạn trở lại.');
+ await navigate('/login?returnTo=https%3A%2F%2Fevil.example');await waitText('Chào mừng bạn trở lại!');
  stage='admin';
  await fill('#username','browser_operator');await fill('#password','synthetic browser passphrase');await submit();await waitText('Mã Authenticator');
  assert(!await evaluate("document.cookie.includes('__Host-hlf_csrf=')"),'Admin password issued session');
@@ -199,7 +199,7 @@ try {
  assert(await evaluate('document.documentElement.scrollWidth<=innerWidth'),'Desktop horizontal overflow');await snapshot('home-1440');
  await call('Input.dispatchKeyEvent',{type:'keyDown',key:'Tab',code:'Tab',windowsVirtualKeyCode:9});await call('Input.dispatchKeyEvent',{type:'keyUp',key:'Tab',code:'Tab',windowsVirtualKeyCode:9});
  assert(await evaluate('document.activeElement!==document.body'),'Keyboard focus missing');
- await navigate('/account');await waitText('Đăng xuất');await evaluate("Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Đăng xuất').click()");await waitText('Chào mừng bạn trở lại.');
+ await navigate('/account');await waitText('Đăng xuất');await evaluate("Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Đăng xuất').click()");await waitText('Chào mừng bạn trở lại!');
  await fill('#username','browser_operator');await fill('#password','synthetic browser passphrase');await submit();await waitText('Mã Authenticator');
  await evaluate("Array.from(document.querySelectorAll('button')).find(b=>b.textContent==='Dùng mã phục hồi').click()");await fill('#mfa-code','ab'.repeat(16));await submit();await waitText('Mã phục hồi đã được dùng.');
  assert(await evaluate("fetch('/api/v1/auth/me').then(r=>r.status)")===401,'Recovery issued privileged session');

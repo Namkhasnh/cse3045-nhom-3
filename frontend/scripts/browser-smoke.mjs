@@ -52,7 +52,7 @@ try {
   }
   if (home.includes('Đang chuyển trang…')) throw new Error('Public homepage redirected to authentication.');
   const login = await render('/login');
-  for (const expected of ['Chào mừng bạn trở lại.', 'Tên đăng nhập', 'Mật khẩu', 'Nhập mã xác minh']) {
+  for (const expected of ['Chào mừng bạn trở lại!', 'Tên đăng nhập', 'Mật khẩu', 'Nhập mã xác minh']) {
     if (!login.includes(expected)) throw new Error(`Missing login content: ${expected}`);
   }
   const registration = await render('/register');

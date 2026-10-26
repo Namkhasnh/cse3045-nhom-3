@@ -159,6 +159,9 @@ The user approved separate `/account` and `/owner` workspaces from Figma Make, w
 
 The user-approved [owner menu redesign](owner-menu-figma.md) replaces the inline menu form with status cards, local search/filter/sort, grid/list views and an accessible add/edit drawer at `/owner/menu`; existing dish/media/version/recovery contracts remain authoritative.
 
+### 5.10. Approved Figma Login — October 26, 2026
+The user approved the complete [Login design and verification](login-figma.md), including scoped cream/orange tokens, food photography, steam/microinteractions and light header/footer. It supersedes earlier Login presentation only; registration, email verification, MFA/recovery and real authentication contracts remain authoritative.
+
 ## 6. Layout and Responsive Behavior
 The visual treatments below describe the current baseline; approved identity revisions must retain role clarity, responsive behavior and accessible navigation.
 ### 6.1. Student — `StudentLayout`

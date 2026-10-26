@@ -51,7 +51,7 @@ try {
  db=await mariadb.createConnection({host:target.hostname,port:Number(target.port||3306),user:decodeURIComponent(target.username),password:decodeURIComponent(target.password),database:target.pathname.slice(1),allowPublicKeyRetrieval:true});
 
  await call('Emulation.setDeviceMetricsOverride',{width:360,height:900,deviceScaleFactor:1,mobile:true});
- await navigate('/login?returnTo=/owner/settings');await waitText('Chào mừng bạn trở lại.');await fill('#username','browser_manager');await fill('#password','synthetic browser passphrase');await submit();await waitText('Cài đặt quán');await waitText('Thông tin công khai');
+ await navigate('/login?returnTo=/owner/settings');await waitText('Chào mừng bạn trở lại!');await fill('#username','browser_manager');await fill('#password','synthetic browser passphrase');await submit();await waitText('Cài đặt quán');await waitText('Thông tin công khai');
  stage='personal-profile';await navigate('/account');await waitText('Tài khoản của tôi');
  assert(await evaluate("document.querySelector('[data-workspace]').dataset.workspace==='personal'"),'Owner profile has management navigation');
  await evaluate("document.querySelector('#profile-name').select()");await fill('#profile-name','Chủ quán hồ sơ cá nhân kiểm thử');await fill('#profile-phone','0900000001');await evaluate("document.querySelector('.personal-profile-card form').requestSubmit()");await waitText('Đã lưu thông tin.');

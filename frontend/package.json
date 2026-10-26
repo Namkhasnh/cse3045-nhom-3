@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
+    "test:login": "node scripts/browser-login.mjs",
     "test:smoke": "node scripts/browser-smoke.mjs",
     "preview": "vite preview",
     "test:connected": "node scripts/browser-connected.mjs",

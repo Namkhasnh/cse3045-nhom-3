@@ -67,7 +67,7 @@ try {
  await db.query("UPDATE dishes SET name='Tên món hiện tại',is_visible=FALSE WHERE id=?",[dish.id]);
  stage='analytics-browser';
  await call('Emulation.setDeviceMetricsOverride',{width:1440,height:1000,deviceScaleFactor:1,mobile:false});
- await navigate('/login?returnTo=/owner');await waitText('Chào mừng bạn trở lại.');await fill('#username',process.env.BROWSER_SETUP_ACTOR);await fill('#password','synthetic browser passphrase');await submit();await waitText('Chào bạn, chủ quán!');await waitText('Món snapshot trước đổi tên');await waitText('Từ 1 đơn hoàn tất');
+ await navigate('/login?returnTo=/owner');await waitText('Chào mừng bạn trở lại!');await fill('#username',process.env.BROWSER_SETUP_ACTOR);await fill('#password','synthetic browser passphrase');await submit();await waitText('Chào bạn, chủ quán!');await waitText('Món snapshot trước đổi tên');await waitText('Từ 1 đơn hoàn tất');
  assert(await evaluate("document.querySelectorAll('.owner-kpi>strong')[1].textContent.replace(/[^0-9]/g,'')==='90000'"),'Daily revenue included fees/non-completed or used created_at');
  assert(await evaluate("document.querySelector('.owner-revenue-total').textContent.replace(/[^0-9]/g,'')==='135000'"),'Chart total wrong');
  assert(await evaluate("document.querySelector('.owner-top-dishes').textContent.includes('4 phần')&&!document.body.innerText.includes('PRIVATE ANALYTICS')"),'Top quantity or privacy wrong');
