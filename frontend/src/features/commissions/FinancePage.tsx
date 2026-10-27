@@ -6,11 +6,13 @@ import {requestMessage} from '../../shared/api/request'
 import {financeApi,localMonth,monthBoundary,monthLabel,type Page,type Entry,type Report,type Row,type Receipt,type Statement} from './finance-api'
 import {useFinanceQuery} from './use-finance-query'
 import {useFinanceCommand} from './use-finance-command'
+import {OwnerFinancePage} from './OwnerFinancePage'
 type Confirmation={title:string;text:string;path:string;body:object}|{title:string;text:string;retry:true}
 export function FinancePage({actor,restaurant,admin=false}:{actor:string;restaurant?:string;admin?:boolean}){
  const [selected,setSelected]=useState(restaurant??''),[cursor,setCursor]=useState(''),[error,setError]=useState('')
  const list=useFinanceQuery<Page<{id:string;name:string}>>(actor,admin?'/admin/restaurants'+(cursor?'?cursor='+encodeURIComponent(cursor):''):'')
  const rows=list.data?.data??[]
+ if(!admin&&restaurant)return <OwnerFinancePage key={actor+':'+restaurant} actor={actor} restaurant={restaurant}/>
  return <section className="settings-page finance-page"><h1>{admin?'Đối soát và báo cáo':'Công nợ và báo cáo'}</h1><p>Hoa hồng từ tiền món của đơn hoàn thành; không gồm phí giao. Số dư âm được giữ để bù trừ.</p>{admin&&<><label>Chọn quán đối soát<select aria-label="Chọn quán đối soát" value={selected} onChange={e=>{setError('');setSelected(e.target.value)}}><option value="">Chọn quán</option>{selected&&!rows.some(r=>r.id===selected)&&<option value={selected}>Quán #{selected}</option>}{rows.map(r=><option key={r.id} value={r.id}>{r.name} · #{r.id}</option>)}</select></label>{list.loading&&<p role="status">Đang tải quán…</p>}{list.error&&<p role="alert">{list.error}</p>}{!list.loading&&!list.error&&!rows.length&&<p>Chưa có quán để đối soát.</p>}{list.data?.page.has_more&&<Button variant="neutral" onClick={()=>setCursor(list.data!.page.next_cursor!)}>Xem thêm quán</Button>}</>}{error&&<p role="alert">{error}</p>}{selected&&<FinancePanel key={actor+':'+selected} actor={actor} restaurant={selected} admin={admin}/>}</section>
 }
 function FinancePanel({actor,restaurant,admin}:{actor:string;restaurant:string;admin:boolean}){

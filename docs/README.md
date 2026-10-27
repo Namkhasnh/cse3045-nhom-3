@@ -40,6 +40,7 @@ Current ordering/payment policy: [COD and owner-only vouchers](cod-ordering.md);
 | How do purchase history, reorder and grouped multi-order checkout work? | [Approved purchase extension](ui/purchase-history-figma.md) |
 | How does the redesigned buyer order details page work? | [Buyer order design and verification](ui/buyer-order-figma.md) |
 | How do owner orders, food-ready privacy and shared reconciliation codes work? | [Order dashboard and verification](ui/owner-orders-figma.md) |
+| How does the redesigned owner finance page work? | [Finance design, data boundaries and verification](ui/owner-finance-figma.md) |
 | How does the redesigned owner menu work? | [Menu design, interactions and verification](ui/owner-menu-figma.md) |
 | How do the owner dashboard and four settings tabs work? | [Owner Figma implementation](ui/owner-dashboard-figma.md) and [backend analytics](ui/owner-analytics.md) |
 | How are personal, restaurant management and Admin workspaces separated? | [Approved account/owner workspaces and verification](ui/workspaces-figma.md) |

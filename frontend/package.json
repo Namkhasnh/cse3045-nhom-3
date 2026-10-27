@@ -24,6 +24,7 @@
     "test:tracking": "node scripts/browser-tracking.mjs",
     "test:payments": "node scripts/browser-payments.mjs",
     "test:finance": "node scripts/browser-finance.mjs",
+    "test:finance-ui": "node scripts/browser-owner-finance.mjs",
     "test:finance-unit": "node --test test/finance.test.mjs",
     "test:administration": "node scripts/browser-administration.mjs",
     "test:recommendations": "node scripts/browser-recommendations.mjs",
