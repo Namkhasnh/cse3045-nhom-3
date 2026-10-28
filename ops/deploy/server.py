@@ -8,6 +8,7 @@ import re
 import shutil
 import subprocess
 import tarfile
+import tempfile
 import time
 from release import BASE, CONFIG, INSTALL, candidate, docker, inspect, load, migration_review, require, run, save, sha
 
@@ -59,7 +60,17 @@ def route(config, text, state, directory):
     require(sha(path.read_bytes()) in state['owned_nginx_hashes'], 'Nginx modified during deployment')
     state['owned_nginx_hashes'].append(sha(text.encode()))
     save(directory / 'state.json', state)
-    path.write_text(text)
+    # A full disk or interrupted write must not truncate the live nginx file.
+    with tempfile.NamedTemporaryFile(mode='w', dir=path.parent, prefix=path.name + '.hlf-', delete=False) as stream:
+        temporary = Path(stream.name)
+        try:
+            stream.write(text)
+            stream.flush()
+            os.fsync(stream.fileno())
+            temporary.chmod(path.stat().st_mode & 0o777)
+            os.replace(temporary, path)
+        finally:
+            temporary.unlink(missing_ok=True)
     run(['nginx', '-t'])
     run(['systemctl', 'reload', 'nginx'])
 

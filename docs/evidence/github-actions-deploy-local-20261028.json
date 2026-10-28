@@ -5,7 +5,7 @@
   "source_checkout": "Clean remote hw1; unrelated uncommitted application changes excluded",
   "self_review": true,
   "automated": {
-    "unit_safety_cases": 16,
+    "unit_safety_cases": 18,
     "unit_result": "PASS",
     "workflow_actionlint": "PASS 1.7.12; official archive SHA256 verified; dedicated runner label configured",
     "python_ast_node_shell_syntax": "PASS",

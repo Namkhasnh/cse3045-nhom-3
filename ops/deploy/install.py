@@ -9,7 +9,7 @@ import re
 import shutil
 import sys
 from release import BASE, CONFIG, INSTALL, docker, inspect, require, run, save, sha
-from server import current_record, fingerprint, maintenance, sql
+from server import current_record, maintenance, smoke, sql
 
 FILES = ['release.py', 'server.py', 'controller.py', 'worker.py', 'db-operator.mjs']
 
@@ -53,6 +53,8 @@ def configuration(args):
     require(path.stat().st_uid == 0 and path.stat().st_mode & 0o077 == 0, 'DB secret must be root-only')
     config['root_secret'] = str(path)
     require(sql(config, args.db, b'SELECT VERSION();').decode().strip().startswith('9.2.0'), 'Unexpected actual MySQL version')
+    run(['nginx', '-t'])
+    smoke(config, Path(roots[0]))
     return config, roots[0]
 
 

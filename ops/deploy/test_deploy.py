@@ -93,6 +93,35 @@ class ValidationTests(unittest.TestCase):
                 server.route({'nginx': str(path)}, 'replacement', {'owned_nginx_hashes': ['old']}, Path(temporary))
             self.assertEqual(path.read_text(), 'external change')
 
+    def test_interrupted_nginx_write_preserves_the_original_file(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            path = root / 'nginx'
+            path.write_text('original')
+            state = {'owned_nginx_hashes': [release.sha(b'original')]}
+            with patch.object(server.os, 'fsync', side_effect=OSError('Synthetic full disk')), \
+                    patch.object(server, 'run') as run:
+                with self.assertRaises(OSError):
+                    server.route({'nginx': str(path)}, 'replacement', state, root)
+                run.assert_not_called()
+            self.assertEqual(path.read_text(), 'original')
+            self.assertFalse(list(root.glob('nginx.hlf-*')))
+
+    def test_nginx_switch_records_both_versions_and_preserves_mode(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            path = root / 'nginx'
+            path.write_text('original')
+            path.chmod(0o640)
+            state = {'owned_nginx_hashes': [release.sha(b'original')]}
+            with patch.object(server, 'run') as run:
+                server.route({'nginx': str(path)}, 'replacement', state, root)
+                self.assertEqual(run.call_args_list[0].args[0], ['nginx', '-t'])
+                self.assertEqual(run.call_args_list[1].args[0], ['systemctl', 'reload', 'nginx'])
+            self.assertEqual(path.read_text(), 'replacement')
+            self.assertEqual(path.stat().st_mode & 0o777, 0o640)
+            self.assertEqual(state['owned_nginx_hashes'], [release.sha(b'original'), release.sha(b'replacement')])
+
 
 class OperationTests(unittest.TestCase):
     def test_service_request_uses_only_the_fixed_root_owned_worker(self):
