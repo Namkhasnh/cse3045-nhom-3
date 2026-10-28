@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 import re
 import subprocess
+import urllib.parse
 import urllib.request
 
 REPOSITORY = 'Namkhasnh/cse3045-nhom-3'
@@ -102,6 +103,40 @@ def extract(reference, source, destination):
         docker('rm', container)
 
 
+def registry_config(reference):
+    """Read the actual config through its hash chain, independent of daemon image-store metadata."""
+    match = re.fullmatch(re.escape(REGISTRY) + r'/(hlf-(?:backend|frontend|schema))@(sha256:' + HEX + r')', reference)
+    require(match is not None, 'Registry reference outside allowlist')
+    package, digest = match.groups()
+    name = 'namkhasnh/' + package
+    query = urllib.parse.urlencode({'service': 'ghcr.io', 'scope': 'repository:' + name + ':pull'})
+    with urllib.request.urlopen('https://ghcr.io/token?' + query, timeout=30) as response:
+        token = json.load(response)['token']
+
+    def get(path, expected):
+        headers = {'Authorization': 'Bearer ' + token, 'Accept': ', '.join([
+            'application/vnd.oci.image.index.v1+json', 'application/vnd.oci.image.manifest.v1+json',
+            'application/vnd.docker.distribution.manifest.list.v2+json', 'application/vnd.docker.distribution.manifest.v2+json'])}
+        request = urllib.request.Request('https://ghcr.io/v2/' + name + '/' + path, headers=headers)
+        with urllib.request.urlopen(request, timeout=30) as response:
+            body = response.read(2 * 1024**2 + 1)
+        require(len(body) <= 2 * 1024**2 and 'sha256:' + sha(body) == expected, 'Registry content hash mismatch')
+        return json.loads(body)
+
+    manifest = get('manifests/' + digest, digest)
+    if 'manifests' in manifest:
+        selected = [entry for entry in manifest['manifests']
+                    if entry.get('platform', {}).get('os') == 'linux'
+                    and entry.get('platform', {}).get('architecture') == 'amd64']
+        require(len(selected) == 1, 'Expected one Linux amd64 image in index')
+        digest = selected[0]['digest']
+        require(re.fullmatch('sha256:' + HEX, digest), 'Invalid child image digest')
+        manifest = get('manifests/' + digest, digest)
+    config = manifest['config']['digest']
+    require(re.fullmatch('sha256:' + HEX, config), 'Invalid image config digest')
+    return get('blobs/' + config, config)
+
+
 def candidate(commit, directory):
     commit_id(commit)
     reference = f'{REGISTRY}/hlf-release:{commit}'
@@ -112,13 +147,16 @@ def candidate(commit, directory):
     validate_manifest(manifest, commit)
     verify_ci(manifest)
     for image in manifest['images'].values():
-        docker('pull', '--platform', 'linux/amd64', image, timeout=1200)
-        info = inspect(image)
-        require(info['Os'] == 'linux' and info['Architecture'] == 'amd64', 'Wrong platform')
-        labels = info['Config'].get('Labels') or {}
+        # Some containerd image stores return empty Os/Architecture/Config for digest references.
+        # Registry config is verified against the pinned manifest -> config SHA256 chain.
+        info = registry_config(image)
+        require(info['os'] == 'linux' and info['architecture'] == 'amd64', 'Wrong platform')
+        labels = info.get('config', {}).get('Labels') or {}
         require(labels.get('org.opencontainers.image.revision') == commit
                 and labels.get('org.opencontainers.image.source') == 'https://github.com/' + REPOSITORY,
                 'Image source/revision mismatch')
+        docker('pull', '--platform', 'linux/amd64', image, timeout=1200)
+        require(image in inspect(image).get('RepoDigests', []), 'Pulled image digest mismatch')
     return manifest
 
 
@@ -128,9 +166,10 @@ def migration_review(applied, manifest, review=None):
         require(expected.get(name) == checksum, 'Unknown or modified applied migration')
     pending = {name: value for name, value in expected.items() if name not in applied}
     if not pending and review is None:
-        return {'pending': {}, 'changed_tables': [], 'new_tables': [], 'grants': [], 'rollback_compatible': True}
+        return {'pending': {}, 'changed_tables': [], 'new_tables': [], 'grants': [],
+                'rollback_compatible': True, 'rollback_checks': []}
     require(review is not None, 'Pending migrations need a root-installed review for this commit')
-    require(set(review) == {'commit', 'applied', 'pending', 'changed_tables', 'new_tables', 'grants', 'rollback_compatible'},
+    require(set(review) == {'commit', 'applied', 'pending', 'changed_tables', 'new_tables', 'grants', 'rollback_compatible', 'rollback_checks'},
             'Unexpected review fields')
     require(review['commit'] == manifest['commit'] and review['applied'] == applied and review['pending'] == pending,
             'Migration review does not match source/target')
@@ -140,4 +179,7 @@ def migration_review(applied, manifest, review=None):
     # SQL in grants is accepted only from this root-owned review, never from an image or runner.
     require(all(isinstance(sql, str) and sql.lstrip().upper().startswith('GRANT ') for sql in review['grants']),
             'Review grants must contain only GRANT statements')
+    require(isinstance(review['rollback_checks'], list)
+            and all(isinstance(sql, str) and sql.upper().startswith('SELECT ') and ';' not in sql
+                    for sql in review['rollback_checks']), 'Rollback checks must be reviewed scalar SELECT statements')
     return review

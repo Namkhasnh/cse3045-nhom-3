@@ -9,7 +9,7 @@ import sys
 import tempfile
 from release import BASE, CONFIG, INSTALL, commit_id, docker, inspect, load, require, run, save
 from server import (backup, check_server, current_record, fingerprint, frontend, maintenance,
-                    operator, prepare, rehearse, route, smoke, start_api)
+                    operator, prepare, rehearse, route, smoke, sql, start_api)
 
 UNIT = 'hlf-deploy-operation.service'
 
@@ -26,6 +26,7 @@ def restore(config, directory, state):
     old = state['previous']
     route(config, maintenance(config, state['nginx_previous']), state, directory)
     probe = subprocess.run(['docker', 'inspect', config['api']], capture_output=True)
+    remove_candidate = False
     if probe.returncode == 0:
         active = json.loads(probe.stdout)[0]
         if active['Id'] != state['previous_api_id']:
@@ -33,9 +34,16 @@ def restore(config, directory, state):
             require(active['Image'] == inspect(load(directory / 'manifest.json')['images']['backend'])['Id'],
                     'Candidate API image drift')
             docker('stop', '-t', '30', config['api'])
-            docker('rm', config['api'])
+            remove_candidate = True
         else:
             require(fingerprint(active) == old['api_fingerprint'], 'Previous API configuration drift')
+            docker('stop', '-t', '30', config['api'])
+    # Writers are frozen before checking new facts that old readers cannot safely handle.
+    for statement in state.get('rollback_checks', []):
+        result = sql(config, config['db'], ('USE `' + config['database'] + '`; ' + statement + ';').encode())
+        require(result.strip() == b'0', 'Rollback data guard rejected; keep maintenance and repair forward')
+    if remove_candidate:
+        docker('rm', config['api'])
     probe = subprocess.run(['docker', 'inspect', state['previous_api_name']], capture_output=True)
     if probe.returncode == 0:
         previous = json.loads(probe.stdout)[0]
@@ -65,7 +73,8 @@ def deploy(commit, directory):
         state.update(previous=previous, previous_api_id=inspect(config['api'])['Id'],
                      previous_api_name='hlf-before-' + commit,
                      nginx_previous=Path(config['nginx']).read_text(),
-                     owned_nginx_hashes=[previous['nginx_sha']], rollback_compatible=review['rollback_compatible'])
+                     owned_nginx_hashes=[previous['nginx_sha']], rollback_compatible=review['rollback_compatible'],
+                     rollback_checks=review['rollback_checks'])
         probe = subprocess.run(['docker', 'inspect', state['previous_api_name']], capture_output=True)
         require(probe.returncode != 0, 'Previous-release container already exists')
         save(directory / 'api-template.json', inspect(config['api']))

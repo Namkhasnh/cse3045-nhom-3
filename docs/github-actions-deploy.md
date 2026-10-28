@@ -25,10 +25,14 @@ Only public code/build output belongs in these packages. The existing deny-by-de
 context excludes local data, environment files and operator secrets. No build args carry secrets.
 Publishing uses the source workflow's `GITHUB_TOKEN`; the VPS pulls anonymously.
 
-After the **first successful publish**, open each package under your GitHub profile → Package
-settings → Change visibility → **Public**. Packages are initially private even when source is
-public. Do this for all four packages before VPS preflight. A private package returns a pull
+After the **first successful publish**, confirm all four packages allow anonymous pulls. If a
+package is private, open it under your GitHub profile → Package settings → Change visibility →
+**Public** before VPS preflight. A private package returns a pull
 failure; no long-lived registry token is installed as a workaround.
+
+Platform and source labels are read from registry config through the verified SHA256 chain
+from the pinned manifest/index. This also supports Docker image stores that return empty
+platform/config fields when inspecting a digest reference; the validation is never skipped.
 
 The private repository must retain `main` as its default branch. Copy
 [`private-workflow.yml`](../ops/deploy/private-workflow.yml) to `.github/workflows/deploy.yml`
@@ -103,7 +107,8 @@ id hlf-runner
 Confirm GitHub shows **Idle** and label `hlf-demo`. The account must not belong to `docker`,
 `sudo`, `root`, `lxd` or `disk`. Its only passwordless privileged command is the fixed
 `/usr/local/sbin/hlf-deploy-request` entrypoint, which accepts four operations and a full SHA.
-Python isolated mode and root-owned module paths prevent runner-controlled import injection.
+An empty environment, Python isolated mode and root-owned module paths prevent runner-controlled
+proxy/trust-store/import injection.
 The runner can request deployment of trusted published code, so protect private-repo write access.
 
 ## 4. Daily use
@@ -144,7 +149,8 @@ by an untrusted workflow. Required structure:
   "changed_tables": ["REVIEWED_EXISTING_TABLE"],
   "new_tables": ["REVIEWED_NEW_EMPTY_TABLE"],
   "grants": [],
-  "rollback_compatible": false
+  "rollback_compatible": false,
+  "rollback_checks": []
 }
 ```
 
@@ -156,9 +162,27 @@ GRANT statements for the actual runtime identity; missing grants are never inven
 
 Set `rollback_compatible` true only after reviewing old-reader behavior against all new facts.
 For data-dependent compatibility, retain false and use a separately reviewed forward repair.
+Alternatively supply reviewed scalar SELECT statements in `rollback_checks`: after freezing
+writers every check must return exactly zero before any candidate container is removed.
 For code-only releases with identical migration history and no review, compatibility defaults
 to true under the repository's unchanged application-contract requirement. A root-installed
 review with empty pending can explicitly disable rollback or apply reviewed narrow grants.
+
+The observed first VPS release has33completed migrations and only
+`20261025020000_restaurant_avatar` pending. Its reviewed hash is
+`9579ca1f196c195f8eb051c69b5455c470fae3c2693c585363fa600a5e021198`.
+It adds a nullable restaurant column and composite FK, preserving all old columns/rows.
+After installation, create the root-only review from the live runtime identity:
+
+```sh
+sudo python3 ops/deploy/review_avatar.py FULL_SUCCESSFUL_CI_SHA
+```
+
+This helper refuses other SQL/checksums/pending migrations or unexpected runtime identities.
+It prepares only an exact avatar-column UPDATE grant; no grant or migration is applied yet.
+Rollback is allowed only while **no restaurant references an avatar**, checked after stopping
+API writers, because old image-cleanup code does not understand avatar references. Every first
+release requires a compatibility review even if its schema was already adopted.
 
 During maintenance the service stops API/storage writers, backs up SQL/object/vault contents,
 restores and compares them, rehearses migrations on disposable MySQL **9.2.0**, then applies
@@ -185,15 +209,19 @@ to GitHub. Only sanitized status is printed to Actions. No automated retention/p
 
 ## 6. Verification and remaining handoff
 
-- PASS 18 local deployment safety unit tests and actionlint1.7.12 workflow validation.
+- PASS 23 local deployment safety unit tests and actionlint1.7.12 workflow validation.
 - PASS disposable MySQL9.2.0 SQL/schema/row and object/vault restore, reviewed expansion rehearsal,
   source isolation, exact BigInt/signed DECIMAL history, rollback, FK/CHECK rejection and deliberate
   row-drift rejection. This uses the newly built hw1 schema-tool image with synthetic migration files.
 - PASS Linux/amd64 builds of all three application/tool targets from a clean hw1 checkout;
   frontend extraction contains index/assets and excludes container runtime files and environment files.
+- PASS source CI/publish for `cd52b39cde29ce131847b8dd1886d8d277f757a0`; local anonymous
+  pulls verified source/branch/CI and all image config hash chains/platform/revision/digests.
+- USER-REPORTED VPS read-only inventory: expected containers/volumes, MySQL9.2.0,33completed
+  migrations,4.3GiBfree. Operator re-reads checksums before any mutation.
+- PASS disposable runtime grant rehearsal using synthetic passwords and positive/negative
+  column-write checks; no production password is copied into the rehearsal DB.
 - NOT RUN on VPS: adoption, runner registration, actual deploy, HTTPS smoke and rollback.
-- GitHub CI/publish and anonymous GHCR pulls require an actual pushed commit and public packages;
-  their observed status must be recorded separately. This document alone does not certify them.
 
 Reproduce from repository root:
 

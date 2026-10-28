@@ -1,5 +1,6 @@
 """Safety regressions use synthetic fixtures; real MySQL evidence is separate."""
 import copy
+import io
 import json
 from pathlib import Path
 import tempfile
@@ -8,6 +9,7 @@ from unittest.mock import Mock, patch
 import controller
 import release
 import server
+import review_avatar
 
 COMMIT = 'a' * 40
 MANIFEST = {'format': 1, 'repository': release.REPOSITORY, 'branch': 'hw1', 'commit': COMMIT,
@@ -17,6 +19,61 @@ MANIFEST = {'format': 1, 'repository': release.REPOSITORY, 'branch': 'hw1', 'com
 
 
 class ValidationTests(unittest.TestCase):
+    def test_avatar_review_allows_only_exact_nullable_expansion_and_narrow_runtime_grant(self):
+        manifest = {**MANIFEST, 'migrations': {'20260101000000_base': 'e' * 64,
+                                             review_avatar.MIGRATION: review_avatar.CHECKSUM}}
+        plan = {'applied': {'20260101000000_base': 'e' * 64},
+                'pending': {review_avatar.MIGRATION: review_avatar.CHECKSUM}}
+        review = review_avatar.profile(manifest, plan, 'mysql://hlf_demo_deadbeef:synthetic@127.0.0.1:3306/test_hlf_demo', 'test_hlf_demo')
+        self.assertEqual(review['changed_tables'], ['restaurants'])
+        self.assertEqual(review['new_tables'], [])
+        self.assertEqual(review['grants'], ["GRANT UPDATE (avatar_media_asset_id) ON `test_hlf_demo`.`restaurants` TO 'hlf_demo_deadbeef'@'%'"])
+        self.assertEqual(review['rollback_checks'], ['SELECT COUNT(*) FROM restaurants WHERE avatar_media_asset_id IS NOT NULL'])
+        with self.assertRaises(RuntimeError):
+            review_avatar.profile(manifest, {**plan, 'pending': {'other': 'e' * 64}}, 'mysql://hlf_demo_deadbeef:synthetic@127.0.0.1/test_hlf_demo', 'test_hlf_demo')
+        with self.assertRaises(RuntimeError):
+            review_avatar.profile(manifest, plan, 'mysql://root:synthetic@127.0.0.1/test_hlf_demo', 'test_hlf_demo')
+
+    def registry_fixture(self, indexed=False):
+        config = json.dumps({'os': 'linux', 'architecture': 'amd64', 'config': {'Labels': {'source': 'fixture'}}}).encode()
+        manifest = json.dumps({'config': {'digest': 'sha256:' + release.sha(config)}}).encode()
+        if indexed:
+            index = json.dumps({'manifests': [{'digest': 'sha256:' + release.sha(manifest),
+                                              'platform': {'os': 'linux', 'architecture': 'amd64'}}]}).encode()
+            bodies = [b'{"token":"anonymous-fixture"}', index, manifest, config]
+            digest = release.sha(index)
+        else:
+            bodies = [b'{"token":"anonymous-fixture"}', manifest, config]
+            digest = release.sha(manifest)
+        return release.REGISTRY + '/hlf-backend@sha256:' + digest, bodies
+
+    def test_registry_config_verifies_single_manifest_and_oci_index_hash_chains(self):
+        for indexed in [False, True]:
+            reference, bodies = self.registry_fixture(indexed)
+            with patch.object(release.urllib.request, 'urlopen', side_effect=[io.BytesIO(body) for body in bodies]):
+                config = release.registry_config(reference)
+                self.assertEqual(config['os'], 'linux')
+                self.assertEqual(config['architecture'], 'amd64')
+
+    def test_tampered_registry_config_is_rejected_even_with_expected_labels(self):
+        reference, bodies = self.registry_fixture()
+        bodies[-1] = bodies[-1].replace(b'linux', b'other')
+        with patch.object(release.urllib.request, 'urlopen', side_effect=[io.BytesIO(body) for body in bodies]):
+            with self.assertRaisesRegex(RuntimeError, 'hash mismatch'):
+                release.registry_config(reference)
+
+    def test_registry_index_without_amd64_and_untrusted_references_are_rejected(self):
+        index = json.dumps({'manifests': [{'digest': 'sha256:' + 'a' * 64,
+                                          'platform': {'os': 'linux', 'architecture': 'arm64'}}]}).encode()
+        reference = release.REGISTRY + '/hlf-backend@sha256:' + release.sha(index)
+        with patch.object(release.urllib.request, 'urlopen', side_effect=[io.BytesIO(b'{"token":"fixture"}'), io.BytesIO(index)]):
+            with self.assertRaisesRegex(RuntimeError, 'Linux amd64'):
+                release.registry_config(reference)
+        with patch.object(release.urllib.request, 'urlopen') as request:
+            with self.assertRaises(RuntimeError):
+                release.registry_config('https://untrusted.example/image')
+            request.assert_not_called()
+
     def test_manifest_requires_exact_digest_repository_and_sha(self):
         release.validate_manifest(MANIFEST, COMMIT)
         for kind, bad in [('backend', 'ghcr.io/other/image@sha256:' + 'b' * 64),
@@ -59,7 +116,7 @@ class ValidationTests(unittest.TestCase):
             with self.assertRaises(RuntimeError):
                 release.migration_review(applied, MANIFEST)
         review = {'commit': COMMIT, 'applied': {}, 'pending': MANIFEST['migrations'],
-                  'changed_tables': ['orders'], 'new_tables': [], 'grants': [], 'rollback_compatible': False}
+                  'changed_tables': ['orders'], 'new_tables': [], 'grants': [], 'rollback_compatible': False, 'rollback_checks': []}
         self.assertFalse(release.migration_review({}, MANIFEST, review)['rollback_compatible'])
         with self.assertRaises(RuntimeError):
             release.migration_review({}, MANIFEST, {**review, 'commit': 'd' * 40})
@@ -124,6 +181,22 @@ class ValidationTests(unittest.TestCase):
 
 
 class OperationTests(unittest.TestCase):
+    def test_new_avatar_facts_block_rollback_after_freezing_before_container_removal(self):
+        state = {'schema_started': True, 'schema_verified': True, 'rollback_compatible': True,
+                 'commit': COMMIT, 'previous': {}, 'nginx_previous': 'server_name demo.example;',
+                 'previous_api_id': 'old-id', 'rollback_checks': ['SELECT COUNT(*) FROM restaurants WHERE avatar_media_asset_id IS NOT NULL']}
+        active = {'Id': 'new-id', 'Config': {'Labels': {'hlf.deploy.commit': COMMIT}}, 'Image': 'new-image'}
+        with patch.object(controller, 'route'), patch.object(controller, 'docker') as docker, \
+                patch.object(controller.subprocess, 'run', return_value=Mock(returncode=0, stdout=json.dumps([active]))), \
+                patch.object(controller, 'load', return_value=MANIFEST), \
+                patch.object(controller, 'inspect', return_value={'Id': 'new-image'}), \
+                patch.object(controller, 'sql', return_value=b'1\n') as sql:
+            with self.assertRaisesRegex(RuntimeError, 'data guard'):
+                controller.restore({'api': 'api', 'db': 'db', 'database': 'test_hlf_demo', 'host': 'demo.example'}, Path('/unused'), state)
+            self.assertEqual(docker.call_args_list[0].args, ('stop', '-t', '30', 'api'))
+            sql.assert_called_once()
+            self.assertFalse(any(call.args[0] in ['rm', 'rename', 'start'] for call in docker.call_args_list))
+
     def test_service_request_uses_only_the_fixed_root_owned_worker(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -144,7 +217,7 @@ class OperationTests(unittest.TestCase):
             nginx.write_text('server_name demo.example;\nroot /old;')
             config = {'nginx': str(nginx), 'host': 'demo.example', 'api': 'api', 'db': 'db', 'storage': 'storage'}
             previous = {'frontend_root': '/old', 'nginx_sha': release.sha(nginx.read_bytes()), 'commit': None}
-            review = {'rollback_compatible': True, 'pending': {}}
+            review = {'rollback_compatible': True, 'pending': {}, 'rollback_checks': []}
             with patch.object(controller, 'prepare', return_value=(config, previous, MANIFEST, review)), \
                     patch.object(controller, 'frontend', return_value=directory / 'frontend'), \
                     patch.object(controller, 'check_server'), patch.object(controller, 'route'), \
@@ -212,7 +285,7 @@ class OperationTests(unittest.TestCase):
             nginx.write_text('server_name demo.example;\nroot /old;')
             config = {'nginx': str(nginx), 'host': 'demo.example', 'api': 'api', 'db': 'db', 'storage': 'storage'}
             previous = {'frontend_root': '/old', 'nginx_sha': release.sha(nginx.read_bytes()), 'commit': None}
-            review = {'rollback_compatible': False, 'pending': MANIFEST['migrations']}
+            review = {'rollback_compatible': False, 'pending': MANIFEST['migrations'], 'rollback_checks': []}
 
             def operate(_config, _manifest, _directory, mode):
                 if mode == 'migrate':

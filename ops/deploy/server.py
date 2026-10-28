@@ -5,6 +5,7 @@ import json
 import os
 from pathlib import Path
 import re
+import secrets
 import shutil
 import subprocess
 import tarfile
@@ -47,6 +48,7 @@ def prepare(commit, directory):
     operator(config, manifest, directory, 'plan')
     plan = load(directory / 'plan.json')
     review_file = CONFIG.parent / 'reviews' / (commit + '.json')
+    require(current['commit'] is not None or review_file.exists(), 'First release requires a root-installed compatibility review')
     if review_file.exists():
         require(not review_file.is_symlink() and review_file.stat().st_uid == 0
                 and review_file.stat().st_mode & 0o077 == 0, 'Migration review must be a root-only regular file')
@@ -212,6 +214,18 @@ def rehearse(config, manifest, review, directory, dump):
         if review['pending']:
             operator(config, manifest, work, 'migrate', name)
         operator(config, manifest, work, 'verify', name)
+        # A database-only dump omits mysql.user. Rehearse grants against synthetic-password
+        # copies of the existing runtime identities, without copying production passwords.
+        actors = set()
+        for statement in review['grants']:
+            match = re.search(r" TO '(hlf_demo_[a-f0-9]{8})'@'%'$", statement)
+            require(match is not None, 'Rehearsal grant must target an existing demo runtime identity')
+            actors.add(match.group(1))
+        for user in sorted(actors):
+            actor = "'" + user + "'@'%'"
+            grants = sql(config, config['db'], ('SHOW GRANTS FOR ' + actor + ';').encode()).decode().splitlines()
+            create = 'CREATE USER ' + actor + " IDENTIFIED BY '" + secrets.token_hex(24) + "';"
+            sql(config, name, (create + '\n' + ';\n'.join(grants) + ';').encode())
         operator(config, manifest, work, 'grant', name)
     finally:
         require(inspect(name)['Config']['Labels'].get('hlf.deploy.rehearsal') == manifest['commit'], 'Rehearsal ownership drift')

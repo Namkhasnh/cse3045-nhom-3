@@ -85,6 +85,7 @@ CONSTRAINT ledger_nonzero CHECK(balance <> 0)) ENGINE=InnoDB;
                     '-e', 'DATABASE_URL=' + url, image, 'node', 'node_modules/prisma/build/index.js',
                     'migrate', 'deploy', '--config', 'prisma7.config.ts')
                 server.sql(config, prefix, b"USE test_hlf_ghcr; INSERT INTO accounts VALUES (9007199254740993,'synthetic'); INSERT INTO ledger VALUES (9007199254740995,9007199254740993,-123456789012345678901234567890);")
+                server.sql(config, prefix, b"CREATE USER 'hlf_demo_deadbeef'@'%' IDENTIFIED BY 'synthetic-fixture-password'; GRANT SELECT ON test_hlf_ghcr.accounts TO 'hlf_demo_deadbeef'@'%';")
                 initial = root / 'initial'
                 initial.mkdir()
                 server.operator(config, manifest, initial, 'plan')
@@ -99,7 +100,8 @@ CONSTRAINT evidence_fk FOREIGN KEY(account_id) REFERENCES accounts(id)) ENGINE=I
                 review = {'commit': commit, 'applied': applied,
                           'pending': {expansion.name: checksums()[expansion.name]},
                           'changed_tables': ['accounts'], 'new_tables': ['evidence'],
-                          'grants': [], 'rollback_compatible': False}
+                          'grants': ["GRANT UPDATE (avatar) ON `test_hlf_ghcr`.`accounts` TO 'hlf_demo_deadbeef'@'%'"],
+                          'rollback_compatible': False, 'rollback_checks': []}
                 release.migration_review(applied, {**manifest, 'commit': commit}, review)
                 work = root / 'work'
                 work.mkdir(mode=0o700)
@@ -126,6 +128,18 @@ CONSTRAINT evidence_fk FOREIGN KEY(account_id) REFERENCES accounts(id)) ENGINE=I
                 assert release.load(work / 'plan.json')['pending'] == review['pending'], 'Rehearsal modified source DB'
                 server.operator(config, manifest, work, 'migrate')
                 server.operator(config, manifest, work, 'verify')
+                server.operator(config, manifest, work, 'grant')
+                release.docker('exec', '-i', prefix, 'sh', '-c',
+                    'export MYSQL_PWD=synthetic-fixture-password; exec mysql -uhlf_demo_deadbeef -N -B',
+                    data=b"USE test_hlf_ghcr; UPDATE accounts SET avatar='synthetic-avatar' WHERE id=9007199254740993;")
+                try:
+                    release.docker('exec', '-i', prefix, 'sh', '-c',
+                        'export MYSQL_PWD=synthetic-fixture-password; exec mysql -uhlf_demo_deadbeef -N -B',
+                        data=b"USE test_hlf_ghcr; UPDATE accounts SET name='forbidden' WHERE id=9007199254740993;")
+                except RuntimeError:
+                    pass
+                else:
+                    raise AssertionError('Unrelated runtime column write was permitted')
                 server.sql(config, prefix, b'USE test_hlf_ghcr; BEGIN; UPDATE ledger SET balance=-42; ROLLBACK;')
                 server.operator(config, manifest, work, 'verify')
                 for invalid in [b'INSERT INTO ledger VALUES (1,1,42);', b'INSERT INTO ledger VALUES (1,9007199254740993,0);']:
@@ -146,7 +160,9 @@ CONSTRAINT evidence_fk FOREIGN KEY(account_id) REFERENCES accounts(id)) ENGINE=I
                     'cases': ['SQL restore/schema/row equality', 'object/vault restore byte equality',
                               'reviewed expansion rehearsal', 'source DB unchanged by rehearsal',
                               'exact bigint/signed decimal preservation', 'transaction rollback',
-                              'real FK/CHECK rejection', 'deliberate row-drift rejection']}))
+                              'real FK/CHECK rejection', 'deliberate row-drift rejection',
+                              'runtime grant rehearsal without production passwords',
+                              'narrow column write permitted; unrelated write rejected']}))
             finally:
                 for name in names:
                     info = release.inspect(name)
