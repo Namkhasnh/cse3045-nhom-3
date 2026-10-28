@@ -1,0 +1,72 @@
+{
+  "date": "2026-10-28",
+  "scope": "Deployment tooling only; no retained VPS mutation or application release certified",
+  "source_base": "0a3effa4441f555024cdf6c0c0698be164467a68",
+  "source_checkout": "Clean remote hw1; unrelated uncommitted application changes excluded",
+  "self_review": true,
+  "automated": {
+    "unit_safety_cases": 27,
+    "unit_result": "PASS",
+    "workflow_actionlint": "PASS 1.7.12; official archive SHA256 verified; dedicated runner label configured",
+    "python_ast_node_shell_syntax": "PASS",
+    "linux_amd64_builds": [
+      "backend-runtime",
+      "schema-operator",
+      "frontend-artifact"
+    ],
+    "frontend_extraction": "PASS index/assets only, no container runtime /etc or env files",
+    "mysql_version": "9.2.0",
+    "mysql_scope": "Disposable synthetic database and labeled volumes, all removed after assertions",
+    "mysql_cases": [
+      "SQL restore schema/all-original-row equality",
+      "object/vault restore byte equality",
+      "reviewed schema expansion rehearsal",
+      "rehearsal leaves source database unchanged",
+      "exact BigInt and signed DECIMAL history preservation",
+      "transaction rollback",
+      "real FK and CHECK rejection",
+      "deliberate original-row drift rejection",
+      "runtime grant rehearsal without production passwords",
+      "narrow column update permitted; unrelated update rejected"
+    ],
+    "loopback_http_fixture": "PASS actual temporary HTTP listener, 200/401, fixed function/module collision"
+  },
+  "github_private_repository": "https://github.com/Namkhasnh/hlf-deploy",
+  "github_private_repository_visibility": "PRIVATE, confirmed through browser",
+  "github_private_workflow": "PUSHED main, manual Deploy/Rollback only",
+  "vps_inventory": "USER-REPORTED SSH inventory: MySQL 9.2.0, 33 completed/unmodified-by-status migrations, no rolled-back entry, expected containers/volumes; independently re-read by operator before deployment",
+  "vps_install_runner_deploy_rollback": "PASS; see github-actions-deploy-vps-20261028.json for observed workflows and independent HTTPS proof",
+  "public_https_release_smoke": "PASS independent public HTTPS for final a0056b5 and live rollback",
+  "commercial_release_acceptance": "NOT CLAIMED",
+  "vps_free_bytes_user_reported": 4613013504,
+  "vps_expected_pending_migration": {
+    "name": "20261025020000_restaurant_avatar",
+    "sha256": "9579ca1f196c195f8eb051c69b5455c470fae3c2693c585363fa600a5e021198"
+  },
+  "github_verified_release": {
+    "result": "PASS",
+    "commit": "cd52b39cde29ce131847b8dd1886d8d277f757a0",
+    "ci_run_id": 40646440238,
+    "scope": "Local anonymous pulls and registry hash-chain/source/platform/CI validation only; no VPS operation",
+    "credentials": "Empty DOCKER_CONFIG; no credential helper or login",
+    "images": {
+      "backend": "ghcr.io/namkhasnh/hlf-backend@sha256:8244b4fbad6ca7f93d4bdd72c8a45441c51860075371fa9c691db1d9d78279dc",
+      "frontend": "ghcr.io/namkhasnh/hlf-frontend@sha256:27e34d216a25acdaaf8afdfe68362ad805ff629a3325a79340784bf0a49df1fa",
+      "schema": "ghcr.io/namkhasnh/hlf-schema@sha256:693384d30a2bdbd9c4e7f434b9de2dd518484aa4bd6278fd88599a05bcabb51d"
+    },
+    "migration_count": 34
+  },
+  "github_ci_url": "https://github.com/Namkhasnh/cse3045-nhom-3/actions/runs/40646440238",
+  "vps_memory_user_reported_mib": {
+    "total": 1967,
+    "available": 1377,
+    "swap_total": 2047,
+    "swap_used": 961
+  },
+  "public_html_diagnosis": {
+    "expected_vps_sha256": "7dd7b12ba82837dfdbee75ebb135148ddf9a3120a76fa7e6df9a4e1b6ca96b69",
+    "result": "PASS matching exact SHA256 after removing only recognized per-request Cloudflare JS-detection bootstrap; user-reported public JS/CSS exact"
+  },
+  "vps_installed_tool_commit": "b54af2d7cea8b923f47b5b0fbfa4a7dc99e599fd",
+  "vps_prepared_candidate": "cd52b39cde29ce131847b8dd1886d8d277f757a0"
+}

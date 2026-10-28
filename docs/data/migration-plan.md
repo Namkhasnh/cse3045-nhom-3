@@ -86,3 +86,8 @@ The subsequent reported502 repair authorized local adoption of20261025010000_cod
 ## October25 authorized academic VPS code/schema update
 
 The user explicitly selected deployment of current local code and schema while preserving VPS data; local business-data import is excluded. [Update handoff](../demo-cod-update.md) owns the reviewed migration allowlist, exact-clone rehearsal, old-column/row comparisons, protected SQL/object/vault recovery point, restricted grants and compatibility-gated application recovery. Preparation does not prove remote adoption; actual deployment evidence is recorded separately.
+
+
+## October28 personal-profile adoption
+
+The user explicitly approved a full private local backup, same-Mac restore rehearsal, avatar/verified-email feature adoption and removal of the temporary SQL/test copies. The [profile contract and local evidence](../profile-identity.md#retained-local-adoption--october282026) record the exact source, preserved64tables/795rows, one additive migration, narrow grants, runtime restart and sanitized cleanup receipt. No retained avatar/email was fabricated or changed for a demonstration; production remains separate.

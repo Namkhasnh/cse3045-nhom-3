@@ -4,7 +4,7 @@ import { NotificationBell } from '../../features/notifications'
 import { Icon } from '../../shared/ui/Icon'
 import { SiteBrand } from './SiteBrand'
 import { LoginBrand } from '../../shared/ui/LoginBrand'
-import { initials } from '../../shared/lib/initials'
+import {UserAvatar} from '../../shared/ui/UserAvatar'
 
 type Props = { user: User | null; pending: boolean; cartCount: number; path: string; onOpenCart?: () => void; onLogout: () => Promise<void> }
 export function SiteHeader({ user, pending, cartCount, path, onOpenCart, onLogout }: Props) {
@@ -69,7 +69,7 @@ export function SiteHeader({ user, pending, cartCount, path, onOpenCart, onLogou
         {pending ? <span role="status" className="session-pending">Đang kiểm tra tài khoản…</span> : user ? <>
           {management && <a className="header-link" href={management.href}>{management.label}</a>}
           <div className="account-disclosure" onBlur={event => { if (event.relatedTarget && !event.currentTarget.contains(event.relatedTarget)) setAccountOpen(false) }}>
-            <button className="account-toggle" ref={accountButton} aria-label={'Menu tài khoản ' + user.display_name} aria-expanded={accountOpen} aria-controls="account-links" onClick={() => setAccountOpen(!accountOpen)}><span className="header-avatar" aria-hidden="true">{initials(user.display_name)}</span><span>{user.display_name}</span><span aria-hidden="true">⌄</span></button>
+            <button className="account-toggle" ref={accountButton} aria-label={'Menu tài khoản ' + user.display_name} aria-expanded={accountOpen} aria-controls="account-links" onClick={() => setAccountOpen(!accountOpen)}><span className="header-avatar" aria-hidden="true"><UserAvatar name={user.display_name} source={user.avatar_image_reference}/></span><span>{user.display_name}</span><span aria-hidden="true">⌄</span></button>
             {accountOpen && <nav id="account-links" className="account-links" aria-label="Tài khoản">{accountLinks}</nav>}
           </div>
         </> : <><a className="header-link login" aria-current={path === '/login' ? 'page' : undefined} href={authLink('/login')}>Đăng nhập</a><a className="design-button design-button--small" href={authLink('/register')}>Đăng ký <Icon name="arrow" /></a></>}

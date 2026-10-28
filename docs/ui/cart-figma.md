@@ -51,3 +51,20 @@ The reported Edge session was the sole MFA Admin. Its self DTO incorrectly inclu
 Evidence: actual Edge cart after reload shows the Admin explanation and retains14portions; backend lint/build,72unit cases,9HTTP E2E cases and the real MySQL9.2.0 delivery integration pass. Delivery HTTP assertions check Admin-only self capabilities and quote403, manager buying, approved zero-fee quotes and survey races. Protected logs: `/private/tmp/hlf-cart-backend-*.log` and `/private/tmp/hlf-cart-delivery-integration.log`. No account/session/fee/history data was changed to bypass the denial. VPS deployment is on hold.
 
 The same follow-up adds [transient action feedback](action-feedback.md). It does not create another inbox message for each local action.
+
+
+## Recent-additions dock — October27,2026
+
+The user requested the previously approved cart changes alongside the current UI after localhost accidentally served an October24 worktree. The change is ported into the October27 main checkout, preserving current grouped-cart/reorder/checkout and owner screens. The original worktree remains untouched.
+
+Homepage and restaurant menus offer a brand-orange “Vừa thêm” dock. It appears after an accepted addition and opens a read-only preview of only the portions added on the current page. The header opens the full saved cart. Adding an already-saved dish counts only the new increment in the preview; accepted prices remain unchanged. Different restaurants stay grouped under the [purchase contract](purchase-history-figma.md), with no return to the obsolete restaurant-switch flow.
+
+Recent quantities and animation origins stay in memory. Reload/navigation/storage replacement resets the preview; removal, quantity reductions and consumed checkout results clamp it to the remaining basket. Undo restores saved intent without recreating a removed preview count. Existing v2 storage, v1 migration, selection, limits and checkout recovery remain intact. Homepage additions re-read public dish/restaurant data and reject changed displayed prices, mismatched restaurants or ineligible additions. Errors preserve intent and trigger no success flight.
+
+Accepted additions animate the dish image or plus fallback to the dock, with reduced-motion support and cleanup. The native drawer retains Escape, focus restoration and scroll locking. No backend, database or deployment changes.
+
+Current-main self-review: frontend lint and TypeScript/Vite build PASS (existing chunk-size advisory). `test:cart` (7 cases) and `test:basket` (6 cases) PASS, including recent-group exact totals/clamping with preserved accepted prices/selection. `test:homepage` and `test:storefront` PASS in real Chrome using controlled API responses: recent/full separation, accepted-only image flight, repeated additions, reload, failed/closed additions, reduced motion, grouped restaurant preservation, drawer keyboard/focus, seven homepage widths and existing layout checks. Mobile360px dock and desktop preview screenshots were visually inspected.
+
+Logs: `/private/tmp/hlf-cart-merge-homepage.log`, `/private/tmp/hlf-cart-merge-storefront.log`. Screenshots: `hlf-home-evidence-aqErwI` and `hlf-storefront-evidence-PSH0iy` in the system temporary directory. `git diff --check`, browser-script syntax and changed documentation links/line limits PASS. Backend checks NOT RUN because backend is unchanged; controlled responses do not prove live checkout/database behavior. The local5173 Vite process was separately verified to run from the main project directory rather than the old worktree.
+
+`test:purchase` also PASS on the integrated code: current history/reorder, grouped selection and per-restaurant fees/vouchers, partial/unknown recovery, idempotent basket consumption, explicit conflict consent, duplicate-submit/storage guards, legacy migration and responsive result screens. Controlled-response Chrome log: `/private/tmp/hlf-cart-merge-purchase.log`; screenshots: `hlf-purchase-evidence-OoNvGA` in the system temporary directory.

@@ -3,7 +3,9 @@ import { Button } from '../../../shared/ui/Button'
 import { Input } from '../../../shared/ui/Input'
 import { authApi, ApiError, type User } from '../api/auth.api'
 import { Icon } from '../../../shared/ui/Icon'
-import { initials } from '../../../shared/lib/initials'
+import {UserAvatar} from '../../../shared/ui/UserAvatar'
+import {EmailChangeDialog} from './EmailChangeDialog'
+import {profileIdentityError} from './profile-identity'
 import './profile.css'
 
 export function ProfilePage({ user, onUpdate, onLogout }: {
@@ -15,6 +17,8 @@ export function ProfilePage({ user, onUpdate, onLogout }: {
   const [notice, setNotice] = useState('')
   const [failed, setFailed] = useState(false)
   const [errors, setErrors] = useState<{ name?: string; phone?: string }>({})
+  const [emailOpen,setEmailOpen]=useState(false),[avatarPreview,setAvatarPreview]=useState<string|null>(null)
+  const avatarInput=useRef<HTMLInputElement>(null),avatarRequest=useRef<{body:string;key:string;expected:number}|null>(null),avatarBusy=useRef(false)
   const form = useRef<HTMLFormElement>(null)
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -42,6 +46,20 @@ export function ProfilePage({ user, onUpdate, onLogout }: {
     } finally { setBusy(false) }
   }
 
+  async function saveAvatar(file:File|null){
+    if(avatarBusy.current||busy||!user.is_active)return
+    avatarBusy.current=true;setBusy(true);setNotice('');setFailed(false)
+    try{
+      if(file&&(!['image/jpeg','image/png'].includes(file.type)||!file.size||file.size>5242880))throw new ApiError(422,'VALIDATION_ERROR')
+      const image=file?{mime_type:file.type,content_base64:await new Promise<string>((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result).split(',')[1]);reader.onerror=()=>reject(new Error('File read failed'));reader.readAsDataURL(file)})}:null
+      if(image)setAvatarPreview('data:'+image.mime_type+';base64,'+image.content_base64)
+      const body=JSON.stringify(image)
+      if(avatarRequest.current?.body!==body)avatarRequest.current={body,key:crypto.randomUUID(),expected:user.version}
+      const updated=await authApi.avatar(avatarRequest.current.expected,image,avatarRequest.current.key)
+      onUpdate(updated);setNotice(file?'Đã cập nhật ảnh đại diện.':'Đã gỡ ảnh đại diện.');avatarRequest.current=null
+    }catch(error){setFailed(true);setNotice(profileIdentityError(error))}finally{setAvatarPreview(null);setBusy(false);avatarBusy.current=false;if(avatarInput.current)avatarInput.current.value=''}
+  }
+
   async function logout() {
     if (busy) return
     setBusy(true)
@@ -57,7 +75,9 @@ export function ProfilePage({ user, onUpdate, onLogout }: {
     <header className="workspace-page-heading"><span className="workspace-eyebrow">Không gian cá nhân</span><h1 id="profile-title">Tài khoản của tôi</h1><p>Quản lý thông tin cá nhân và hoạt động của bạn.</p></header>
     <div className="personal-profile-grid">
       <aside className="workspace-card identity-card" aria-label="Thông tin tài khoản">
-        <div className="profile-avatar" aria-hidden="true">{initials(user.display_name)}</div>
+        <div className="profile-avatar" aria-hidden="true"><UserAvatar name={user.display_name} source={avatarPreview??user.avatar_image_reference}/></div>
+        <input ref={avatarInput} className="sr-only" tabIndex={-1} type="file" accept="image/jpeg,image/png" aria-label="Chọn ảnh đại diện" onChange={e=>{const file=e.currentTarget.files?.[0];if(file)void saveAvatar(file)}}/>
+        <div className="profile-avatar-actions"><Button variant="neutral" onClick={()=>avatarInput.current?.click()} disabled={busy||!user.is_active}>{avatarPreview?'Đang lưu ảnh…':'Thay ảnh đại diện'}</Button>{user.avatar_image_reference&&<button className="profile-link-button" type="button" disabled={busy||!user.is_active} onClick={()=>void saveAvatar(null)}>Gỡ ảnh</button>}</div><p className="profile-field-hint">JPEG hoặc PNG, tối đa 5 MB. Ảnh được cắt vuông ở giữa.</p>
         <span className="profile-role">{user.capabilities.includes('admin') ? 'Quản trị viên' : user.managed_restaurant_id ? 'Chủ quán' : 'Người dùng'}</span>
         <h2>{user.display_name}</h2><p>@{user.login_identifier}</p>
         <div className="identity-meta"><span>Email đăng nhập</span><strong>{user.email ?? 'Chưa có email'}</strong></div>
@@ -67,7 +87,7 @@ export function ProfilePage({ user, onUpdate, onLogout }: {
       <div className="workspace-card personal-profile-card">
         <div className="workspace-card-title"><div><h2>Thông tin cá nhân</h2><p>Cập nhật thông tin hiển thị khi đặt món.</p></div><span><Icon name="user" /></span></div>
         <form ref={form} noValidate onSubmit={submit} aria-busy={busy}>
-          <div className="profile-readonly"><div><span>Tên đăng nhập</span><strong>{user.login_identifier}</strong></div><div><span>Email</span><strong>{user.email ?? 'Chưa có email'}</strong></div></div>
+          <div className="profile-readonly"><div><span>Tên đăng nhập</span><strong>{user.login_identifier}</strong></div><div><span>Email</span><strong>{user.email ?? 'Chưa có email'}</strong><button className="profile-link-button" type="button" onClick={()=>setEmailOpen(true)} disabled={busy||!user.is_active}>Đổi email</button></div></div>
       <Input id="profile-name" label="Họ và tên" value={displayName} onChange={event => setDisplayName(event.target.value)}
         autoComplete="name" maxLength={200} required disabled={busy || !user.is_active} error={errors.name} aria-describedby="profile-name-hint" />
       <p className="profile-field-hint" id="profile-name-hint">Tên này được dùng cho các đơn hàng của bạn.</p>
@@ -75,10 +95,11 @@ export function ProfilePage({ user, onUpdate, onLogout }: {
         type="tel" autoComplete="tel" maxLength={16} disabled={busy || !user.is_active} error={errors.phone} aria-describedby="profile-phone-hint" />
       <p className="profile-field-hint" id="profile-phone-hint">Dùng để quán liên hệ khi cần hỗ trợ đơn hàng.</p>
       {notice && <p className={`profile-feedback${failed ? ' profile-feedback--error' : ''}`} role={failed ? 'alert' : 'status'}><Icon name={failed ? 'alert' : 'check'} />{notice}</p>}
-      <div className="profile-form-actions"><p>Email và tên đăng nhập không thể chỉnh sửa.</p><Button type="submit" disabled={busy||!user.is_active}>{busy ? 'Đang xử lý…' : 'Lưu thay đổi'}</Button></div>
+      <div className="profile-form-actions"><p>Tên đăng nhập không thể chỉnh sửa. Đổi email cần xác nhận riêng.</p><Button type="submit" disabled={busy||!user.is_active}>{busy ? 'Đang xử lý…' : 'Lưu thay đổi'}</Button></div>
         </form>
     {!user.is_active&&<p role="alert">Tài khoản đang đình chỉ; chỉ xử lý nghĩa vụ cũ.</p>}
       </div>
     </div>
+    {emailOpen&&<EmailChangeDialog user={user} onClose={()=>setEmailOpen(false)} onComplete={onLogout}/>}
   </section>
 }

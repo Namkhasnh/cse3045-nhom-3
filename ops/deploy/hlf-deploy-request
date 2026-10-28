@@ -1,0 +1,12 @@
+#!/bin/sh
+# Python isolated mode prevents runner-controlled PYTHONPATH/site customization.
+exec /usr/bin/env -i PATH=/usr/sbin:/usr/bin:/sbin:/bin HOME=/root LANG=C.UTF-8 /usr/bin/python3 -I -c '
+import sys
+sys.path.insert(0, "/usr/local/lib/hlf-deploy")
+from controller import main
+try:
+    main()
+except Exception as error:
+    print("BLOCKED: " + (str(error) if type(error) is RuntimeError else type(error).__name__), file=sys.stderr)
+    sys.exit(1)
+' "$@"

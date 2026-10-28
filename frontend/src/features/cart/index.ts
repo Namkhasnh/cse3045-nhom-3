@@ -7,3 +7,5 @@ export { CartDrawer } from './CartDrawer'
 
 export {selectedGroups,basketSubtotal} from './basket'
 export type {Basket} from './basket'
+
+export { RecentCart } from './RecentCart'

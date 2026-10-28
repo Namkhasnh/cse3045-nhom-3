@@ -55,3 +55,8 @@ The [enabled P25 schemas](data/administration.openapi.json) extend these target 
 ## 6. Evidence
 
 AUTH-03 now tests ordinary signup/email only (former role-approval assertions are superseded); AUTH-04 buyer+manager capabilities and one-restaurant cap; ADMIN-01 singleton/provisioning/legacy selection; ADMIN-02 MFA/recovery/session revocation; USER-01 scoped suspension/support/audit behavior. Test direct SQL and concurrent workflows on MySQL 9.2.0 plus browser journeys, including replay/nested-resource denial. A UI-hidden role selector is insufficient evidence.
+
+
+## 7. Personal avatar and verified email change — October27,2026
+
+The user approved a persistent personal avatar and a separate change-email button with confirmation after opening it. [Profile identity contract](profile-identity.md) owns the scoped protocol, validation, media lifecycle, session revocation, privacy and evidence. Username remains immutable. The old verified email remains authoritative until a password-authorized request is confirmed by a code sent to the new address. No review/rating feature is implemented by this extension.

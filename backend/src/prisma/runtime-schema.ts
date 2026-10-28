@@ -1,8 +1,8 @@
 import type {PrismaService} from './prisma.service.js';
 
 type Column={table_name:string;column_name:string};
-export const requiredRuntimeMigration='20261025020000_restaurant_avatar';
-export const requiredRuntimeColumns=['accounts.login_identifier','restaurants.description','restaurants.cover_media_asset_id','restaurants.avatar_media_asset_id','restaurant_cover_media.id','orders.order_code','orders.discount_vnd','orders.voucher_snapshot','vouchers.id','voucher_redemptions.order_id','commission_entries.subsidy_order_id'];
+export const requiredRuntimeMigration='20261027010000_account_profile_identity';
+export const requiredRuntimeColumns=['accounts.avatar_media_asset_id','accounts.pending_email','accounts.email_change_auth_version','account_avatar_media.id','accounts.login_identifier','restaurants.description','restaurants.cover_media_asset_id','restaurants.avatar_media_asset_id','restaurant_cover_media.id','orders.order_code','orders.discount_vnd','orders.voucher_snapshot','vouchers.id','voucher_redemptions.order_id','commission_entries.subsidy_order_id'];
 
 // Read-only release cutover manifest uses physical table/column names. Advance
 // the manifest and release marker with schema-dependent changes; the marker also

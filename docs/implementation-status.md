@@ -287,3 +287,8 @@ Subsequent local502repair: [backed-up checkout schema adoption](local-checkout-r
 ## Purchase history, reorder and grouped checkout — October25,2026
 
 IMPLEMENTED/VERIFIED: [approved extension and evidence](ui/purchase-history-figma.md) redesigns buyer history with server search/counts and current public imagery, enables direct reorder, grouped checkbox carts and one confirmation for independent per-restaurant orders/fees. Existing order snapshots, per-order idempotency and legacy recovery remain. Frontend/backend lint/build,76backend unit/9HTTP E2E, real-MySQL order/query/privacy checks,25frontend unit cases, controlled multi-restaurant Chrome and connected delivery/checkout checks pass. Local browser observation confirms actual dish photos; the local restaurant has no cover image. No new database migration or deployment; existing unrelated workspace work is preserved.
+
+
+## October28 scoped personal profile extension
+
+Personal avatar upload/removal and header display plus password/code-verified email change are implemented and adopted on the explicitly authorized local database. [Profile evidence](profile-identity.md) separates root lint/build/unit/E2E, real MySQL/MinIO, controlled Chrome, retained preservation and actual local read-only checks. No review/rating feature or production deployment is included.

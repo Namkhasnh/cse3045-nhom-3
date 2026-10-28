@@ -54,7 +54,9 @@
     "test:order-code-upgrade": "node scripts/verify-order-code-upgrade.mjs",
     "test:voucher-upgrade": "node scripts/verify-voucher-upgrade.mjs",
     "test:cod-upgrade": "node scripts/verify-cod-upgrade.mjs",
-    "test:avatar-upgrade": "node scripts/verify-restaurant-avatar-upgrade.mjs"
+    "test:avatar-upgrade": "node scripts/verify-restaurant-avatar-upgrade.mjs",
+    "avatars:cleanup:local": "npm run build && node dist/maintenance-account-avatars-local.js",
+    "test:profile": "npm run test:compile && node --test .test-dist/test/integration/profile-identity.integration-spec.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1152.0",

@@ -1,0 +1,95 @@
+{
+  "format": "hlf-vps-backup-receipt-v1",
+  "result": "PASS",
+  "remote": "hlfdrive:HLF-Backup-VPS/20261027T033841Z-ad672564-0953-4dde-af4a-37f55a758a5d",
+  "private_key_uploaded": false,
+  "capture": {
+    "result": "CAPTURED",
+    "website_resumed": true,
+    "recovery_point_utc": "2026-10-27T03:38:59Z",
+    "databases": {
+      "test_hlf_demo": {
+        "tables": 65,
+        "rows": 1873
+      },
+      "cse3045": {
+        "tables": 5,
+        "rows": 25
+      }
+    }
+  },
+  "files": {
+    "snapshot.tar.gz.age": {
+      "sha256": "7d354c139ec7cfd17128586ebfdf64f8e88dbe11a2544d24684bc8ce8e66dabe",
+      "ciphertext_bytes": 14650877,
+      "stream_bytes": 14647109,
+      "drive_readback": "PASS"
+    },
+    "images.tar.gz.age": {
+      "sha256": "688f2a12d397f139308d09353418ae82eac0c31185e77fc01dcb80eb1c42a5bf",
+      "ciphertext_bytes": 492538715,
+      "stream_bytes": 492418307,
+      "drive_readback": "PASS"
+    },
+    "recovery-tools.tar.gz.age": {
+      "sha256": "e7381f93ed38d407f3db1f2f9d6252178f7d3e784c37b3c4d1307c6733de0fa2",
+      "ciphertext_bytes": 18141,
+      "drive_readback": "PASS"
+    }
+  },
+  "restore": {
+    "result": "PASS",
+    "source_recovery_point_utc": "2026-10-27T03:38:59Z",
+    "databases": {
+      "test_hlf_demo": {
+        "tables": 65,
+        "rows": 1873,
+        "schema_and_all_rows": "PASS"
+      },
+      "cse3045": {
+        "tables": 5,
+        "rows": 25,
+        "schema_and_all_rows": "PASS"
+      }
+    },
+    "images": "PASS exact Drive image load",
+    "no_external_network": true,
+    "objects": {
+      "files": 262,
+      "exact_bytes": "PASS"
+    },
+    "vault": {
+      "files": 55,
+      "exact_bytes": "PASS"
+    },
+    "frontend": "PASS exact files",
+    "runtime": "PASS exact backend image; catalog200 anonymous401; AI/SMTP disabled",
+    "private_and_media_read": {
+      "private_payloads": 49,
+      "mfa_factors": 1,
+      "s3_objects_read": 223
+    },
+    "finished_at_utc": "2026-10-27T03:50:44Z"
+  },
+  "images": [
+    "sha256:0596fa224cdf3b3355ce3ddbfd7ce77be27ec9e51841dfc5d2e1c8b81eea69d2",
+    "sha256:3e406cc2ee20160994e7c2e5e8c8645b5bad0b7b82679652e282986e1228fdb0",
+    "sha256:94926e9e38c5bec099c26e97bebb880e6f7cf7c71fbcd2c794f0d2eb9dc55dc6"
+  ],
+  "scope": "Manual actual VPS recovery point; GitHub Actions/automatic backup not configured",
+  "checks": {
+    "python_cases": 8,
+    "review": "Codex self-review",
+    "authenticated_live_browser_journeys": "NOT RUN",
+    "live_restore": "NOT RUN",
+    "offline_age_key_custody": "NOT VERIFIED"
+  },
+  "recovery_tools_and_receipt_drive_readback": "PASS",
+  "cleanup": {
+    "large_mac_archives_removed": true,
+    "owned_source_staging_removed": true,
+    "original_backups_preserved": true,
+    "post_backup_website": "PASS"
+  },
+  "drive_folder_url": "https://drive.google.com/drive/folders/1nHxtKmHh3SxknFt0hq0f_BMV2fKXHQMD"
+}

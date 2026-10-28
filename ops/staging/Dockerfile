@@ -41,7 +41,7 @@ COPY frontend/public ./public
 RUN npm run build
 
 FROM scratch AS frontend-artifact
-COPY --from=frontend-build /app/frontend/dist /
+COPY --from=frontend-build /app/frontend/dist /frontend/
 
 # Private SSH-tunnel entry; Linux host network, loopback-only listener.
 # TLS files are supplied at runtime, never included in this image.

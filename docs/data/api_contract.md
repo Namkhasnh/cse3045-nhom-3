@@ -77,6 +77,8 @@ Delivery/gates: [roadmap](../roadmap.md), [decisions](../decisions.md), [current
 
 All endpoints inherit applicable auth/validation/not-found/rate-limit/server errors; endpoint sections add business errors. Do not use 204 for delete/hide/deactivate because the UI needs the outcome. `retryable=true` is guidance, never permission to bypass idempotency or reconfirmation.
 
+Public `Dish` list/detail responses include required boolean `restaurant_is_open` and `restaurant_is_accepting_orders`. Opening status uses the same server-side `Asia/Ho_Chi_Minh` schedule evaluation as `Restaurant.is_open`, including overnight intervals and exclusive closing boundaries. `is_available` remains dish stock availability, independent of restaurant hours/acceptance.
+
 ## 5. Durable idempotency and concurrency
 
 - Required `Idempotency-Key`: 1–128 visible ASCII characters, case-sensitive, no whitespace. Generate a unique opaque key per intent; keep it with the draft through timeout/reload. No server-generated key replacement on retry.
@@ -441,3 +443,5 @@ The October 25, 2026 user-approved [checkout/voucher contract](../checkout-vouch
 - GET `/orders/summary` has the same authenticated/obligations scope and query validation. It returns `One<{counts:{pending,accepted,delivering,completed,cancelled,rejected},as_of}>`; counts apply search/code/payment/method/date but ignore selected status/cursor/limit. The route precedes `/orders/{order_id}`.
 - Buyer list rows additionally include current `restaurant_name`, `discount_vnd`, `voucher_snapshot` and `items` with `dish_id,dish_name_snapshot,quantity,unit_price_vnd,line_total_vnd`. These are order snapshots except the explicitly current restaurant label. List rows omit recipient/destination/history/private payload. No historical image reference is invented.
 - Single-restaurant create DTO, exact string IDs/money, authorization and per-order idempotency remain unchanged. Browser checkout persists one original key/payload per restaurant, shows independent outcomes and retains unknown requests for replay. Batch submission is not an atomic multi-restaurant transaction; it never rolls back successful orders because another restaurant fails.
+
+Personal account identity extension: [profile contract](../profile-identity.md) defines `/profile/avatar`, `/profile/email-change`, `/profile/email-change/confirm` and public current-only `/account-avatar-media/{id}`. Self DTO adds nullable `avatar_image_reference`; generic profile PATCH still cannot set email, role or avatar IDs.

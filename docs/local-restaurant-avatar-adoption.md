@@ -34,3 +34,22 @@ Restarted the existing backend dev workflow with the same environment; backend30
 | Owner settings | Current profile/cover render, separate3:1cover and1:1avatar pickers and storefront link are present |
 
 Actual verification made no profile/image/order/payment mutation. Synthetic pixel/pointer/keyboard/upload/persistence evidence remains in the [implementation self-check](ui/restaurant-images.md#executed-self-check). Application suites were not rerun for this operational follow-up because no application source changed. VPS/production adoption remains NOT RUN.
+
+## Local image outage — October27,2026
+
+Public catalog requests succeeded, but existing cover/avatar endpoints returned503. The configured local storage endpoint was loopback43317; its existing MinIO container `hlf-v04-test-minio-1` had exited with code0. The storage adapter converts failed object reads to503. The image metadata in MySQL alone cannot serve the stored image bytes.
+
+Recovered with `docker start hlf-v04-test-minio-1`, preserving its existing `/data` volume and bucket configuration. No source, schema, object or credential changes were needed. MinIO readiness returned200; cover3 returned200 directly through backend3000, and avatar4 plus dish images2/3/4 returned200 with image content types through Vite5173. Why the container was stopped was not established; its restart policy was `no` and was left unchanged.
+
+Browser reload/visual confirmation: NOT RUN to completion because the active Edge window was being used concurrently. Application suites: NOT RUN for this runtime-only recovery. Reload the local storefront to retry image elements that previously failed; the React DevTools message and browser lazy-image intervention are informational and do not cause these503 responses.
+
+
+## Login regression from an unfinished account-profile draft — October27,2026
+
+While preparing personal-account avatar/email changes, an incomplete Prisma schema/client was generated in the active backend checkout before its forward migration had been reviewed/adopted. Login's full account lookup then failed withP2022 (missing columns). No retained migration or account-data change had been performed.
+
+Recovery moved only that new unapplied migration and schema draft into `/private/tmp/hlf-profile-incomplete-se2w95pq`, restored the previously matching schema and regenerated Prisma Client. The existing Nest watcher recompiled and restarted successfully. Read-only checks passed for the runtime schema gate and the same full account projection used by login. Routed anonymous `/auth/me` returned401 and public catalog200. No password was guessed, session minted or retained data changed. An actual successful password/MFA login remains user verification; these read-only checks do not claim that journey.
+
+Resume the profile feature in an isolated checkout until its schema, code, forward migration and evidence are ready together; do not regenerate an incompatible client in the active runtime.
+
+The personal-account feature was subsequently completed in isolation and adopted only after explicit backup/restore approval on October28. See [profile identity and adoption evidence](profile-identity.md#retained-local-adoption--october282026); its schema and runtime now match.

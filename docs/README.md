@@ -43,6 +43,7 @@ Current ordering/payment policy: [COD and owner-only vouchers](cod-ordering.md);
 | How does the redesigned owner finance page work? | [Finance design, data boundaries and verification](ui/owner-finance-figma.md) |
 | How does the redesigned owner menu work? | [Menu design, interactions and verification](ui/owner-menu-figma.md) |
 | How do the owner dashboard and four settings tabs work? | [Owner Figma implementation](ui/owner-dashboard-figma.md) and [backend analytics](ui/owner-analytics.md) |
+| How do personal avatar/verified email changes work? | [Profile identity](profile-identity.md) |
 | How are personal, restaurant management and Admin workspaces separated? | [Approved account/owner workspaces and verification](ui/workspaces-figma.md) |
 | How does the standalone notification center behave? | [Approved notification redesign](ui/notifications-figma.md), [API/persistence contract](notifications-contract.md), [verification](notifications-verification.md) |
 | How does Login match Figma, including the food steam and real authentication? | [Login design and verification](ui/login-figma.md) |
@@ -54,6 +55,7 @@ Current ordering/payment policy: [COD and owner-only vouchers](cod-ordering.md);
 | Why did the local owner dashboard/orders return500 after the order redesign? | [Order-code schema adoption and full regression](local-runtime-order-code-repair.md) |
 | Why did local login/catalog return502 after checkout changes? | [Checkout schema adoption and runtime repair](local-checkout-runtime-repair.md) |
 | How is current local code/COD schema deployed while keeping VPS data? | [October25 code-only update](demo-cod-update.md) |
+| How is actual VPS data protected before the school's full reset? | [Manual encrypted VPS backup and recovery](vps-manual-backup.md); distinct from Mac-only SQL snapshots |
 | Is Gemini enabled on the demo VPS, and why can suggestions still time out? | [October26 activation and provider latency evidence](demo-ai-activation.md) |
 | How are retained local/SSH forks merged without replacing SSH data? | [Demo database merge and recovery](demo-database-merge.md); private manifests and exact-clone rehearsal |
 | How do we launch/recover/respond to incidents? | [Release checklist](release-checklist.md), deployment §§5–13, testing §§11–13 |
@@ -84,6 +86,8 @@ Reusable workflows are in [repository skills](../.agents/skills/). Skills follow
 Examples: `$run-roadmap Run P04`; `$run-roadmap Complete V0.2`; `$implement-feature Add public menu search`; `$build-component Fix the 360 px header`; `$review-change Review the current diff without editing`; `$explain-code Explain current login`. Ordinary scoped work does not require replaying earlier roadmap prompts. The roadmap helper resolves full text only, never acceptance or authorization.
 
 ## Maintaining documentation
+
+For manual GitHub Actions/GHCR releases to the existing demo, see [deployment setup and daily use](github-actions-deploy.md).
 
 - Keep one owning contract per rule. Update requirements first for behavior changes, then affected API/data/UI/AI, tests, roadmap/prompts and contributor/skill references together.
 - Preserve stable requirement/test IDs; mark replaced semantics explicitly. Old verification remains historical with its actual environment/version and design boundary.

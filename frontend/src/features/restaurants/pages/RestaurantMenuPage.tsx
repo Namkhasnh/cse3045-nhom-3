@@ -12,8 +12,8 @@ import { catalogApi, summary, CatalogError, type Dish, type Restaurant, type Cat
 import { useCatalog } from '../hooks/use-catalog'
 import type { RestaurantFilterValues } from '../types'
 const defaults: RestaurantFilterValues = { query: '', category: 'all', priceRange: 'all' }
-export function RestaurantMenuPage({ restaurantId, onAddDish, cartSummary, onOpenCart }: { restaurantId: string;
-  onAddDish?: (restaurant: Restaurant, dish: Dish) => void; cartSummary?: { count: number; subtotal: string }; onOpenCart?: () => void
+export function RestaurantMenuPage({ restaurantId, onAddDish }: { restaurantId: string;
+  onAddDish?: (restaurant: Restaurant, dish: Dish, source?: HTMLElement) => void
 }) {
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null)
   const [status, setStatus] = useState<'loading' | 'ready' | 'error' | 'missing'>('loading')
@@ -65,10 +65,9 @@ export function RestaurantMenuPage({ restaurantId, onAddDish, cartSummary, onOpe
         <div className="storefront-dish-media"><DishImage key={dish.image_reference} name={dish.name} source={dish.image_reference} /><span className="storefront-availability">{dish.is_available ? 'Còn món' : 'Tạm hết món'}</span></div>
         <div className="storefront-dish-content">{categories.find(c => c.id === dish.category_id) && <span className="storefront-dish-category">{categories.find(c => c.id === dish.category_id)!.name}</span>}<h3>{dish.name}</h3><p>{dish.description}</p><div className="storefront-dish-bottom">
           <p className="restaurant-price">{formatVnd(dish.price_vnd)}</p>
-          {onAddDish && <Button disabled={!restaurant.is_active || !restaurant.is_open || !restaurant.is_accepting_orders || !dish.is_available} onClick={() => onAddDish(restaurant, dish)}><span aria-hidden="true">＋</span> Thêm vào giỏ<span className="sr-only"> {dish.name}</span></Button>}
+          {onAddDish && <Button disabled={!restaurant.is_active || !restaurant.is_open || !restaurant.is_accepting_orders || !dish.is_available} onClick={event => onAddDish(restaurant, dish, event.currentTarget)}><span aria-hidden="true">＋</span> Thêm vào giỏ<span className="sr-only"> {dish.name}</span></Button>}
         </div></div></article>)}</div>}
     {catalog.moreError && <p role="alert">Chưa tải được trang tiếp theo. Hãy thử lại.</p>}
     {catalog.hasMore && <Button disabled={catalog.loadingMore} onClick={catalog.loadMore}>{catalog.loadingMore ? 'Đang tải…' : 'Tải thêm món'}</Button>}
-    {cartSummary && cartSummary.count > 0 && <button className="storefront-cart-trigger" onClick={onOpenCart}><Icon name="bag" /><span>Xem giỏ · {cartSummary.count} phần</span><strong>{formatVnd(cartSummary.subtotal)}</strong></button>}
   </section>
 }

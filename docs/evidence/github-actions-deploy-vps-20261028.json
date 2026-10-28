@@ -1,0 +1,160 @@
+{
+  "date": "2026-10-28",
+  "timezone": "Asia/Ho_Chi_Minh",
+  "scope": "Existing academic demo; no commercial release or pilot acceptance",
+  "source_repository": "https://github.com/Namkhasnh/cse3045-nhom-3",
+  "deployment_repository": "https://github.com/Namkhasnh/hlf-deploy",
+  "source_visibility": "public",
+  "deployment_visibility": "private",
+  "running_release": "a0056b586c87a5e783993869300f9b37dd1356a3",
+  "source_ci": {
+    "result": "PASS",
+    "url": "https://github.com/Namkhasnh/cse3045-nhom-3/actions/runs/40652718432"
+  },
+  "installed_tooling": {
+    "base": "b54af2d7cea8b923f47b5b0fbfa4a7dc99e599fd",
+    "controller_patch": "a0056b586c87a5e783993869300f9b37dd1356a3",
+    "controller_sha256": "824571aa4f9cca8c265508548eae63f30898c8472c376062dad67e7195b0c897",
+    "ssh_execution": "USER-REPORTED; no direct agent SSH access"
+  },
+  "runner": {
+    "version": "2.338.2",
+    "user": "hlf-runner",
+    "uid_user_reported": 1011,
+    "repository": "Namkhasnh/hlf-deploy",
+    "service_enabled_user_reported": true,
+    "registration_token_in_artifacts": false
+  },
+  "workflow_observation": "Agent observed authenticated GitHub browser summaries; connector lacked private repository access",
+  "first_deploy": {
+    "commit": "cd52b39cde29ce131847b8dd1886d8d277f757a0",
+    "url": "https://github.com/Namkhasnh/hlf-deploy/actions/runs/40655871231",
+    "attempt": 2,
+    "result": "PASS",
+    "stage": "complete",
+    "job_seconds": 56,
+    "initial_attempt": "BLOCKED before mutation by disk capacity gate"
+  },
+  "schema": {
+    "mysql": "9.2.0",
+    "initial_completed": 33,
+    "final_completed": 34,
+    "only_expansion": "20261025020000_restaurant_avatar",
+    "sql_sha256": "9579ca1f196c195f8eb051c69b5455c470fae3c2693c585363fa600a5e021198",
+    "assertions": "All original columns/rows compared after protected restore/rehearsal and migration; narrow runtime avatar-column grant",
+    "final_review_pending": [],
+    "final_review_evidence": "USER-REPORTED live DB operator output"
+  },
+  "rollback": {
+    "result": "PASS",
+    "scope": "Independent public HTTPS after live application rollback; no data mutation",
+    "index_sha256": "7dd7b12ba82837dfdbee75ebb135148ddf9a3120a76fa7e6df9a4e1b6ca96b69",
+    "catalog_status": 200,
+    "anonymous_auth_status": 401,
+    "workflow": "https://github.com/Namkhasnh/hlf-deploy/actions/runs/40661830693"
+  },
+  "rollback_workflow": {
+    "url": "https://github.com/Namkhasnh/hlf-deploy/actions/runs/40661830693",
+    "result": "ROLLED_BACK",
+    "stage": "complete",
+    "job_seconds": 12,
+    "avatar_reference_count_user_reported": 0,
+    "restored_old_dump": false,
+    "reverted_schema": false
+  },
+  "final_deploy": {
+    "url": "https://github.com/Namkhasnh/hlf-deploy/actions/runs/40663014113",
+    "result": "PASS",
+    "stage": "complete",
+    "job_seconds": 57,
+    "new_migrations": []
+  },
+  "independent_final_https": {
+    "result": "PASS",
+    "commit": "a0056b586c87a5e783993869300f9b37dd1356a3",
+    "scope": "Independent public HTTPS reads; no authenticated/order/payment mutations",
+    "checks": [
+      {
+        "path": "/login",
+        "status": 200,
+        "html_matches_release": true
+      },
+      {
+        "path": "/assets/index-C1hc9gNh.css",
+        "status": 200,
+        "sha256": "15ce93fb52a4b7e95fa74a98c80c810b4531d68bdcc902054472bd555cecf877",
+        "matches_release": true
+      },
+      {
+        "path": "/assets/index-Dso0wrDI.js",
+        "status": 200,
+        "sha256": "d83d8fceceb5c19e842342022974512059bed29e545c88a6da9e6dcbc082bb20",
+        "matches_release": true
+      },
+      {
+        "path": "/api/v1/restaurants",
+        "status": 200,
+        "restaurant_count": 2
+      },
+      {
+        "path": "/api/v1/auth/me",
+        "status": 401
+      }
+    ],
+    "workflow": "https://github.com/Namkhasnh/hlf-deploy/actions/runs/40663014113"
+  },
+  "first_public_verification": {
+    "result": "PASS",
+    "commit": "cd52b39cde29ce131847b8dd1886d8d277f757a0",
+    "scope": "Independent public HTTPS reads; no login/order/payment mutation",
+    "checks": [
+      {
+        "path": "/login",
+        "status": 200,
+        "html_matches_release": true
+      },
+      {
+        "path": "/assets/index-C1hc9gNh.css",
+        "status": 200,
+        "sha256_matches_release": true
+      },
+      {
+        "path": "/assets/index-Dso0wrDI.js",
+        "status": 200,
+        "sha256_matches_release": true
+      },
+      {
+        "path": "/api/v1/restaurants",
+        "status": 200,
+        "restaurant_count": 2
+      },
+      {
+        "path": "/api/v1/auth/me",
+        "status": 401
+      }
+    ]
+  },
+  "chrome_observation": "Public homepage accessibility tree rendered two restaurants and six dishes; guest UI, no authenticated mutation",
+  "cleanup": {
+    "legacy_schema_cache": [
+      "hlf-demo-schema:20261024-36e01f1",
+      "hlf-demo-schema:20261025-c4c7172"
+    ],
+    "legacy_cache_guards": "Exact image IDs, no running/stopped container references, original recovery archive IDs and full SHA256 verified before removal",
+    "legacy_archives_retained": true,
+    "rolled_back_release_cache": "Only unreferenced cd52b39 backend/frontend/schema image cache; immutable GHCR configs revalidated; release files/backups retained",
+    "prune_or_force": false,
+    "volumes_deleted": false,
+    "automatic_pruning": false,
+    "free_gib_before_final_user_reported": 3.9,
+    "gate_free_gib": 3
+  },
+  "data_and_keys": "Existing DB/object/vault volumes and runtime/MFA/SMTP/AI configuration preserved by recorded fingerprints and application template reuse; no reset, seed or local data import",
+  "private_recovery_evidence": "Root-only /var/lib/hlf-deploy/releases/<commit>; not uploaded",
+  "limitations": [
+    "Authenticated buyer/owner/Admin journeys NOT RUN",
+    "No real order/payment or AI provider mutation for verification",
+    "Scheduled encrypted offsite backup and operational RPO/RTO not certified",
+    "Unrelated uncommitted local application work preserved and excluded from deployed images"
+  ]
+}

@@ -18,11 +18,11 @@ jobs:
         working-directory: frontend
     steps:
       - name: Checkout source
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
       - name: Setup Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: '24.x'
           cache: npm
@@ -48,11 +48,11 @@ jobs:
         working-directory: backend
     steps:
       - name: Checkout source
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
       - name: Setup Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: '24.x'
           cache: npm
@@ -101,11 +101,11 @@ jobs:
       MEDIA_S3_BUCKET: dishes-test
     steps:
       - name: Checkout source
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
       - name: Setup Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: '24.x'
           cache: npm
@@ -124,3 +124,40 @@ jobs:
         env:
           TEST_DATABASE_URL: mysql://root:local_test_only@127.0.0.1:3306/test_hlf
         run: node test/administration-permissions.mjs
+
+  deployment-tooling:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Deployment safety tests
+        run: python3 -m unittest discover -s ops/deploy -p 'test_*.py' -v
+      - name: Build disposable deployment operator
+        run: docker build --platform linux/amd64 -f ops/staging/Dockerfile --target schema-operator -t hlf-ci-schema-check .
+      - name: Real MySQL deployment recovery rehearsal
+        run: python3 ops/deploy/integration.py --schema-image hlf-ci-schema-check
+
+  publish:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/hw1' && github.repository == 'Namkhasnh/cse3045-nhom-3'
+    needs: [frontend, backend, mysql-integration, deployment-tooling]
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Authenticate GHCR
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GHCR_ACTOR: ${{ github.actor }}
+        run: printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_ACTOR" --password-stdin
+      - name: Build and publish tested commit
+        run: python3 ops/deploy/publish.py
+      - name: Remove registry credentials
+        if: always()
+        run: docker logout ghcr.io

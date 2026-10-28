@@ -45,6 +45,7 @@ Object.assign(allowedTargets,{'account.credentials_recovered':'account','account
 Object.assign(allowedChanges,{'account.credentials_recovered':[],'account.availability':['from_is_active','is_active','version','from_credentials_blocked','credentials_blocked'],'account.read':[],'accounts.lookup':['count'],'support.created':['order_id'],'support.updated':['version','status'],'support.read':[],'support.lookup':['count'],'audit.lookup':['count'],'privacy.hold_read':[],'privacy.application_hold_read':[],'privacy.application_release':[],'privacy.application_hold':[],'privacy.hold':[],'privacy.release':[],'privacy.erasure':['status'],'privacy.reveal':[],'privacy.deleted':[]});
 Object.assign(allowedTargets,{'voucher.created':'voucher','voucher.toggled':'voucher'});
 Object.assign(allowedChanges,{'voucher.created':['funding','restaurant_id'],'voucher.toggled':['is_active']});
+Object.assign(allowedChanges,{'account.avatar_changed':['has_avatar'],'account.email_change_started':[],'account.email_changed':['sessions_revoked']});
 export const auditActions=Object.keys(allowedChanges);
 export const auditTargets=[...new Set(Object.values(allowedTargets).concat('account'))];
 

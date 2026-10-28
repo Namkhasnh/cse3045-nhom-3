@@ -369,3 +369,5 @@ The October 25, 2026 user-approved [checkout/voucher contract](checkout-vouchers
 ## October25 grouped purchase extension
 
 The user approved [purchase-history/reorder and multi-restaurant cart/checkout](ui/purchase-history-figma.md). BR01 still applies to each order. A cart may retain several restaurants and checkbox selections; one explicit checkout confirms separate orders with a common surveyed point, independent fees/vouchers and separate idempotency keys. Successful orders survive partial failures; unknown results retain their original intent/key. Only confirmed quantities are removed. This supersedes earlier single-restaurant **cart** restrictions, not single-restaurant **order** invariants or the manager ownership limit.
+
+Personal profile extension (user-approved October27): persistent optional avatar, change/remove controls and verified email change under [account security](account-security.md#7-personal-avatar-and-verified-email-change--october272026). The profile shows a change-email button first; username stays immutable. Review display remains future work.

@@ -16,3 +16,5 @@ export class MediaService {
 }
 
 export {CoverMediaService,coverDto,coverReference} from './cover-public.js';
+
+export {AccountAvatars} from './account-avatar-public.js';
