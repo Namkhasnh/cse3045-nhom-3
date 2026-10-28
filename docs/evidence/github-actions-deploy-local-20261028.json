@@ -35,8 +35,8 @@
   "github_private_repository_visibility": "PRIVATE, confirmed through browser",
   "github_private_workflow": "PUSHED main, manual Deploy/Rollback only",
   "vps_inventory": "USER-REPORTED SSH inventory: MySQL 9.2.0, 33 completed/unmodified-by-status migrations, no rolled-back entry, expected containers/volumes; independently re-read by operator before deployment",
-  "vps_install_runner_deploy_rollback": "USER-REPORTED installer adoption and exact avatar review PASS; runner/deploy/rollback NOT RUN",
-  "public_https_release_smoke": "NOT RUN",
+  "vps_install_runner_deploy_rollback": "PASS; see github-actions-deploy-vps-20261028.json for observed workflows and independent HTTPS proof",
+  "public_https_release_smoke": "PASS independent public HTTPS for final a0056b5 and live rollback",
   "commercial_release_acceptance": "NOT CLAIMED",
   "vps_free_bytes_user_reported": 4613013504,
   "vps_expected_pending_migration": {

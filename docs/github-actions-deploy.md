@@ -6,6 +6,12 @@ only to [Namkhasnh/hlf-deploy](https://github.com/Namkhasnh/hlf-deploy), a separ
 The public repository has no self-hosted jobs. Deployment-tool CI also runs the disposable real
 MySQL recovery rehearsal before publishing is allowed.
 
+**Executed October28:** [final deploy](https://github.com/Namkhasnh/hlf-deploy/actions/runs/40663014113)
+PASS for `a0056b586c87a5e783993869300f9b37dd1356a3`;
+[live application rollback](https://github.com/Namkhasnh/hlf-deploy/actions/runs/40661830693) PASS.
+The rollback retained the expanded schema and data; the final release is running again.
+See [sanitized VPS evidence](evidence/github-actions-deploy-vps-20261028.json).
+
 ## 1. Release path and trust
 
 Push to `hw1` → existing frontend/backend/MySQL CI plus deployment-tool tests → publish four
@@ -91,16 +97,33 @@ Never register this runner with the public source repository.
 ```sh
 sudo install -d -o hlf-runner -g hlf-runner -m 700 /opt/hlf-actions-runner
 sudo -iu hlf-runner
+```
+
+Wait until the prompt changes to `hlf-runner@...`, then run these commands in that shell:
+
+```sh
 cd /opt/hlf-actions-runner
 # Run GitHub's official download, checksum and extraction commands here.
 ./config.sh --url https://github.com/Namkhasnh/hlf-deploy \
   --name hlf-demo-vps --labels hlf-demo --work _work
 # Enter the short-lived registration token at the interactive prompt.
+```
+
+If the official runner reports missing native dependencies, return to `student` and run
+`sudo /opt/hlf-actions-runner/bin/installdependencies.sh`, then re-enter the runner account.
+Do not give `hlf-runner` general sudo permissions.
+
+After successful registration, return to `student` with this command:
+
+```sh
 exit
-cd /opt/hlf-actions-runner
-sudo ./svc.sh install hlf-runner
-sudo ./svc.sh start
-sudo ./svc.sh status
+```
+
+At the `student@...` prompt, install/start the service using root; the runner directory is
+intentionally mode0700, so an ordinary `cd` into it is not required:
+
+```sh
+sudo bash -c 'cd /opt/hlf-actions-runner && ./svc.sh install hlf-runner && ./svc.sh start && ./svc.sh status'
 id hlf-runner
 ```
 
@@ -113,7 +136,7 @@ The runner can request deployment of trusted published code, so protect private-
 
 ## 4. Daily use
 
-1. Commit the intended application changes and push to `hw1`. Uncommitted changes are excluded.
+1. Commit the intended application changes and push/merge into `hw1`. Uncommitted changes are excluded.
 2. Wait for source **CI** to finish successfully, including **publish**. Copy the full SHA from
    its release summary. A green app build without a successful publish is not deployable.
 3. Open **hlf-deploy → Actions → Demo deployment → Run workflow**.
@@ -134,6 +157,14 @@ GitHub concurrency and server locks serialize requests. A successful current-rel
 does not replace containers again. An attempted/failed release refuses blind retries; inspect
 its protected state before any operator recovery. Cancellation, runner disconnect or workflow
 timeout does not cancel the systemd operation. A dead service with unfinished state reports BLOCKED.
+
+The VPS has19GiB total disk. Preflight requires at least3GiB free **after image pulls**;
+this is a real capacity gate, not a deployment failure to bypass by rerunning. No automatic image
+or backup pruning runs. On October28, two unused legacy schema images were removed only after
+matching their exact IDs, checking all running/stopped container references and verifying the
+original recovery archives against their manifests. Archives and all referenced API images
+were retained. After the live rollback, only that rolled-back release's unreferenced image cache
+was removed after verifying immutable GHCR availability; backups/state/static files remained.
 
 ## 5. Migration review and recovery
 
@@ -207,7 +238,7 @@ Private evidence: `/var/lib/hlf-deploy/releases/FULL_SHA/state.json`, `manifest.
 SQL/assets recovery files and rehearsal inventory. Do not upload these directories or runtime.env
 to GitHub. Only sanitized status is printed to Actions. No automated retention/pruning is enabled.
 
-## 6. Verification and remaining handoff
+## 6. Executed verification and limits
 
 - PASS 27 local deployment safety unit tests and actionlint1.7.12 workflow validation.
 - PASS disposable MySQL9.2.0 SQL/schema/row and object/vault restore, reviewed expansion rehearsal,
@@ -221,7 +252,16 @@ to GitHub. Only sanitized status is printed to Actions. No automated retention/p
   migrations,4.3GiBfree. Operator re-reads checksums before any mutation.
 - PASS disposable runtime grant rehearsal using synthetic passwords and positive/negative
   column-write checks; no production password is copied into the rehearsal DB.
-- NOT RUN on VPS: adoption, runner registration, actual deploy, HTTPS smoke and rollback.
+- PASS user-reported SSH installation, private runner registration/service start and reviewed
+  first avatar expansion. GitHub deployment completed protected backup/real-data restore/
+  migration rehearsal and forward application; old API/data/keys were retained.
+- PASS live application rollback of `cd52b39...`, followed by final deploy of `a0056b5...`.
+  The avatar-null guard passed; no old dump or schema rollback was applied.
+- PASS independent public HTTPS after both deploys and rollback: release HTML after only recognized
+  Cloudflare normalization, exact JS/CSS SHA256, catalog200and anonymous-auth401.
+- PASS Chrome accessibility observation of the deployed public homepage: two restaurants and
+  six dishes. Authenticated buyer/owner/Admin journeys and real order/payment mutations: NOT RUN.
+- Scheduled encrypted offsite backup, pilot/load acceptance and commercial release: NOT CLAIMED.
 
 The first adoption attempt stopped before creating the runner or changing the application:
 a Python function/module name collision broke loopback HTTP checks, and Cloudflare inserted a
