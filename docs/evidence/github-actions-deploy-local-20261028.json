@@ -1,0 +1,34 @@
+{
+  "date": "2026-10-28",
+  "scope": "Deployment tooling only; no retained VPS mutation or application release certified",
+  "source_base": "0a3effa4441f555024cdf6c0c0698be164467a68",
+  "source_checkout": "Clean remote hw1; unrelated uncommitted application changes excluded",
+  "self_review": true,
+  "automated": {
+    "unit_safety_cases": 16,
+    "unit_result": "PASS",
+    "workflow_actionlint": "PASS 1.7.12; official archive SHA256 verified; dedicated runner label configured",
+    "python_ast_node_shell_syntax": "PASS",
+    "linux_amd64_builds": ["backend-runtime", "schema-operator", "frontend-artifact"],
+    "frontend_extraction": "PASS index/assets only, no container runtime /etc or env files",
+    "mysql_version": "9.2.0",
+    "mysql_scope": "Disposable synthetic database and labeled volumes, all removed after assertions",
+    "mysql_cases": [
+      "SQL restore schema/all-original-row equality",
+      "object/vault restore byte equality",
+      "reviewed schema expansion rehearsal",
+      "rehearsal leaves source database unchanged",
+      "exact BigInt and signed DECIMAL history preservation",
+      "transaction rollback",
+      "real FK and CHECK rejection",
+      "deliberate original-row drift rejection"
+    ]
+  },
+  "github_private_repository": "https://github.com/Namkhasnh/hlf-deploy",
+  "github_private_repository_visibility": "PRIVATE, confirmed through browser",
+  "github_private_workflow": "PUSHED main, manual Deploy/Rollback only",
+  "vps_inventory": "NOT RUN: user executes in existing SSH session",
+  "vps_install_runner_deploy_rollback": "NOT RUN",
+  "public_https_release_smoke": "NOT RUN",
+  "commercial_release_acceptance": "NOT CLAIMED"
+}

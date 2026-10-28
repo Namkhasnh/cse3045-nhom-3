@@ -1,0 +1,54 @@
+# Copy ONLY this workflow to Namkhasnh/hlf-deploy/.github/workflows/deploy.yml.
+name: Demo deployment
+run-name: '${{ inputs.operation }} ${{ inputs.commit }}'
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: Operation
+        type: choice
+        options: [Deploy, Rollback]
+        required: true
+      commit:
+        description: Full 40-character commit SHA (Rollback = current release to undo)
+        type: string
+        required: true
+permissions: {}
+concurrency:
+  group: hlf-demo-deployment
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: github.repository == 'Namkhasnh/hlf-deploy' && github.ref == 'refs/heads/main'
+    runs-on: [self-hosted, linux, x64, hlf-demo]
+    timeout-minutes: 60
+    steps:
+      # No checkout, public source execution, Docker access or secrets on the runner.
+      - name: Request fixed server-side operation
+        env:
+          COMMIT: ${{ inputs.commit }}
+          OPERATION: ${{ inputs.operation }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$COMMIT" =~ ^[a-f0-9]{40}$ ]] || exit 2
+          case "$OPERATION" in
+            Deploy)
+              sudo -n /usr/local/sbin/hlf-deploy-request preflight "$COMMIT"
+              sudo -n /usr/local/sbin/hlf-deploy-request deploy "$COMMIT"
+              ;;
+            Rollback) sudo -n /usr/local/sbin/hlf-deploy-request rollback "$COMMIT" ;;
+            *) exit 2 ;;
+          esac
+          for ((i=0; i<660; i++)); do
+            status=$(sudo -n /usr/local/sbin/hlf-deploy-request status "$COMMIT")
+            printf '%s\n' "$status"
+            result=$(printf '%s' "$status" | python3 -c 'import json,sys; print(json.load(sys.stdin)["result"])')
+            case "$result" in
+              PASS|ROLLED_BACK) printf '%s\n' "$status" >> "$GITHUB_STEP_SUMMARY"; exit 0 ;;
+              FAIL|BLOCKED) exit 1 ;;
+            esac
+            sleep 5
+          done
+          echo 'Timeout: inspect the server service; do not interrupt or blindly retry.'
+          exit 1

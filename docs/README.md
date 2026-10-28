@@ -84,6 +84,8 @@ Examples: `$run-roadmap Run P04`; `$run-roadmap Complete V0.2`; `$implement-feat
 
 ## Maintaining documentation
 
+For manual GitHub Actions/GHCR releases to the existing demo, see [deployment setup and daily use](github-actions-deploy.md).
+
 - Keep one owning contract per rule. Update requirements first for behavior changes, then affected API/data/UI/AI, tests, roadmap/prompts and contributor/skill references together.
 - Preserve stable requirement/test IDs; mark replaced semantics explicitly. Old verification remains historical with its actual environment/version and design boundary.
 - Write technical docs/prompts in English, product copy in Vietnamese. Preserve original reference HTML and historical test artifacts.
