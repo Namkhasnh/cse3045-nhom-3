@@ -1,6 +1,6 @@
 import {mutationFeedback,showFeedback} from '../../../shared/lib/feedback'
 export type User = { id: string; login_identifier: string; display_name: string; phone: string | null;
-  email: string | null; email_verified: boolean;
+  avatar_image_reference?:string|null; email: string | null; email_verified: boolean;
   capabilities: string[]; managed_restaurant_id: string | null; is_active: boolean; version: number; updated_at: string }
 
 export class ApiError extends Error {
@@ -16,8 +16,8 @@ function csrfToken() {
     .find(value => value.startsWith('__Host-hlf_csrf='))?.split('=')[1]
 }
 
-async function request<T = User>(path: string, method = 'GET', body?: object, timeoutMs?: number): Promise<T> {
-  const headers: Record<string, string> = {}
+async function request<T = User>(path: string, method = 'GET', body?: object, timeoutMs?: number, requestKey?:string): Promise<T> {
+  const headers: Record<string, string> = requestKey?{'Idempotency-Key':requestKey}:{}
   if (body !== undefined) headers['Content-Type'] = 'application/json'
   if (method !== 'GET' && csrfToken()) headers['X-CSRF-Token'] = csrfToken()!
   const controller = new AbortController()
@@ -61,6 +61,9 @@ export const authApi = {
     showFeedback('Đã tiếp nhận yêu cầu gửi lại mã xác minh. Hãy kiểm tra email.')
   },
   logout: () => request('/auth/logout', 'POST', {}),
+  avatar:(expected_version:number,image:{mime_type:string;content_base64:string}|null,key:string)=>request<User>('/profile/avatar','POST',{expected_version,image},undefined,key),
+  startEmailChange:(input:{expected_version:number;new_email:string;password:string},key:string)=>request<{challenge_id:string;expires_in:number;resend_after:number}>('/profile/email-change','POST',input,undefined,key),
+  confirmEmailChange:(input:{challenge_id:string;code:string},key:string)=>request<{changed:true;reauthentication_required:true}>('/profile/email-change/confirm','POST',input,undefined,key),
   profile: (input: { expected_version: number; display_name: string; phone: string | null }) =>
     request('/profile', 'PATCH', input),
   verifyMfa: (challenge_id: string, proof: { code: string } | { recovery_code: string }) =>

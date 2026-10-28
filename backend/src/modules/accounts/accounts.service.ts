@@ -11,6 +11,7 @@ import { EmailVerificationService } from './email-verification.service.js';
 
 export function publicAccount(account: Account, access: { capabilities: string[]; managed_restaurant_id: string | null } = { capabilities: [], managed_restaurant_id: null }) {
   return { id: account.id.toString(), login_identifier: account.loginIdentifier,
+    avatar_image_reference: account.avatarMediaAssetId ? '/api/v1/account-avatar-media/'+account.avatarMediaAssetId : null,
     display_name: account.displayName, phone: account.phone, email: account.email,
     email_verified: account.email === null || account.emailVerifiedAt !== null, ...access,
     is_active: account.isActive, version: account.version,

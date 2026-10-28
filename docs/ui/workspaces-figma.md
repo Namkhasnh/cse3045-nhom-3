@@ -16,7 +16,7 @@ The personal profile, owner overview, Admin overview and navigation are redesign
 
 | Destination | Behavior |
 | --- | --- |
-| `/account` | Personal shell for all authenticated accounts, including owners and Admin; identity and verification come from the current user; login/email are read-only. |
+| `/account` | Personal shell for all authenticated accounts, including owners and Admin; identity and verification come from the current user; username stays read-only; the [October27 profile extension](../profile-identity.md) adds avatar controls and a separate verified-email-change dialog. |
 | `/orders`, `/orders/{id}`, `/notifications`, `/support`, `/privacy` | Personal navigation by default; existing business contents and capability gates remain. |
 | `/owner` | Owner-only overview using the existing setup guide, with no configuration forms or automatic writes. |
 | `/owner/settings` | Existing profile, cover/introduction, hours and receiving forms. Included in the safe login-return allowlist. |

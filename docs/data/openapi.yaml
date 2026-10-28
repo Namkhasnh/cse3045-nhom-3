@@ -14618,6 +14618,260 @@
         ],
         "description": "Authenticated buyer counts, including permitted historical obligations. Applies search/date/payment filters; ignores status/cursor/limit."
       }
+    },
+    "/profile/avatar": {
+      "post": {
+        "summary": "ProfileAvatarChange",
+        "security": [
+          {
+            "AccessCookie": [],
+            "CsrfHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfileAvatarChange"
+              }
+            }
+          }
+        },
+        "responses": {
+          "401": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "200": {
+            "description": "Confirmed result; successful email confirmation revokes old sessions.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/User"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/profile/email-change": {
+      "post": {
+        "summary": "ProfileEmailChange",
+        "security": [
+          {
+            "AccessCookie": [],
+            "CsrfHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfileEmailChange"
+              }
+            }
+          }
+        },
+        "responses": {
+          "401": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "200": {
+            "description": "Confirmed result; successful email confirmation revokes old sessions.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ProfileEmailChallenge"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/profile/email-change/confirm": {
+      "post": {
+        "summary": "ProfileEmailProof",
+        "security": [
+          {
+            "AccessCookie": [],
+            "CsrfHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfileEmailProof"
+              }
+            }
+          }
+        },
+        "responses": {
+          "401": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "200": {
+            "description": "Confirmed result; successful email confirmation revokes old sessions.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ProfileEmailChanged"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/account-avatar-media/{id}": {
+      "get": {
+        "summary": "Current sanitized account avatar only",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]*$"
+            }
+          }
+        ],
+        "responses": {
+          "404": {
+            "description": "Not current/missing"
+          },
+          "403": {
+            "description": "Account unavailable"
+          },
+          "503": {
+            "description": "Storage unavailable"
+          },
+          "200": {
+            "description": "Current avatar, no-store, nosniff",
+            "content": {
+              "image/jpeg": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -14734,6 +14988,13 @@
           "updated_at": {
             "type": "string",
             "format": "date-time"
+          },
+          "avatar_image_reference": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^/api/v1/account-avatar-media/[1-9][0-9]*$"
           }
         }
       },
@@ -15425,7 +15686,9 @@
           "is_visible",
           "is_available",
           "version",
-          "updated_at"
+          "updated_at",
+          "restaurant_is_open",
+          "restaurant_is_accepting_orders"
         ],
         "properties": {
           "id": {
@@ -15467,7 +15730,15 @@
             "type": "string",
             "format": "date-time"
           },
-          "restaurant_name": "Quán mẫu VJU"
+          "restaurant_name": {
+            "type": "string"
+          },
+          "restaurant_is_open": {
+            "type": "boolean"
+          },
+          "restaurant_is_accepting_orders": {
+            "type": "boolean"
+          }
         },
         "examples": [
           {
@@ -15482,7 +15753,9 @@
             "is_available": false,
             "version": 1,
             "updated_at": "2026-10-19T00:00:00.000Z",
-            "restaurant_name": "Quán mẫu VJU"
+            "restaurant_name": "Quán mẫu VJU",
+            "restaurant_is_open": true,
+            "restaurant_is_accepting_orders": true
           }
         ]
       },
@@ -15643,7 +15916,9 @@
                 "is_available": false,
                 "version": 1,
                 "updated_at": "2026-10-19T00:00:00.000Z",
-                "restaurant_name": "Quán mẫu VJU"
+                "restaurant_name": "Quán mẫu VJU",
+                "restaurant_is_open": true,
+                "restaurant_is_accepting_orders": true
               }
             ],
             "page": {
@@ -15678,7 +15953,9 @@
               "is_available": false,
               "version": 1,
               "updated_at": "2026-10-19T00:00:00.000Z",
-              "restaurant_name": "Quán mẫu VJU"
+              "restaurant_name": "Quán mẫu VJU",
+              "restaurant_is_open": true,
+              "restaurant_is_accepting_orders": true
             }
           }
         ]
@@ -23206,6 +23483,131 @@
             }
           }
         ]
+      },
+      "ProfileAvatarChange": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "expected_version",
+          "image"
+        ],
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483646
+          },
+          "image": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "mime_type",
+                  "content_base64"
+                ],
+                "properties": {
+                  "mime_type": {
+                    "enum": [
+                      "image/jpeg",
+                      "image/png"
+                    ]
+                  },
+                  "content_base64": {
+                    "type": "string",
+                    "minLength": 4,
+                    "maxLength": 6990508,
+                    "pattern": "^[A-Za-z0-9+/]+={0,2}$"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "ProfileEmailChange": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "expected_version",
+          "new_email",
+          "password"
+        ],
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483646
+          },
+          "new_email": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 254
+          },
+          "password": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          }
+        }
+      },
+      "ProfileEmailProof": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "challenge_id",
+          "code"
+        ],
+        "properties": {
+          "challenge_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{43}$"
+          },
+          "code": {
+            "type": "string",
+            "pattern": "^[0-9]{6}$"
+          }
+        }
+      },
+      "ProfileEmailChallenge": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "challenge_id",
+          "expires_in",
+          "resend_after"
+        ],
+        "properties": {
+          "challenge_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{43}$"
+          },
+          "expires_in": {
+            "const": 600
+          },
+          "resend_after": {
+            "const": 60
+          }
+        }
+      },
+      "ProfileEmailChanged": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "changed",
+          "reauthentication_required"
+        ],
+        "properties": {
+          "changed": {
+            "const": true
+          },
+          "reauthentication_required": {
+            "const": true
+          }
+        }
       }
     },
     "responses": {

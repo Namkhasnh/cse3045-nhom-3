@@ -1,0 +1,39 @@
+{
+  "status": "adopted_and_verified",
+  "original_tables_preserved": 64,
+  "original_rows_preserved": 795,
+  "applied_migrations": 35,
+  "sql_sha256": "4db724976113b26e91fd706c82b437d5233826b633237df0ee1ef34a8693ea36",
+  "backup_restore": true,
+  "forward_rehearsal": true,
+  "immutable_metadata_denied": true,
+  "date": "2026-10-28",
+  "post_start_original_data_preserved": true,
+  "runtime_schema_and_account_lookup": "PASS",
+  "routed_catalog": 200,
+  "anonymous_self": 401,
+  "missing_avatar": 404,
+  "anonymous_avatar_mutation": 401,
+  "backend_checks": {
+    "lint": "PASS",
+    "unit_cases": 77,
+    "http_e2e_cases": 9,
+    "build": "PASS",
+    "mysql_minio_integration": "PASS"
+  },
+  "frontend_checks": {
+    "lint": "PASS",
+    "build": "PASS",
+    "profile_chrome": "PASS"
+  },
+  "retained_avatar_email_mutations_for_testing": 0,
+  "cleanup": {
+    "sql_deleted": true,
+    "copied_connection_state_deleted": true,
+    "restore_database_deleted": true,
+    "synthetic_profile_database_deleted": true,
+    "synthetic_media_buckets_deleted": 5
+  },
+  "real_personal_mail_delivery": "NOT RUN",
+  "fresh_user_password_mfa_login": "NOT RUN"
+}

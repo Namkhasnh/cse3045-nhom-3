@@ -157,7 +157,7 @@ try {
  await navigate('/owner/settings#accepting');await waitText('Nhận đơn mới');assert(await evaluate("document.querySelector('#panel-accepting input[role=switch]').disabled"),'Incomplete setup enables receiving orders');
  await navigate('/support?workspace=owner');await waitText('Yêu cầu hỗ trợ');assert(await evaluate("document.querySelector('[data-workspace]').dataset.workspace==='owner'"),'Owner support lost workspace');
  await click('.workspace-sidebar a[href="/account"]');await waitText('Tài khoản của tôi');await click('.workspace-sidebar a[href="/support"]');await waitText('Yêu cầu hỗ trợ');assert(await evaluate("document.querySelector('[data-workspace]').dataset.workspace==='personal'"),'Personal support inherited management');
- await navigate('/orders');await waitText('Lịch sử đơn hàng');assert(await evaluate("document.querySelector('[data-workspace]').dataset.workspace==='personal'"),'Buyer orders mixed with owner orders');
+ await navigate('/orders');await waitText('Đơn hàng của tôi');assert(await evaluate("document.querySelector('[data-workspace]').dataset.workspace==='personal'"),'Buyer orders mixed with owner orders');
  await navigate('/notifications');await waitText('Thông báo của bạn');assert(await evaluate("!document.querySelector('[data-workspace]')"),'Inbox must be standalone');
 
  console.log('PASS guide refresh and route compatibility');

@@ -1,3 +1,4 @@
+import { useDiscoveryCart } from './app/hooks/useDiscoveryCart'
 import {useOrderImages} from './app/hooks/useOrderImages'
 import {useReorder} from './app/hooks/useReorder'
 import {VouchersPage} from './features/vouchers'
@@ -19,7 +20,7 @@ import { StudentLayout } from './app/layouts/StudentLayout'
 import { RoleLayout } from './app/layouts/RoleLayout'
 import { WorkspaceLayout } from './app/layouts/WorkspaceLayout'
 import { RestaurantListPage, RestaurantMenuPage, RestaurantSettingsPage, OwnerDashboardPage, type OwnerDashboardSource, ownerAnalyticsApi, AdminRestaurantsPage, catalogApi } from './features/restaurants'
-import { CartProvider, CartDrawer, useCart } from './features/cart'
+import { CartProvider, CartDrawer, RecentCart, useCart } from './features/cart'
 import { ApplicationsPage,AdminApplicationsPage } from './features/onboarding'
 import { formatVnd } from './shared/lib/format'
 import { authApi, ApiError, AuthPage, CredentialRecoveryPage, ProfilePage, safeReturnPath, type User } from './features/auth'
@@ -39,12 +40,15 @@ function Redirect({ to }: { to: string }) {
 
 function AppRoutes() {
   const cart = useCart()
-  const [drawerOpen, setDrawerOpen] = useState(false)
+  const addDiscoveredDish = useDiscoveryCart()
+  const [drawerOpen, setDrawerOpen] = useState<'all' | 'recent' | null>(null)
+  const resetRecent = cart.resetRecent
   const sessionRequest = useRef(0)
   const [locationHref, setLocationHref] = useState(() => window.location.href)
   const locationHrefRef=useRef(locationHref)
   useEffect(()=>{locationHrefRef.current=locationHref},[locationHref])
   const path = new URL(locationHref).pathname
+  useEffect(() => { resetRecent() }, [path, resetRecent])
   const [session, setSession] = useState<{ status: 'loading' | 'ready' | 'anonymous' | 'error'; user: User | null }>(
     { status: 'loading', user: null })
 
@@ -92,7 +96,7 @@ function AppRoutes() {
     endSession()
   }
 
-  return <NotificationProvider key={session.user?.id??'guest'} actor={session.status==='ready'&&session.user?.is_active?session.user.id:null}><AppShell user={session.user} pending={path !== '/preview' && session.status === 'loading'} cartCount={cart.count} path={path} onLogout={logout} onOpenCart={/^\/restaurants\/[1-9][0-9]*$/.test(path) ? () => setDrawerOpen(true) : undefined}>{renderRoutes()}{drawerOpen && <CartDrawer onClose={() => setDrawerOpen(false)} />}</AppShell></NotificationProvider>
+  return <NotificationProvider key={session.user?.id??'guest'} actor={session.status==='ready'&&session.user?.is_active?session.user.id:null}><AppShell user={session.user} pending={path !== '/preview' && session.status === 'loading'} cartCount={cart.count} path={path} onLogout={logout} onOpenCart={path === '/' || /^\/restaurants\/[1-9][0-9]*$/.test(path) ? () => setDrawerOpen('all') : undefined}>{renderRoutes()}{(path === '/' || /^\/restaurants\/[1-9][0-9]*$/.test(path)) && <RecentCart key={path} onOpen={() => setDrawerOpen('recent')} />}{drawerOpen && <CartDrawer recentOnly={drawerOpen === 'recent'} onClose={() => setDrawerOpen(null)} />}</AppShell></NotificationProvider>
   function renderRoutes(){
   const publicUser = session.user?.is_active ? session.user : null
   if (path === '/' || path === '/cart' || /^\/restaurants\/[1-9][0-9]*$/.test(path) || (path === '/preview' && import.meta.env.DEV)) return <StudentLayout
@@ -100,7 +104,7 @@ function AppRoutes() {
     {import.meta.env.DEV && import.meta.env.VITE_LOCAL_DEMO === 'true' && <p className="form-notice" role="note">Môi trường local có dữ liệu giả lập. Quán và món có nhãn “Mẫu” chỉ dùng để trải nghiệm, không phải đối tác đang bán thật.</p>}
     {cart.storageWarning && <p className="form-notice" role="alert">{cart.storageWarning}</p>}
     <p className={`cart-notice${cart.notice && !cart.notice.startsWith('Đã') ? ' form-error' : ''}`} role={cart.notice && !cart.notice.startsWith('Đã') ? 'alert' : 'status'} aria-live="polite">{cart.notice}{cart.notice.startsWith('Đã thêm') && <> <a href="/cart">Xem giỏ · {cart.count} phần · {formatVnd(cart.subtotal)}</a></>}</p>
-    {path === '/cart' ? <CartRoutePage key={publicUser?.id??'guest'} accountId={publicUser?.id??null} sessionPending={session.status === 'loading'} isAdmin={Boolean(publicUser?.capabilities.includes('admin'))} canQuote={Boolean(publicUser?.capabilities.includes('buy')&&!publicUser?.capabilities.includes('admin'))} /> : path.startsWith('/restaurants/') ? <RestaurantMenuPage key={path} restaurantId={path.split('/')[2]} onAddDish={cart.add} cartSummary={cart} onOpenCart={() => setDrawerOpen(true)} /> : <RestaurantListPage preview={path === '/preview'} /> }
+    {path === '/cart' ? <CartRoutePage key={publicUser?.id??'guest'} accountId={publicUser?.id??null} sessionPending={session.status === 'loading'} isAdmin={Boolean(publicUser?.capabilities.includes('admin'))} canQuote={Boolean(publicUser?.capabilities.includes('buy')&&!publicUser?.capabilities.includes('admin'))} /> : path.startsWith('/restaurants/') ? <RestaurantMenuPage key={path} restaurantId={path.split('/')[2]} onAddDish={cart.add} /> : <RestaurantListPage preview={path === '/preview'} onAddDish={addDiscoveredDish} /> }
   </StudentLayout>
   if (session.status === 'loading') return <main id="main-content" tabIndex={-1} className="route-state" role="status">Đang kiểm tra phiên đăng nhập…</main>
   if(path==='/recover-access')return <CredentialRecoveryPage/>

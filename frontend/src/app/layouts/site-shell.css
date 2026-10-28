@@ -152,3 +152,6 @@ html { scroll-behavior: smooth; scroll-padding-top: 110px; }
 
 .app-shell button.nav-search { background: transparent; cursor: pointer; }
 @media(max-width:600px) { .app-shell:has(.storefront-cart-trigger) .footer--compact { padding-bottom: 88px; } }
+
+.home-design .status--closed { color: var(--color-danger); }
+.home-design .status--closed i { background: var(--color-danger); box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-danger) 12%, transparent); }

@@ -5,6 +5,7 @@ import { AppModule } from '../../src/app.module.js';
 import { PrismaService } from '../../src/prisma/prisma.service.js';
 import { SessionService } from '../../src/http/auth/session.service.js';
 import { configureApiHttp } from '../../src/common/http/api-http.js';
+import { openSql } from '../../src/modules/catalog/catalog.repository.js';
 import { schema } from '../auth-contract.js';
 
 const target = new URL(process.env.TEST_DATABASE_URL!);
@@ -43,9 +44,28 @@ test('P04 CAT-01 / PUBLIC-01 / DATA-01: anonymous HTTP contract and exact MySQL 
   for(const id of [hidden,unpublished,inactive,9223372036854775807n]) await read(`/dishes/${id}`,'Error',404);
   const detail=await read(`/dishes/${b}`,'DishEnvelope'); assert.equal(detail.data.is_available,false);
   assert.equal(detail.data.restaurant_name,`${prefix} Same`);
+  assert.equal(detail.data.restaurant_is_open,false);
+  assert.equal(detail.data.restaurant_is_accepting_orders,false);
+  // CAT-01: execute the production opening-hours SQL on real MySQL with explicit instants.
+  await db.restaurant_hours.create({data:{restaurant_id:restaurants[0],weekday:1,opens_at:'08:00:00',closes_at:'20:00:00',closes_next_day:false}});
+  const isOpen = async (instant:string) => Boolean((await db.$queryRaw<Array<{is_open:number}>>`SELECT ${openSql(new Date(instant))} AS is_open FROM restaurants r WHERE r.id=${restaurants[0]}`)[0].is_open);
+  assert.equal(await isOpen('2026-10-26T12:59:59.000Z'),true);
+  assert.equal(await isOpen('2026-10-26T13:00:00.000Z'),false);
+  assert.equal(await isOpen('2026-10-26T14:00:00.000Z'),false);
+  assert.equal(await isOpen('2026-10-27T03:00:00.000Z'),false);
+  await db.restaurant_hours.create({data:{restaurant_id:restaurants[0],weekday:7,opens_at:'22:00:00',closes_at:'02:00:00',closes_next_day:true}});
+  assert.equal(await isOpen('2026-10-25T16:00:00.000Z'),true);
+  assert.equal(await isOpen('2026-10-25T18:59:59.000Z'),true);
+  assert.equal(await isOpen('2026-10-25T19:00:00.000Z'),false);
+  await db.restaurant_hours.deleteMany({where:{restaurant_id:restaurants[0]}});
+  await db.restaurants.update({where:{id:restaurants[0]},data:{is_accepting_orders:true}});
+  const closedDish=(await read(`/dishes/${a}`,'DishEnvelope')).data;
+  assert.equal(closedDish.is_available,true);
+  assert.equal(closedDish.restaurant_is_open,false);
+  assert.equal(closedDish.restaurant_is_accepting_orders,true);
   const sellerList=await read(`/dishes?${q}`,'DishList');
   assert.ok(sellerList.data.length>0);
-  for(const dish of sellerList.data) assert.equal(dish.restaurant_name,`${prefix} Same`);
+  for(const dish of sellerList.data) { assert.equal(dish.restaurant_name,`${prefix} Same`); assert.equal(dish.restaurant_is_open,false); assert.equal(typeof dish.restaurant_is_accepting_orders,'boolean'); }
   await db.restaurants.update({where:{id:restaurants[0]},data:{name:`${prefix} Renamed`}});
   assert.equal((await read(`/dishes/${a}`,'DishEnvelope')).data.restaurant_name,`${prefix} Renamed`);
   assert.equal((await read(`/dishes?restaurant_id=${restaurants[0]}`,'DishList')).data[0].restaurant_name,`${prefix} Renamed`);
@@ -88,6 +108,7 @@ test('P04 CAT-01 / PUBLIC-01 / DATA-01: anonymous HTTP contract and exact MySQL 
   await read('/auth/me','Error',500); // Public reads above succeeded even with broken session verification.
   const invalid=await read('/restaurants/01','Error',422); assert.equal(invalid.error.code,'VALIDATION_ERROR');
  } finally {
+  await db.restaurant_hours.deleteMany({where:{restaurant_id:{in:restaurants}}});
   await db.dishes.deleteMany({where:{restaurant_id:{in:restaurants}}});
   await db.restaurants.deleteMany({where:{id:{in:restaurants}}});
   await db.dish_categories.deleteMany({where:{id:{in:categories}}});

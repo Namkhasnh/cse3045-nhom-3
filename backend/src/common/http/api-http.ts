@@ -78,6 +78,7 @@ export class ApiEnvelopeInterceptor implements NestInterceptor {
 }
 
 export function configureApiHttp(app: INestApplication): void {
+  app.use('/api/v1/profile/avatar', json({limit:'8mb'}));
   app.use('/api/v1/onboarding-evidence', json({limit:'8mb'}));
   app.use('/api/v1/admin/onboarding-evidence', json({limit:'8mb'}));
   app.use(/^\/api\/v1\/owner\/restaurants\/[1-9][0-9]*\/(dish-media|cover-media)$/, json({limit:'8mb'}));

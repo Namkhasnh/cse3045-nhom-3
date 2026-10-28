@@ -20,7 +20,7 @@ export function openSql(now?: Date) {
 export type RestaurantRow = { description: string | null; cover_media_asset_id: bigint | null; avatar_media_asset_id: bigint | null; id: bigint; name: string; address: string; latitude: Prisma.Decimal | null; longitude: Prisma.Decimal | null;
   contact_phone: string; is_active: number; is_accepting_orders: number; is_open: number; version: number; updated_at: Date;
   min_price_vnd: bigint | null; max_price_vnd: bigint | null };
-export type DishRow = { id: bigint; restaurant_id: bigint; restaurant_name: string; category_id: bigint; name: string; description: string; price_vnd: bigint;
+export type DishRow = { id: bigint; restaurant_id: bigint; restaurant_name: string; restaurant_is_open: number; restaurant_is_accepting_orders: number; category_id: bigint; name: string; description: string; price_vnd: bigint;
   image_reference: string | null; is_visible: number; is_available: number; version: number; updated_at: Date };
 const escapedPrefix = (q: string) => q.replace(/[!%_]/g, c => `!${c}`) + '%';
 function dishConditions(q: CatalogQuery) {
@@ -65,7 +65,7 @@ export class CatalogRepository {
     if (q.is_available !== undefined) conditions.push(Prisma.sql`d.is_available=${q.is_available}`);
     const column = q.sort.includes('price_vnd') ? Prisma.sql`d.price_vnd` : Prisma.sql`d.name COLLATE utf8mb4_0900_ai_ci`;
     conditions.push(boundary(q, column, Prisma.sql`d.id`));
-    return this.prisma.$queryRaw<DishRow[]>(Prisma.sql`SELECT d.id,d.restaurant_id,r.name AS restaurant_name,d.category_id,d.name,d.description,d.price_vnd,
+    return this.prisma.$queryRaw<DishRow[]>(Prisma.sql`SELECT d.id,d.restaurant_id,r.name AS restaurant_name,${openSql()} AS restaurant_is_open,r.is_accepting_orders AS restaurant_is_accepting_orders,d.category_id,d.name,d.description,d.price_vnd,
       d.image_reference,d.is_visible,d.is_available,d.version,d.updated_at FROM dishes d JOIN restaurants r ON r.id=d.restaurant_id
       WHERE ${Prisma.join(conditions,' AND ')} ORDER BY ${column} ${q.sort.startsWith('-') ? Prisma.sql`DESC` : Prisma.sql`ASC`},d.id ASC LIMIT ${q.limit + 1}`);
   }
