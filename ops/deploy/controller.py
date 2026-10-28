@@ -39,7 +39,10 @@ def restore(config, directory, state):
             require(fingerprint(active) == old['api_fingerprint'], 'Previous API configuration drift')
             docker('stop', '-t', '30', config['api'])
     # Writers are frozen before checking new facts that old readers cannot safely handle.
-    for statement in state.get('rollback_checks', []):
+    # Before any pending expansion starts, its new columns do not exist and no new app
+    # has run. Existing-schema guards still apply to code-only compatibility reviews.
+    checks = state.get('rollback_checks', []) if state['schema_started'] or not state.get('checks_require_schema', False) else []
+    for statement in checks:
         result = sql(config, config['db'], ('USE `' + config['database'] + '`; ' + statement + ';').encode())
         require(result.strip() == b'0', 'Rollback data guard rejected; keep maintenance and repair forward')
     if remove_candidate:
@@ -74,7 +77,7 @@ def deploy(commit, directory):
                      previous_api_name='hlf-before-' + commit,
                      nginx_previous=Path(config['nginx']).read_text(),
                      owned_nginx_hashes=[previous['nginx_sha']], rollback_compatible=review['rollback_compatible'],
-                     rollback_checks=review['rollback_checks'])
+                     rollback_checks=review['rollback_checks'], checks_require_schema=bool(review['pending']))
         probe = subprocess.run(['docker', 'inspect', state['previous_api_name']], capture_output=True)
         require(probe.returncode != 0, 'Previous-release container already exists')
         save(directory / 'api-template.json', inspect(config['api']))

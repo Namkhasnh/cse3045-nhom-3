@@ -204,6 +204,22 @@ class ValidationTests(unittest.TestCase):
 
 
 class OperationTests(unittest.TestCase):
+    def test_failure_before_expansion_restores_old_app_without_querying_nonexistent_columns(self):
+        old = {'Id': 'old-id', 'Image': 'old-image', 'Config': {}, 'HostConfig': {}, 'Mounts': []}
+        state = {'schema_started': False, 'schema_verified': False, 'rollback_compatible': True,
+                 'commit': COMMIT, 'previous': {'api_fingerprint': server.fingerprint(old), 'frontend_root': '/old', 'commit': None},
+                 'nginx_previous': 'server_name demo.example;', 'previous_api_id': 'old-id',
+                 'previous_api_name': 'previous', 'checks_require_schema': True,
+                 'rollback_checks': ['SELECT COUNT(*) FROM restaurants WHERE avatar_media_asset_id IS NOT NULL']}
+        with patch.object(controller, 'route'), patch.object(controller, 'docker'), \
+                patch.object(controller.subprocess, 'run', side_effect=[Mock(returncode=0, stdout=json.dumps([old])), Mock(returncode=1)]), \
+                patch.object(controller, 'inspect', return_value=old), \
+                patch.object(controller, 'save'), patch.object(controller, 'current_record', return_value={}), \
+                patch.object(controller, 'smoke'), patch.object(controller, 'sql') as sql:
+            controller.restore({'api': 'api', 'storage': 'storage', 'host': 'demo.example'}, Path('/unused'), state)
+            sql.assert_not_called()
+            self.assertEqual(state['result'], 'ROLLED_BACK')
+
     def test_new_avatar_facts_block_rollback_after_freezing_before_container_removal(self):
         state = {'schema_started': True, 'schema_verified': True, 'rollback_compatible': True,
                  'commit': COMMIT, 'previous': {}, 'nginx_previous': 'server_name demo.example;',

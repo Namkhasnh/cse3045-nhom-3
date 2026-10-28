@@ -209,7 +209,7 @@ to GitHub. Only sanitized status is printed to Actions. No automated retention/p
 
 ## 6. Verification and remaining handoff
 
-- PASS 26 local deployment safety unit tests and actionlint1.7.12 workflow validation.
+- PASS 27 local deployment safety unit tests and actionlint1.7.12 workflow validation.
 - PASS disposable MySQL9.2.0 SQL/schema/row and object/vault restore, reviewed expansion rehearsal,
   source isolation, exact BigInt/signed DECIMAL history, rollback, FK/CHECK rejection and deliberate
   row-drift rejection. This uses the newly built hw1 schema-tool image with synthetic migration files.
