@@ -5,7 +5,7 @@
   "source_checkout": "Clean remote hw1; unrelated uncommitted application changes excluded",
   "self_review": true,
   "automated": {
-    "unit_safety_cases": 23,
+    "unit_safety_cases": 26,
     "unit_result": "PASS",
     "workflow_actionlint": "PASS 1.7.12; official archive SHA256 verified; dedicated runner label configured",
     "python_ast_node_shell_syntax": "PASS",
@@ -28,13 +28,14 @@
       "deliberate original-row drift rejection",
       "runtime grant rehearsal without production passwords",
       "narrow column update permitted; unrelated update rejected"
-    ]
+    ],
+    "loopback_http_fixture": "PASS actual temporary HTTP listener, 200/401, fixed function/module collision"
   },
   "github_private_repository": "https://github.com/Namkhasnh/hlf-deploy",
   "github_private_repository_visibility": "PRIVATE, confirmed through browser",
   "github_private_workflow": "PUSHED main, manual Deploy/Rollback only",
   "vps_inventory": "USER-REPORTED SSH inventory: MySQL 9.2.0, 33 completed/unmodified-by-status migrations, no rolled-back entry, expected containers/volumes; independently re-read by operator before deployment",
-  "vps_install_runner_deploy_rollback": "NOT RUN",
+  "vps_install_runner_deploy_rollback": "NOT RUN: first installer stopped in read-only smoke before adoption; corrected client import and Cloudflare HTML normalization",
   "public_https_release_smoke": "NOT RUN",
   "commercial_release_acceptance": "NOT CLAIMED",
   "vps_free_bytes_user_reported": 4613013504,
@@ -55,5 +56,15 @@
     },
     "migration_count": 34
   },
-  "github_ci_url": "https://github.com/Namkhasnh/cse3045-nhom-3/actions/runs/40646440238"
+  "github_ci_url": "https://github.com/Namkhasnh/cse3045-nhom-3/actions/runs/40646440238",
+  "vps_memory_user_reported_mib": {
+    "total": 1967,
+    "available": 1377,
+    "swap_total": 2047,
+    "swap_used": 961
+  },
+  "public_html_diagnosis": {
+    "expected_vps_sha256": "7dd7b12ba82837dfdbee75ebb135148ddf9a3120a76fa7e6df9a4e1b6ca96b69",
+    "result": "PASS matching exact SHA256 after removing only recognized per-request Cloudflare JS-detection bootstrap; user-reported public JS/CSS exact"
+  }
 }

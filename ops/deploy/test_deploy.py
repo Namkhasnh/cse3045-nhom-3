@@ -19,6 +19,29 @@ MANIFEST = {'format': 1, 'repository': release.REPOSITORY, 'branch': 'hw1', 'com
 
 
 class ValidationTests(unittest.TestCase):
+    def test_loopback_http_uses_client_connection_without_function_module_shadowing(self):
+        with patch.object(server, 'HTTPConnection') as connection:
+            response = connection.return_value.getresponse.return_value
+            response.status = 401
+            response.read.return_value = b'fixture-unauthorized'
+            self.assertEqual(server.http({'host': 'demo.example', 'http_port': 80}, '/api/v1/auth/me'),
+                             (401, b'fixture-unauthorized'))
+            connection.return_value.request.assert_called_once_with('GET', '/api/v1/auth/me', headers={'Host': 'demo.example'})
+            connection.return_value.close.assert_called_once()
+
+    def test_public_html_allows_only_cf_bootstrap_with_every_other_byte_unchanged(self):
+        expected = b'<html><body><div id="root"></div></body></html>'
+        bootstrap = b"<script>window.__CF$cv$params={}; '/cdn-cgi/challenge-platform/scripts/jsd/main.js';</script>"
+        actual = expected.replace(b'</body>', bootstrap + b'</body>')
+        self.assertTrue(server.public_html_matches(expected, actual))
+        self.assertTrue(server.public_html_matches(expected, expected))
+        self.assertFalse(server.public_html_matches(expected, actual.replace(b'id="root"', b'id="old"')))
+
+    def test_unknown_inline_script_and_stale_assets_do_not_pass_html_validation(self):
+        expected = b'<script type="module" src="/assets/new.js"></script><div id="root"></div>'
+        self.assertFalse(server.public_html_matches(expected, expected + b'<script>unknown()</script>'))
+        self.assertFalse(server.public_html_matches(expected, expected.replace(b'new.js', b'old.js')))
+
     def test_avatar_review_allows_only_exact_nullable_expansion_and_narrow_runtime_grant(self):
         manifest = {**MANIFEST, 'migrations': {'20260101000000_base': 'e' * 64,
                                              review_avatar.MIGRATION: review_avatar.CHECKSUM}}

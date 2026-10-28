@@ -1,6 +1,6 @@
 """Root-owned VPS operations. Never execute scripts downloaded from source releases."""
 import gzip
-import http.client
+from http.client import HTTPConnection
 import json
 import os
 from pathlib import Path
@@ -91,7 +91,7 @@ def http(config, path, public=False):
                             '--proto', '=https', '--tlsv1.2', '--write-out', '\n%{http_code}',
                             'https://' + config['host'] + path], timeout=20).rsplit(b'\n', 1)
         return int(status), body
-    connection = http.client.HTTPConnection('127.0.0.1', config['http_port'], timeout=10)
+    connection = HTTPConnection('127.0.0.1', config['http_port'], timeout=10)
     try:
         connection.request('GET', path, headers={'Host': config['host']})
         response = connection.getresponse()
@@ -100,12 +100,25 @@ def http(config, path, public=False):
         connection.close()
 
 
+def public_html_matches(expected, actual):
+    # Cloudflare's per-request JS-detection bootstrap changes HTML bytes, but not the app.
+    # Strip only its recognizable inline block; every remaining byte must match the release.
+    def normalize(match):
+        script = match.group()
+        if b'window.__CF$cv$params' in script and b'/cdn-cgi/challenge-platform/' in script:
+            return b''
+        return script
+    return re.sub(rb'<script>.*?</script>', normalize, actual, flags=re.S) == expected
+
+
 def smoke(config, frontend):
     for attempt in range(30):
         try:
             for public in [False, True]:
                 status, body = http(config, '/login', public)
-                require(status == 200 and body == (frontend / 'index.html').read_bytes(), 'Frontend smoke failed')
+                expected = (frontend / 'index.html').read_bytes()
+                require(status == 200 and (public_html_matches(expected, body) if public else body == expected),
+                        'Frontend smoke failed')
                 status, body = http(config, '/api/v1/restaurants', public)
                 require(status == 200 and isinstance(json.loads(body)['data'], list), 'Catalog smoke failed')
                 require(http(config, '/api/v1/auth/me', public)[0] == 401, 'Anonymous auth smoke failed')

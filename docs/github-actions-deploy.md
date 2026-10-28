@@ -209,7 +209,7 @@ to GitHub. Only sanitized status is printed to Actions. No automated retention/p
 
 ## 6. Verification and remaining handoff
 
-- PASS 23 local deployment safety unit tests and actionlint1.7.12 workflow validation.
+- PASS 26 local deployment safety unit tests and actionlint1.7.12 workflow validation.
 - PASS disposable MySQL9.2.0 SQL/schema/row and object/vault restore, reviewed expansion rehearsal,
   source isolation, exact BigInt/signed DECIMAL history, rollback, FK/CHECK rejection and deliberate
   row-drift rejection. This uses the newly built hw1 schema-tool image with synthetic migration files.
@@ -222,6 +222,12 @@ to GitHub. Only sanitized status is printed to Actions. No automated retention/p
 - PASS disposable runtime grant rehearsal using synthetic passwords and positive/negative
   column-write checks; no production password is copied into the rehearsal DB.
 - NOT RUN on VPS: adoption, runner registration, actual deploy, HTTPS smoke and rollback.
+
+The first adoption attempt stopped before creating the runner or changing the application:
+a Python function/module name collision broke loopback HTTP checks, and Cloudflare inserted a
+per-request JS-detection bootstrap into public HTML. The client import is now explicit. Public
+HTML comparison removes only that recognizable inline bootstrap; all remaining HTML bytes and
+all local/public JS/CSS bytes must still match exactly. Unrecognized changes/stale assets fail.
 
 Reproduce from repository root:
 
