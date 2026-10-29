@@ -140,6 +140,16 @@ def deploy(commit, directory):
         raise SystemExit(1) from None
 
 
+def rollback_target(state):
+    # Retention promises one rollback level, not an unlimited chain. A release that
+    # becomes current again after rollback may have an older predecessor retired.
+    # Detect that while the current application is still serving traffic.
+    old = inspect(state['previous_api_name'])
+    require(old['Id'] == state['previous_api_id'] and not old['State']['Running']
+            and fingerprint(old) == state['previous']['api_fingerprint'],
+            'Rollback predecessor missing or changed; use a reviewed forward deploy')
+
+
 def worker(operation, commit):
     with open('/run/lock/hlf-deploy.lock', 'w') as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -156,6 +166,7 @@ def worker(operation, commit):
                 config, current = load(CONFIG), load(BASE / 'current.json')
                 require(current['commit'] == commit, 'Rollback must target the current release')
                 check_server(config, current)
+                rollback_target(state)
                 # Check for unknown migrations before freezing writers.
                 operator(config, load(directory / 'manifest.json'), directory, 'plan')
                 restoring = True
@@ -200,6 +211,7 @@ def request(operation, commit):
         require(current['commit'] == commit, 'Rollback must target the current release')
         state = load(directory / 'state.json')
         require(state['result'] == 'PASS', 'Only a completed release can be rolled back')
+        rollback_target(state)
         require(not state['schema_started'] or (state['schema_verified'] and state['rollback_compatible']),
                 'Rollback compatibility is unproven')
         state['result'] = 'REQUESTED'

@@ -17,12 +17,15 @@ FILES = ['release.py', 'server.py', 'controller.py', 'worker.py', 'db-operator.m
 # Exact original adoption bundle, including its reviewed controller hotfix.
 KNOWN = {
   "release.py": [
-    "2397e01979f5584f9a2c72439d7919220639564afd3e5b5e75188f04b1df33be"
+    "2397e01979f5584f9a2c72439d7919220639564afd3e5b5e75188f04b1df33be",
+    "d9fcebb59e7274c558c581866067625bbb6ca8bf35db9887d83a6d657b9ae13d"
   ],
   "server.py": [
+    "35498f5f75120580a7dfb535215ae2c1411e6c41ba11ea1989ec3d7d3bf0a44a",
     "dff1749fe2b110b1e87fd229131f1dfe96e3c9fceb91cf7b66cb78430b2a9e30"
   ],
   "controller.py": [
+    "5f28f3d953d90762a19354767e3f4003c2f600894d0250c86797f3659f8a87b5",
     "824571aa4f9cca8c265508548eae63f30898c8472c376062dad67e7195b0c897",
     "a44dca2174155e398469f2730950d7a15391f6c9eb0b397a4db4d646f72a968f"
   ],
@@ -31,6 +34,9 @@ KNOWN = {
   ],
   "db-operator.mjs": [
     "a1e5a28a16bbb2d64fe5589ec1b152f630a6c0f58731ba5d72ad4bddff82298a"
+  ],
+  "cache.py": [
+    "0840d7f9c79effb504d345c47c93dd2f9ee3e04cfc05d460d219937c3b822916"
   ]
 }
 

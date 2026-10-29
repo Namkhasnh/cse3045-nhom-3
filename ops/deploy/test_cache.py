@@ -203,6 +203,24 @@ class CompletionTests(unittest.TestCase):
                 controller.status(C)
             self.assertEqual(json.loads(output.call_args.args[0])['result'], 'RUNNING')
 
+    def test_retired_rollback_predecessor_stops_before_service_or_maintenance(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary) / 'releases' / B
+            directory.mkdir(parents=True)
+            state = {'result': 'PASS', 'previous_api_name': 'retired', 'previous_api_id': 'old',
+                     'previous': {'api_fingerprint': 'old'}}
+            release.save(directory / 'state.json', state)
+            release.save(Path(temporary) / 'current.json', {'commit': B})
+            with patch.object(controller, 'BASE', Path(temporary)), \
+                    patch.object(controller.subprocess, 'run', return_value=Mock(stdout='inactive')), \
+                    patch.object(controller, 'inspect', side_effect=RuntimeError('Missing retired predecessor')), \
+                    patch.object(controller, 'run') as submit, patch.object(controller, 'route') as route:
+                with self.assertRaisesRegex(RuntimeError, 'Missing'):
+                    controller.request('rollback', B)
+            submit.assert_not_called()
+            route.assert_not_called()
+            self.assertEqual(release.load(directory / 'state.json'), state)
+
     def test_config_drift_stops_before_cache_mutation(self):
         with patch.object(server, 'load', return_value={}), \
                 patch.object(server, 'check_server', side_effect=RuntimeError('Synthetic drift')), \
