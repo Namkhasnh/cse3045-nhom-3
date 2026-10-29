@@ -92,7 +92,7 @@ its own reviewed backup/restore/rehearsal and grant/compatibility profile.
 
 Local evidence is recorded in [the sanitized receipt](evidence/deploy-cache-local-20261029.json).
 It separates automated safety regressions, real Linux/amd64 image smoke and disposable real
-MySQL9.2.0 backup/restore/migration checks from the pending VPS controller upgrade. These checks
+MySQL9.2.0 backup/restore/migration checks from the separately reported VPS controller upgrade/cache results. These checks
 do not mutate retained local/VPS databases and do not certify new business migrations.
 
 ```sh
@@ -100,3 +100,11 @@ PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s ops/deploy -p 'test_*.
 python3 ops/deploy/check_images.py --backend LOCAL_BACKEND_IMAGE --schema LOCAL_SCHEMA_IMAGE
 python3 ops/deploy/integration.py --schema-image LOCAL_SCHEMA_IMAGE
 ```
+
+## VPS receipt — October30
+
+The user reported PASS for the final controller upgrade, then cache PASS with three images
+removed and zero containers retired. Free space was5,197,791,232bytes immediately after cleanup
+and `df` showed4.3G after candidate pulls. Preflight correctly stopped at the unreviewed personal
+profile migration, before maintenance/application/schema changes. The source CI/publish for
+`7e4ff90...` passed all five jobs. [Profile review](deploy-profile-review.md) handles that separate gate.

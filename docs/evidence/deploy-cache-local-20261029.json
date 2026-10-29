@@ -3,7 +3,7 @@
   "scope": "Local Linux/amd64 image checks and isolated synthetic MySQL9.2.0; no retained VPS mutation",
   "safety_tests": {
     "result": "PASS",
-    "count": 46,
+    "count": 47,
     "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s ops/deploy -p 'test_*.py'"
   },
   "image_smoke": {
@@ -49,8 +49,9 @@
     "keep three-GiB guard"
   ],
   "vps_upgrade": {
-    "result": "NOT RUN",
-    "reason": "Root-owned installed controller requires one user-executed pinned SSH upgrade"
+    "result": "USER_REPORTED_PASS",
+    "commit": "7e4ff90ee25181e4220dbd603b74fa29f63719b6",
+    "date": "2026-10-30"
   },
   "new_application_migration": {
     "result": "NOT RUN",
@@ -75,5 +76,24 @@
       "schema": 283084
     },
     "note": "Shared image layers mean displayed image sizes cannot be summed as freed disk bytes; VPS savings not yet measured."
+  },
+  "vps_cache": {
+    "result": "USER_REPORTED_PASS",
+    "removed_images": 3,
+    "retired_containers": 0,
+    "free_bytes_after_cleanup": 5197791232,
+    "df_available_after_candidate_pulls": "4.3G",
+    "preflight_stop": "Pending migration lacks root-installed review; no application/schema mutation"
+  },
+  "source_ci": {
+    "result": "PASS",
+    "url": "https://github.com/Namkhasnh/cse3045-nhom-3/actions/runs/40912718508",
+    "jobs": [
+      "frontend",
+      "backend",
+      "mysql-integration",
+      "deployment-tooling",
+      "publish"
+    ]
   }
 }
