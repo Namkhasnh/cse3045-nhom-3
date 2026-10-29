@@ -137,7 +137,7 @@ def registry_config(reference):
     return get('blobs/' + config, config)
 
 
-def candidate(commit, directory):
+def candidate_manifest(commit, directory):
     commit_id(commit)
     reference = f'{REGISTRY}/hlf-release:{commit}'
     docker('pull', '--platform', 'linux/amd64', reference, timeout=1200)
@@ -146,6 +146,15 @@ def candidate(commit, directory):
     manifest = load(directory / 'manifest.json')
     validate_manifest(manifest, commit)
     verify_ci(manifest)
+    return manifest
+
+
+def candidate(commit, directory):
+    manifest = candidate_manifest(commit, directory)
+    cache = BASE / 'image-cache'
+    cache.mkdir(mode=0o700, exist_ok=True)
+    require(not cache.is_symlink(), 'Unsafe cache directory')
+    save(cache / (commit + '.json'), manifest)
     for image in manifest['images'].values():
         # Some containerd image stores return empty Os/Architecture/Config for digest references.
         # Registry config is verified against the pinned manifest -> config SHA256 chain.

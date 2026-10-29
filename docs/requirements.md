@@ -40,7 +40,7 @@ The Vite + React frontend communicates with the NestJS backend through REST APIs
 
 ### 2.2 V1.0 in scope
 
-- Anonymous homepage, restaurant search/list and public menus; guests may build multi-restaurant carts; each submitted order still belongs to one restaurant.
+- Anonymous homepage, restaurant search/list and public menus; guests may build a single-restaurant cart; adding an eligible dish from another restaurant replaces the previous contents.
 - Email-verified ordinary-user registration without role selection. A manager keeps buyer rights under the same identity.
 - One restaurant maximum per account; opening application, versioned partnership consent and review history; approval creates restaurant and ownership atomically.
 - One operator-owned Admin, MFA, recovery and protected provisioning; no website flow can request or grant additional Admin access.
@@ -60,7 +60,7 @@ V0.1 identity/security; V0.2 public discovery/cart; V0.3 onboarding; V0.4 sell r
 
 ### 2.5 After V1.0
 
-V1.1: favorites, reviews and random selection, each with finalized contracts. The October25 user-approved purchase-history extension brings forward reorder and grouped multi-restaurant cart/checkout; see [its contract](ui/purchase-history-figma.md). Durable order history is already V0.5/V1.0. V1.2: other service areas, free addresses/map pins and route-distance fee tiers. Drivers, custody/splitting, multiple restaurants per manager and extra Admins remain excluded.
+V1.1: favorites, reviews and random selection, each with finalized contracts. The October25 user-approved purchase-history extension brings forward reorder; the October29 revision restores single-restaurant cart/checkout; see [its contract](ui/purchase-history-figma.md). Durable order history is already V0.5/V1.0. V1.2: other service areas, free addresses/map pins and route-distance fee tiers. Drivers, custody/splitting, multiple restaurants per manager and extra Admins remain excluded.
 
 ## 3. User Stories
 
@@ -70,12 +70,12 @@ V1.1: favorites, reviews and random selection, each with finalized contracts. Th
 | US02 | Visitor / User | Search restaurants and dishes by name, category, price range. | Must |
 | US03 | Visitor / User | View menu, price, opening hours, dish availability. | Must |
 | US04 | User | Select fixed VJU pickup point and see surveyed fee in V0.4; free address/map pin and route fees deferred to V1.2. | Must by version |
-| US05 | Visitor / User | Build a grouped multi-restaurant cart before login; retain it through login, revalidate and explicitly confirm authenticated checkout. | V0.2/V0.5 Must |
+| US05 | Visitor / User | Build a single-restaurant cart before login; adding from another restaurant replaces the old cart; retain it through login, revalidate and explicitly confirm authenticated checkout. | V0.2/V0.5 Must |
 | US06 | Student | Pay on delivery; cash or transfer is arranged externally. | Must |
 | US07 | Student | Track order status; cancel while restaurant has not accepted. | Must |
 | US08 | Student | Get AI dish suggestions by budget, preferences, pickup/delivery point. | Must |
 | US09 | Student | Pick a random dish that satisfies ordering conditions. | Should |
-| US10 | User | View durable order history/recovery; scoped October25 extension enables reorder into a grouped cart. | History Must; reorder Should |
+| US10 | User | View durable order history/recovery; scoped October25 extension enables reorder; October29 applies the single-restaurant replacement rule. | History Must; reorder Should |
 | US11 | Restaurant Owner | Create, read, update, delete dishes in own restaurant's menu. | Must |
 | US12 | Restaurant Owner | Update restaurant info including optional cover/avatar/introduction and image crop selection, hours, order-accepting status, delivery range and fees. | Must |
 | US13 | Restaurant Owner | Receive, accept or reject (with reason) orders and update progress. | Must |
@@ -366,8 +366,8 @@ The October 25, 2026 user-approved [checkout/voucher contract](checkout-vouchers
 
 [COD contract](cod-ordering.md) supersedes new-order QR/cash selection, QR configuration/review and platform-funded voucher creation/redemption. Restaurants arrange their own delivery (including external shipper advances); the platform tracks fulfillment only. Owner-funded vouchers and completed-only pre-discount dish commission remain. Existing QR/refund obligations and platform-voucher order subsidies survive. Stable IDs US06/14, FR05, BR11–14 and AC5 now distinguish new COD behavior from legacy-only handling.
 
-## October25 grouped purchase extension
+## October25 purchase extension and October29 single-restaurant revision
 
-The user approved [purchase-history/reorder and multi-restaurant cart/checkout](ui/purchase-history-figma.md). BR01 still applies to each order. A cart may retain several restaurants and checkbox selections; one explicit checkout confirms separate orders with a common surveyed point, independent fees/vouchers and separate idempotency keys. Successful orders survive partial failures; unknown results retain their original intent/key. Only confirmed quantities are removed. This supersedes earlier single-restaurant **cart** restrictions, not single-restaurant **order** invariants or the manager ownership limit.
+The October25 [purchase-history/reorder extension](ui/purchase-history-figma.md) remains approved for history and reorder. **October29 user revision supersedes grouped cart and new multi-order checkout:** a cart holds one restaurant. Merely browsing another restaurant preserves it; successfully adding a dish or reorder from another restaurant atomically replaces its dishes and checkbox selection, without a confirmation dialog. Invalid additions preserve the old cart. The bottom cart and drawer show all current contents, including after navigation/reload. Buying from two restaurants requires two separate checkout confirmations. Existing saved grouped carts retain only the last stored restaurant (the old format has no last-edited timestamp), with only its selected IDs. New checkout creates exactly one order. Existing uncertain multi-order recovery retains original payloads/keys and confirmed results; it must never discard an already-submitted intent. BR01, money consent, guest/login retention and manager ownership limits remain unchanged.
 
 Personal profile extension (user-approved October27): persistent optional avatar, change/remove controls and verified email change under [account security](account-security.md#7-personal-avatar-and-verified-email-change--october272026). The profile shows a change-email button first; username stays immutable. Review display remains future work.

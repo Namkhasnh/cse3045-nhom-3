@@ -42,8 +42,8 @@ export function RecentCart({ onOpen }: { onOpen: () => void }) {
       }
     }, () => {}).finally(() => { flyer.remove(); active.delete(animation) })
   }, [cart.addition])
-  if (!cart.recentCount) return null
-  return <button ref={target} type="button" className="recent-cart-trigger storefront-cart-trigger" onClick={onOpen} aria-haspopup="dialog" aria-label={`Món vừa thêm, ${cart.recentCount} phần, ${formatVnd(cart.recentSubtotal)}`}>
-    <Icon name="bag" /><span>Vừa thêm · {cart.recentCount} phần</span><strong>{formatVnd(cart.recentSubtotal)}</strong><Icon name="arrow" />
+  if (!cart.count) return null
+  return <button ref={target} type="button" className="recent-cart-trigger storefront-cart-trigger" onClick={onOpen} aria-haspopup="dialog" aria-label={`Giỏ hàng, ${cart.count} phần, ${formatVnd(cart.subtotal)}`}>
+    <Icon name="bag" /><span>Giỏ hàng · {cart.count} phần</span><strong>{formatVnd(cart.subtotal)}</strong><Icon name="arrow" />
   </button>
 }

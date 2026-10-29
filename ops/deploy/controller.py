@@ -108,6 +108,13 @@ def deploy(commit, directory):
         smoke(config, target)
         save(BASE / 'current.json', current_record(config, target, commit))
         state['result'] = 'PASS'
+        stage(directory, state, 'cache-cleanup')
+        # Housekeeping cannot turn a verified successful release into app rollback.
+        try:
+            from cache import cleanup
+            cleanup()
+        except Exception:
+            print('CACHE WARNING: application PASS; cache retained for later inspection', flush=True)
         stage(directory, state, 'complete')
     except Exception:
         state['failure_stage'] = state['stage']
@@ -133,6 +140,16 @@ def deploy(commit, directory):
         raise SystemExit(1) from None
 
 
+def rollback_target(state):
+    # Retention promises one rollback level, not an unlimited chain. A release that
+    # becomes current again after rollback may have an older predecessor retired.
+    # Detect that while the current application is still serving traffic.
+    old = inspect(state['previous_api_name'])
+    require(old['Id'] == state['previous_api_id'] and not old['State']['Running']
+            and fingerprint(old) == state['previous']['api_fingerprint'],
+            'Rollback predecessor missing or changed; use a reviewed forward deploy')
+
+
 def worker(operation, commit):
     with open('/run/lock/hlf-deploy.lock', 'w') as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -149,6 +166,7 @@ def worker(operation, commit):
                 config, current = load(CONFIG), load(BASE / 'current.json')
                 require(current['commit'] == commit, 'Rollback must target the current release')
                 check_server(config, current)
+                rollback_target(state)
                 # Check for unknown migrations before freezing writers.
                 operator(config, load(directory / 'manifest.json'), directory, 'plan')
                 restoring = True
@@ -169,6 +187,8 @@ def status(commit):
     directory = BASE / 'releases' / commit
     state = load(directory / 'state.json') if (directory / 'state.json').exists() else {'result': 'NOT_STARTED'}
     active = subprocess.run(['systemctl', 'is-active', UNIT], capture_output=True, text=True).stdout.strip()
+    if state.get('stage') == 'cache-cleanup':
+        state['result'] = 'RUNNING'
     if state['result'] in ['REQUESTED', 'RUNNING'] and active not in ['active', 'activating', 'deactivating']:
         state['result'] = 'BLOCKED'
     print(json.dumps({key: state[key] for key in ['result', 'stage', 'commit', 'failure_stage', 'recovery'] if key in state}))
@@ -191,6 +211,7 @@ def request(operation, commit):
         require(current['commit'] == commit, 'Rollback must target the current release')
         state = load(directory / 'state.json')
         require(state['result'] == 'PASS', 'Only a completed release can be rolled back')
+        rollback_target(state)
         require(not state['schema_started'] or (state['schema_verified'] and state['rollback_compatible']),
                 'Rollback compatibility is unproven')
         state['result'] = 'REQUESTED'
@@ -210,7 +231,9 @@ def main():
     if operation == 'status':
         status(commit)
     elif operation == 'preflight':
-        with tempfile.TemporaryDirectory(dir=BASE / 'preflight') as temporary:
+        # Preflight also mutates the cache; serialize against service + other preflights.
+        with open('/run/lock/hlf-deploy.lock', 'w') as lock, tempfile.TemporaryDirectory(dir=BASE / 'preflight') as temporary:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
             _, _, _, review = prepare(commit, Path(temporary))
             print(json.dumps({'result': 'PASS', 'commit': commit, 'pending': list(review['pending'])}))
     else:

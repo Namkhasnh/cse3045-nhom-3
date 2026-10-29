@@ -76,7 +76,7 @@ The service names below are proposed architectural contracts, not claims that th
 
 The V1.0 cart belongs to the frontend and represents purchase intent only. A guest can build a cart before login. Login preserves its non-sensitive draft; safe internal return navigation restores checkout, refreshes current data and requires a new explicit order confirmation. Login must never submit an order automatically. Isolate private checkout drafts and unknown-outcome keys by account; do not leak them on logout/account switching. A created order belongs to the backend; losing browser state must not lose the order.
 
-Tracking, durable history screens and recovery are required from V0.5. The [October25 scoped purchase extension](ui/purchase-history-figma.md) enables reorder, a grouped browser cart and multi-order checkout. Each order remains one restaurant with its own quote/key/transaction. No later scope label defers snapshots, audit or financial constraints.
+Tracking, durable history screens and recovery are required from V0.5. The [October25 scoped purchase extension](ui/purchase-history-figma.md) enables reorder; its October29 revision requires one restaurant per browser cart and one order per new confirmation. Valid additions from another restaurant atomically replace the cart. Legacy uncertain batch recovery remains supported with original quotes/keys/results. No later scope label defers snapshots, audit or financial constraints.
 
 ### 3.1. New capability boundaries
 

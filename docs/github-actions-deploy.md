@@ -159,8 +159,17 @@ its protected state before any operator recovery. Cancellation, runner disconnec
 timeout does not cancel the systemd operation. A dead service with unfinished state reports BLOCKED.
 
 The VPS has19GiB total disk. Preflight requires at least3GiB free **after image pulls**;
-this is a real capacity gate, not a deployment failure to bypass by rerunning. No automatic image
-or backup pruning runs. On October28, two unused legacy schema images were removed only after
+this is a real capacity gate, not a deployment failure to bypass by rerunning. The October29
+controller update performs scoped image-cache cleanup before capacity checks and after a
+successful deployment. It keeps the current backend/frontend and immediate predecessor,
+all images referenced by any running/stopped container and failed/unfinished recovery state.
+Only obsolete, stopped, identity/fingerprint-matching `hlf-before-SHA` containers created by
+this controller may be retired. Legacy/manual containers are never selected. Image eviction
+uses allowlisted manifest digests, revalidates public registry recovery availability and never
+uses `prune`, `--force` or volume removal. Schema tooling can be downloaded again when needed.
+Old preflight-only caches are adopted only after source CI/manifest verification. Backups,
+frontend files/old assets, runtime keys, SQL and volumes are never pruned. See
+[cache policy, one-time upgrade and evidence](deploy-cache-retention.md). On October28, two unused legacy schema images were removed only after
 matching their exact IDs, checking all running/stopped container references and verifying the
 original recovery archives against their manifests. Archives and all referenced API images
 were retained. After the live rollback, only that rolled-back release's unreferenced image cache
@@ -236,7 +245,7 @@ maintenance. Do not delete volumes, reset schemas, seed, force-push migrations o
 
 Private evidence: `/var/lib/hlf-deploy/releases/FULL_SHA/state.json`, `manifest.json`, `review.json`,
 SQL/assets recovery files and rehearsal inventory. Do not upload these directories or runtime.env
-to GitHub. Only sanitized status is printed to Actions. No automated retention/pruning is enabled.
+to GitHub. Only sanitized status is printed to Actions. No backup/data/asset retention pruning is enabled; scoped image retention is described above.
 
 ## 6. Executed verification and limits
 
