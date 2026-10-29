@@ -96,7 +96,7 @@ function AppRoutes() {
     endSession()
   }
 
-  return <NotificationProvider key={session.user?.id??'guest'} actor={session.status==='ready'&&session.user?.is_active?session.user.id:null}><AppShell user={session.user} pending={path !== '/preview' && session.status === 'loading'} cartCount={cart.count} path={path} onLogout={logout} onOpenCart={path === '/' || /^\/restaurants\/[1-9][0-9]*$/.test(path) ? () => setDrawerOpen('all') : undefined}>{renderRoutes()}{(path === '/' || /^\/restaurants\/[1-9][0-9]*$/.test(path)) && <RecentCart key={path} onOpen={() => setDrawerOpen('recent')} />}{drawerOpen && <CartDrawer recentOnly={drawerOpen === 'recent'} onClose={() => setDrawerOpen(null)} />}</AppShell></NotificationProvider>
+  return <NotificationProvider key={session.user?.id??'guest'} actor={session.status==='ready'&&session.user?.is_active?session.user.id:null}><AppShell user={session.user} pending={path !== '/preview' && session.status === 'loading'} cartCount={cart.count} path={path} onLogout={logout} onOpenCart={path === '/' || /^\/restaurants\/[1-9][0-9]*$/.test(path) ? () => setDrawerOpen('all') : undefined}>{renderRoutes()}{(path === '/' || /^\/restaurants\/[1-9][0-9]*$/.test(path)) && <RecentCart key={path} onOpen={() => setDrawerOpen('all')} />}{drawerOpen && <CartDrawer recentOnly={drawerOpen === 'recent'} onClose={() => setDrawerOpen(null)} />}</AppShell></NotificationProvider>
   function renderRoutes(){
   const publicUser = session.user?.is_active ? session.user : null
   if (path === '/' || path === '/cart' || /^\/restaurants\/[1-9][0-9]*$/.test(path) || (path === '/preview' && import.meta.env.DEV)) return <StudentLayout

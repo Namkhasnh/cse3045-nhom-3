@@ -1,6 +1,6 @@
 # Cart redesign and verification
 
-> October25 extension: [grouped cart and independent checkout](purchase-history-figma.md) supersedes single-restaurant cart/switch behavior below; prior evidence remains historical.
+> October29 revision: [single-restaurant cart and checkout](purchase-history-figma.md) supersedes October25 grouped cart and earlier switch-confirmation dialogs. Valid additions from another restaurant automatically replace the old cart; the bottom cart/drawer show the full current contents. Prior evidence remains historical.
 
 User approved October 24, 2026: [Figma Make cart redesign](https://www.figma.com/make/XymiDbnoGxZqEB2oY2bP45/Redesign-Restaurant-Detail-Page), including automatic fee lookup, mobile continuation and five-second removal undo. Implements the scoped presentation/interaction extension to US04–07, CART-01/GUEST-01/PRICE-01 and UI §9.2; no backend/API/schema change or deployment.
 

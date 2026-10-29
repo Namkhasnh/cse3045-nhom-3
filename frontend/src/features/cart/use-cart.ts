@@ -40,7 +40,8 @@ export function useCartState(catalog:CartCatalog){
  add:(restaurant:CartRestaurant,dish:CartDish,source?:HTMLElement)=>{
      const image=source?.closest('article')?.querySelector('img'),rect=(image??source)?.getBoundingClientRect()
      const origin:CartAddOrigin|undefined=rect?{x:rect.left+rect.width/2,y:rect.top+rect.height/2,image:image?.currentSrc||null}:undefined
-     const accepted=update(b=>addBatch(b,restaurant,[{dish,quantity:1}]),`Đã thêm ${dish.name} vào giỏ.`)
+     const switched=latest.current.basket.groups.some(g=>g.restaurant.id!==restaurant.id)
+     const accepted=update(b=>addBatch(b,restaurant,[{dish,quantity:1}]),switched?`Đã chuyển giỏ sang ${restaurant.name}, thay món của quán cũ.`:`Đã thêm ${dish.name} vào giỏ.`)
      if(accepted){recentRef.current={...recentRef.current,[dish.id]:(recentRef.current[dish.id]??0)+1};setRecent(recentRef.current);setAddition(previous=>({sequence:(previous?.sequence??0)+1,origin}))}
      return accepted
    },

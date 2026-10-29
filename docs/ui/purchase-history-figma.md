@@ -1,8 +1,25 @@
-# Purchase history, multi-restaurant cart and checkout — October 25, 2026
+# Purchase history and single-restaurant cart/checkout
 
 Authority: user's approved implementation plan and follow-up choices, [Figma Make](https://www.figma.com/make/xfAu5VZ9550JhtiOcKjCGA/Redesign-Notification-Experience), [requirements](../requirements.md), [API](../data/api_contract.md), [COD](../cod-ordering.md). This scoped extension brings forward US10 reorder; it does not accept a complete V1.1 milestone.
 
-## Approved behavior
+## October29, 2026 approved revision
+
+The user's new instruction supersedes the October25 grouped-cart and new multi-order checkout behavior below. Current behavior follows [requirements](../requirements.md#october25-purchase-extension-and-october29-single-restaurant-revision): one restaurant per cart, automatic atomic replacement only after a valid addition/reorder from another restaurant, and one order per new confirmation. Browsing alone preserves the cart. Same-restaurant additions merge quantities and preserve accepted prices. The bottom cart and its drawer show all current dishes, quantities and totals across navigation/reload. New dishes remain unselected until the buyer checks them in the cart.
+
+Persisted v2 grouped carts are validated then reduced to their last stored restaurant and that restaurant's selected IDs; there is no historical last-edited timestamp. A stale grouped checkout fingerprint cannot authorize a new order. Failed/ineligible additions preserve the previous cart; replacement clears removal undo and clamps transient addition state. Old account-scoped uncertain multi-order requests/results retain their payloads/keys and recovery; no backend API/schema change is needed.
+
+## October29 verification
+
+Self-review; local source only, no deployment or real order mutation.
+
+- PASS: `npm --prefix frontend run lint`; `npm --prefix frontend run build` (existing large-chunk advisory).
+- PASS: `npm --prefix frontend run test:basket` (8 cases) and `npm --prefix frontend run test:cart` (7 legacy primitive cases). The basket suite owns current replacement semantics; the old reducer switch-confirmation test covers an unused legacy primitive, not the live cart hook.
+- PASS: `npm --prefix frontend run test:purchase`, controlled-response real Chrome at360/768/1440px: reorder replaces the old restaurant; single-group cart/checkout; voucher; one POST per confirmation/double-submit; unknown-result same-key recovery/reload; explicit price conflict/new key; blocked writes on persistence failure; stale grouped handoff invalidation; v1 migration/history states. Evidence: system temporary directory `hlf-purchase-evidence-DoaHAF`; mobile checkout screenshot inspected.
+- PASS: `npm --prefix frontend run test:storefront`, controlled-response real Chrome: full bottom-cart/drawer, navigation/reload retention, adding at another restaurant replaces old quantities, responsive menu, focus/Escape, price consent, unavailable states, reduced motion and zoom. Evidence: system temporary directory `hlf-storefront-evidence-H3Lgzv`.
+- PASS: changed Markdown local link paths and line limits; `git diff --check`; browser script syntax. Initial build/browser attempts failed because macOS dataless dependency files timed out; `npm --prefix frontend ci` restored exact locked dependencies before successful reruns. No manifest/lockfile changes.
+- Backend/MySQL suites: NOT RUN; no backend/schema change. Browser evidence uses controlled API responses and does not establish live backend order creation or production readiness.
+
+## Historical October25 behavior (superseded where stated above)
 
 - `/orders` uses the existing personal workspace, Be Vietnam Pro and semantic cream/orange identity. Status tabs with server counts, code/current restaurant-name search, payment status, newest/oldest sort and inclusive Vietnam calendar dates refine a cursor-paginated list. Counts apply search/date/payment filters, ignoring selected status/cursor.
 - Cards show current restaurant label, immutable order code, time, fulfillment, two snapshot item rows with expand, independent payment and exact totals. A card link and its detail/tracking action open the existing `/orders/:id`; reorder and expand remain separate keyboard controls. Rejected and buyer-cancelled orders remain distinct.
@@ -18,7 +35,7 @@ Authority: user's approved implementation plan and follow-up choices, [Figma Mak
 
 Orders feature owns list cards/filter UI; app composes reorder with catalog and cart through public exports. Cart owns non-sensitive intent and consumption; app hooks coordinate delivery and per-restaurant preview/create. No backend order-state, settlement or financial transaction changes; no database migration.
 
-Existing single-cart/switch-restaurant browser assertions describe superseded behavior and must be updated for this scope. Verification results are recorded here after checks; prior reports do not establish this extension.
+Current browser assertions use automatic single-restaurant replacement. The evidence below records the historical October25 grouped behavior; it does not prove the October29 revision.
 
 
 ## Verification evidence

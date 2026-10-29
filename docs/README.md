@@ -37,7 +37,7 @@ Current ordering/payment policy: [COD and owner-only vouchers](cod-ordering.md);
 | How do restaurant cover/avatar, crop selection and the detail page work? | [Approved Figma storefront and interfaces](ui/restaurant-detail-figma.md), [verification](ui/restaurant-detail-verification.md), [cover/avatar and crop editor](ui/restaurant-images.md) |
 | What governs checkout, vouchers and subsidy reconciliation? | [Approved checkout/voucher contract](checkout-vouchers.md), [implementation/verification](ui/checkout-verification.md) |
 | How does the redesigned cart handle real fees, undo and checkout handoff? | [Cart design and verification](ui/cart-figma.md), [transient action feedback](ui/action-feedback.md) |
-| How do purchase history, reorder and grouped multi-order checkout work? | [Approved purchase extension](ui/purchase-history-figma.md) |
+| How do purchase history, reorder and single-restaurant checkout work? | [Approved purchase extension](ui/purchase-history-figma.md) |
 | How does the redesigned buyer order details page work? | [Buyer order design and verification](ui/buyer-order-figma.md) |
 | How do owner orders, food-ready privacy and shared reconciliation codes work? | [Order dashboard and verification](ui/owner-orders-figma.md) |
 | How does the redesigned owner finance page work? | [Finance design, data boundaries and verification](ui/owner-finance-figma.md) |

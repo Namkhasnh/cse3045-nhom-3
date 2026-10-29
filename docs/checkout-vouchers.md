@@ -1,6 +1,6 @@
 # Checkout and voucher contract
 
-> October25 grouped purchase extension: [approved multi-restaurant cart, selection and independent checkout](ui/purchase-history-figma.md) supersedes earlier single-cart presentation; each order, voucher and fee remains restaurant-scoped.
+> October29 revision: [approved single-restaurant cart and checkout](ui/purchase-history-figma.md) supersedes October25 grouped cart/new multi-order confirmation. Adding valid dishes from another restaurant replaces the old cart; new checkout confirms one order. Legacy uncertain requests retain recovery.
 
 > October25 COD cutover: [approved operating/API/history contract](cod-ordering.md) supersedes new-order cash/QR selection, QR authoring/review and platform voucher issuance/redemption. Legacy payment/refund and accepted voucher subsidy obligations remain. Prior verification is historical.
 
