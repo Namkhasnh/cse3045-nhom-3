@@ -34,11 +34,13 @@ Download the exact reviewed helper source snapshot supplied in the handoff, then
 sudo python3 ops/deploy/review_profile.py 7e4ff90ee25181e4220dbd603b74fa29f63719b6
 ```
 
-The helper takes request/operation locks, checks the existing server fingerprint/capacity and previous app, validates
+The helper takes request/operation locks, checks the existing server fingerprint and previous app, safely cleans eligible cache under the installed policy,
+enforces the unchanged capacity reserve before and after pulls, validates
 source CI/manifest/digests and actual migration history, derives the existing runtime identity without printing its
 URL/password, and writes `/etc/hlf-deploy/reviews/TARGET_SHA.json` root-only. It refuses altered SQL, another pending
-migration, another previous app or a different existing review. It does not migrate, grant privileges, backup, stop
-containers or modify application data. No runner/controller reinstall is necessary.
+migration, another previous app or a different existing review. It does not migrate, grant privileges, backup, stop active containers or modify application data.
+Cache cleanup may remove eligible obsolete images/older stopped managed containers; current app/recovery protection
+uses the same installed cache policy. No runner/controller reinstall is necessary.
 
 After PASS, run the private workflow with **Deploy** and the exact target SHA above. Preflight can now pass; the
 service still performs all real-data backup/restore/rehearsal and compatibility gates before application. Do not

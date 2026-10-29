@@ -7,7 +7,7 @@
   "sha256": "4db724976113b26e91fd706c82b437d5233826b633237df0ee1ef34a8693ea36",
   "unit_safety_tests": {
     "result": "PASS",
-    "count": 50
+    "count": 53
   },
   "mysql": {
     "result": "PASS",
@@ -37,5 +37,14 @@
   "vps_review": "NOT RUN",
   "vps_migration": "NOT RUN",
   "vps_application_deploy": "NOT RUN",
-  "data_policy": "No old-column/row mutation; real-data restore/rehearsal required by service before application"
+  "data_policy": "No old-column/row mutation; real-data restore/rehearsal required by service before application",
+  "review_capacity_fix": {
+    "result": "PASS",
+    "cases": [
+      "2GiB initially can recover after safe cache eviction",
+      "drift blocks cache deletion",
+      "reserve still enforced after cleanup and after candidate pull"
+    ],
+    "reason": "Review helper previously checked capacity before scoped cleanup"
+  }
 }

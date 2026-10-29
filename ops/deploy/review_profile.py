@@ -8,8 +8,14 @@ import subprocess
 import sys
 import tempfile
 from urllib.parse import unquote, urlsplit
+# Direct SSH execution uses only the already installed, root-owned controller modules.
+# Imports in local tests still use the checked-out source bundle.
+if __name__ == '__main__':
+    sys.path.insert(0, '/usr/local/lib/hlf-deploy')
+
 from release import BASE, CONFIG, candidate, commit_id, inspect, load, migration_review, require, save
 from server import check_server, operator
+from cache import cleanup
 
 MIGRATION = '20261027010000_account_profile_identity'
 CHECKSUM = '4db724976113b26e91fd706c82b437d5233826b633237df0ee1ef34a8693ea36'
@@ -44,6 +50,18 @@ def profile(manifest, plan, runtime_url, database, previous):
     return review
 
 
+def review_candidate(config, current, commit, work):
+    # Preflight may have left other published images cached. Validate ownership/drift
+    # before eviction, then enforce the same unchanged reserve before and after pulls.
+    check_server(config, current, capacity=False)
+    cleanup(commit)
+    check_server(config, current)
+    manifest = candidate(commit, work)
+    check_server(config, current)
+    operator(config, manifest, work, 'plan')
+    return manifest
+
+
 def main():
     os.umask(0o077)
     require(os.geteuid() == 0 and len(sys.argv) == 2, 'Run as root with one full commit SHA')
@@ -58,12 +76,9 @@ def main():
         require(active not in ['active', 'activating', 'deactivating'], 'Deployment is active')
         config, current = load(CONFIG), load(BASE / 'current.json')
         require(current['commit'] == PREVIOUS, 'Previous application differs from reviewed rollback reader')
-        check_server(config, current)
         with tempfile.TemporaryDirectory(dir=BASE / 'preflight') as temporary:
             work = Path(temporary)
-            manifest = candidate(commit, work)
-            check_server(config, current)
-            operator(config, manifest, work, 'plan')
+            manifest = review_candidate(config, current, commit, work)
             values = dict(item.split('=', 1) for item in inspect(config['api'])['Config']['Env'])
             review = profile(manifest, load(work / 'plan.json'), values['DATABASE_URL'], config['database'], current['commit'])
             path = CONFIG.parent / 'reviews' / (commit + '.json')
