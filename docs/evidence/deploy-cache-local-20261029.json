@@ -1,0 +1,79 @@
+{
+  "date": "2026-10-29",
+  "scope": "Local Linux/amd64 image checks and isolated synthetic MySQL9.2.0; no retained VPS mutation",
+  "safety_tests": {
+    "result": "PASS",
+    "count": 46,
+    "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s ops/deploy -p 'test_*.py'"
+  },
+  "image_smoke": {
+    "result": "PASS",
+    "checks": [
+      "runtime Prisma/Nest/S3 imports",
+      "native sharp PNG processing",
+      "Prisma CLI and TypeScript absent from backend",
+      "schema image excludes Nest/source/dist",
+      "Prisma7.10.0 CLI loads schema/config",
+      "no application environment/source included"
+    ]
+  },
+  "mysql_rehearsal": {
+    "result": "PASS",
+    "mysql": "9.2.0",
+    "scope": "disposable synthetic only",
+    "cases": [
+      "SQL restore/schema/row equality",
+      "object/vault restore byte equality",
+      "reviewed expansion rehearsal",
+      "source DB unchanged by rehearsal",
+      "exact bigint/signed decimal preservation",
+      "transaction rollback",
+      "real FK/CHECK rejection",
+      "deliberate row-drift rejection",
+      "runtime grant rehearsal without production passwords",
+      "narrow column write permitted; unrelated write rejected"
+    ]
+  },
+  "workflow_lint": {
+    "result": "PASS",
+    "tool": "actionlint1.7.12"
+  },
+  "policy": [
+    "keep current and immediate rollback app",
+    "keep any container-referenced image",
+    "keep failed/unfinished release resources",
+    "only retire older stopped identity-matching controller containers",
+    "verify CI for old preflight-only cache adoption",
+    "verify registry hash-chain/revision before digest eviction",
+    "never prune data/volumes/backups/keys/assets",
+    "keep three-GiB guard"
+  ],
+  "vps_upgrade": {
+    "result": "NOT RUN",
+    "reason": "Root-owned installed controller requires one user-executed pinned SSH upgrade"
+  },
+  "new_application_migration": {
+    "result": "NOT RUN",
+    "reason": "This infrastructure change does not approve/adopt account-profile migration"
+  },
+  "image_footprint": {
+    "method": "Docker image ls same local containerd engine; filesystem du -sxk measured separately",
+    "before_docker_display": {
+      "backend": "1.01GB",
+      "schema": "1.49GB"
+    },
+    "after_docker_display": {
+      "backend": "576MB",
+      "schema": "744MB"
+    },
+    "after_rootfs_kib": {
+      "backend": 435560,
+      "schema": 554512
+    },
+    "after_node_modules_kib": {
+      "backend": 187856,
+      "schema": 283084
+    },
+    "note": "Shared image layers mean displayed image sizes cannot be summed as freed disk bytes; VPS savings not yet measured."
+  }
+}

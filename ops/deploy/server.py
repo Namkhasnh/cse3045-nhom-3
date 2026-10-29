@@ -18,8 +18,9 @@ def fingerprint(info):
     return sha(json.dumps({key: info[key] for key in ['Image', 'Config', 'HostConfig', 'Mounts']}, sort_keys=True).encode())
 
 
-def check_server(config, current):
-    require(shutil.disk_usage(BASE).free >= 3 * 1024**3, 'At least 3 GiB free required')
+def check_server(config, current, *, capacity=True):
+    if capacity:
+        require(shutil.disk_usage(BASE).free >= 3 * 1024**3, 'At least 3 GiB free required after safe cache cleanup; inspect disk usage')
     for kind in ['api', 'db', 'storage']:
         info = inspect(config[kind])
         require(info['State']['Running'], 'Required container is not running: ' + kind)
@@ -42,6 +43,10 @@ def operator(config, manifest, directory, mode, database_container=None):
 
 def prepare(commit, directory):
     config, current = load(CONFIG), load(BASE / 'current.json')
+    # Reject drift before touching any cache. Caller holds the operation lock.
+    check_server(config, current, capacity=False)
+    from cache import cleanup
+    cleanup(commit)
     check_server(config, current)
     manifest = candidate(commit, directory)
     check_server(config, current)

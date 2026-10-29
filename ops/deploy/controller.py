@@ -108,6 +108,13 @@ def deploy(commit, directory):
         smoke(config, target)
         save(BASE / 'current.json', current_record(config, target, commit))
         state['result'] = 'PASS'
+        stage(directory, state, 'cache-cleanup')
+        # Housekeeping cannot turn a verified successful release into app rollback.
+        try:
+            from cache import cleanup
+            cleanup()
+        except Exception:
+            print('CACHE WARNING: application PASS; cache retained for later inspection', flush=True)
         stage(directory, state, 'complete')
     except Exception:
         state['failure_stage'] = state['stage']
@@ -169,6 +176,8 @@ def status(commit):
     directory = BASE / 'releases' / commit
     state = load(directory / 'state.json') if (directory / 'state.json').exists() else {'result': 'NOT_STARTED'}
     active = subprocess.run(['systemctl', 'is-active', UNIT], capture_output=True, text=True).stdout.strip()
+    if state.get('stage') == 'cache-cleanup':
+        state['result'] = 'RUNNING'
     if state['result'] in ['REQUESTED', 'RUNNING'] and active not in ['active', 'activating', 'deactivating']:
         state['result'] = 'BLOCKED'
     print(json.dumps({key: state[key] for key in ['result', 'stage', 'commit', 'failure_stage', 'recovery'] if key in state}))
@@ -210,7 +219,9 @@ def main():
     if operation == 'status':
         status(commit)
     elif operation == 'preflight':
-        with tempfile.TemporaryDirectory(dir=BASE / 'preflight') as temporary:
+        # Preflight also mutates the cache; serialize against service + other preflights.
+        with open('/run/lock/hlf-deploy.lock', 'w') as lock, tempfile.TemporaryDirectory(dir=BASE / 'preflight') as temporary:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
             _, _, _, review = prepare(commit, Path(temporary))
             print(json.dumps({'result': 'PASS', 'commit': commit, 'pending': list(review['pending'])}))
     else:

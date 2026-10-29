@@ -11,7 +11,7 @@ import sys
 from release import BASE, CONFIG, INSTALL, docker, inspect, require, run, save, sha
 from server import current_record, maintenance, smoke, sql
 
-FILES = ['release.py', 'server.py', 'controller.py', 'worker.py', 'db-operator.mjs']
+FILES = ['release.py', 'server.py', 'controller.py', 'worker.py', 'db-operator.mjs', 'cache.py']
 
 
 def name(value):
