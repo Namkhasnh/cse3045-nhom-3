@@ -22,7 +22,8 @@ export type RestaurantRow = { description: string | null; cover_media_asset_id: 
   min_price_vnd: bigint | null; max_price_vnd: bigint | null };
 export type DishRow = { id: bigint; restaurant_id: bigint; restaurant_name: string; restaurant_is_open: number; restaurant_is_accepting_orders: number; category_id: bigint; name: string; description: string; price_vnd: bigint;
   image_reference: string | null; is_visible: number; is_available: number; version: number; updated_at: Date };
-const escapedPrefix = (q: string) => q.replace(/[!%_]/g, c => `!${c}`) + '%';
+// LIKE does not fold decomposed combining marks, even under the accent-insensitive collation.
+const escapedSubstring = (q: string) => '%' + q.normalize('NFC').replace(/[!%_]/g, c => `!${c}`) + '%';
 function dishConditions(q: CatalogQuery) {
   const conditions = [Prisma.sql`d.is_visible=TRUE`];
   if (q.category_id) conditions.push(Prisma.sql`d.category_id=${BigInt(q.category_id)}`);
@@ -45,7 +46,7 @@ export class CatalogRepository {
   restaurants(q: CatalogQuery, onlyId?: string) {
     const conditions = [published];
     if (onlyId) conditions.push(Prisma.sql`r.id=${BigInt(onlyId)}`);
-    if (q.q) conditions.push(Prisma.sql`r.name COLLATE utf8mb4_0900_ai_ci LIKE ${escapedPrefix(q.q)} ESCAPE '!'`);
+    if (q.q) conditions.push(Prisma.sql`r.name COLLATE utf8mb4_0900_ai_ci LIKE ${escapedSubstring(q.q)} ESCAPE '!'`);
     if (q.is_open !== undefined) conditions.push(Prisma.sql`${openSql()}=${q.is_open}`);
     if (q.category_id || q.min_price_vnd !== undefined || q.max_price_vnd !== undefined)
       conditions.push(Prisma.sql`EXISTS(SELECT 1 FROM dishes d WHERE d.restaurant_id=r.id AND ${Prisma.join(dishConditions(q), ' AND ')})`);
@@ -61,7 +62,7 @@ export class CatalogRepository {
     const conditions = [published, ...dishConditions(q)];
     if (onlyId) conditions.push(Prisma.sql`d.id=${BigInt(onlyId)}`);
     if (q.restaurant_id) conditions.push(Prisma.sql`d.restaurant_id=${BigInt(q.restaurant_id)}`);
-    if (q.q) conditions.push(Prisma.sql`d.name COLLATE utf8mb4_0900_ai_ci LIKE ${escapedPrefix(q.q)} ESCAPE '!'`);
+    if (q.q) conditions.push(Prisma.sql`d.name COLLATE utf8mb4_0900_ai_ci LIKE ${escapedSubstring(q.q)} ESCAPE '!'`);
     if (q.is_available !== undefined) conditions.push(Prisma.sql`d.is_available=${q.is_available}`);
     const column = q.sort.includes('price_vnd') ? Prisma.sql`d.price_vnd` : Prisma.sql`d.name COLLATE utf8mb4_0900_ai_ci`;
     conditions.push(boundary(q, column, Prisma.sql`d.id`));

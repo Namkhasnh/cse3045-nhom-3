@@ -16,7 +16,7 @@ import release
 import server
 
 
-def main(image):
+def main(image, profile_migration=False):
     identifier = uuid.uuid4().hex
     commit = identifier + identifier[:8]
     prefix = 'hlf-ghcr-test-' + identifier[:10]
@@ -90,18 +90,30 @@ CONSTRAINT ledger_nonzero CHECK(balance <> 0)) ENGINE=InnoDB;
                 initial.mkdir()
                 server.operator(config, manifest, initial, 'plan')
                 applied = release.load(initial / 'plan.json')['applied']
-                expansion = migrations / '20260102000000_expand'
-                expansion.mkdir()
-                (expansion / 'migration.sql').write_text('''ALTER TABLE accounts ADD COLUMN avatar VARCHAR(80) NULL;
-CREATE TABLE evidence (id BIGINT PRIMARY KEY, account_id BIGINT NOT NULL,
-CONSTRAINT evidence_fk FOREIGN KEY(account_id) REFERENCES accounts(id)) ENGINE=InnoDB;
-''')
-                manifest['migrations'] = checksums()
-                review = {'commit': commit, 'applied': applied,
-                          'pending': {expansion.name: checksums()[expansion.name]},
-                          'changed_tables': ['accounts'], 'new_tables': ['evidence'],
-                          'grants': ["GRANT UPDATE (avatar) ON `test_hlf_ghcr`.`accounts` TO 'hlf_demo_deadbeef'@'%'"],
-                          'rollback_compatible': False, 'rollback_checks': []}
+                if profile_migration:
+                    import review_profile
+                    expansion = migrations / review_profile.MIGRATION
+                    expansion.mkdir()
+                    original = Path(__file__).resolve().parents[2] / 'backend/prisma/migrations' / expansion.name / 'migration.sql'
+                    shutil.copyfile(original, expansion / 'migration.sql')
+                    manifest['migrations'] = checksums()
+                    review = review_profile.profile(manifest,
+                        {'applied': applied, 'pending': {expansion.name: checksums()[expansion.name]}},
+                        'mysql://hlf_demo_deadbeef:synthetic-fixture-password@127.0.0.1/test_hlf_ghcr',
+                        config['database'], review_profile.PREVIOUS)
+                else:
+                    expansion = migrations / '20260102000000_expand'
+                    expansion.mkdir()
+                    (expansion / 'migration.sql').write_text('''ALTER TABLE accounts ADD COLUMN avatar VARCHAR(80) NULL;
+    CREATE TABLE evidence (id BIGINT PRIMARY KEY, account_id BIGINT NOT NULL,
+    CONSTRAINT evidence_fk FOREIGN KEY(account_id) REFERENCES accounts(id)) ENGINE=InnoDB;
+    ''')
+                    manifest['migrations'] = checksums()
+                    review = {'commit': commit, 'applied': applied,
+                              'pending': {expansion.name: checksums()[expansion.name]},
+                              'changed_tables': ['accounts'], 'new_tables': ['evidence'],
+                              'grants': ["GRANT UPDATE (avatar) ON `test_hlf_ghcr`.`accounts` TO 'hlf_demo_deadbeef'@'%'"],
+                              'rollback_compatible': False, 'rollback_checks': []}
                 release.migration_review(applied, {**manifest, 'commit': commit}, review)
                 work = root / 'work'
                 work.mkdir(mode=0o700)
@@ -131,7 +143,8 @@ CONSTRAINT evidence_fk FOREIGN KEY(account_id) REFERENCES accounts(id)) ENGINE=I
                 server.operator(config, manifest, work, 'grant')
                 release.docker('exec', '-i', prefix, 'sh', '-c',
                     'export MYSQL_PWD=synthetic-fixture-password; exec mysql -uhlf_demo_deadbeef -N -B',
-                    data=b"USE test_hlf_ghcr; UPDATE accounts SET avatar='synthetic-avatar' WHERE id=9007199254740993;")
+                    data=(b"USE test_hlf_ghcr; UPDATE accounts SET email_change_attempts=0 WHERE id=9007199254740993;"
+                          if profile_migration else b"USE test_hlf_ghcr; UPDATE accounts SET avatar='synthetic-avatar' WHERE id=9007199254740993;"))
                 try:
                     release.docker('exec', '-i', prefix, 'sh', '-c',
                         'export MYSQL_PWD=synthetic-fixture-password; exec mysql -uhlf_demo_deadbeef -N -B',
@@ -140,6 +153,32 @@ CONSTRAINT evidence_fk FOREIGN KEY(account_id) REFERENCES accounts(id)) ENGINE=I
                     pass
                 else:
                     raise AssertionError('Unrelated runtime column write was permitted')
+                if profile_migration:
+                    for statement in review['rollback_checks']:
+                        assert server.sql(config, prefix, ('USE test_hlf_ghcr; ' + statement + ';').encode()).strip() == b'0'
+                    avatar = ("INSERT INTO account_avatar_media(account_id,object_key,content_hash,mime_type,size_bytes,width,height) "
+                              "VALUES(9007199254740993,'avatars/synthetic','" + 'a' * 64 + "','image/jpeg',100,256,256);")
+                    proof = release.docker('exec', '-i', prefix, 'sh', '-c',
+                        'export MYSQL_PWD=synthetic-fixture-password; exec mysql -uhlf_demo_deadbeef -N -B',
+                        data=('USE test_hlf_ghcr; BEGIN; ' + avatar + review['rollback_checks'][0] + '; ROLLBACK;').encode())
+                    assert proof.strip() == b'1', 'New avatar facts must block old-reader rollback'
+                    pending = ("UPDATE accounts SET email_change_auth_version=1,pending_email='synthetic@example.invalid',"
+                        "email_change_id='" + 'a' * 43 + "',email_change_hash='" + 'b' * 64 + "',"
+                        "email_change_expires_at=DATE_ADD(UTC_TIMESTAMP(3), INTERVAL 10 MINUTE),"
+                        "email_change_sent_at=UTC_TIMESTAMP(3) WHERE id=9007199254740993;")
+                    proof = release.docker('exec', '-i', prefix, 'sh', '-c',
+                        'export MYSQL_PWD=synthetic-fixture-password; exec mysql -uhlf_demo_deadbeef -N -B',
+                        data=('USE test_hlf_ghcr; BEGIN; ' + pending + review['rollback_checks'][1] + '; ROLLBACK;').encode())
+                    assert proof.strip() == b'1', 'Pending email facts must block old-reader rollback'
+                    for bad in ["UPDATE account_avatar_media SET object_key='forbidden';", "DELETE FROM account_avatar_media;"]:
+                        try:
+                            release.docker('exec', '-i', prefix, 'sh', '-c',
+                                'export MYSQL_PWD=synthetic-fixture-password; exec mysql -uhlf_demo_deadbeef -N -B',
+                                data=('USE test_hlf_ghcr; ' + bad).encode())
+                        except RuntimeError:
+                            pass
+                        else:
+                            raise AssertionError('Avatar metadata/delete privilege was permitted')
                 server.sql(config, prefix, b'USE test_hlf_ghcr; BEGIN; UPDATE ledger SET balance=-42; ROLLBACK;')
                 server.operator(config, manifest, work, 'verify')
                 for invalid in [b'INSERT INTO ledger VALUES (1,1,42);', b'INSERT INTO ledger VALUES (1,9007199254740993,0);']:
@@ -156,7 +195,7 @@ CONSTRAINT evidence_fk FOREIGN KEY(account_id) REFERENCES accounts(id)) ENGINE=I
                     pass
                 else:
                     raise AssertionError('Deliberate original-row drift was accepted')
-                print(json.dumps({'result': 'PASS', 'mysql': '9.2.0', 'scope': 'disposable synthetic only',
+                print(json.dumps({'result': 'PASS', 'mysql': '9.2.0', 'scope': 'disposable synthetic only', 'profile_migration': profile_migration,
                     'cases': ['SQL restore/schema/row equality', 'object/vault restore byte equality',
                               'reviewed expansion rehearsal', 'source DB unchanged by rehearsal',
                               'exact bigint/signed decimal preservation', 'transaction rollback',
@@ -177,4 +216,6 @@ CONSTRAINT evidence_fk FOREIGN KEY(account_id) REFERENCES accounts(id)) ENGINE=I
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--schema-image', required=True)
-    main(parser.parse_args().schema_image)
+    parser.add_argument('--profile-migration', action='store_true')
+    args = parser.parse_args()
+    main(args.schema_image, args.profile_migration)

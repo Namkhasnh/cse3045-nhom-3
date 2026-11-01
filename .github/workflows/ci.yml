@@ -141,7 +141,9 @@ jobs:
           docker build --platform linux/amd64 -f ops/staging/Dockerfile --target backend-runtime -t hlf-ci-backend-check .
           python3 ops/deploy/check_images.py --backend hlf-ci-backend-check --schema hlf-ci-schema-check
       - name: Real MySQL deployment recovery rehearsal
-        run: python3 ops/deploy/integration.py --schema-image hlf-ci-schema-check
+        run: |
+          python3 ops/deploy/integration.py --schema-image hlf-ci-schema-check
+          python3 ops/deploy/integration.py --schema-image hlf-ci-schema-check --profile-migration
 
   publish:
     if: github.event_name == 'push' && github.ref == 'refs/heads/hw1' && github.repository == 'Namkhasnh/cse3045-nhom-3'

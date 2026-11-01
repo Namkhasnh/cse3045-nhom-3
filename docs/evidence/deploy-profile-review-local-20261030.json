@@ -1,0 +1,50 @@
+{
+  "date": "2026-10-30",
+  "scope": "Exact personal-profile SQL on disposable synthetic MySQL9.2.0 only",
+  "target_commit": "7e4ff90ee25181e4220dbd603b74fa29f63719b6",
+  "previous_commit": "a0056b586c87a5e783993869300f9b37dd1356a3",
+  "migration": "20261027010000_account_profile_identity",
+  "sha256": "4db724976113b26e91fd706c82b437d5233826b633237df0ee1ef34a8693ea36",
+  "unit_safety_tests": {
+    "result": "PASS",
+    "count": 53
+  },
+  "mysql": {
+    "result": "PASS",
+    "mysql": "9.2.0",
+    "scope": "disposable synthetic only",
+    "profile_migration": true,
+    "cases": [
+      "SQL restore/schema/row equality",
+      "object/vault restore byte equality",
+      "reviewed expansion rehearsal",
+      "source DB unchanged by rehearsal",
+      "exact bigint/signed decimal preservation",
+      "transaction rollback",
+      "real FK/CHECK rejection",
+      "deliberate row-drift rejection",
+      "runtime grant rehearsal without production passwords",
+      "narrow column write permitted; unrelated write rejected"
+    ]
+  },
+  "additional_profile_sql_checks": [
+    "rollback guards return zero after expansion",
+    "a personal-avatar row makes rollback guard nonzero",
+    "runtime metadata modification and avatar-row DELETE denied",
+    "runtime avatar INSERT and SELECT permitted inside rolled-back transaction",
+    "pending email proof makes second rollback guard nonzero"
+  ],
+  "vps_review": "NOT RUN",
+  "vps_migration": "NOT RUN",
+  "vps_application_deploy": "NOT RUN",
+  "data_policy": "No old-column/row mutation; real-data restore/rehearsal required by service before application",
+  "review_capacity_fix": {
+    "result": "PASS",
+    "cases": [
+      "2GiB initially can recover after safe cache eviction",
+      "drift blocks cache deletion",
+      "reserve still enforced after cleanup and after candidate pull"
+    ],
+    "reason": "Review helper previously checked capacity before scoped cleanup"
+  }
+}

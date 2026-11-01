@@ -105,6 +105,45 @@ test('P04 CAT-01 / PUBLIC-01 / DATA-01: anonymous HTTP contract and exact MySQL 
   for(const i of [2,3,4,5])assert.ok(!discoverable.includes(String(categories[i])),'Non-public-only categories must be excluded');
   await read('/dish-categories?public_only=1','Error',422);
   await read('/restaurants?public_only=true','Error',422);
+  // CAT-01: literal substring search on real MySQL, with all other filters intersected.
+  categories.push((await db.dish_categories.create({data:{name:`${prefix} Search`}})).id);
+  const searchCategory=categories.length-1;
+  const rice=await create(0,searchCategory,'Suất cơm gà',30000n);
+  const soldRice=await create(1,searchCategory,'Phần CƠM rang',50000n,true,false);
+  await create(0,searchCategory,'Cơm ẩn',30000n,false);
+  await create(2,searchCategory,'Cơm chưa xuất bản',30000n);
+  await create(3,searchCategory,'Cơm ngừng hoạt động',30000n);
+  for(const r of [0,1,2,3]) await db.restaurants.update({where:{id:restaurants[r]},data:{name:`Bếp Cơm ${nonce} ${r}`}});
+  const searchFilter=`category_id=${categories[searchCategory]}`;
+  for(const term of ['C','c','COM','com','cơm','co\u031bm']) {
+   const query=`q=${encodeURIComponent(term)}&${searchFilter}`;
+   const dishes=await read(`/dishes?${query}`,'DishList');
+   assert.deepEqual(new Set(dishes.data.map((d:{id:string})=>d.id)),new Set([String(rice),String(soldRice)]),`Dish search: ${term}`);
+   const sellers=await read(`/restaurants?${query}`,'RestaurantList');
+   assert.deepEqual(sellers.data.map((r:{id:string})=>r.id),restaurants.slice(0,2).map(String));
+  }
+  for(const resource of ['restaurants','dishes']) {
+   const name=resource==='restaurants'?'RestaurantList':'DishList';
+   assert.equal((await read(`/${resource}?q=${nonce}-missing&${searchFilter}`,name)).data.length,0);
+   const priced=await read(`/${resource}?q=com&${searchFilter}&min_price_vnd=30000&max_price_vnd=30000`,name);
+   assert.deepEqual(priced.data.map((r:{id:string})=>r.id),[String(resource==='restaurants'?restaurants[0]:rice)]);
+   const query=`/${resource}?q=com&${searchFilter}&limit=1`;
+   const first=await read(query,name); assert.ok(first.page.next_cursor);
+   const second=await read(`${query}&cursor=${encodeURIComponent(first.page.next_cursor)}`,name);
+   assert.equal(second.page.next_cursor,null); assert.notEqual(first.data[0].id,second.data[0].id);
+   await read(`${query.replace('q=com','q=ga')}&cursor=${encodeURIComponent(first.page.next_cursor)}`,'Error',422);
+  }
+  assert.deepEqual((await read(`/dishes?q=com&${searchFilter}&is_available=true`,'DishList')).data.map((d:{id:string})=>d.id),[String(rice)]);
+  assert.equal((await read(`/dishes?q=com&restaurant_id=${restaurants[1]}&${searchFilter}`,'DishList')).data[0].id,String(soldRice));
+  for(const literal of ['%','_','!','!%_',"' OR 1=1 --"]) {
+   const special=await create(0,searchCategory,`Tên ${literal} riêng`,30000n);
+   await db.restaurants.update({where:{id:restaurants[0]},data:{name:`Bếp ${literal} ${nonce}`}});
+   for(const resource of ['restaurants','dishes']) {
+    const results=await read(`/${resource}?q=${encodeURIComponent(literal)}&${searchFilter}`,resource==='restaurants'?'RestaurantList':'DishList');
+    assert.deepEqual(results.data.map((r:{id:string})=>r.id),[String(resource==='restaurants'?restaurants[0]:special)]);
+   }
+   await db.dishes.delete({where:{id:special}});
+  }
   await read('/auth/me','Error',500); // Public reads above succeeded even with broken session verification.
   const invalid=await read('/restaurants/01','Error',422); assert.equal(invalid.error.code,'VALIDATION_ERROR');
  } finally {
