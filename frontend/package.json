@@ -10,6 +10,7 @@
     "test:login": "node scripts/browser-login.mjs",
     "test:smoke": "node scripts/browser-smoke.mjs",
     "preview": "vite preview",
+    "test:catalog-search": "node scripts/browser-catalog-search.mjs",
     "test:connected": "node scripts/browser-connected.mjs",
     "test:cart": "node --test test/cart.test.mjs",
     "test:onboarding": "node scripts/browser-onboarding.mjs",

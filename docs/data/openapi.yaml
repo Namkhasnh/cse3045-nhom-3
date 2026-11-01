@@ -654,7 +654,7 @@
             "name": "q",
             "in": "query",
             "required": false,
-            "description": "Nonblank trimmed name prefix; utf8mb4_0900_ai_ci, case/diacritic insensitive; literal % and _.",
+            "description": "Nonblank trimmed literal name substring (1–200 characters, anywhere in the name); utf8mb4_0900_ai_ci, case/diacritic insensitive; NFC search pattern; literal %, _ and !; no typo correction.",
             "schema": {
               "type": "string",
               "maxLength": 200
@@ -827,7 +827,7 @@
             "name": "q",
             "in": "query",
             "required": false,
-            "description": "Nonblank trimmed name prefix; utf8mb4_0900_ai_ci, case/diacritic insensitive; literal % and _.",
+            "description": "Nonblank trimmed literal name substring (1–200 characters, anywhere in the name); utf8mb4_0900_ai_ci, case/diacritic insensitive; NFC search pattern; literal %, _ and !; no typo correction.",
             "schema": {
               "type": "string",
               "maxLength": 200

@@ -67,7 +67,7 @@ V1.1: favorites, reviews and random selection, each with finalized contracts. Th
 | ID | Actor | Story (short) | Priority |
 | --- | --- | --- | --- |
 | US01 | User | Register an ordinary account with verified email, log in and manage own contacts; no role selection. | V0.1 Must |
-| US02 | Visitor / User | Search restaurants and dishes by name, category, price range. | Must |
+| US02 | Visitor / User | Search restaurants and dishes by literal name substring (case/diacritic insensitive), category, price range. | Must |
 | US03 | Visitor / User | View menu, price, opening hours, dish availability. | Must |
 | US04 | User | Select fixed VJU pickup point and see surveyed fee in V0.4; free address/map pin and route fees deferred to V1.2. | Must by version |
 | US05 | Visitor / User | Build a single-restaurant cart before login; adding from another restaurant replaces the old cart; retain it through login, revalidate and explicitly confirm authenticated checkout. | V0.2/V0.5 Must |
@@ -103,7 +103,7 @@ New stories (US01–US22 retain their IDs; US21–22 remain excluded):
 | ID | Area | Requirement |
 | --- | --- | --- |
 | FR01 | Accounts and authorization | Ordinary-user registration; one MFA-protected Admin; management derived from current ownership, maximum one restaurant per account. Managers retain buyer capabilities. Browser sessions do not expire due to elapsed time or inactivity; logout and account-security revocation still apply (October 24, 2026 user request). |
-| FR02 | Search and menu | Anonymous view/search/filter of allowlisted public restaurant/menu data; no account, application or financial disclosure. |
+| FR02 | Search and menu | Anonymous view/search/filter of allowlisted public restaurant/menu data; name search accepts a single character and matches literal substrings without case/diacritic distinctions; no account, application or financial disclosure. |
 | FR03 | Location and delivery fee | Resolve pickup point/address, route distance, delivery range and fee per restaurant policy (produces a *delivery quote*). |
 | FR04 | Cart and orders | Manage cart, compute totals, place, accept, track and cancel orders per status rules. |
 | FR05 | Payment | Pay on delivery; the platform does not verify collection for new orders. |
