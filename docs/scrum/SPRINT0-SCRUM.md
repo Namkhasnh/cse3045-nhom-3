@@ -48,7 +48,7 @@ Cả 3 thành viên đã thống nhất chọn **Scrum** (đã học ở Buổi 
 
 Một việc chỉ được chuyển sang cột **Done** khi đủ các điều kiện:
 
-1. Code được merge vào `main` qua Pull Request và có ít nhất 1 thành viên khác review.
+1. Code được merge vào nhánh mặc định (`hw1`) qua Pull Request và có ít nhất 1 thành viên khác review.
 2. `lint`, `build` và test liên quan đều chạy thành công.
 3. Đáp ứng đủ tiêu chí chấp nhận ghi trong Issue.
 4. Chạy được trên bản demo hoặc trên máy local theo hướng dẫn trong README.
@@ -128,7 +128,7 @@ Vai Scrum Master luân phiên giữa Lê Quang Minh và Nguyễn Minh Đức the
 
 | ID | Việc cần làm | Story | Phụ trách | Ưu tiên | SP | Tiêu chí hoàn thành |
 | --- | --- | --- | --- | --- | --- | --- |
-| S0-01 | Tạo repo, bảo vệ nhánh `main`, tạo bảng GitHub Projects, mẫu Issue/PR | — | Lê Quang Minh | Cao | 1 | Mọi thành viên làm việc qua PR; bảng có 4 cột |
+| S0-01 | Tạo repo, bảo vệ nhánh mặc định `hw1`, tạo bảng GitHub Projects, mẫu Issue/PR | — | Lê Quang Minh | Cao | 1 | Mọi thành viên làm việc qua PR; bảng có 4 cột |
 | S0-02 | Viết tài liệu yêu cầu MVP và mô tả 3 vai người dùng (người mua, chủ quán, Admin) | — | Nguyễn Nam Khánh | Cao | 2 | Nhóm duyệt `docs/requirements.md` |
 | S0-03 | Dựng khung frontend Vite + React + TypeScript + Tailwind | — | Nguyễn Minh Đức | Cao | 2 | `npm run dev` hiển thị trang chủ; lint/build pass |
 | S0-04 | Dựng khung backend NestJS + Prisma, kết nối MySQL 9.2 | — | Nguyễn Nam Khánh | Cao | 2 | `db:check` thành công; có migration đầu tiên |
