@@ -34,7 +34,7 @@ Cả 3 thành viên đã thống nhất chọn **Scrum** (đã học ở Buổi 
 | Thành phần | Quy ước |
 | --- | --- |
 | Độ dài Sprint | 1 tuần (khớp lịch học hằng tuần) |
-| Sprint 0 | 13/11/2026 – 19/11/2026 |
+| Sprint 0 | Dự kiến 13/11 – 19/11/2026; thực tế đóng sớm ngày 13/11/2026 (xem [báo cáo Sprint 0](../SPRINT0-REPORT.md)) |
 | Sprint Planning | Đầu Sprint, 30 phút. Chọn việc từ Product Backlog, chốt Sprint Goal, ước lượng story point |
 | Daily Scrum | Hằng ngày, tối đa 10 phút qua group chat hoặc gọi nhanh. Mỗi người trả lời 3 câu: hôm qua làm gì, hôm nay làm gì, có vướng gì không |
 | Sprint Review | Cuối Sprint, demo bản chạy trên lớp hoặc trên link demo; giảng viên/nhóm khác góp ý |
@@ -103,7 +103,7 @@ R = thực hiện, A = chịu trách nhiệm cuối cùng/phê duyệt, C = đư
 | Báo cáo, tài liệu, slide | A | R | C |
 | Demo trước lớp | A, R | R | R |
 
-Vai Scrum Master có thể luân phiên ở các Sprint sau; người kế tiếp được ghi trong Issue lập kế hoạch Sprint.
+Vai Scrum Master luân phiên giữa Lê Quang Minh và Nguyễn Minh Đức theo từng Sprint; lịch và RACI chính thức nằm trong [TEAM.md](../TEAM.md).
 
 ---
 
@@ -147,6 +147,8 @@ Vai Scrum Master có thể luân phiên ở các Sprint sau; người kế tiế
 **Để sau Sprint 0:** gợi ý món bằng AI, đối soát hoa hồng với quán, trang Admin đầy đủ, theo dõi đơn theo thời gian thực (US-06 làm ở Sprint 1).
 
 ### 3.4. Lịch Sprint 0
+
+> Cập nhật 13/11/2026: phần lớn hạng mục đã có sẵn trong repo nên Sprint 0 được đóng sớm. Trạng thái từng hạng mục và phạm vi Sprint 1 (16/11 – 22/11) nằm trong [SPRINT0-REPORT.md](../SPRINT0-REPORT.md). Bảng dưới là lịch dự kiến ban đầu.
 
 | Ngày | Hoạt động |
 | --- | --- |
